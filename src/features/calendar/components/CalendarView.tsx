@@ -1,11 +1,11 @@
 'use client';
 
 import { Calendar, dateFnsLocalizer, View } from 'react-big-calendar';
-import format from 'date-fns/format';
-import parse from 'date-fns/parse';
-import startOfWeek from 'date-fns/startOfWeek';
-import getDay from 'date-fns/getDay';
-import enUS from 'date-fns/locale/en-US';
+import { format } from 'date-fns/format';
+import { parse } from 'date-fns/parse';
+import { startOfWeek } from 'date-fns/startOfWeek';
+import { getDay } from 'date-fns/getDay';
+import { enUS } from 'date-fns/locale/en-US';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { useState } from 'react';
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
@@ -79,8 +79,8 @@ export function CalendarView({ events, onDateChange, onEventDrop, onSelectEvent 
             <DragAndDropCalendar
                 localizer={localizer}
                 events={events}
-                startAccessor="start"
-                endAccessor="end"
+                startAccessor={(event: any) => event.start}
+                endAccessor={(event: any) => event.end}
                 style={{ height: '100%' }}
                 view={view}
                 date={date}
@@ -89,8 +89,8 @@ export function CalendarView({ events, onDateChange, onEventDrop, onSelectEvent 
                 views={['month', 'week', 'day']}
                 selectable
                 onEventDrop={onEventDrop}
-                onSelectEvent={onSelectEvent}
-                eventPropGetter={eventStyleGetter}
+                onSelectEvent={onSelectEvent as any}
+                eventPropGetter={eventStyleGetter as any}
                 resizable={false}
             />
         </div>

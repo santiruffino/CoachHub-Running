@@ -23,7 +23,7 @@ export default function ProfilePage() {
         disconnect: disconnectStrava,
         refreshStatus: refreshStatusOnly,
         sync: refreshStrava // Mapping sync function to the name used in render
-    } = useStravaAuth(user?.id || '');
+    } = useStravaAuth();
 
     useEffect(() => {
         profileService.getProfile().then(res => {

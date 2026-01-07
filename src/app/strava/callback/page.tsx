@@ -18,7 +18,7 @@ function CallbackContent() {
     // Use the auth hook to get the current user
     const { user, loading: authLoading } = useAuth();
 
-    const { handleCallback, loading: stravaLoading, error: authError } = useStravaAuth(user?.id || '');
+    const { handleCallback, loading: stravaLoading, error: authError } = useStravaAuth();
     // We don't need local ref anymore for the code check, but can use it for local state if needed
 
     useEffect(() => {

@@ -28,7 +28,7 @@ export async function DELETE(
             .from('training_assignments')
             .select(`
         id,
-        training:trainings(coach_id)
+        training:trainings!inner(coach_id)
       `)
             .eq('id', assignmentId)
             .single();
@@ -41,7 +41,9 @@ export async function DELETE(
         }
 
         // Verify coach owns the training
-        if (assignment.training.coach_id !== user!.id) {
+        // Type assertion needed because Supabase types the nested relation as an array
+        const training = assignment.training as unknown as { coach_id: string };
+        if (training.coach_id !== user!.id) {
             return NextResponse.json(
                 { error: 'Not authorized to delete this assignment' },
                 { status: 403 }
