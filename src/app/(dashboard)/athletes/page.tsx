@@ -146,18 +146,18 @@ export default function AthletesPage() {
   }
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Atletas</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold">Atletas</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             Gestiona tu roster de atletas
           </p>
         </div>
-        <Button onClick={() => setInviteModalOpen(true)}>
-          <UserPlus className="h-4 w-4 mr-2" />
-          Añadir Atleta
+        <Button onClick={() => setInviteModalOpen(true)} size="sm" className="sm:size-default">
+          <UserPlus className="h-4 w-4 sm:mr-2" />
+          <span className="hidden sm:inline">Añadir Atleta</span>
         </Button>
       </div>
 
@@ -178,8 +178,52 @@ export default function AthletesPage() {
         />
       </div>
 
-      {/* Athletes Table */}
-      <Card>
+      {/* Mobile Cards View */}
+      <div className="lg:hidden space-y-3">
+        {filteredAthletes.length === 0 ? (
+          <Card>
+            <CardContent className="py-12 text-center text-muted-foreground">
+              No se encontraron atletas
+            </CardContent>
+          </Card>
+        ) : (
+          filteredAthletes.map((athlete, idx) => (
+            <Card key={athlete.id} className="overflow-hidden">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3 mb-3">
+                  <Avatar className={`h-12 w-12 ${AVATAR_COLORS[idx % AVATAR_COLORS.length]}`}>
+                    <AvatarFallback className="bg-transparent text-white font-semibold">
+                      {athlete.name.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold truncate">{athlete.name}</p>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
+                      <Mail className="h-3 w-3 flex-shrink-0" />
+                      <span className="truncate">{athlete.email}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button asChild variant="outline" size="sm" className="flex-1">
+                    <Link href={`/athletes/${athlete.id}`}>
+                      Ver Perfil
+                    </Link>
+                  </Button>
+                  <Button asChild size="sm" className="flex-1">
+                    <Link href={`/trainings/new?athleteId=${athlete.id}`}>
+                      Asignar Entreno
+                    </Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
+
+      {/* Desktop Table View */}
+      <Card className="hidden lg:block">
         <CardContent className="p-0">
           <div className="rounded-md border">
             <Table>

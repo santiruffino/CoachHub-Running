@@ -29,8 +29,8 @@ export function WeekCalendar({ date, onDateSelect, events }: WeekCalendarProps) 
     const handleNextWeek = () => setCurrentWeekStart(prev => addDays(prev, 7));
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-100 dark:border-gray-700">
-            <div className="flex items-center justify-between mb-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-3 sm:p-4 border border-gray-100 dark:border-gray-700">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
                 <span className="text-lg font-semibold capitalize text-gray-900 dark:text-white">
                     {format(currentWeekStart, 'MMMM yyyy', { locale: es })}
                 </span>
@@ -56,7 +56,7 @@ export function WeekCalendar({ date, onDateSelect, events }: WeekCalendarProps) 
                                 {format(day, 'EEEEE', { locale: es })}
                             </span>
                             <div className={cn(
-                                "flex flex-col items-center justify-center w-10 h-10 rounded-full transition-all relative",
+                                "flex flex-col items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full transition-all relative",
                                 isSelected ? "bg-orange-500 text-white shadow-md scale-110" : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700",
                                 isToday && !isSelected && "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 font-bold"
                             )}>

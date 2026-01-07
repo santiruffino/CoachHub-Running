@@ -102,9 +102,9 @@ export default function AthleteDashboard({ user }: { user: any }) {
     );
 
     return (
-        <div className="space-y-6 max-w-md mx-auto sm:max-w-full pb-20">
+        <div className="space-y-4 sm:space-y-6 max-w-md mx-auto sm:max-w-full px-4 sm:px-0 pb-20">
             <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold">Entrenamiento</h1>
+                <h1 className="text-xl sm:text-2xl font-bold">Entrenamiento</h1>
             </div>
 
             <WeeklyVolumeChart

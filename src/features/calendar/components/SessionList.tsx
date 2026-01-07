@@ -71,7 +71,7 @@ export function SessionList({ sessions }: SessionListProps) {
                         </div>
 
                         {session.type === 'COMPLETED' && session.stats && (
-                            <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                                 <div className="flex items-center gap-3">
                                     <div className="p-1.5 bg-gray-50 dark:bg-gray-700 rounded-full text-gray-400">
                                         <MapPin className="w-4 h-4" />

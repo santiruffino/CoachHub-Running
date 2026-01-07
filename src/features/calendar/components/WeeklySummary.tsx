@@ -16,7 +16,7 @@ export function WeeklySummary({ summary }: WeeklySummaryProps) {
         <Card className="p-4 border-gray-100 dark:border-gray-700 shadow-sm bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900">
             <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4 uppercase tracking-wider">Resumen Semanal</h3>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-4">
                 {/* Distance */}
                 <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-1">
@@ -45,7 +45,7 @@ export function WeeklySummary({ summary }: WeeklySummaryProps) {
                 </div>
 
                 {/* Duration */}
-                <div className="flex flex-col gap-1 border-l border-gray-200 dark:border-gray-700 pl-4">
+                <div className="flex flex-col gap-1 md:border-l border-gray-200 dark:border-gray-700 md:pl-4">
                     <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-1">
                         <Clock className="w-4 h-4" />
                         <span className="text-xs font-medium">Tiempo</span>
@@ -72,7 +72,7 @@ export function WeeklySummary({ summary }: WeeklySummaryProps) {
                 </div>
 
                 {/* Elevation */}
-                <div className="flex flex-col gap-1 border-l border-gray-200 dark:border-gray-700 pl-4 justify-center">
+                <div className="flex flex-col gap-1 md:border-l border-gray-200 dark:border-gray-700 md:pl-4 justify-center">
                     <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-1">
                         <Mountain className="w-4 h-4" />
                         <span className="text-xs font-medium">Desnivel</span>
