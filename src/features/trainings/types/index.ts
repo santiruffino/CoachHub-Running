@@ -13,6 +13,7 @@ export interface Training {
     type: TrainingType;
     blocks: any; // JSON
     coachId: string;
+    isTemplate?: boolean;
 }
 
 // TODO: Define Block structure if time permits

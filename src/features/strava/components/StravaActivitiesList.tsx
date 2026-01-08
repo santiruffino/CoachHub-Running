@@ -59,6 +59,7 @@ export function StravaActivitiesList({ activities, loading }: StravaActivitiesLi
                             <TableHead>Distance</TableHead>
                             <TableHead>Time</TableHead>
                             <TableHead>Elev.</TableHead>
+                            <TableHead className="text-right">Link</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -74,6 +75,17 @@ export function StravaActivitiesList({ activities, loading }: StravaActivitiesLi
                                 <TableCell>{(activity.distance / 1000).toFixed(2)} km</TableCell>
                                 <TableCell>{formatDuration(activity.duration)}</TableCell>
                                 <TableCell>{activity.elevationGain?.toFixed(0)} m</TableCell>
+                                <TableCell className="text-right">
+                                    <a
+                                        href={`https://www.strava.com/activities/${activity.externalId}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="font-bold text-[#FC5200] hover:underline text-sm"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        View on Strava
+                                    </a>
+                                </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>

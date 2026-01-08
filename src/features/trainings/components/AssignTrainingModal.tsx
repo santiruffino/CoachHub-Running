@@ -41,6 +41,11 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
     const [isEditingWorkout, setIsEditingWorkout] = useState(false);
     const [editedBlocks, setEditedBlocks] = useState<WorkoutBlock[]>([]);
 
+    // Athlete-specific flow state
+    const [workoutSource, setWorkoutSource] = useState<'template' | 'new' | null>(null);
+    const [currentStep, setCurrentStep] = useState<'date' | 'source' | 'workout'>('date');
+    const [availableTemplates, setAvailableTemplates] = useState<Training[]>([]);
+
     // Data
     const [athletes, setAthletes] = useState<Athlete[]>([]);
     const [groups, setGroups] = useState<Group[]>([]);
@@ -59,6 +64,9 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
             if (athleteId) {
                 setAssignmentType('athlete');
                 setSelectedAthleteIds([athleteId]);
+                // Reset to step-based flow for athlete assignment
+                setCurrentStep('date');
+                setWorkoutSource(null);
             }
             if (groupId) {
                 setAssignmentType('group');
@@ -93,6 +101,16 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
         }
     };
 
+    const loadTemplates = async () => {
+        try {
+            const res = await api.get<Training[]>('/v2/trainings');
+            // Filter to only show templates
+            setAvailableTemplates(res.data.filter(t => t.isTemplate));
+        } catch (e) {
+            console.error('Failed to load templates', e);
+        }
+    };
+
     const handleTrainingSelect = (id: string) => {
         setSelectedTrainingId(id);
         if (id) {
@@ -104,13 +122,52 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
     };
 
     const handleAssign = async () => {
-        if (!selectedTrainingId) {
-            setError('Please select a workout.');
+        if (!scheduledDate) {
+            setError('Please select a date.');
             return;
         }
 
-        if (!scheduledDate) {
-            setError('Please select a date.');
+        // For athlete-specific flow with builder
+        if (athleteId && workoutSource === 'new') {
+            if (editedBlocks.length === 0) {
+                setError('Please add at least one block to the workout.');
+                return;
+            }
+
+            try {
+                setLoading(true);
+                setError('');
+
+                // Create a new non-template training
+                const newTraining = await trainingsService.create({
+                    title: `Workout for ${format(new Date(scheduledDate), 'MMM d, yyyy')}`,
+                    type: 'RUNNING' as any, // Default type, could be made configurable
+                    description: 'Custom workout',
+                    blocks: editedBlocks,
+                    isTemplate: false
+                });
+
+                // Assign it
+                await trainingsService.assign({
+                    trainingId: newTraining.data.id,
+                    athleteIds: [athleteId],
+                    scheduledDate: new Date(scheduledDate).toISOString(),
+                });
+
+                onClose();
+                window.location.reload(); // Refresh to show new assignment
+            } catch (e) {
+                console.error(e);
+                setError('Failed to create and assign workout.');
+            } finally {
+                setLoading(false);
+            }
+            return;
+        }
+
+        // For template-based flow
+        if (!selectedTrainingId) {
+            setError('Please select a workout.');
             return;
         }
 
@@ -146,6 +203,7 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
             });
 
             onClose();
+            window.location.reload(); // Refresh to show new assignment
         } catch (e) {
             console.error(e);
             setError('Failed to assign training.');
@@ -154,128 +212,310 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
         }
     };
 
+    // Render step-based flow for single athlete assignment
+    const renderAthleteAssignmentFlow = () => {
+        // Step 1: Date Selection
+        if (currentStep === 'date') {
+            return (
+                <>
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                Select Date for Workout Assignment
+                            </label>
+                            <input
+                                type="date"
+                                className="flex h-10 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-primary outline-none dark:text-white"
+                                value={scheduledDate}
+                                onChange={(e) => setScheduledDate(e.target.value)}
+                            />
+                        </div>
+                        {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
+                    </div>
+                    <DialogFooter className="mt-6 border-t pt-4">
+                        <Button variant="outline" onClick={onClose}>Cancel</Button>
+                        <Button
+                            onClick={() => setCurrentStep('source')}
+                            className="bg-brand-primary text-white hover:bg-brand-deep"
+                        >
+                            Next
+                        </Button>
+                    </DialogFooter>
+                </>
+            );
+        }
+
+        // Step 2: Choose workout source
+        if (currentStep === 'source') {
+            return (
+                <>
+                    <div className="space-y-4">
+                        <div className="space-y-3">
+                            <label className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                Choose Workout Type
+                            </label>
+                            <div className="grid grid-cols-2 gap-4">
+                                <button
+                                    onClick={() => {
+                                        setWorkoutSource('template');
+                                        loadTemplates();
+                                        setCurrentStep('workout');
+                                    }}
+                                    className="p-6 border-2 border-gray-300 dark:border-gray-700 rounded-lg hover:border-brand-primary hover:bg-brand-primary/5 transition-all text-center"
+                                >
+                                    <div className="text-2xl mb-2">📋</div>
+                                    <div className="font-medium text-gray-900 dark:text-gray-100">Use Template</div>
+                                    <div className="text-xs text-muted-foreground mt-1">Select from existing workout templates</div>
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setWorkoutSource('new');
+                                        setEditedBlocks([]);
+                                        setCurrentStep('workout');
+                                    }}
+                                    className="p-6 border-2 border-gray-300 dark:border-gray-700 rounded-lg hover:border-brand-primary hover:bg-brand-primary/5 transition-all text-center"
+                                >
+                                    <div className="text-2xl mb-2">✨</div>
+                                    <div className="font-medium text-gray-900 dark:text-gray-100">Create New</div>
+                                    <div className="text-xs text-muted-foreground mt-1">Build a custom workout from scratch</div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <DialogFooter className="mt-6 border-t pt-4">
+                        <Button variant="outline" onClick={() => setCurrentStep('date')}>Back</Button>
+                        <Button variant="outline" onClick={onClose}>Cancel</Button>
+                    </DialogFooter>
+                </>
+            );
+        }
+
+        // Step 3: Workout selection/creation
+        if (currentStep === 'workout') {
+            if (workoutSource === 'template') {
+                return (
+                    <>
+                        <div className="space-y-4 flex-1 overflow-y-auto">
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                    Select a Template
+                                </label>
+                                <div className="space-y-2 max-h-[400px] overflow-y-auto border border-gray-300 dark:border-gray-700 rounded-md p-3">
+                                    {availableTemplates.length === 0 && (
+                                        <p className="text-sm text-muted-foreground text-center py-8">
+                                            No templates available. Create one first or build a custom workout.
+                                        </p>
+                                    )}
+                                    {availableTemplates.map((template) => (
+                                        <div
+                                            key={template.id}
+                                            onClick={() => {
+                                                setSelectedTrainingId(template.id);
+                                                loadTraining(template.id);
+                                            }}
+                                            className={`p-4 border rounded-lg cursor-pointer transition-all ${selectedTrainingId === template.id
+                                                ? 'border-brand-primary bg-brand-primary/10'
+                                                : 'border-gray-300 dark:border-gray-700 hover:border-brand-primary/50'
+                                                }`}
+                                        >
+                                            <div className="font-medium text-gray-900 dark:text-gray-100">
+                                                {template.title}
+                                            </div>
+                                            <div className="text-xs text-muted-foreground mt-1">
+                                                {template.type} • {template.description || 'No description'}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
+                        </div>
+                        <DialogFooter className="mt-4 border-t pt-4">
+                            <Button variant="outline" onClick={() => setCurrentStep('source')}>Back</Button>
+                            <Button variant="outline" onClick={onClose}>Cancel</Button>
+                            <Button
+                                onClick={handleAssign}
+                                disabled={loading || !selectedTrainingId}
+                                className="bg-brand-primary text-white hover:bg-brand-deep"
+                            >
+                                {loading ? 'Assigning...' : 'Assign Workout'}
+                            </Button>
+                        </DialogFooter>
+                    </>
+                );
+            }
+
+            if (workoutSource === 'new') {
+                return (
+                    <>
+                        <div className="space-y-4 flex-1 flex flex-col">
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                    Build Your Workout
+                                </label>
+                                <p className="text-xs text-muted-foreground">
+                                    Scheduled for: {scheduledDate ? (() => {
+                                        const [year, month, day] = scheduledDate.split('-');
+                                        return format(new Date(Number(year), Number(month) - 1, Number(day)), 'MMM d, yyyy');
+                                    })() : 'Not set'}
+                                </p>
+                            </div>
+                            <div className="border border-gray-200 dark:border-gray-700 rounded-lg flex-1 min-h-[400px] overflow-hidden">
+                                <WorkoutBuilder initialBlocks={editedBlocks} onChange={setEditedBlocks} />
+                            </div>
+                            {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
+                        </div>
+                        <DialogFooter className="mt-4 border-t pt-4">
+                            <Button variant="outline" onClick={() => setCurrentStep('source')}>Back</Button>
+                            <Button variant="outline" onClick={onClose}>Cancel</Button>
+                            <Button
+                                onClick={handleAssign}
+                                disabled={loading}
+                                className="bg-brand-primary text-white hover:bg-brand-deep"
+                            >
+                                {loading ? 'Creating & Assigning...' : 'Create & Assign'}
+                            </Button>
+                        </DialogFooter>
+                    </>
+                );
+            }
+        }
+
+        return null;
+    };
+
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-[900px] h-[90vh] flex flex-col">
                 <DialogHeader>
-                    <DialogTitle>Assign Workout</DialogTitle>
+                    <DialogTitle>
+                        {athleteId ? 'Assign Workout to Athlete' : 'Assign Workout'}
+                    </DialogTitle>
                 </DialogHeader>
 
                 <div className="flex-1 overflow-y-auto pr-2 space-y-4">
-                    {/* Assignment Type Tabs */}
-                    <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700 pb-2">
-                        <button
-                            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${assignmentType === 'athlete' ? 'bg-brand-primary text-white' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'}`}
-                            onClick={() => setAssignmentType('athlete')}
-                        >
-                            Assign to Athletes
-                        </button>
-                        <button
-                            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${assignmentType === 'group' ? 'bg-brand-primary text-white' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'}`}
-                            onClick={() => setAssignmentType('group')}
-                        >
-                            Assign to Groups
-                        </button>
-                    </div>
-
-                    {/* Date Selection */}
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-900 dark:text-gray-100">Scheduled Date</label>
-                        <input
-                            type="date"
-                            className="flex h-10 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-primary outline-none dark:text-white"
-                            value={scheduledDate}
-                            onChange={(e) => setScheduledDate(e.target.value)}
-                        />
-                    </div>
-
-                    {/* Athlete/Group Selection */}
-                    {assignmentType === 'athlete' ? (
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-900 dark:text-gray-100">Select Athletes</label>
-                            <div className="border border-gray-300 dark:border-gray-700 rounded-md p-3 max-h-32 overflow-y-auto space-y-2">
-                                {athletes.map((athlete) => (
-                                    <label key={athlete.id} className="flex items-center gap-2 cursor-pointer">
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedAthleteIds.includes(athlete.id)}
-                                            onChange={(e) => {
-                                                if (e.target.checked) {
-                                                    setSelectedAthleteIds([...selectedAthleteIds, athlete.id]);
-                                                } else {
-                                                    setSelectedAthleteIds(selectedAthleteIds.filter(id => id !== athlete.id));
-                                                }
-                                            }}
-                                            className="h-4 w-4 rounded border-gray-300"
-                                        />
-                                        <span className="text-sm text-gray-900 dark:text-gray-100">{athlete.name || athlete.email}</span>
-                                    </label>
-                                ))}
-                                {athletes.length === 0 && (
-                                    <p className="text-sm text-muted-foreground">No athletes found</p>
-                                )}
-                            </div>
-                        </div>
+                    {/* If athleteId is provided, use step-based flow */}
+                    {athleteId ? (
+                        renderAthleteAssignmentFlow()
                     ) : (
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-900 dark:text-gray-100">Select Groups</label>
-                            <div className="border border-gray-300 dark:border-gray-700 rounded-md p-3 max-h-32 overflow-y-auto space-y-2">
-                                {groups.map((group) => (
-                                    <label key={group.id} className="flex items-center gap-2 cursor-pointer">
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedGroupIds.includes(group.id)}
-                                            onChange={(e) => {
-                                                if (e.target.checked) {
-                                                    setSelectedGroupIds([...selectedGroupIds, group.id]);
-                                                } else {
-                                                    setSelectedGroupIds(selectedGroupIds.filter(id => id !== group.id));
-                                                }
-                                            }}
-                                            className="h-4 w-4 rounded border-gray-300"
-                                        />
-                                        <span className="text-sm text-gray-900 dark:text-gray-100">{group.name}</span>
-                                    </label>
-                                ))}
-                                {groups.length === 0 && (
-                                    <p className="text-sm text-muted-foreground">No groups found</p>
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Workout Preview/Edit */}
-                    {selectedTraining && (
-                        <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                                <label className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                    Workout: {selectedTraining.title}
-                                </label>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setIsEditingWorkout(!isEditingWorkout)}
+                        /* Otherwise, use the original flow for groups/multiple athletes */
+                        <>
+                            {/* Assignment Type Tabs */}
+                            <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700 pb-2">
+                                <button
+                                    className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${assignmentType === 'athlete' ? 'bg-brand-primary text-white' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'}`}
+                                    onClick={() => setAssignmentType('athlete')}
                                 >
-                                    {isEditingWorkout ? 'View Original' : 'Edit Workout'}
-                                </Button>
+                                    Assign to Athletes
+                                </button>
+                                <button
+                                    className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${assignmentType === 'group' ? 'bg-brand-primary text-white' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'}`}
+                                    onClick={() => setAssignmentType('group')}
+                                >
+                                    Assign to Groups
+                                </button>
                             </div>
-                            {isEditingWorkout && (
-                                <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-2 h-[300px]">
-                                    <WorkoutBuilder initialBlocks={editedBlocks} onChange={setEditedBlocks} />
+
+                            {/* Date Selection */}
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-900 dark:text-gray-100">Scheduled Date</label>
+                                <input
+                                    type="date"
+                                    className="flex h-10 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-primary outline-none dark:text-white"
+                                    value={scheduledDate}
+                                    onChange={(e) => setScheduledDate(e.target.value)}
+                                />
+                            </div>
+
+                            {/* Athlete/Group Selection */}
+                            {assignmentType === 'athlete' ? (
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-900 dark:text-gray-100">Select Athletes</label>
+                                    <div className="border border-gray-300 dark:border-gray-700 rounded-md p-3 max-h-32 overflow-y-auto space-y-2">
+                                        {athletes.map((athlete) => (
+                                            <label key={athlete.id} className="flex items-center gap-2 cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedAthleteIds.includes(athlete.id)}
+                                                    onChange={(e) => {
+                                                        if (e.target.checked) {
+                                                            setSelectedAthleteIds([...selectedAthleteIds, athlete.id]);
+                                                        } else {
+                                                            setSelectedAthleteIds(selectedAthleteIds.filter(id => id !== athlete.id));
+                                                        }
+                                                    }}
+                                                    className="h-4 w-4 rounded border-gray-300"
+                                                />
+                                                <span className="text-sm text-gray-900 dark:text-gray-100">{athlete.name || athlete.email}</span>
+                                            </label>
+                                        ))}
+                                        {athletes.length === 0 && (
+                                            <p className="text-sm text-muted-foreground">No athletes found</p>
+                                        )}
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-900 dark:text-gray-100">Select Groups</label>
+                                    <div className="border border-gray-300 dark:border-gray-700 rounded-md p-3 max-h-32 overflow-y-auto space-y-2">
+                                        {groups.map((group) => (
+                                            <label key={group.id} className="flex items-center gap-2 cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedGroupIds.includes(group.id)}
+                                                    onChange={(e) => {
+                                                        if (e.target.checked) {
+                                                            setSelectedGroupIds([...selectedGroupIds, group.id]);
+                                                        } else {
+                                                            setSelectedGroupIds(selectedGroupIds.filter(id => id !== group.id));
+                                                        }
+                                                    }}
+                                                    className="h-4 w-4 rounded border-gray-300"
+                                                />
+                                                <span className="text-sm text-gray-900 dark:text-gray-100">{group.name}</span>
+                                            </label>
+                                        ))}
+                                        {groups.length === 0 && (
+                                            <p className="text-sm text-muted-foreground">No groups found</p>
+                                        )}
+                                    </div>
                                 </div>
                             )}
-                        </div>
+
+                            {/* Workout Preview/Edit */}
+                            {selectedTraining && (
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                            Workout: {selectedTraining.title}
+                                        </label>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setIsEditingWorkout(!isEditingWorkout)}
+                                        >
+                                            {isEditingWorkout ? 'View Original' : 'Edit Workout'}
+                                        </Button>
+                                    </div>
+                                    {isEditingWorkout && (
+                                        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-2 h-[300px]">
+                                            <WorkoutBuilder initialBlocks={editedBlocks} onChange={setEditedBlocks} />
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
+
+                            <DialogFooter className="mt-4 border-t pt-4">
+                                <Button variant="outline" onClick={onClose}>Cancel</Button>
+                                <Button onClick={handleAssign} disabled={loading} className="bg-brand-primary text-white hover:bg-brand-deep">
+                                    {loading ? 'Assigning...' : 'Assign Workout'}
+                                </Button>
+                            </DialogFooter>
+                        </>
                     )}
-
-                    {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
                 </div>
-
-                <DialogFooter className="mt-4 border-t pt-4">
-                    <Button variant="outline" onClick={onClose}>Cancel</Button>
-                    <Button onClick={handleAssign} disabled={loading} className="bg-brand-primary text-white hover:bg-brand-deep">
-                        {loading ? 'Assigning...' : 'Assign Workout'}
-                    </Button>
-                </DialogFooter>
             </DialogContent>
         </Dialog>
     );

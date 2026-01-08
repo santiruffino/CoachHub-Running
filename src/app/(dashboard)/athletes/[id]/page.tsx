@@ -239,21 +239,21 @@ export default function AthleteDetailPage() {
             {/* Header - Athlete Info */}
             <Card>
                 <CardContent className="p-6 flex flex-col md:flex-row justify-between items-start gap-4">
-                    <div>
-                        <h1 className="text-2xl font-bold">{athlete.name || athlete.email}</h1>
-                        <p className="text-muted-foreground">{athlete.email}</p>
-                        <div className="mt-2 flex gap-2">
-                            {athlete.athleteGroups?.map((ag, i) => (
-                                <Badge key={i} variant="secondary">
-                                    {ag.group.name}
-                                </Badge>
-                            ))}
+                    <div className="flex flex-col gap-4">
+                        <div>
+                            <h1 className="text-2xl font-bold">{athlete.name || athlete.email}</h1>
+                            <p className="text-muted-foreground">{athlete.email}</p>
+                            <div className="mt-2 flex gap-2">
+                                {athlete.athleteGroups?.map((ag, i) => (
+                                    <Badge key={i} variant="secondary">
+                                        {ag.group.name}
+                                    </Badge>
+                                ))}
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="flex gap-2">
-                        <Button onClick={() => setIsAssignModalOpen(true)}>
-                            <Plus className="w-4 h-4 mr-2" />
+                        <Button onClick={() => setIsAssignModalOpen(true)} className="w-fit">
+                            <Plus className="h-4 mr-2" />
                             Assign Workout
                         </Button>
                     </div>

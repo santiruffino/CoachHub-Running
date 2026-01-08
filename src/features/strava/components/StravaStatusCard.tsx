@@ -5,6 +5,7 @@ import { StravaConnectionStatus } from '../services/strava.service';
 import { ConnectStravaButton } from './ConnectStravaButton';
 import { format } from 'date-fns';
 import { RefreshCw, Unplug } from 'lucide-react';
+import Image from 'next/image';
 
 interface StravaStatusCardProps {
     status: StravaConnectionStatus | null;
@@ -35,13 +36,35 @@ export function StravaStatusCard({ status, loading, onConnect, onDisconnect, onR
         <Card>
             <CardHeader>
                 <div className="flex justify-between items-center">
-                    <CardTitle className="flex items-center gap-2">
-                        Strava
-                        {status.isConnected ?
-                            <Badge className="bg-green-500 hover:bg-green-600">Connected</Badge> :
-                            <Badge variant="secondary">Disconnected</Badge>
-                        }
-                    </CardTitle>
+                    <div className="flex flex-col gap-2">
+                        <CardTitle className="flex items-center gap-2">
+                            Strava
+                            {status.isConnected ?
+                                <Badge className="bg-green-500 hover:bg-green-600">Connected</Badge> :
+                                <Badge variant="secondary">Disconnected</Badge>
+                            }
+                        </CardTitle>
+                        {status.isConnected && (
+                            <>
+                                {/* Orange logo for light mode */}
+                                <Image
+                                    src="/powered-by-strava-logos/pwrdBy_strava_orange/api_logo_pwrdBy_strava_horiz_orange.svg"
+                                    alt="Powered by Strava"
+                                    width={120}
+                                    height={30}
+                                    className="h-6 w-auto dark:hidden"
+                                />
+                                {/* White logo for dark mode */}
+                                <Image
+                                    src="/powered-by-strava-logos/pwrdBy_strava_white/api_logo_pwrdBy_strava_horiz_white.svg"
+                                    alt="Powered by Strava"
+                                    width={120}
+                                    height={30}
+                                    className="h-6 w-auto hidden dark:block"
+                                />
+                            </>
+                        )}
+                    </div>
                     {status.isConnected && (
                         <Button variant="ghost" size="icon" onClick={onRefresh} disabled={loading}>
                             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />

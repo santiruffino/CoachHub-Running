@@ -61,61 +61,23 @@ export default function AthletesPage() {
       try {
         setLoading(true);
 
-        // Fetch athletes
+        // Fetch athletes with stats - single API call
         const athletesRes = await api.get('/v2/users/athletes');
         const athletesList = athletesRes.data;
 
-        // Fetch groups to map athlete memberships
-        const groupsRes = await api.get('/v2/groups');
-        const groups = groupsRes.data;
-
-        // Fetch detailed info for each athlete
-        const athletesDataPromises = athletesList.map(async (athlete: any) => {
-          try {
-            const detailsRes = await api.get(`/v2/users/${athlete.id}/details`);
-            const details = detailsRes.data;
-
-            // Calculate stats
-            const assignments = details.assignments || [];
-            const totalTrainings = assignments.length;
-            const completedTrainings = assignments.filter((a: any) => a.completed).length;
-            const now = new Date();
-            const plannedTrainings = assignments.filter((a: any) => {
-              return !a.completed && new Date(a.scheduledDate) >= now;
-            }).length;
-
-            const completionPercentage = totalTrainings > 0
-              ? Math.round((completedTrainings / totalTrainings) * 100)
-              : 0;
-
-            // Find athlete's groups
-            const athleteGroups = groups
-              .filter((g: any) =>
-                g.members?.some((m: any) => m.athleteId === athlete.id)
-              )
-              .map((g: any) => ({ id: g.id, name: g.name }));
-
-            return {
-              id: athlete.id,
-              name: athlete.name || athlete.email.split('@')[0],
-              email: athlete.email,
-              sport: 'Running',
-              level: determineLevel(completedTrainings),
-              groups: athleteGroups,
-              totalTrainings,
-              plannedTrainings,
-              completedTrainings,
-              completionPercentage,
-            };
-          } catch (error) {
-            console.error(`Failed to fetch details for athlete ${athlete.id}`, error);
-            return null;
-          }
-        });
-
-        const athletesData = (await Promise.all(athletesDataPromises))
-          .filter((a): a is AthleteData => a !== null);
-
+        // Map API response to AthleteData interface
+        const athletesData: AthleteData[] = athletesList.map((athlete: any) => ({
+          id: athlete.id,
+          name: athlete.name || athlete.email.split('@')[0],
+          email: athlete.email,
+          sport: 'Running',
+          level: determineLevel(athlete.stats.completedAssignments),
+          groups: athlete.groups || [],
+          totalTrainings: athlete.stats.totalAssignments,
+          plannedTrainings: athlete.stats.plannedAssignments,
+          completedTrainings: athlete.stats.completedAssignments,
+          completionPercentage: athlete.stats.completionPercentage,
+        }));
 
         setAthletes(athletesData);
       } catch (error) {

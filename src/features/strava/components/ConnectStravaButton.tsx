@@ -1,6 +1,4 @@
-import { Button } from '@/components/ui/button'; // Assuming shadcn UI or similar exists
-// If not, I'll use a standard HTML button or check components folder first. I will check components folder in next step if needed, but for now assuming project setup is standard. 
-// Step 310 showed "components" folder.
+import Image from 'next/image';
 import { Loader2 } from 'lucide-react';
 
 interface ConnectStravaButtonProps {
@@ -10,13 +8,26 @@ interface ConnectStravaButtonProps {
 
 export function ConnectStravaButton({ onConnect, loading }: ConnectStravaButtonProps) {
     return (
-        <Button
+        <button
             onClick={onConnect}
             disabled={loading}
-            className="bg-[#FC4C02] hover:bg-[#E34402] text-white font-bold"
+            className="relative inline-flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-opacity hover:opacity-90"
+            aria-label="Connect with Strava"
         >
-            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Connect with Strava
-        </Button>
+            {loading ? (
+                <div className="flex items-center gap-2 px-4 py-2 bg-[#FC4C02] text-white rounded font-bold">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <span>Connecting...</span>
+                </div>
+            ) : (
+                <Image
+                    src="/strava-logos/btn_strava_connect_with_orange.svg"
+                    alt="Connect with Strava"
+                    width={193}
+                    height={48}
+                    className="h-12 w-auto"
+                />
+            )}
+        </button>
     );
 }
