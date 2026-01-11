@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
+import { access } from 'fs';
 
 /**
  * Manual Strava Activity Sync

@@ -9,8 +9,10 @@ import { PerformanceTrendChart } from '@/components/dashboard/PerformanceTrendCh
 import { Users, Calendar, CheckCircle2, TrendingUp, Clock, AlertTriangle, FolderOpen } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import api from '@/lib/axios';
-import { DashboardStats, RecentSession } from '../types';
+import { DashboardStats, RecentSession, RPEMismatch, MissingWorkout, LowCompliance } from '../types';
 import { startOfWeek, endOfWeek, isWithinInterval, format, eachDayOfInterval, startOfDay, isToday, subWeeks, addWeeks } from 'date-fns';
+import { AlertCard } from '@/components/dashboard/AlertCard';
+import { AlertCardItem } from '@/components/dashboard/AlertCardItem';
 
 const TRAINING_TYPE_LABELS: Record<string, string> = {
   RUNNING: 'Running',
@@ -25,6 +27,9 @@ export default function CoachDashboard({ user }: { user: any }) {
   const [recentSessions, setRecentSessions] = useState<RecentSession[]>([]);
   const [weeklyData, setWeeklyData] = useState<{ day: string; value: number }[]>([]);
   const [performanceData, setPerformanceData] = useState<{ week: string; value: number }[]>([]);
+  const [rpeMismatches, setRpeMismatches] = useState<RPEMismatch[]>([]);
+  const [missingWorkouts, setMissingWorkouts] = useState<MissingWorkout[]>([]);
+  const [lowCompliance, setLowCompliance] = useState<LowCompliance[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -219,6 +224,139 @@ export default function CoachDashboard({ user }: { user: any }) {
         }));
 
         setRecentSessions(recentSessions);
+
+        // Calculate RPE Mismatches - Yesterday and Today only
+        const rpeMismatchList: RPEMismatch[] = [];
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        const rpeTodayStr = format(today, 'yyyy-MM-dd');
+        const rpeYesterdayStr = format(yesterday, 'yyyy-MM-dd');
+
+        for (const athlete of athletesWithStats) {
+          try {
+            // Get athlete's activities
+            const activitiesRes = await api.get(`/v2/users/${athlete.id}/activities`);
+            const activities = activitiesRes.data || [];
+
+            // Filter activities to only yesterday and today
+            const recentActivities = activities.filter((activity: any) => {
+              const activityDateStr = activity.start_date.split('T')[0];
+              return activityDateStr === rpeTodayStr || activityDateStr === rpeYesterdayStr;
+            });
+
+            // Get athlete's assignments to match with activities
+            const detailsRes = await api.get(`/v2/users/${athlete.id}/details`);
+            const assignments = detailsRes.data?.assignments || [];
+
+            for (const activity of recentActivities) {
+              if (activity.external_id) {
+                try {
+                  // Get activity feedback (actual RPE)
+                  const feedbackRes = await api.get(`/v2/activities/${activity.external_id}/feedback`);
+                  const feedback = feedbackRes.data;
+
+                  if (feedback?.rpe) {
+                    // Find matching assignment by date
+                    const activityDateStr = activity.start_date.split('T')[0];
+                    const matchingAssignment = assignments.find((a: any) => {
+                      const assignmentDateStr = a.scheduled_date.split('T')[0];
+                      return assignmentDateStr === activityDateStr && a.completed;
+                    });
+
+                    if (matchingAssignment?.expected_rpe) {
+                      const difference = Math.abs(feedback.rpe - matchingAssignment.expected_rpe);
+                      if (difference >= 3) {
+                        rpeMismatchList.push({
+                          athleteId: athlete.id,
+                          athleteName: athlete.name || athlete.email,
+                          workoutType: activity.type || 'Entrenamiento',
+                          expectedRPE: matchingAssignment.expected_rpe,
+                          actualRPE: feedback.rpe,
+                          difference,
+                        });
+                      }
+                    }
+                  }
+                } catch (err) {
+                  // Skip if feedback not found
+                }
+              }
+            }
+          } catch (err) {
+            // Skip if activities or details not found
+          }
+        }
+        setRpeMismatches(rpeMismatchList.slice(0, 5)); // Show top 5
+
+        // Calculate Missing Workouts
+        const missingWorkoutsList: MissingWorkout[] = [];
+
+        // Add groups without next week workouts
+        groups.forEach((group: any) => {
+          const hasAnyMemberWithWorkout = group.members?.some((member: any) =>
+            member.athlete && athletesWithNextWeekWorkouts.has(member.athlete.id)
+          );
+          if (!hasAnyMemberWithWorkout) {
+            missingWorkoutsList.push({
+              id: group.id,
+              name: group.name,
+              type: 'group',
+              memberCount: group.members?.length || 0,
+            });
+          }
+        });
+
+        // Add athletes without next week workouts (only those not in a group without workouts)
+        athletesWithStats.forEach((athlete: any) => {
+          if (!athletesWithNextWeekWorkouts.has(athlete.id)) {
+            // Check if athlete is in a group that's already in the list
+            const inGroupWithoutWorkouts = groups.some((group: any) => {
+              const hasAnyMemberWithWorkout = group.members?.some((member: any) =>
+                member.athlete && athletesWithNextWeekWorkouts.has(member.athlete.id)
+              );
+              return !hasAnyMemberWithWorkout && group.members?.some((member: any) => member.athlete?.id === athlete.id);
+            });
+
+            if (!inGroupWithoutWorkouts) {
+              missingWorkoutsList.push({
+                id: athlete.id,
+                name: athlete.name || athlete.email,
+                type: 'athlete',
+              });
+            }
+          }
+        });
+        setMissingWorkouts(missingWorkoutsList.slice(0, 5)); // Show top 5
+
+        // Calculate Low Compliance (athletes with < 50% completion this week)
+        const lowComplianceList: LowCompliance[] = [];
+        athleteDetailsRes.forEach((res, idx) => {
+          if (res.data?.assignments) {
+            const thisWeekAssignments = res.data.assignments.filter((a: any) => {
+              const assignmentDateStr = a.scheduled_date.split('T')[0];
+              return assignmentDateStr >= weekStartStr && assignmentDateStr <= weekEndStr;
+            });
+
+            const completed = thisWeekAssignments.filter((a: any) => a.completed).length;
+            const total = thisWeekAssignments.length;
+
+            if (total > 0) {
+              const rate = Math.round((completed / total) * 100);
+              if (rate < 50) {
+                lowComplianceList.push({
+                  athleteId: athletesWithStats[idx].id,
+                  athleteName: athletesWithStats[idx].name || athletesWithStats[idx].email,
+                  completed,
+                  total,
+                  completionRate: rate,
+                });
+              }
+            }
+          }
+        });
+        setLowCompliance(lowComplianceList.slice(0, 5)); // Show top 5
       } catch (error) {
         console.error('Failed to fetch dashboard data', error);
       } finally {
@@ -308,6 +446,88 @@ export default function CoachDashboard({ user }: { user: any }) {
             change={completedTodayChange}
             icon={CheckCircle2}
           />
+        </div>
+      )}
+
+      {/* Alert Cards */}
+      {(rpeMismatches.length > 0 || missingWorkouts.length > 0 || lowCompliance.length > 0) && (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          {/* RPE Mismatch */}
+          {rpeMismatches.length > 0 && (
+            <AlertCard
+              title="Desajuste RPE"
+              description="Diferencia de 3+ puntos entre RPE planificado y ejecutado"
+              icon={AlertTriangle}
+              variant="warning"
+            >
+              <div className="divide-y divide-orange-200 dark:divide-orange-800">
+                {rpeMismatches.map((mismatch, idx) => (
+                  <AlertCardItem
+                    key={idx}
+                    name={mismatch.athleteName}
+                    subtitle={mismatch.workoutType}
+                    badge={{
+                      label: `+${mismatch.difference}`,
+                      variant: 'warning',
+                    }}
+                    details={`Planificado: ${mismatch.expectedRPE} → Ejecutado: ${mismatch.actualRPE}`}
+                  />
+                ))}
+              </div>
+            </AlertCard>
+          )}
+
+          {/* Missing Workouts */}
+          {missingWorkouts.length > 0 && (
+            <AlertCard
+              title="Sin Entrenamientos"
+              description="Atletas/grupos sin planificación próxima semana"
+              icon={Calendar}
+              variant="error"
+            >
+              <div className="divide-y divide-red-200 dark:divide-red-800">
+                {missingWorkouts.map((item) => (
+                  <AlertCardItem
+                    key={item.id}
+                    name={item.name}
+                    subtitle={item.type === 'group' ? `${item.memberCount} miembros` : undefined}
+                    badge={{
+                      label: item.type === 'group' ? 'Grupo' : 'Atleta',
+                      variant: 'error',
+                    }}
+                  />
+                ))}
+              </div>
+            </AlertCard>
+          )}
+
+          {/* Low Compliance */}
+          {lowCompliance.length > 0 && (
+            <AlertCard
+              title="Bajo Cumplimiento"
+              description="Atletas no siguiendo el plan establecido"
+              icon={TrendingUp}
+              variant="info"
+            >
+              <div className="divide-y divide-yellow-200 dark:divide-yellow-800">
+                {lowCompliance.map((item) => (
+                  <AlertCardItem
+                    key={item.athleteId}
+                    name={item.athleteName}
+                    badge={{
+                      label: `${item.completionRate}%`,
+                      variant: 'info',
+                    }}
+                    progress={{
+                      value: item.completionRate,
+                      label: `${item.completed} de ${item.total} entrenamientos completados`,
+                      color: item.completionRate < 25 ? 'bg-red-500' : item.completionRate < 50 ? 'bg-yellow-500' : 'bg-orange-500',
+                    }}
+                  />
+                ))}
+              </div>
+            </AlertCard>
+          )}
         </div>
       )}
 

@@ -11,7 +11,8 @@ import { requireRole } from '@/lib/supabase/api-helpers';
  *   trainingId: string,
  *   scheduledDate: string (ISO date),
  *   athleteIds?: string[],
- *   groupIds?: string[]
+ *   groupIds?: string[],
+ *   expectedRpe?: number (1-10)
  * }
  * 
  * Access: COACH only
@@ -26,7 +27,7 @@ export async function POST(request: NextRequest) {
 
         const { supabase, user } = authResult;
         const body = await request.json();
-        const { trainingId, scheduledDate, athleteIds, groupIds } = body;
+        const { trainingId, scheduledDate, athleteIds, groupIds, expectedRpe } = body;
 
         // Validation
         if (!trainingId) {
@@ -110,6 +111,7 @@ export async function POST(request: NextRequest) {
                 training_id: trainingId,
                 scheduled_date: scheduledDate,
                 completed: false,
+                expected_rpe: expectedRpe || null, // Add expected RPE if provided
             });
         }
 

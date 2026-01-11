@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { format, startOfWeek, endOfWeek, isWithinInterval, eachDayOfInterval, startOfDay, isToday, subWeeks } from 'date-fns';
 import { User } from '@/features/auth/types';
 import { Training } from '@/features/trainings/types';
@@ -20,6 +21,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 interface Activity {
     id: string;
+    external_id: string;
     title: string;
     distance: number;
     duration: number;
@@ -388,7 +390,11 @@ export default function AthleteDetailPage() {
                                 {activities
                                     .filter(a => a.start_date && !isNaN(new Date(a.start_date).getTime()) && format(new Date(a.start_date), 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd'))
                                     .map(activity => (
-                                        <div key={activity.id} className="flex items-center p-3 bg-muted/50 rounded-lg border border-border">
+                                        <Link
+                                            key={activity.id}
+                                            href={`/activities/${activity.external_id}`}
+                                            className="flex items-center p-3 bg-muted/50 rounded-lg border border-border hover:bg-muted transition-colors cursor-pointer"
+                                        >
                                             <div className="p-2 bg-muted rounded-full mr-3">
                                                 <ActivityIcon className="w-4 h-4 text-muted-foreground" />
                                             </div>
@@ -401,7 +407,7 @@ export default function AthleteDetailPage() {
                                             <Badge variant="outline" className="ml-auto capitalize">
                                                 Completed
                                             </Badge>
-                                        </div>
+                                        </Link>
                                     ))
                                 }
                             </div>

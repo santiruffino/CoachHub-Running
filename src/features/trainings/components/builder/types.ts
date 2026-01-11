@@ -1,10 +1,11 @@
 export type BlockType = 'warmup' | 'interval' | 'recovery' | 'cooldown';
 export type DurationType = 'distance' | 'time';
-export type TargetType = 'heart_rate' | 'pace' | 'hr_zone';
+export type TargetType = 'heart_rate' | 'pace' | 'hr_zone' | 'power';
 
 export interface WorkoutBlock {
     id: string;
     type: BlockType;
+    stepName?: string; // User-friendly name for the step
     duration: {
         type: DurationType;
         value: number; // meters or seconds
@@ -15,6 +16,7 @@ export interface WorkoutBlock {
         min: number | string;
         max: number | string;
     };
+    intensity?: number; // RPE value (0-100) - optional
     notes?: string;
     group?: {
         id: string;

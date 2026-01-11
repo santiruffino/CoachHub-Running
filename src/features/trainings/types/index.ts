@@ -31,4 +31,5 @@ export interface AssignTrainingDto {
     athleteIds?: string[];
     groupIds?: string[];
     scheduledDate: string; // ISO Date
+    expectedRpe?: number; // Expected Rate of Perceived Exertion (1-10)
 }

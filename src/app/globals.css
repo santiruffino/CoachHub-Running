@@ -25,6 +25,14 @@
     --secondary-foreground: 222.2 47.4% 11.2%;
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
+    
+    /* Alert colors */
+    --warning: 30 100% 50%;
+    --warning-foreground: 30 100% 95%;
+    --info: 45 100% 51%;
+    --info-foreground: 45 100% 10%;
+    --error: 350 100% 88%;
+    --error-foreground: 350 80% 30%;
   }
 
   .dark {
@@ -50,6 +58,14 @@
     --secondary-foreground: 210 40% 98%;
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
+    
+    /* Alert colors */
+    --warning: 30 100% 50%;
+    --warning-foreground: 30 100% 95%;
+    --info: 45 100% 51%;
+    --info-foreground: 45 100% 10%;
+    --error: 350 100% 88%;
+    --error-foreground: 350 80% 30%;
   }
 }
 
@@ -73,6 +89,12 @@
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-info: hsl(var(--info));
+  --color-info-foreground: hsl(var(--info-foreground));
+  --color-error: hsl(var(--error));
+  --color-error-foreground: hsl(var(--error-foreground));
   --radius: var(--radius);
 
   /* Brand Palette from docs/ui_ux_prompt.md - used sparingly for branding details */

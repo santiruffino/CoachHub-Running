@@ -28,29 +28,33 @@ export function RepeatWizard({ onAdd, onClose }: RepeatWizardProps) {
     const [recoveryTargetMax, setRecoveryTargetMax] = useState<string>('5:30');
 
     const handleGenerate = () => {
-        const newBlocks: WorkoutBlock[] = [];
         const groupId = uuidv4(); // Unique ID for this set of repetitions
 
-        for (let i = 0; i < reps; i++) {
-            // Add Active Block
-            newBlocks.push({
+        // Create only the pattern blocks (interval + recovery), not duplicates
+        const newBlocks: WorkoutBlock[] = [
+            // Active Block
+            {
                 id: uuidv4(),
                 type: 'interval',
+                stepName: 'Work',
                 duration: { type: activeDurationType, value: activeDurationValue },
                 target: { type: activeTargetType, min: activeTargetMin, max: activeTargetMax },
-                notes: `Rep ${i + 1}/${reps}`,
+                intensity: 85,
+                notes: '',
                 group: { id: groupId, reps }
-            });
-
-            // Add Recovery Block
-            newBlocks.push({
+            },
+            // Recovery Block
+            {
                 id: uuidv4(),
                 type: 'recovery',
+                stepName: 'Rest',
                 duration: { type: recoveryDurationType, value: recoveryDurationValue },
                 target: { type: recoveryTargetType, min: recoveryTargetMin, max: recoveryTargetMax },
+                intensity: 30,
+                notes: '',
                 group: { id: groupId, reps }
-            });
-        }
+            }
+        ];
 
         onAdd(newBlocks);
         onClose();
@@ -207,7 +211,7 @@ export function RepeatWizard({ onAdd, onClose }: RepeatWizardProps) {
                         onClick={handleGenerate}
                         className="px-6 py-2 bg-brand-primary text-brand-deep font-bold rounded-lg shadow-sm hover:bg-yellow-400 hover:shadow transition-all text-sm"
                     >
-                        Generate {reps * 2} Blocks
+                        Add {reps}× Repeats
                     </button>
                 </div>
             </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { WorkoutBlock, BlockType } from './types';
-import { Clock, Activity, Radio, ArrowUp, ArrowDown, Repeat, ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
+import { GripVertical, Trash2, Plus, ChevronDown, ChevronRight, X } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useState } from 'react';
 
@@ -13,135 +13,132 @@ interface BlockListProps {
     onRemove: (id: string) => void;
     onRemoveGroup: (groupId: string) => void;
     onRemoveMultiple: (ids: string[]) => void;
+    onAddStepToGroup?: (groupId: string) => void;
+    onUpdateGroupReps?: (groupId: string, newReps: number) => void;
 }
 
-export function BlockList({ blocks, selectedId, onSelect, onReorder, onRemove, onRemoveGroup, onRemoveMultiple }: BlockListProps) {
-    // Key is now "groupId-startIndex" to uniqueness per visual fragment
+export function BlockList({
+    blocks,
+    selectedId,
+    onSelect,
+    onReorder,
+    onRemove,
+    onRemoveGroup,
+    onRemoveMultiple,
+    onAddStepToGroup,
+    onUpdateGroupReps
+}: BlockListProps) {
     const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
 
     const toggleGroup = (groupKey: string) => {
         setExpandedGroups(prev => ({ ...prev, [groupKey]: !prev[groupKey] }));
     };
 
-    const getBlockColor = (type: BlockType) => {
-        switch (type) {
-            case 'warmup': return 'bg-gray-100 dark:bg-gray-700/50 border-l-4 border-l-gray-400 dark:border-l-gray-500';
-            case 'interval': return 'bg-brand-primary/10 dark:bg-brand-primary/20 border-l-4 border-l-brand-primary';
-            case 'recovery': return 'bg-green-50 dark:bg-green-900/20 border-l-4 border-l-green-500';
-            case 'cooldown': return 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-l-blue-400 dark:border-l-blue-500';
-            default: return 'bg-white dark:bg-gray-800';
-        }
+    const getDisplayName = (block: WorkoutBlock) => {
+        return block.stepName || block.type.charAt(0).toUpperCase() + block.type.slice(1);
     };
 
-    const getIcon = (type: BlockType) => {
-        switch (type) {
-            case 'warmup': return <Clock className="w-4 h-4 text-gray-500" />;
-            case 'interval': return <Activity className="w-4 h-4 text-brand-primary" />;
-            case 'recovery': return <Activity className="w-4 h-4 text-green-500" />;
-            case 'cooldown': return <Radio className="w-4 h-4 text-blue-500" />;
-        }
+    const getTypeTag = (type: BlockType) => {
+        const tags = {
+            warmup: 'warmup',
+            interval: 'work',
+            recovery: 'rest',
+            cooldown: 'cooldown'
+        };
+        return tags[type];
     };
 
-    // Smart Reordering Logic
-    const handleReorder = (index: number, direction: 'up' | 'down') => {
-        const currentBlock = blocks[index];
+    const getTagColor = (type: BlockType) => {
+        const colors = {
+            warmup: 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300',
+            interval: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
+            recovery: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300',
+            cooldown: 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+        };
+        return colors[type];
+    };
 
-        if (direction === 'up') {
-            if (index === 0) return;
-            const targetIndex = index - 1;
-            const targetBlock = blocks[targetIndex];
-
-            // If we are moving UP into a group we don't belong to
-            if (targetBlock.group && targetBlock.group.id !== currentBlock.group?.id) {
-                // Scan backwards to find start of this group
-                let startOfGroup = targetIndex;
-                while (startOfGroup > 0 && blocks[startOfGroup - 1].group?.id === targetBlock.group.id) {
-                    startOfGroup--;
-                }
-                onReorder(index, startOfGroup);
-            } else {
-                onReorder(index, targetIndex);
-            }
-
+    const formatDuration = (block: WorkoutBlock) => {
+        if (block.duration.type === 'distance') {
+            const value = block.duration.unit === 'km' ? block.duration.value / 1000 : block.duration.value;
+            const unit = block.duration.unit || 'm';
+            return `${value} ${unit}`;
         } else {
-            if (index === blocks.length - 1) return;
-            const targetIndex = index + 1;
-            const targetBlock = blocks[targetIndex];
-
-            // If we are moving DOWN into a group we don't belong to
-            if (targetBlock.group && targetBlock.group.id !== currentBlock.group?.id) {
-                // Scan forwards to find end of this group
-                let endOfGroup = targetIndex;
-                while (endOfGroup < blocks.length - 1 && blocks[endOfGroup + 1].group?.id === targetBlock.group.id) {
-                    endOfGroup++;
-                }
-                onReorder(index, endOfGroup);
-            } else {
-                onReorder(index, targetIndex);
-            }
+            const val = Number(block.duration.value);
+            const m = Math.floor(val / 60);
+            const s = val % 60;
+            return `${m} min`;
         }
     };
 
-    // Helper to render a single block item
+    const formatTarget = (block: WorkoutBlock) => {
+        if (block.target.type === 'pace' && (block.target.min || block.target.max)) {
+            return `${block.target.min}-${block.target.max} min/km`;
+        }
+        if (block.target.type === 'heart_rate' && (block.target.min || block.target.max)) {
+            return `${block.target.min}-${block.target.max} bpm`;
+        }
+        if (block.target.type === 'power' && (block.target.min || block.target.max)) {
+            return `${block.target.min}-${block.target.max}W`;
+        }
+        return null;
+    };
+
+    // Render a single block item
     const renderBlockItem = (block: WorkoutBlock, index: number) => (
         <div
             key={block.id}
             onClick={() => onSelect(block.id)}
             className={clsx(
-                "p-3 rounded-md cursor-pointer transition-all mb-2 flex items-center justify-between group",
-                selectedId === block.id ? "ring-2 ring-brand-primary shadow-md" : "hover:bg-gray-50 dark:hover:bg-gray-700/50 shadow-sm",
-                getBlockColor(block.type)
+                "p-3 rounded-md cursor-pointer transition-all mb-2 border-l-4 group",
+                selectedId === block.id
+                    ? "bg-blue-50 dark:bg-blue-900/20 border-l-blue-500 shadow-md"
+                    : "bg-white dark:bg-gray-800 border-l-gray-300 dark:border-l-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700/50 shadow-sm"
             )}
         >
-            <div className="flex items-center space-x-3">
-                <div className="p-1.5 bg-white dark:bg-gray-800 rounded-full shadow-sm">
-                    {getIcon(block.type)}
-                </div>
-                <div>
-                    <p className="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">{block.type}</p>
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {block.duration.type === 'distance'
-                            ? `${block.duration.unit === 'km' ? block.duration.value / 1000 : block.duration.value} ${block.duration.unit || 'm'}`
-                            : (() => {
-                                const val = Number(block.duration.value);
-                                const h = Math.floor(val / 3600);
-                                const m = Math.floor((val % 3600) / 60);
-                                const s = val % 60;
-                                if (h > 0) return `${h}:${m < 10 ? '0' + m : m}:${s < 10 ? '0' + s : s}`;
-                                return `${m}:${s < 10 ? '0' + s : s}`;
-                            })()
-                        }
-                    </p>
-                    {block.target.type === 'heart_rate' && (block.target.min || block.target.max) && (
-                        <p className="text-xs text-brand-primary dark:text-brand-primary-light font-medium">
-                            {block.target.min ? `${block.target.min}%` : '0%'}
-                            {block.target.max ? ` - ${block.target.max}%` : ''}
-                            {' '}({Math.round(Number(block.target.min || 0) * 1.8)}-{Math.round(Number(block.target.max || 0) * 1.8)} bpm)
-                        </p>
-                    )}
-                    {block.target.type === 'hr_zone' && block.target.min && (
-                        <p className="text-xs text-brand-primary dark:text-brand-primary-light font-medium">
-                            Zone {block.target.min}
-                        </p>
-                    )}
-                    {block.target.type === 'pace' && (block.target.min || block.target.max) && (
-                        <p className="text-xs text-brand-primary dark:text-brand-primary-light font-medium">
-                            {block.target.min} - {block.target.max} min/km
-                        </p>
-                    )}
-                    {block.notes && <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[120px]">{block.notes}</p>}
-                </div>
-            </div>
+            <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3 flex-1 min-w-0">
+                    <GripVertical className="w-4 h-4 text-gray-400 flex-shrink-0" />
 
-            <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <div className="flex flex-col mr-2">
-                    {index > 0 && <button onClick={(e) => { e.stopPropagation(); handleReorder(index, 'up'); }}><ArrowUp className="w-4 h-4 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" /></button>}
-                    {index < blocks.length - 1 && <button onClick={(e) => { e.stopPropagation(); handleReorder(index, 'down'); }}><ArrowDown className="w-4 h-4 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" /></button>}
+                    <div className="flex-1 min-w-0">
+                        {/* Step name with tag */}
+                        <div className="flex items-center gap-2 mb-1">
+                            <span className="font-semibold text-sm text-gray-900 dark:text-gray-100">
+                                {getDisplayName(block)}
+                            </span>
+                            <span className={clsx(
+                                "text-xs px-2 py-0.5 rounded-full font-medium",
+                                getTagColor(block.type)
+                            )}>
+                                {getTypeTag(block.type)}
+                            </span>
+                        </div>
+
+                        {/* Info line: duration, target, intensity */}
+                        <div className="flex items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
+                            <span className="font-medium">{formatDuration(block)}</span>
+                            {formatTarget(block) && (
+                                <>
+                                    <span>•</span>
+                                    <span>{formatTarget(block)}</span>
+                                </>
+                            )}
+                            {block.intensity !== undefined && (
+                                <>
+                                    <span>•</span>
+                                    <span className="text-brand-primary dark:text-brand-primary-light font-medium">
+                                        {block.intensity}%
+                                    </span>
+                                </>
+                            )}
+                        </div>
+                    </div>
                 </div>
+
                 <button
                     onClick={(e) => { e.stopPropagation(); onRemove(block.id); }}
-                    className="p-1.5 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
-                    title="Remove Block"
+                    className="p-1.5 text-gray-400 hover:text-red-500 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                    title="Remove Step"
                 >
                     <Trash2 className="w-4 h-4" />
                 </button>
@@ -154,7 +151,7 @@ export function BlockList({ blocks, selectedId, onSelect, onReorder, onRemove, o
         if (blocks.length === 0) {
             return (
                 <div className="text-center py-10 text-gray-400 dark:text-gray-500 text-sm">
-                    No blocks added yet.
+                    No steps added yet.
                 </div>
             );
         }
@@ -168,7 +165,7 @@ export function BlockList({ blocks, selectedId, onSelect, onReorder, onRemove, o
             if (block.group) {
                 const groupId = block.group.id;
                 const groupBlocks: { block: WorkoutBlock; index: number }[] = [];
-                const startIndex = i; // Tracking start index for unique composite key
+                const startIndex = i;
 
                 // Collect all consecutive blocks in this group
                 let j = i;
@@ -177,46 +174,80 @@ export function BlockList({ blocks, selectedId, onSelect, onReorder, onRemove, o
                     j++;
                 }
 
-                // Unique Key for this visual fragment
                 const groupKey = `${groupId}-${startIndex}`;
-                const isExpanded = expandedGroups[groupKey];
+                const isExpanded = expandedGroups[groupKey] ?? true; // Default expanded
 
                 renderedItems.push(
-                    <div key={groupKey} className="mb-2 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden transition-all group">
+                    <div key={groupKey} className="mb-3 border border-purple-200 dark:border-purple-800 rounded-lg overflow-hidden bg-purple-50/50 dark:bg-purple-900/10">
                         <div
                             onClick={() => toggleGroup(groupKey)}
-                            className="bg-gray-50 dark:bg-gray-800 p-3 flex items-center justify-between cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                            className="bg-purple-100 dark:bg-purple-900/30 p-3 flex items-center justify-between cursor-pointer hover:bg-purple-200 dark:hover:bg-purple-900/40 transition group"
                         >
-                            <div className="flex items-center space-x-2">
-                                <Repeat className="w-4 h-4 text-gray-700 dark:text-gray-300" />
-                                <span className="text-sm font-bold text-gray-800 dark:text-gray-200">
-                                    Set: {block.group.reps} Reps
+                            <div className="flex items-center space-x-3">
+                                {isExpanded ? (
+                                    <ChevronDown className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                                ) : (
+                                    <ChevronRight className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                                )}
+                                <span className="text-sm font-bold text-purple-900 dark:text-purple-200">
+                                    Repeats
                                 </span>
-                                <span className="text-xs text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-900 px-2 py-0.5 rounded-full shadow-sm border border-gray-100 dark:border-gray-700">
-                                    {groupBlocks.length} blocks
+                                {onUpdateGroupReps ? (
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        max="50"
+                                        value={block.group.reps}
+                                        onClick={(e) => e.stopPropagation()}
+                                        onChange={(e) => {
+                                            e.stopPropagation();
+                                            const newReps = Number(e.target.value);
+                                            if (newReps > 0) {
+                                                onUpdateGroupReps(groupId, newReps);
+                                            }
+                                        }}
+                                        className="w-12 bg-purple-200 dark:bg-purple-800 text-purple-900 dark:text-purple-100 px-2 py-0.5 rounded-full text-xs font-semibold text-center border-none focus:ring-2 focus:ring-purple-500"
+                                    />
+                                ) : (
+                                    <span className="bg-purple-200 dark:bg-purple-800 text-purple-900 dark:text-purple-100 px-2 py-0.5 rounded-full text-xs font-semibold">
+                                        {block.group.reps}×
+                                    </span>
+                                )}
+                                <span className="text-xs text-purple-700 dark:text-purple-300">
+                                    times
                                 </span>
                             </div>
 
-                            <div className="flex items-center space-x-2">
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        // Only remove blocks in this fragment
-                                        const idsToRemove = groupBlocks.map(b => b.block.id);
-                                        onRemoveMultiple(idsToRemove);
-                                    }}
-                                    className="p-1.5 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                                    title="Remove Set Fragment"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
-                                {isExpanded ? <ChevronDown className="w-4 h-4 text-gray-600 dark:text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-600 dark:text-gray-400" />}
-                            </div>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    const idsToRemove = groupBlocks.map(b => b.block.id);
+                                    onRemoveMultiple(idsToRemove);
+                                }}
+                                className="p-1.5 text-purple-500 hover:text-red-500 dark:text-purple-400 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                                title="Remove Repeat Block"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
                         </div>
 
                         {isExpanded && (
-                            <div className="bg-white dark:bg-gray-900 p-2 pl-4 border-t border-gray-200 dark:border-gray-700">
+                            <div className="p-3 pt-2 bg-white dark:bg-gray-900">
                                 {groupBlocks.map(({ block, index }) => renderBlockItem(block, index))}
+
+                                {/* Add Step to Block button */}
+                                {onAddStepToGroup && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onAddStepToGroup(groupId);
+                                        }}
+                                        className="w-full mt-2 py-2 border-2 border-dashed border-purple-300 dark:border-purple-700 rounded-md text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition flex items-center justify-center gap-2 text-sm font-medium"
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                        Add Step to Block
+                                    </button>
+                                )}
                             </div>
                         )}
                     </div>

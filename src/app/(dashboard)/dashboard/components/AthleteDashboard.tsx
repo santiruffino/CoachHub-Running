@@ -25,6 +25,7 @@ export default function AthleteDashboard({ user }: { user: any }) {
                 title: act.title,
                 subtitle: act.type,
                 date: new Date(act.start_date),
+                external_id: act.external_id, // Add external_id for activity detail links
                 stats: {
                     distance: act.distance,
                     duration: act.duration,

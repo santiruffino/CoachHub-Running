@@ -7,6 +7,9 @@ import { Training, TrainingType } from '@/features/trainings/types';
 import { format } from 'date-fns';
 import { WorkoutBuilder } from './builder/WorkoutBuilder';
 import { WorkoutBlock } from './builder/types';
+import { Slider } from '@/components/ui/slider';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 
 interface AssignTrainingModalProps {
     athleteId?: string;
@@ -52,6 +55,7 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [expectedRpe, setExpectedRpe] = useState<number>(5); // Default to moderate effort
 
     useEffect(() => {
         if (isOpen) {
@@ -152,6 +156,7 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                     trainingId: newTraining.data.id,
                     athleteIds: [athleteId],
                     scheduledDate: new Date(scheduledDate).toISOString(),
+                    expectedRpe: expectedRpe,
                 });
 
                 onClose();
@@ -200,6 +205,7 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                 athleteIds: selectedAthleteIds.length > 0 ? selectedAthleteIds : undefined,
                 groupIds: selectedGroupIds.length > 0 ? selectedGroupIds : undefined,
                 scheduledDate: new Date(scheduledDate).toISOString(),
+                expectedRpe: expectedRpe,
             });
 
             onClose();
@@ -230,6 +236,29 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                                 onChange={(e) => setScheduledDate(e.target.value)}
                             />
                         </div>
+
+                        {/* Expected RPE Selector */}
+                        <div className="space-y-2">
+                            <Label htmlFor="expected-rpe">Expected Effort Level (RPE)</Label>
+                            <div className="flex items-center gap-4">
+                                <Slider
+                                    id="expected-rpe"
+                                    min={1}
+                                    max={10}
+                                    step={1}
+                                    value={[expectedRpe]}
+                                    onValueChange={(value) => setExpectedRpe(value[0])}
+                                    className="flex-1"
+                                />
+                                <Badge variant="secondary" className="text-lg min-w-[45px] justify-center">
+                                    {expectedRpe}
+                                </Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                {expectedRpe <= 2 ? 'Very Easy' : expectedRpe <= 4 ? 'Easy' : expectedRpe <= 6 ? 'Moderate' : expectedRpe <= 8 ? 'Hard' : 'Maximum Effort'}
+                            </p>
+                        </div>
+
                         {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
                     </div>
                     <DialogFooter className="mt-6 border-t pt-4">
@@ -425,6 +454,28 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                                     value={scheduledDate}
                                     onChange={(e) => setScheduledDate(e.target.value)}
                                 />
+                            </div>
+
+                            {/* Expected RPE Selector */}
+                            <div className="space-y-2">
+                                <Label htmlFor="expected-rpe-group">Expected Effort Level (RPE)</Label>
+                                <div className="flex items-center gap-4">
+                                    <Slider
+                                        id="expected-rpe-group"
+                                        min={1}
+                                        max={10}
+                                        step={1}
+                                        value={[expectedRpe]}
+                                        onValueChange={(value) => setExpectedRpe(value[0])}
+                                        className="flex-1"
+                                    />
+                                    <Badge variant="secondary" className="text-lg min-w-[45px] justify-center">
+                                        {expectedRpe}
+                                    </Badge>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    {expectedRpe <= 2 ? 'Very Easy' : expectedRpe <= 4 ? 'Easy' : expectedRpe <= 6 ? 'Moderate' : expectedRpe <= 8 ? 'Hard' : 'Maximum Effort'}
+                                </p>
                             </div>
 
                             {/* Athlete/Group Selection */}
