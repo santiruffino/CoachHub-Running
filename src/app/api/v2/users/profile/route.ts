@@ -52,6 +52,7 @@ export async function GET() {
         ...athleteProfileData,
         restHR: athleteProfileData.rest_hr,
         maxHR: athleteProfileData.max_hr,
+        hrZones: athleteProfileData.hr_zones,
       } : null,
     };
 
@@ -120,7 +121,7 @@ export async function PATCH(request: Request) {
       } else {
         // Only allow athlete-specific fields
         // Accept both camelCase (from frontend) and snake_case, convert to snake_case for DB
-        const { height, weight, injuries, rest_hr, max_hr, vam, uan, dob, restHR, maxHR } = profileData;
+        const { height, weight, injuries, rest_hr, max_hr, vam, uan, dob, restHR, maxHR, hrZones } = profileData;
         if (height !== undefined) filteredData.height = height;
         if (weight !== undefined) filteredData.weight = weight;
         if (injuries !== undefined) filteredData.injuries = injuries;
@@ -132,6 +133,7 @@ export async function PATCH(request: Request) {
         if (vam !== undefined) filteredData.vam = vam;
         if (uan !== undefined) filteredData.uan = uan;
         if (dob !== undefined) filteredData.dob = dob;
+        if (hrZones !== undefined) filteredData.hr_zones = hrZones;
       }
 
       const { error: roleProfileError } = await supabase

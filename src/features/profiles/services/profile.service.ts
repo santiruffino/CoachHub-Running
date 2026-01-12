@@ -12,5 +12,9 @@ export const profileService = {
 
     changePassword: async (data: any) => {
         return api.patch('/v2/users/change-password', data);
+    },
+
+    syncZonesFromStrava: async () => {
+        return api.post('/v2/athlete/zones');
     }
 };

@@ -220,6 +220,7 @@ export function BlockEditor({ block, onUpdate, onRemove }: BlockEditorProps) {
                     >
                         <option value="pace">Pace (min/km)</option>
                         <option value="heart_rate">Heart Rate (bpm)</option>
+                        <option value="hr_zone">Heart Rate Zone</option>
                         <option value="power">Power (watts)</option>
                     </select>
 
@@ -275,6 +276,32 @@ export function BlockEditor({ block, onUpdate, onRemove }: BlockEditorProps) {
                                 onChange={(e) => onUpdate(block.id, { target: { ...block.target, min: e.target.value, max: e.target.value } })}
                                 className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-gray-900 dark:text-white dark:bg-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                             />
+                        </div>
+                    )}
+
+                    {/* HR Zone Selection */}
+                    {block.target.type === 'hr_zone' && (
+                        <div className="space-y-2">
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                                Select a training zone. The actual heart rate range will be calculated based on the athlete's zones when assigned.
+                            </p>
+                            <select
+                                value={block.target.min || '2'}
+                                onChange={(e) => onUpdate(block.id, {
+                                    target: {
+                                        ...block.target,
+                                        min: e.target.value,
+                                        max: e.target.value
+                                    }
+                                })}
+                                className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-gray-900 dark:text-white dark:bg-gray-700"
+                            >
+                                <option value="1">Zone 1 - Recovery</option>
+                                <option value="2">Zone 2 - Endurance</option>
+                                <option value="3">Zone 3 - Tempo</option>
+                                <option value="4">Zone 4 - Threshold</option>
+                                <option value="5">Zone 5 - VO2 Max</option>
+                            </select>
                         </div>
                     )}
                 </div>

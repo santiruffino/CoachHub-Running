@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
         }
 
         // Build authorization URL
-        const scope = 'read,activity:read_all,activity:write';
+        const scope = 'read,activity:read_all,activity:write,profile:read_all';
         const state = user!.id; // Use user ID as state for verification
 
         const authUrl = `https://www.strava.com/oauth/authorize?` +

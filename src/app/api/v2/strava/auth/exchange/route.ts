@@ -85,11 +85,28 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Sync heart rate zones from Strava (non-blocking)
+        // Import dynamically to avoid circular dependencies
+        const { syncHeartRateZonesFromStrava } = await import('@/lib/strava/sync-zones');
+        const zonesResult = await syncHeartRateZonesFromStrava(
+            tokenData.access_token,
+            supabase,
+            user!.id
+        );
+
+        if (zonesResult.success) {
+            console.log('Heart rate zones synced successfully');
+        } else {
+            console.warn('Failed to sync heart rate zones:', zonesResult.error);
+            // Don't fail the connection if zones sync fails
+        }
+
         return NextResponse.json({
             success: true,
             athleteName: tokenData.athlete.username || tokenData.athlete.firstname,
             message: 'Successfully connected to Strava',
             shouldSync: true, // Indicate that frontend can trigger initial sync
+            zonesSynced: zonesResult.success,
         });
     } catch (error: any) {
         console.error('Exchange Strava code error:', error);

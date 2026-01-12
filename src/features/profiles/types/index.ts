@@ -17,7 +17,18 @@ export interface ProfileDetails extends User {
         vam?: string;
         uan?: string;
         dob?: string;
+        hrZones?: HeartRateZones;
     }
+}
+
+export interface HeartRateZone {
+    min: number;
+    max: number;
+}
+
+export interface HeartRateZones {
+    zones: HeartRateZone[];
+    custom_zones?: boolean;
 }
 
 export interface UpdateProfileDto {
@@ -32,6 +43,7 @@ export interface UpdateProfileDto {
     vam?: string;
     uan?: string;
     dob?: string; // Date of birth
+    hrZones?: HeartRateZones;
 }
 
 export interface ChangePasswordDto {

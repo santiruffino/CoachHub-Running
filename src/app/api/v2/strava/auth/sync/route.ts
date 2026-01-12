@@ -147,12 +147,28 @@ export async function POST(request: NextRequest) {
                 completed_at: new Date().toISOString(),
             });
 
+        // Sync heart rate zones from Strava (non-blocking)
+        const { syncHeartRateZonesFromStrava } = await import('@/lib/strava/sync-zones');
+        const zonesResult = await syncHeartRateZonesFromStrava(
+            accessToken,
+            supabase,
+            user!.id
+        );
+
+        if (zonesResult.success) {
+            console.log('Heart rate zones synced successfully during activity sync');
+        } else {
+            console.warn('Failed to sync heart rate zones during activity sync:', zonesResult.error);
+            // Don't fail the sync if zones sync fails
+        }
+
         return NextResponse.json({
             success: true,
             message: `Sync complete: ${syncedCount} new, ${skippedCount} existing`,
             synced: syncedCount,
             skipped: skippedCount,
             total: stravaActivities.length,
+            zonesSynced: zonesResult.success,
         });
     } catch (error: any) {
         console.error('Strava sync error:', error);

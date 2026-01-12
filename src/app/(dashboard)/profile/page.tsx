@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { ProfileDetails } from '@/features/profiles/types';
 import { profileService } from '@/features/profiles/services/profile.service';
 import { ProfileForm } from '@/features/profiles/components/ProfileForm';
+import { HeartRateZones } from '@/features/profiles/components/HeartRateZones';
 import { StravaStatusCard } from '@/features/strava/components/StravaStatusCard';
 import { useStravaAuth } from '@/features/strava/hooks/useStravaAuth';
 import { useAuth } from '@/features/auth/hooks/useAuth';
@@ -70,6 +71,11 @@ export default function ProfilePage() {
                         onRefresh={refreshStrava}
                     />
                 </div>
+            )}
+
+            {/* Heart Rate Zones */}
+            {user?.role === 'ATHLETE' && profile?.athleteProfile && (
+                <HeartRateZones zones={profile.athleteProfile.hrZones} />
             )}
 
             {profile && <ProfileForm profile={profile} />}

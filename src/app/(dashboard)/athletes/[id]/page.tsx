@@ -18,6 +18,7 @@ import { StatCard } from '@/components/dashboard/StatCard';
 import { WeeklyWorkoutsChart } from '@/components/dashboard/WeeklyWorkoutsChart';
 import { PerformanceTrendChart } from '@/components/dashboard/PerformanceTrendChart';
 import { Skeleton } from '@/components/ui/skeleton';
+import { HeartRateZones } from '@/features/profiles/components/HeartRateZones';
 
 interface Activity {
     id: string;
@@ -46,6 +47,10 @@ interface AthleteDetails extends User {
         vam?: string;
         uan?: string;
         dob?: string;
+        hrZones?: {
+            zones: Array<{ min: number; max: number }>;
+            custom_zones?: boolean;
+        };
     };
     athleteGroups?: Array<{
         group: {
@@ -329,6 +334,11 @@ export default function AthleteDetailPage() {
                 <WeeklyWorkoutsChart data={weeklyData} />
                 <PerformanceTrendChart data={performanceData} />
             </div>
+
+            {/* Heart Rate Zones */}
+            {athlete.athleteProfile?.hrZones && (
+                <HeartRateZones zones={athlete.athleteProfile.hrZones} />
+            )}
 
             {/* Calendar and Recent Activity */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
