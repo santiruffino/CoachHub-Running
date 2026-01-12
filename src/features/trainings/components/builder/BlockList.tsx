@@ -88,6 +88,17 @@ export function BlockList({
             };
             return zoneLabels[block.target.min] || `Zone ${block.target.min}`;
         }
+        if (block.target.type === 'vam_zone' && block.target.min) {
+            const vamZoneLabels: Record<string, string> = {
+                '1': 'Z1 Regenerativo',
+                '2': 'Z2 Endurance',
+                '3': 'Z3 Tempo',
+                '4': 'Z4 Umbral Anaeróbico',
+                '5': 'Z5 VO2 Max',
+                '6': 'Z6 Potencia Anaeróbica'
+            };
+            return vamZoneLabels[block.target.min] || `Z${block.target.min}`;
+        }
         if (block.target.type === 'power' && (block.target.min || block.target.max)) {
             return `${block.target.min}-${block.target.max}W`;
         }

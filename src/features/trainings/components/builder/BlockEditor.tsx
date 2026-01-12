@@ -221,6 +221,7 @@ export function BlockEditor({ block, onUpdate, onRemove }: BlockEditorProps) {
                         <option value="pace">Pace (min/km)</option>
                         <option value="heart_rate">Heart Rate (bpm)</option>
                         <option value="hr_zone">Heart Rate Zone</option>
+                        <option value="vam_zone">VAM Zone</option>
                         <option value="power">Power (watts)</option>
                     </select>
 
@@ -301,6 +302,33 @@ export function BlockEditor({ block, onUpdate, onRemove }: BlockEditorProps) {
                                 <option value="3">Zone 3 - Tempo</option>
                                 <option value="4">Zone 4 - Threshold</option>
                                 <option value="5">Zone 5 - VO2 Max</option>
+                            </select>
+                        </div>
+                    )}
+
+                    {/* VAM Zone Selection */}
+                    {block.target.type === 'vam_zone' && (
+                        <div className="space-y-2">
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                                Select a VAM-based training zone. Pace will be calculated from the athlete's VAM test when assigned.
+                            </p>
+                            <select
+                                value={block.target.min || '2'}
+                                onChange={(e) => onUpdate(block.id, {
+                                    target: {
+                                        ...block.target,
+                                        min: e.target.value,
+                                        max: e.target.value
+                                    }
+                                })}
+                                className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-gray-900 dark:text-white dark:bg-gray-700"
+                            >
+                                <option value="1">Z1 - Regenerativo (0-70% VAM)</option>
+                                <option value="2">Z2 - Endurance (70-85% VAM)</option>
+                                <option value="3">Z3 - Tempo (85-92% VAM)</option>
+                                <option value="4">Z4 - Umbral Anaeróbico (92-97% VAM)</option>
+                                <option value="5">Z5 - VO2 Max (97-103% VAM)</option>
+                                <option value="6">Z6 - Potencia Anaeróbica (103-120% VAM)</option>
                             </select>
                         </div>
                     )}

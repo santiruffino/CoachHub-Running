@@ -1,6 +1,6 @@
 export type BlockType = 'warmup' | 'interval' | 'recovery' | 'cooldown';
 export type DurationType = 'distance' | 'time';
-export type TargetType = 'heart_rate' | 'pace' | 'hr_zone' | 'power';
+export type TargetType = 'heart_rate' | 'pace' | 'hr_zone' | 'vam_zone' | 'power';
 
 export interface WorkoutBlock {
     id: string;
