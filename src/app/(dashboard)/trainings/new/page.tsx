@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { WorkoutBuilder } from '@/features/trainings/components/builder/WorkoutBuilder';
 import { WorkoutBlock } from '@/features/trainings/components/builder/types';
@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 
-export default function CreateTrainingPage() {
+function CreateTrainingForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const athleteId = searchParams.get('athleteId');
@@ -167,5 +167,13 @@ export default function CreateTrainingPage() {
                 </div>
             </form>
         </div>
+    );
+}
+
+export default function CreateTrainingPage() {
+    return (
+        <Suspense fallback={<div className="p-8">Loading...</div>}>
+            <CreateTrainingForm />
+        </Suspense>
     );
 }
