@@ -390,7 +390,7 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                                 </p>
                             </div>
                             <div className="border border-gray-200 dark:border-gray-700 rounded-lg flex-1 min-h-[400px] overflow-hidden">
-                                <WorkoutBuilder initialBlocks={editedBlocks} onChange={setEditedBlocks} />
+                                <WorkoutBuilder initialBlocks={editedBlocks} onChange={setEditedBlocks} athleteId={athleteId} />
                             </div>
                             {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
                         </div>
@@ -550,7 +550,7 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                                     </div>
                                     {isEditingWorkout && (
                                         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-2 h-[300px]">
-                                            <WorkoutBuilder initialBlocks={editedBlocks} onChange={setEditedBlocks} />
+                                            <WorkoutBuilder initialBlocks={editedBlocks} onChange={setEditedBlocks} athleteId={athleteId} />
                                         </div>
                                     )}
                                 </div>

@@ -372,27 +372,37 @@ export default function AthleteDetailPage() {
                                 {assignments
                                     .filter(a => a.scheduled_date.split('T')[0] === format(selectedDate, 'yyyy-MM-dd'))
                                     .map(assignment => (
-                                        <div key={assignment.id} className="flex items-center p-3 bg-muted/50 rounded-lg border border-border">
-                                            <div className="p-2 bg-muted rounded-full mr-3">
-                                                <CalendarIcon className="w-4 h-4 text-muted-foreground" />
+                                        <Link
+                                            key={assignment.id}
+                                            href={`/workouts/${assignment.id}`}
+                                            className="block"
+                                        >
+                                            <div className="flex items-center p-3 bg-muted/50 rounded-lg border border-border hover:bg-muted transition-colors cursor-pointer">
+                                                <div className="p-2 bg-muted rounded-full mr-3">
+                                                    <CalendarIcon className="w-4 h-4 text-muted-foreground" />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="font-medium">{assignment.training.title}</p>
+                                                    <p className="text-xs text-muted-foreground">{assignment.training.type}</p>
+                                                </div>
+                                                <Badge variant="outline" className="ml-auto capitalize">
+                                                    {assignment.completed ? 'Completed' : 'Planned'}
+                                                </Badge>
+                                                {!assignment.completed && (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            handleDeleteAssignment(assignment.id);
+                                                        }}
+                                                        className="ml-2 p-1 text-muted-foreground hover:text-destructive transition-colors"
+                                                        title="Delete Assignment"
+                                                    >
+                                                        <Trash className="w-4 h-4" />
+                                                    </button>
+                                                )}
                                             </div>
-                                            <div className="flex-1">
-                                                <p className="font-medium">{assignment.training.title}</p>
-                                                <p className="text-xs text-muted-foreground">{assignment.training.type}</p>
-                                            </div>
-                                            <Badge variant="outline" className="ml-auto capitalize">
-                                                {assignment.completed ? 'Completed' : 'Planned'}
-                                            </Badge>
-                                            {!assignment.completed && (
-                                                <button
-                                                    onClick={() => handleDeleteAssignment(assignment.id)}
-                                                    className="ml-2 p-1 text-muted-foreground hover:text-destructive transition-colors"
-                                                    title="Delete Assignment"
-                                                >
-                                                    <Trash className="w-4 h-4" />
-                                                </button>
-                                            )}
-                                        </div>
+                                        </Link>
                                     ))
                                 }
 

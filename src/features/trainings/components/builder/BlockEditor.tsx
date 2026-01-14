@@ -8,6 +8,7 @@ interface BlockEditorProps {
     block: WorkoutBlock;
     onUpdate: (id: string, updates: Partial<WorkoutBlock>) => void;
     onRemove: (id: string) => void;
+    athleteId?: string; // Optional athlete ID for VAM-based pace calculation
 }
 
 // Helper for HH:MM:SS
@@ -32,10 +33,33 @@ const hmsToSeconds = (str: string) => {
     return 0;
 };
 
-export function BlockEditor({ block, onUpdate, onRemove }: BlockEditorProps) {
+export function BlockEditor({ block, onUpdate, onRemove, athleteId }: BlockEditorProps) {
     const [timeString, setTimeString] = useState(
         block.duration.type === 'time' ? secondsToHms(block.duration.value) : ''
     );
+    const [athleteVAM, setAthleteVAM] = useState<string | null>(null);
+
+    // Fetch athlete VAM when athleteId is provided
+    useEffect(() => {
+        const fetchAthleteVAM = async () => {
+            if (!athleteId) {
+                setAthleteVAM(null);
+                return;
+            }
+            try {
+                const response = await fetch(`/api/v2/users/${athleteId}/details`);
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log(data.athleteProfile)
+                    setAthleteVAM(data.athleteProfile?.vam || null);
+                }
+            } catch (error) {
+                console.error('Failed to fetch athlete VAM:', error);
+                setAthleteVAM(null);
+            }
+        };
+        fetchAthleteVAM();
+    }, [athleteId]);
 
     useEffect(() => {
         if (block.duration.type === 'time') {
@@ -96,6 +120,37 @@ export function BlockEditor({ block, onUpdate, onRemove }: BlockEditorProps) {
         if (intensity >= 60) return 'from-yellow-500 to-orange-500';
         if (intensity >= 40) return 'from-green-400 to-yellow-500';
         return 'from-green-400 to-green-500';
+    };
+
+    // Calculate pace from VAM and zone
+    const calculatePaceFromVAM = (vam: string, zoneNumber: string): string => {
+        const vamZones = [
+            { min: 0.0, max: 0.70 },
+            { min: 0.70, max: 0.85 },
+            { min: 0.85, max: 0.92 },
+            { min: 0.92, max: 0.97 },
+            { min: 0.97, max: 1.03 },
+            { min: 1.03, max: 1.20 }
+        ];
+
+        const zone = vamZones[parseInt(zoneNumber) - 1];
+        if (!zone) return '-';
+
+        const vamValue = parseFloat(vam);
+        if (isNaN(vamValue) || vamValue <= 0) return '-';
+
+        // Calculate pace range (min/km)
+        // Pace = 1000 / (VAM * zone_percentage)
+        const minPaceSeconds = 1000 / (vamValue * zone.max);
+        const maxPaceSeconds = 1000 / (vamValue * zone.min);
+
+        const formatPace = (seconds: number) => {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.round(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        };
+
+        return `${formatPace(minPaceSeconds)} - ${formatPace(maxPaceSeconds)}`;
     };
 
     return (
@@ -309,9 +364,6 @@ export function BlockEditor({ block, onUpdate, onRemove }: BlockEditorProps) {
                     {/* VAM Zone Selection */}
                     {block.target.type === 'vam_zone' && (
                         <div className="space-y-2">
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                                Select a VAM-based training zone. Pace will be calculated from the athlete's VAM test when assigned.
-                            </p>
                             <select
                                 value={block.target.min || '2'}
                                 onChange={(e) => onUpdate(block.id, {
@@ -330,6 +382,28 @@ export function BlockEditor({ block, onUpdate, onRemove }: BlockEditorProps) {
                                 <option value="5">Z5 - VO2 Max (97-103% VAM)</option>
                                 <option value="6">Z6 - Potencia Anaeróbica (103-120% VAM)</option>
                             </select>
+
+                            {/* Display calculated pace or message */}
+                            {athleteId ? (
+                                athleteVAM ? (
+                                    <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 rounded border border-green-200 dark:border-green-800">
+                                        <p className="text-sm text-green-800 dark:text-green-300 font-medium">
+                                            📊 Expected Pace: {calculatePaceFromVAM(athleteVAM, String(block.target.min || '2'))} min/km
+                                        </p>
+                                        <p className="text-xs text-green-700 dark:text-green-400 mt-1">
+                                            Based on VAM: {athleteVAM} m/min
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-amber-600 dark:text-amber-400">
+                                        ⚠️ Athlete has no VAM test registered
+                                    </p>
+                                )
+                            ) : (
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                    💡 Assign to an athlete to see calculated pace
+                                </p>
+                            )}
                         </div>
                     )}
                 </div>

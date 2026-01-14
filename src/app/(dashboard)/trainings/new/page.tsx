@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { WorkoutBuilder } from '@/features/trainings/components/builder/WorkoutBuilder';
 import { WorkoutBlock } from '@/features/trainings/components/builder/types';
 import { trainingsService } from '@/features/trainings/services/trainings.service';
@@ -18,6 +18,9 @@ import { Badge } from '@/components/ui/badge';
 
 export default function CreateTrainingPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const athleteId = searchParams.get('athleteId');
+
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [type, setType] = useState<TrainingType>(TrainingType.RUNNING);
@@ -133,6 +136,7 @@ export default function CreateTrainingPage() {
                     <WorkoutBuilder
                         initialBlocks={blocks}
                         onChange={setBlocks}
+                        athleteId={athleteId || undefined}
                     />
                 </div>
 

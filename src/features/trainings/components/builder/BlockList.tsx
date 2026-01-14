@@ -3,7 +3,7 @@
 import { WorkoutBlock, BlockType } from './types';
 import { GripVertical, Trash2, Plus, ChevronDown, ChevronRight, X } from 'lucide-react';
 import { clsx } from 'clsx';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface BlockListProps {
     blocks: WorkoutBlock[];
@@ -15,6 +15,7 @@ interface BlockListProps {
     onRemoveMultiple: (ids: string[]) => void;
     onAddStepToGroup?: (groupId: string) => void;
     onUpdateGroupReps?: (groupId: string, newReps: number) => void;
+    athleteVAM?: string | null; // VAM for pace calculation
 }
 
 export function BlockList({
@@ -26,9 +27,15 @@ export function BlockList({
     onRemoveGroup,
     onRemoveMultiple,
     onAddStepToGroup,
-    onUpdateGroupReps
+    onUpdateGroupReps,
+    athleteVAM
 }: BlockListProps) {
     const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
+
+    // Debug: Log when athleteVAM changes
+    useEffect(() => {
+        console.log('BlockList: athleteVAM updated:', athleteVAM);
+    }, [athleteVAM]);
 
     const toggleGroup = (groupKey: string) => {
         setExpandedGroups(prev => ({ ...prev, [groupKey]: !prev[groupKey] }));
@@ -97,12 +104,58 @@ export function BlockList({
                 '5': 'Z5 VO2 Max',
                 '6': 'Z6 Potencia Anaeróbica'
             };
-            return vamZoneLabels[block.target.min] || `Z${block.target.min}`;
+            const zoneName = vamZoneLabels[block.target.min] || `Z${block.target.min}`;
+
+            console.log('BlockList formatTarget: VAM zone detected', {
+                zoneNumber: block.target.min,
+                athleteVAM,
+                hasVAM: !!athleteVAM
+            });
+
+            // If athleteVAM is available, calculate and show pace
+            if (athleteVAM) {
+                const pace = calculatePaceFromVAM(athleteVAM, String(block.target.min));
+                console.log('BlockList formatTarget: Calculated pace:', pace);
+                return `${zoneName} (${pace})`;
+            }
+
+            console.log('BlockList formatTarget: No VAM, returning zone name only');
+            return zoneName;
         }
         if (block.target.type === 'power' && (block.target.min || block.target.max)) {
             return `${block.target.min}-${block.target.max}W`;
         }
         return null;
+    };
+
+    // Calculate pace from VAM and zone
+    const calculatePaceFromVAM = (vam: string, zoneNumber: string): string => {
+        const vamZones = [
+            { min: 0.0, max: 0.70 },
+            { min: 0.70, max: 0.85 },
+            { min: 0.85, max: 0.92 },
+            { min: 0.92, max: 0.97 },
+            { min: 0.97, max: 1.03 },
+            { min: 1.03, max: 1.20 }
+        ];
+
+        const zone = vamZones[parseInt(zoneNumber) - 1];
+        if (!zone) return '-';
+
+        const vamValue = parseFloat(vam);
+        if (isNaN(vamValue) || vamValue <= 0) return '-';
+
+        // Calculate pace range (min/km)
+        const minPaceSeconds = 1000 / (vamValue * zone.max);
+        const maxPaceSeconds = 1000 / (vamValue * zone.min);
+
+        const formatPace = (seconds: number) => {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.round(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        };
+
+        return `${formatPace(minPaceSeconds)} - ${formatPace(maxPaceSeconds)} min/km`;
     };
 
     // Render a single block item

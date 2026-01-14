@@ -131,9 +131,19 @@ export function SessionList({ sessions }: SessionListProps) {
                     </Card>
                 );
 
+                // Link to activity details for completed sessions
                 if (session.type === 'COMPLETED' && session.external_id) {
                     return (
                         <Link key={session.id} href={`/activities/${session.external_id}`} className="block">
+                            {CardContent}
+                        </Link>
+                    );
+                }
+
+                // Link to workout details for planned sessions
+                if (session.type === 'PLANNED') {
+                    return (
+                        <Link key={session.id} href={`/workouts/${session.id}`} className="block cursor-pointer">
                             {CardContent}
                         </Link>
                     );

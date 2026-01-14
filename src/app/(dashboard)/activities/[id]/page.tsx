@@ -132,6 +132,7 @@ export default function ActivityDetailPage() {
     const [feedbackLoading, setFeedbackLoading] = useState(false);
     const [feedbackSaving, setFeedbackSaving] = useState(false);
     const [isAthlete, setIsAthlete] = useState(false);
+    const [heartrateZones, setHeartrateZones] = useState<{ zones: Array<{ min: number; max: number }> } | null>(null);
 
     useEffect(() => {
         const fetchActivity = async () => {
@@ -152,6 +153,30 @@ export default function ActivityDetailPage() {
 
         if (id) fetchActivity();
     }, [id]);
+
+    // Fetch athlete profile for HR zones
+    useEffect(() => {
+        const fetchHRZones = async () => {
+            if (!activity?._ownerId) return;
+
+            console.log('Fetching HR zones for athlete:', activity._ownerId);
+            try {
+                const response = await api.get(`/v2/users/${activity._ownerId}/details`);
+                console.log('Athlete profile response:', response.data);
+                if (response.data?.athleteProfile?.hrZones) {
+                    console.log(response.data.athleteProfile)
+                    console.log('HR Zones found:', response.data.athleteProfile.hrZones);
+                    setHeartrateZones(response.data.athleteProfile.hrZones);
+                } else {
+                    console.log('No HR zones in athlete profile');
+                }
+            } catch (err) {
+                console.error('Failed to fetch HR zones:', err);
+            }
+        };
+
+        fetchHRZones();
+    }, [activity?._ownerId]);
 
     // Fetch existing feedback
     useEffect(() => {
@@ -267,6 +292,43 @@ export default function ActivityDetailPage() {
 
     const isWeightTraining = (sportType: string): boolean => {
         return ['WeightTraining', 'Workout', 'Crossfit'].includes(sportType);
+    };
+
+    // Determine HR zone from heart rate value
+    const getHRZone = (hr: number): number => {
+        if (!heartrateZones?.zones) return 0;
+
+        for (let i = 0; i < heartrateZones.zones.length; i++) {
+            const zone = heartrateZones.zones[i];
+            // For the last zone, only check if HR is above minimum (no upper limit)
+            if (i === heartrateZones.zones.length - 1) {
+                if (hr >= zone.min) {
+                    return i + 1;
+                }
+            } else {
+                // For other zones, check if HR is within the range
+                if (hr >= zone.min && hr < zone.max) {
+                    return i + 1;
+                }
+            }
+        }
+        return 0;
+    };
+
+    // Get color class for HR zone
+    const getHRZoneColor = (hr: number): string => {
+        const zone = getHRZone(hr);
+        console.log(`HR: ${hr}, Zone: ${zone}`);
+        const colors = [
+            'bg-gray-400 text-gray-900',
+            'bg-blue-500 text-white',
+            'bg-green-500 text-white',
+            'bg-yellow-500 text-gray-900',
+            'bg-red-500 text-white',
+        ];
+        const colorClass = colors[zone - 1] || 'bg-gray-200 text-gray-900';
+        console.log(`Color class: ${colorClass}`);
+        return colorClass;
     };
 
     if (loading) {
@@ -546,7 +608,11 @@ export default function ActivityDetailPage() {
                                                     <TableCell>{formatPace(lap.average_speed)}</TableCell>
                                                     <TableCell>{lap.total_elevation_gain.toFixed(1)} m</TableCell>
                                                     {lap.average_heartrate && (
-                                                        <TableCell>{lap.average_heartrate.toFixed(0)} bpm</TableCell>
+                                                        <TableCell>
+                                                            <span className={`px-2 py-1 rounded font-medium ${getHRZoneColor(lap.average_heartrate)}`}>
+                                                                {lap.average_heartrate.toFixed(0)} bpm
+                                                            </span>
+                                                        </TableCell>
                                                     )}
                                                     {lap.average_cadence && (
                                                         <TableCell>{lap.average_cadence.toFixed(0)} spm</TableCell>
@@ -584,7 +650,11 @@ export default function ActivityDetailPage() {
                                                     <TableCell>{formatPace(split.average_speed)}</TableCell>
                                                     <TableCell>{split.elevation_difference > 0 ? '+' : ''}{split.elevation_difference.toFixed(1)} m</TableCell>
                                                     {split.average_heartrate && (
-                                                        <TableCell>{split.average_heartrate.toFixed(0)} bpm</TableCell>
+                                                        <TableCell>
+                                                            <span className={`px-2 py-1 rounded font-medium ${getHRZoneColor(split.average_heartrate)}`}>
+                                                                {split.average_heartrate.toFixed(0)} bpm
+                                                            </span>
+                                                        </TableCell>
                                                     )}
                                                     <TableCell>
                                                         <div className={`h-2 w-12 rounded ${getPaceZoneColor(split.pace_zone)}`} />
@@ -622,7 +692,11 @@ export default function ActivityDetailPage() {
                                                     <TableCell>{formatPace(split.average_speed)}</TableCell>
                                                     <TableCell>{split.elevation_difference > 0 ? '+' : ''}{split.elevation_difference.toFixed(1)} m</TableCell>
                                                     {split.average_heartrate && (
-                                                        <TableCell>{split.average_heartrate.toFixed(0)} bpm</TableCell>
+                                                        <TableCell>
+                                                            <span className={`px-2 py-1 rounded font-medium ${getHRZoneColor(split.average_heartrate)}`}>
+                                                                {split.average_heartrate.toFixed(0)} bpm
+                                                            </span>
+                                                        </TableCell>
                                                     )}
                                                     <TableCell>
                                                         <div className={`h-2 w-12 rounded ${getPaceZoneColor(split.pace_zone)}`} />
@@ -634,6 +708,35 @@ export default function ActivityDetailPage() {
                                 </TabsContent>
                             )}
                         </Tabs>
+
+                        {/* HR Zone Legend */}
+                        {heartrateZones?.zones && activity.average_heartrate && (
+                            <div className="mt-6 pt-4 border-t">
+                                <p className="text-sm font-medium text-muted-foreground mb-3">Heart Rate Zones:</p>
+                                <div className="flex flex-wrap gap-3">
+                                    <div className="flex items-center gap-2">
+                                        <span className="px-3 py-1 rounded font-medium bg-gray-400 text-gray-900">Z1</span>
+                                        <span className="text-sm text-muted-foreground">Recovery ({heartrateZones.zones[0]?.min}-{heartrateZones.zones[0]?.max} bpm)</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="px-3 py-1 rounded font-medium bg-blue-500 text-white">Z2</span>
+                                        <span className="text-sm text-muted-foreground">Endurance ({heartrateZones.zones[1]?.min}-{heartrateZones.zones[1]?.max} bpm)</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="px-3 py-1 rounded font-medium bg-green-500 text-white">Z3</span>
+                                        <span className="text-sm text-muted-foreground">Tempo ({heartrateZones.zones[2]?.min}-{heartrateZones.zones[2]?.max} bpm)</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="px-3 py-1 rounded font-medium bg-yellow-500 text-gray-900">Z4</span>
+                                        <span className="text-sm text-muted-foreground">Threshold ({heartrateZones.zones[3]?.min}-{heartrateZones.zones[3]?.max} bpm)</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="px-3 py-1 rounded font-medium bg-red-500 text-white">Z5</span>
+                                        <span className="text-sm text-muted-foreground">VO2 Max ({heartrateZones.zones[4]?.min}-{heartrateZones.zones[4]?.max} bpm)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             )}

@@ -14,15 +14,46 @@ import { Plus, Repeat, Upload, FileText } from 'lucide-react';
 interface WorkoutBuilderProps {
     initialBlocks?: WorkoutBlock[];
     onChange?: (blocks: WorkoutBlock[]) => void;
+    athleteId?: string; // Optional athlete ID for VAM pace calculation
+    readOnly?: boolean; // If true, disables all editing
 }
 
-export function WorkoutBuilder({ initialBlocks = [], onChange }: WorkoutBuilderProps) {
+export function WorkoutBuilder({ initialBlocks = [], onChange, athleteId, readOnly = false }: WorkoutBuilderProps) {
     const [blocks, setBlocks] = useState<WorkoutBlock[]>(initialBlocks);
     const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
     const [showWizard, setShowWizard] = useState(false);
     const [showSummary, setShowSummary] = useState(false);
     const [workoutNotes, setWorkoutNotes] = useState('');
     const [workoutRPE, setWorkoutRPE] = useState<number | undefined>(undefined);
+    const [athleteVAM, setAthleteVAM] = useState<string | null>(null);
+
+    // Fetch athlete VAM when athleteId is provided
+    useEffect(() => {
+        const fetchAthleteVAM = async () => {
+            if (!athleteId) {
+                console.log('WorkoutBuilder: No athleteId provided');
+                setAthleteVAM(null);
+                return;
+            }
+            console.log('WorkoutBuilder: Fetching VAM for athlete:', athleteId);
+            try {
+                const response = await fetch(`/api/v2/users/${athleteId}/details`);
+                console.log(response)
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('WorkoutBuilder: Athlete data received:', data.athleteProfile);
+                    console.log('WorkoutBuilder: VAM value:', data.athleteProfile?.vam);
+                    setAthleteVAM(data.athleteProfile?.vam || null);
+                } else {
+                    console.error('WorkoutBuilder: Failed to fetch, status:', response.status);
+                }
+            } catch (error) {
+                console.error('WorkoutBuilder: Failed to fetch athlete VAM:', error);
+                setAthleteVAM(null);
+            }
+        };
+        fetchAthleteVAM();
+    }, [athleteId]);
 
     // Notify parent onChange whenever blocks change
     useEffect(() => {
@@ -158,32 +189,34 @@ export function WorkoutBuilder({ initialBlocks = [], onChange }: WorkoutBuilderP
             {/* Header with title and action buttons */}
             <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Visual Workout</h2>
-                <div className="flex items-center gap-2">
-                    <button
-                        className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-2"
-                        title="Upload workout file"
-                    >
-                        <Upload className="w-4 h-4" />
-                        Upload
-                    </button>
-                    <button
-                        className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
-                        title="Save graph as image"
-                    >
-                        Save Graph
-                    </button>
-                    <button
-                        onClick={() => setShowSummary(true)}
-                        className="px-4 py-2 bg-brand-primary hover:bg-brand-primary-dark text-white rounded-lg text-sm font-medium transition flex items-center gap-2"
-                    >
-                        <FileText className="w-4 h-4" />
-                        Summary
-                    </button>
-                </div>
+                {!readOnly && (
+                    <div className="flex items-center gap-2">
+                        <button
+                            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-2"
+                            title="Upload workout file"
+                        >
+                            <Upload className="w-4 h-4" />
+                            Upload
+                        </button>
+                        <button
+                            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                            title="Save graph as image"
+                        >
+                            Save Graph
+                        </button>
+                        <button
+                            onClick={() => setShowSummary(true)}
+                            className="px-4 py-2 bg-brand-primary hover:bg-brand-primary-dark text-white rounded-lg text-sm font-medium transition flex items-center gap-2"
+                        >
+                            <FileText className="w-4 h-4" />
+                            Summary
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* Preset Intervals */}
-            <PresetIntervals onSelectPreset={handleAddPreset} />
+            {!readOnly && <PresetIntervals onSelectPreset={handleAddPreset} />}
 
             {/* Visual Workout Chart */}
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm h-64">
@@ -205,57 +238,60 @@ export function WorkoutBuilder({ initialBlocks = [], onChange }: WorkoutBuilderP
                     <div className="flex-1 overflow-y-auto p-4">
                         <BlockList
                             blocks={blocks}
-                            selectedId={selectedBlockId}
-                            onSelect={setSelectedBlockId}
-                            onReorder={reorderBlocks}
-                            onRemove={removeBlock}
-                            onRemoveGroup={removeGroup}
-                            onRemoveMultiple={removeBlocks}
-                            onAddStepToGroup={handleAddStepToGroup}
-                            onUpdateGroupReps={handleUpdateGroupReps}
+                            selectedId={readOnly ? null : selectedBlockId}
+                            onSelect={readOnly ? () => { } : setSelectedBlockId}
+                            onReorder={readOnly ? () => { } : reorderBlocks}
+                            onRemove={readOnly ? () => { } : removeBlock}
+                            onRemoveGroup={readOnly ? () => { } : removeGroup}
+                            onRemoveMultiple={readOnly ? () => { } : removeBlocks}
+                            onAddStepToGroup={readOnly ? undefined : handleAddStepToGroup}
+                            onUpdateGroupReps={readOnly ? undefined : handleUpdateGroupReps}
+                            athleteVAM={athleteVAM}
                         />
                     </div>
 
-                    <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 space-y-2">
-                        <button
-                            onClick={() => setShowWizard(true)}
-                            className="w-full flex items-center justify-center py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition text-sm font-semibold"
-                        >
-                            <Repeat className="w-4 h-4 mr-2" />
-                            Add Repeats
-                        </button>
+                    {!readOnly && (
+                        <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 space-y-2">
+                            <button
+                                onClick={() => setShowWizard(true)}
+                                className="w-full flex items-center justify-center py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition text-sm font-semibold"
+                            >
+                                <Repeat className="w-4 h-4 mr-2" />
+                                Add Repeats
+                            </button>
 
-                        <div className="grid grid-cols-4 gap-2">
-                            <button
-                                onClick={() => addBlock('warmup')}
-                                className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 transition text-xs font-medium text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800"
-                            >
-                                <Plus className="w-4 h-4 mb-1" />
-                                Warm Up
-                            </button>
-                            <button
-                                onClick={() => addBlock('interval')}
-                                className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition text-xs font-medium text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800"
-                            >
-                                <Plus className="w-4 h-4 mb-1" />
-                                Interval
-                            </button>
-                            <button
-                                onClick={() => addBlock('recovery')}
-                                className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 transition text-xs font-medium text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800"
-                            >
-                                <Plus className="w-4 h-4 mb-1" />
-                                Recovery
-                            </button>
-                            <button
-                                onClick={() => addBlock('cooldown')}
-                                className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition text-xs font-medium text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800"
-                            >
-                                <Plus className="w-4 h-4 mb-1" />
-                                Cool Down
-                            </button>
+                            <div className="grid grid-cols-4 gap-2">
+                                <button
+                                    onClick={() => addBlock('warmup')}
+                                    className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 transition text-xs font-medium text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800"
+                                >
+                                    <Plus className="w-4 h-4 mb-1" />
+                                    Warm Up
+                                </button>
+                                <button
+                                    onClick={() => addBlock('interval')}
+                                    className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition text-xs font-medium text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800"
+                                >
+                                    <Plus className="w-4 h-4 mb-1" />
+                                    Interval
+                                </button>
+                                <button
+                                    onClick={() => addBlock('recovery')}
+                                    className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 transition text-xs font-medium text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800"
+                                >
+                                    <Plus className="w-4 h-4 mb-1" />
+                                    Recovery
+                                </button>
+                                <button
+                                    onClick={() => addBlock('cooldown')}
+                                    className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition text-xs font-medium text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800"
+                                >
+                                    <Plus className="w-4 h-4 mb-1" />
+                                    Cool Down
+                                </button>
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
 
                 {/* Right Panel: Step Details */}
@@ -265,6 +301,7 @@ export function WorkoutBuilder({ initialBlocks = [], onChange }: WorkoutBuilderP
                             block={selectedBlock}
                             onUpdate={updateBlock}
                             onRemove={removeBlock}
+                            athleteId={athleteId}
                         />
                     ) : (
                         <div className="h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-8 bg-white dark:bg-gray-800">

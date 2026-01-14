@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireRole } from '@/lib/supabase/api-helpers';
+import { requireRole, requireAuth } from '@/lib/supabase/api-helpers';
 
 /**
  * Get Athlete Details
@@ -10,7 +10,7 @@ import { requireRole } from '@/lib/supabase/api-helpers';
  * - Groups membership
  * - Recent activities
  * 
- * Access: COACH only
+ * Access: COACH (for their athletes) or ATHLETE (for their own data)
  */
 export async function GET(
     request: NextRequest,
@@ -18,7 +18,7 @@ export async function GET(
 ) {
     try {
         const { id } = await params;
-        const authResult = await requireRole('COACH');
+        const authResult = await requireAuth();
 
         if (authResult.response) {
             return authResult.response;
@@ -27,27 +27,37 @@ export async function GET(
         const { supabase, user } = authResult;
         const athleteId = id;
 
-        // Verify this athlete belongs to the coach (via coach_id)
-        const { data: athleteProfile, error: athleteError } = await supabase
-            .from('profiles')
-            .select('id, coach_id')
-            .eq('id', athleteId)
-            .eq('role', 'ATHLETE')
-            .single();
-
-        if (athleteError || !athleteProfile) {
+        // Athletes can only view their own data
+        if (user!.role === 'ATHLETE' && user!.id !== athleteId) {
             return NextResponse.json(
-                { error: 'Athlete not found' },
-                { status: 404 }
+                { error: 'You can only view your own data' },
+                { status: 403 }
             );
         }
 
-        // Check if this athlete belongs to the requesting coach
-        if (athleteProfile.coach_id !== user!.id) {
-            return NextResponse.json(
-                { error: 'You do not have permission to view this athlete' },
-                { status: 403 }
-            );
+        // Coaches can only view their athletes
+        if (user!.role === 'COACH') {
+            const { data: athleteProfile, error: athleteError } = await supabase
+                .from('profiles')
+                .select('id, coach_id')
+                .eq('id', athleteId)
+                .eq('role', 'ATHLETE')
+                .single();
+
+            if (athleteError || !athleteProfile) {
+                return NextResponse.json(
+                    { error: 'Athlete not found' },
+                    { status: 404 }
+                );
+            }
+
+            // Check if this athlete belongs to the requesting coach
+            if (athleteProfile.coach_id !== user!.id) {
+                return NextResponse.json(
+                    { error: 'You do not have permission to view this athlete' },
+                    { status: 403 }
+                );
+            }
         }
 
         // Fetch athlete profile
@@ -135,6 +145,7 @@ export async function GET(
                 maxHR: athleteProfileData.max_hr,
                 vam: athleteProfileData.vam,
                 uan: athleteProfileData.uan,
+                hrZones: athleteProfileData.hr_zones,
                 created_at: athleteProfileData.created_at,
                 updated_at: athleteProfileData.updated_at,
             } : null,
