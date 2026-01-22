@@ -73,26 +73,16 @@ export async function GET(
             email: string;
         };
 
-        // Authorization check: must be the assigned athlete OR the coach who created the training
+        // Authorization check: must be the assigned athlete OR a coach
         if (user!.role === 'ATHLETE' && assignedUser.id !== user!.id) {
-            console.log('Auth failed: Athlete trying to view another athlete\'s assignment');
             return NextResponse.json(
                 { error: 'Not authorized to view this assignment' },
                 { status: 403 }
             );
         }
 
-        if (user!.role === 'COACH' && training.coach_id !== user!.id) {
-            console.log('Auth failed: Coach ID mismatch', {
-                requestingCoachId: user!.id,
-                trainingCoachId: training.coach_id,
-                assignmentId: assignment.id
-            });
-            return NextResponse.json(
-                { error: 'Not authorized to view this assignment' },
-                { status: 403 }
-            );
-        }
+        // Coaches can view any assignment, but can only edit if they own the training
+        const canEdit = user!.role === 'COACH' && training.coach_id === user!.id;
 
         return NextResponse.json({
             id: assignment.id,
@@ -111,7 +101,7 @@ export async function GET(
                 name: assignedUser.name,
                 email: assignedUser.email,
             },
-            canEdit: user!.role === 'COACH',
+            canEdit,
         });
     } catch (error: any) {
         console.error('Get assignment error:', error);

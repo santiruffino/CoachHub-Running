@@ -50,9 +50,6 @@ export default function WorkoutDetailsPage() {
             try {
                 setLoading(true);
                 const response = await api.get<WorkoutAssignment>(`/v2/trainings/assignments/${assignmentId}`);
-                console.log('WorkoutDetails: Full assignment:', response.data);
-                console.log('WorkoutDetails: Athlete object:', response.data.athlete);
-                console.log('WorkoutDetails: Athlete ID:', response.data.athlete?.id);
                 setAssignment(response.data);
                 setEditedBlocks(response.data.training.blocks || []);
             } catch (err: any) {

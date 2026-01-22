@@ -39,7 +39,6 @@ export async function syncHeartRateZonesFromStrava(
         const heartRateZones = zonesData.heart_rate;
 
         if (!heartRateZones || !heartRateZones.zones) {
-            console.log('No heart rate zones found in Strava profile');
             return {
                 success: false,
                 error: 'No heart rate zones found'

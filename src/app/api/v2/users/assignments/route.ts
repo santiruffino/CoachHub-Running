@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
         feedback,
         created_at,
         updated_at,
+        workout_name,
         training:trainings(
           id,
           title,

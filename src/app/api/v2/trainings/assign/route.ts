@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
 
         const { supabase, user } = authResult;
         const body = await request.json();
-        const { trainingId, scheduledDate, athleteIds, groupIds, expectedRpe } = body;
+        const { trainingId, scheduledDate, athleteIds, groupIds, expectedRpe, workoutName } = body;
 
         // Validation
         if (!trainingId) {
@@ -112,6 +112,7 @@ export async function POST(request: NextRequest) {
                 scheduled_date: scheduledDate,
                 completed: false,
                 expected_rpe: expectedRpe || null, // Add expected RPE if provided
+                workout_name: workoutName || null, // Add custom workout name if provided
             });
         }
 

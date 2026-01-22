@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { format } from 'date-fns';
 import api from '@/lib/axios';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,6 +26,14 @@ import {
     ArrowLeft
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { HeartRateZonesChart } from '../components/HeartRateZonesChart';
+import { PaceZonesChart } from '../components/PaceZonesChart';
+
+// Dynamic import for ECharts to avoid SSR issues
+const ActivityChart = dynamic(
+    () => import('../components/ActivityChart').then(mod => ({ default: mod.ActivityChart })),
+    { ssr: false, loading: () => <div className="h-[400px] flex items-center justify-center"><p>Loading chart...</p></div> }
+);
 
 interface SegmentEffort {
     id: number;
@@ -159,16 +168,10 @@ export default function ActivityDetailPage() {
         const fetchHRZones = async () => {
             if (!activity?._ownerId) return;
 
-            console.log('Fetching HR zones for athlete:', activity._ownerId);
             try {
                 const response = await api.get(`/v2/users/${activity._ownerId}/details`);
-                console.log('Athlete profile response:', response.data);
                 if (response.data?.athleteProfile?.hrZones) {
-                    console.log(response.data.athleteProfile)
-                    console.log('HR Zones found:', response.data.athleteProfile.hrZones);
                     setHeartrateZones(response.data.athleteProfile.hrZones);
-                } else {
-                    console.log('No HR zones in athlete profile');
                 }
             } catch (err) {
                 console.error('Failed to fetch HR zones:', err);
@@ -318,7 +321,6 @@ export default function ActivityDetailPage() {
     // Get color class for HR zone
     const getHRZoneColor = (hr: number): string => {
         const zone = getHRZone(hr);
-        console.log(`HR: ${hr}, Zone: ${zone}`);
         const colors = [
             'bg-gray-400 text-gray-900',
             'bg-blue-500 text-white',
@@ -327,7 +329,6 @@ export default function ActivityDetailPage() {
             'bg-red-500 text-white',
         ];
         const colorClass = colors[zone - 1] || 'bg-gray-200 text-gray-900';
-        console.log(`Color class: ${colorClass}`);
         return colorClass;
     };
 
@@ -558,6 +559,39 @@ export default function ActivityDetailPage() {
                         </div>
                     </CardContent>
                 </Card>
+            )}
+
+            {/* Activity Dynamics Chart */}
+            {!isWeightTraining(activity.sport_type) && (
+                <ActivityChart
+                    activityId={id}
+                    laps={activity.laps}
+                    hrZones={heartrateZones?.zones}
+                    isRunning={isRunning(activity.sport_type)}
+                />
+            )}
+
+            {/* Zone Analysis Charts */}
+            {!isWeightTraining(activity.sport_type) && (activity.laps?.length || activity.splits_metric) && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Heart Rate Zones */}
+                    {activity.average_heartrate && heartrateZones?.zones && (
+                        <HeartRateZonesChart
+                            laps={activity.laps}
+                            splits={activity.splits_metric}
+                            zones={heartrateZones.zones}
+                        />
+                    )}
+
+                    {/* Pace Zones - only for running */}
+                    {isRunning(activity.sport_type) && (
+                        <PaceZonesChart
+                            laps={activity.laps}
+                            splits={activity.splits_metric}
+                            isRunning={isRunning(activity.sport_type)}
+                        />
+                    )}
+                </div>
             )}
 
             {/* Splits & Laps - hide for weight training */}

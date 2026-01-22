@@ -87,7 +87,6 @@ export async function GET(request: NextRequest) {
             targetAthleteIds = studentIds;
         }
 
-        // Build query
         let query = supabase
             .from('training_assignments')
             .select(`
@@ -97,6 +96,7 @@ export async function GET(request: NextRequest) {
         feedback,
         created_at,
         user_id,
+        workout_name,
         user:profiles!training_assignments_user_id_fkey(
           id,
           name,

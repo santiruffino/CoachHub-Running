@@ -32,11 +32,6 @@ export function BlockList({
 }: BlockListProps) {
     const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
 
-    // Debug: Log when athleteVAM changes
-    useEffect(() => {
-        console.log('BlockList: athleteVAM updated:', athleteVAM);
-    }, [athleteVAM]);
-
     const toggleGroup = (groupKey: string) => {
         setExpandedGroups(prev => ({ ...prev, [groupKey]: !prev[groupKey] }));
     };
@@ -106,20 +101,12 @@ export function BlockList({
             };
             const zoneName = vamZoneLabels[block.target.min] || `Z${block.target.min}`;
 
-            console.log('BlockList formatTarget: VAM zone detected', {
-                zoneNumber: block.target.min,
-                athleteVAM,
-                hasVAM: !!athleteVAM
-            });
-
             // If athleteVAM is available, calculate and show pace
             if (athleteVAM) {
                 const pace = calculatePaceFromVAM(athleteVAM, String(block.target.min));
-                console.log('BlockList formatTarget: Calculated pace:', pace);
                 return `${zoneName} (${pace})`;
             }
 
-            console.log('BlockList formatTarget: No VAM, returning zone name only');
             return zoneName;
         }
         if (block.target.type === 'power' && (block.target.min || block.target.max)) {

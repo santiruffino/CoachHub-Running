@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
         );
 
         if (zonesResult.success) {
-            console.log('Heart rate zones synced successfully');
+            // Zones synced successfully
         } else {
             console.warn('Failed to sync heart rate zones:', zonesResult.error);
             // Don't fail the connection if zones sync fails

@@ -31,24 +31,16 @@ export function WorkoutBuilder({ initialBlocks = [], onChange, athleteId, readOn
     useEffect(() => {
         const fetchAthleteVAM = async () => {
             if (!athleteId) {
-                console.log('WorkoutBuilder: No athleteId provided');
                 setAthleteVAM(null);
                 return;
             }
-            console.log('WorkoutBuilder: Fetching VAM for athlete:', athleteId);
             try {
                 const response = await fetch(`/api/v2/users/${athleteId}/details`);
-                console.log(response)
                 if (response.ok) {
                     const data = await response.json();
-                    console.log('WorkoutBuilder: Athlete data received:', data.athleteProfile);
-                    console.log('WorkoutBuilder: VAM value:', data.athleteProfile?.vam);
                     setAthleteVAM(data.athleteProfile?.vam || null);
-                } else {
-                    console.error('WorkoutBuilder: Failed to fetch, status:', response.status);
                 }
             } catch (error) {
-                console.error('WorkoutBuilder: Failed to fetch athlete VAM:', error);
                 setAthleteVAM(null);
             }
         };
@@ -302,6 +294,7 @@ export function WorkoutBuilder({ initialBlocks = [], onChange, athleteId, readOn
                             onUpdate={updateBlock}
                             onRemove={removeBlock}
                             athleteId={athleteId}
+                            readOnly={readOnly}
                         />
                     ) : (
                         <div className="h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-8 bg-white dark:bg-gray-800">

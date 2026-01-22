@@ -35,6 +35,7 @@ interface TrainingAssignment {
     scheduled_date: string;
     completed: boolean;
     training: Training;
+    workout_name?: string | null; // Custom workout name
 }
 
 interface AthleteDetails extends User {
@@ -217,7 +218,7 @@ export default function AthleteDetailPage() {
     const recentItems = [
         ...assignments.slice(0, 5).map(a => ({
             id: a.id,
-            title: a.training.title,
+            title: a.workout_name || a.training.title, // Use custom name if available
             type: a.training.type,
             date: new Date(a.scheduled_date),
             completed: a.completed,
@@ -382,7 +383,7 @@ export default function AthleteDetailPage() {
                                                     <CalendarIcon className="w-4 h-4 text-muted-foreground" />
                                                 </div>
                                                 <div className="flex-1">
-                                                    <p className="font-medium">{assignment.training.title}</p>
+                                                    <p className="font-medium">{assignment.workout_name || assignment.training.title}</p>
                                                     <p className="text-xs text-muted-foreground">{assignment.training.type}</p>
                                                 </div>
                                                 <Badge variant="outline" className="ml-auto capitalize">

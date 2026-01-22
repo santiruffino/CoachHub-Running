@@ -1,9 +1,13 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
-import { Activity, Clock, MapPin, TrendingUp } from 'lucide-react';
+import { Activity, Clock, MapPin, TrendingUp, Target } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { MatchQualityBadge } from '@/features/trainings/components/MatchQualityBadge';
+import { WorkoutMatchModal } from '@/features/trainings/components/WorkoutMatchModal';
+import { WorkoutMatch } from '@/features/trainings/types';
 
 export interface SessionData {
     id: string;
@@ -22,6 +26,8 @@ export interface SessionData {
     icon?: any;
     color?: string;
     external_id?: string; // Strava activity ID for linking
+    match?: WorkoutMatch; // Workout match data if available
+    assignmentId?: string; // Training assignment ID for planned workouts
 }
 
 interface SessionListProps {
@@ -29,6 +35,9 @@ interface SessionListProps {
 }
 
 export function SessionList({ sessions }: SessionListProps) {
+    const [selectedMatchAssignmentId, setSelectedMatchAssignmentId] = useState<string | null>(null);
+    const [selectedMatchTitle, setSelectedMatchTitle] = useState<string>('');
+
     if (sessions.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center py-10 text-gray-400 bg-white dark:bg-gray-800 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
@@ -66,11 +75,25 @@ export function SessionList({ sessions }: SessionListProps) {
                                         )}
                                     </div>
                                 </div>
-                                {session.type === 'COMPLETED' && (
-                                    <Badge variant="secondary" className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/30">
-                                        Completado
-                                    </Badge>
-                                )}
+                                <div className="flex items-center gap-2">
+                                    {session.type === 'COMPLETED' && session.match?.matched && session.match.matchQuality && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                setSelectedMatchAssignmentId(session.assignmentId || '');
+                                                setSelectedMatchTitle(session.title);
+                                            }}
+                                            className="hover:scale-105 transition-transform"
+                                        >
+                                            <MatchQualityBadge score={session.match.matchQuality.overallScore} size="sm" />
+                                        </button>
+                                    )}
+                                    {session.type === 'COMPLETED' && (
+                                        <Badge variant="secondary" className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/30">
+                                            Completado
+                                        </Badge>
+                                    )}
+                                </div>
                             </div>
 
                             {session.type === 'COMPLETED' && session.stats && (
@@ -122,7 +145,7 @@ export function SessionList({ sessions }: SessionListProps) {
                                 <div className="flex items-center justify-between mt-3 text-sm text-gray-500 dark:text-gray-400">
                                     <div className="flex items-center gap-1">
                                         <Clock className="w-4 h-4" />
-                                        <span>~ 60 min</span>
+                                        <span>~ {session.stats?.duration ? Math.round(session.stats.duration / 60) : 60} min</span>
                                     </div>
                                     <span className="text-orange-500 font-medium cursor-pointer hover:underline">Ver detalles</span>
                                 </div>
@@ -151,6 +174,16 @@ export function SessionList({ sessions }: SessionListProps) {
 
                 return CardContent;
             })}
+
+            {/* Match Modal */}
+            {selectedMatchAssignmentId && (
+                <WorkoutMatchModal
+                    isOpen={!!selectedMatchAssignmentId}
+                    onClose={() => setSelectedMatchAssignmentId(null)}
+                    assignmentId={selectedMatchAssignmentId}
+                    workoutTitle={selectedMatchTitle}
+                />
+            )}
         </div>
     );
 }

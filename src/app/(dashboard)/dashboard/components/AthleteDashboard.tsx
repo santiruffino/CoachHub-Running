@@ -1,10 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import api from '@/lib/axios';
-import { isSameDay, startOfWeek, endOfWeek, isWithinInterval } from 'date-fns';
+import { isSameDay, startOfWeek, endOfWeek, isWithinInterval, format } from 'date-fns';
 import { WeekCalendar } from '@/features/calendar/components/WeekCalendar';
 import { SessionList, SessionData } from '@/features/calendar/components/SessionList';
 import { WeeklySummary } from '@/features/calendar/components/WeeklySummary';
 import { WeeklyVolumeChart } from '@/features/strava/components/WeeklyVolumeChart';
+import { matchingService } from '@/features/trainings/services/matching.service';
+import { WorkoutMatch } from '@/features/trainings/types';
 
 export default function AthleteDashboard({ user }: { user: any }) {
     const [selectedDate, setSelectedDate] = useState(new Date());
@@ -18,38 +20,149 @@ export default function AthleteDashboard({ user }: { user: any }) {
                 api.get(`/v2/users/assignments`)
             ]);
 
-
-            const activitySessions: SessionData[] = activitiesRes.data.map((act: any) => ({
-                id: `act-${act.id}`,
-                type: 'COMPLETED',
-                title: act.title,
-                subtitle: act.type,
-                date: new Date(act.start_date),
-                external_id: act.external_id, // Add external_id for activity detail links
-                stats: {
-                    distance: act.distance,
-                    duration: act.duration,
-                    pace: act.distance > 0 ? `${Math.floor(act.duration / (act.distance / 1000) / 60)}:${Math.floor((act.duration / (act.distance / 1000)) % 60).toString().padStart(2, '0')}` : '0:00',
-                    elevation: act.elevation_gain || 0
+            // Create a map of activities by date for quick lookup
+            const activitiesByDate = new Map<string, any>();
+            activitiesRes.data.forEach((act: any) => {
+                const dateStr = format(new Date(act.start_date), 'yyyy-MM-dd');
+                if (!activitiesByDate.has(dateStr)) {
+                    activitiesByDate.set(dateStr, []);
                 }
-            }));
+                activitiesByDate.get(dateStr)!.push(act);
+            });
 
-            const assignmentSessions: SessionData[] = assignmentsRes.data.map((assign: any) => ({
-                id: assign.id,
-                type: 'PLANNED',
-                title: assign.training.title,
-                subtitle: assign.training.type,
-                description: assign.training.description,
-                // Parse UTC date string components to create Local Date at midnight
-                date: (() => {
-                    const [y, m, d] = assign.scheduled_date.split('T')[0].split('-').map(Number);
-                    return new Date(y, m - 1, d);
-                })(),
-                stats: {
-                    distance: 10000,
-                    duration: 3600
+            // Process activities and fetch match data for those with corresponding assignments
+            const activitySessions: SessionData[] = await Promise.all(
+                activitiesRes.data.map(async (act: any) => {
+                    const activityDate = format(new Date(act.start_date), 'yyyy-MM-dd');
+
+                    // Find assignment on the same date
+                    const matchingAssignment = assignmentsRes.data.find((assign: any) => {
+                        const assignDate = assign.scheduled_date.split('T')[0];
+                        return assignDate === activityDate;
+                    });
+
+                    let matchData: WorkoutMatch | undefined;
+                    if (matchingAssignment) {
+                        try {
+                            matchData = await matchingService.getMatch(matchingAssignment.id);
+                        } catch (err) {
+                            console.error('Failed to fetch match for assignment', matchingAssignment.id, err);
+                        }
+                    }
+
+                    return {
+                        id: `act-${act.id}`,
+                        type: 'COMPLETED' as const,
+                        title: act.title,
+                        subtitle: act.type,
+                        date: new Date(act.start_date),
+                        external_id: act.external_id,
+                        assignmentId: matchingAssignment?.id,
+                        match: matchData,
+                        stats: {
+                            distance: act.distance,
+                            duration: act.duration,
+                            pace: act.distance > 0 ? `${Math.floor(act.duration / (act.distance / 1000) / 60)}:${Math.floor((act.duration / (act.distance / 1000)) % 60).toString().padStart(2, '0')}` : '0:00',
+                            elevation: act.elevation_gain || 0
+                        }
+                    };
+                })
+            );
+
+            const assignmentSessions: SessionData[] = assignmentsRes.data.map((assign: any) => {
+                // Helper function to parse pace string (e.g., "3:30" -> 210 seconds/km)
+                const parsePace = (paceStr: string): number => {
+                    if (!paceStr || typeof paceStr !== 'string') return 300; // Default 5:00 min/km
+                    const parts = paceStr.split(':');
+                    if (parts.length !== 2) return 300;
+                    const mins = parseInt(parts[0]);
+                    const secs = parseInt(parts[1]);
+                    if (isNaN(mins) || isNaN(secs)) return 300;
+                    return mins * 60 + secs;
+                };
+
+                // Helper function to get average pace from block target
+                const getBlockPace = (block: any): number => {
+                    if (block.target?.type === 'pace' && block.target.min && block.target.max) {
+                        const minPace = parsePace(block.target.min);
+                        const maxPace = parsePace(block.target.max);
+                        return (minPace + maxPace) / 2; // Average of min and max
+                    }
+                    return 300; // Default 5:00 min/km if no pace target
+                };
+
+                // Calculate actual workout duration from blocks if available
+                let estimatedDuration = 3600; // Default 60 minutes
+                let estimatedDistance = 10000; // Default 10km
+
+                if (assign.training.blocks && Array.isArray(assign.training.blocks)) {
+                    const blocks = assign.training.blocks;
+                    estimatedDuration = 0;
+                    estimatedDistance = 0;
+
+                    // Calculate duration and distance from blocks
+                    const processedGroupIds = new Set<string>();
+
+                    blocks.forEach((block: any) => {
+                        // Skip if this block's group has already been processed
+                        if (block.group?.id && processedGroupIds.has(block.group.id)) {
+                            return;
+                        }
+
+                        if (block.group?.id) {
+                            processedGroupIds.add(block.group.id);
+                            const groupBlocks = blocks.filter((b: any) => b.group?.id === block.group?.id);
+                            const reps = block.group.reps || 1;
+
+                            groupBlocks.forEach((b: any) => {
+                                let blockDuration: number;
+                                if (b.duration.type === 'time') {
+                                    blockDuration = b.duration.value;
+                                } else {
+                                    // Distance-based: use target pace to estimate duration
+                                    const paceSecondsPerKm = getBlockPace(b);
+                                    blockDuration = (b.duration.value / 1000) * paceSecondsPerKm;
+                                }
+                                const blockDistance = b.duration.type === 'distance' ? b.duration.value : 0;
+
+                                estimatedDuration += blockDuration * reps;
+                                estimatedDistance += blockDistance * reps;
+                            });
+                        } else {
+                            let blockDuration: number;
+                            if (block.duration.type === 'time') {
+                                blockDuration = block.duration.value;
+                            } else {
+                                // Distance-based: use target pace to estimate duration
+                                const paceSecondsPerKm = getBlockPace(block);
+                                blockDuration = (block.duration.value / 1000) * paceSecondsPerKm;
+                            }
+                            const blockDistance = block.duration.type === 'distance' ? block.duration.value : 0;
+
+                            estimatedDuration += blockDuration;
+                            estimatedDistance += blockDistance;
+                        }
+                    });
                 }
-            }));
+
+                return {
+                    id: assign.id,
+                    type: 'PLANNED' as const,
+                    title: assign.training.title,
+                    subtitle: assign.training.type,
+                    description: assign.training.description,
+                    assignmentId: assign.id,
+                    // Parse UTC date string components to create Local Date at midnight
+                    date: (() => {
+                        const [y, m, d] = assign.scheduled_date.split('T')[0].split('-').map(Number);
+                        return new Date(y, m - 1, d);
+                    })(),
+                    stats: {
+                        distance: estimatedDistance,
+                        duration: estimatedDuration
+                    }
+                };
+            });
 
 
             const merged = [...activitySessions, ...assignmentSessions];

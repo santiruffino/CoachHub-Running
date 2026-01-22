@@ -9,6 +9,7 @@ interface BlockEditorProps {
     onUpdate: (id: string, updates: Partial<WorkoutBlock>) => void;
     onRemove: (id: string) => void;
     athleteId?: string; // Optional athlete ID for VAM-based pace calculation
+    readOnly?: boolean; // If true, disables all editing
 }
 
 // Helper for HH:MM:SS
@@ -33,7 +34,7 @@ const hmsToSeconds = (str: string) => {
     return 0;
 };
 
-export function BlockEditor({ block, onUpdate, onRemove, athleteId }: BlockEditorProps) {
+export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = false }: BlockEditorProps) {
     const [timeString, setTimeString] = useState(
         block.duration.type === 'time' ? secondsToHms(block.duration.value) : ''
     );
@@ -50,7 +51,6 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId }: BlockEdito
                 const response = await fetch(`/api/v2/users/${athleteId}/details`);
                 if (response.ok) {
                     const data = await response.json();
-                    console.log(data.athleteProfile)
                     setAthleteVAM(data.athleteProfile?.vam || null);
                 }
             } catch (error) {
@@ -159,8 +159,9 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId }: BlockEdito
                 <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Step Details</h3>
                 <button
                     onClick={() => onRemove(block.id)}
-                    className="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors p-2 rounded-md hover:bg-red-50 dark:hover:bg-red-900/30"
+                    className="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors p-2 rounded-md hover:bg-red-50 dark:hover:bg-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Remove Step"
+                    disabled={readOnly}
                 >
                     <Trash2 className="w-5 h-5" />
                 </button>
@@ -177,7 +178,8 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId }: BlockEdito
                         value={block.stepName || ''}
                         onChange={(e) => onUpdate(block.id, { stepName: e.target.value })}
                         placeholder={block.type.charAt(0).toUpperCase() + block.type.slice(1)}
-                        className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                        className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                        disabled={readOnly}
                     />
                 </div>
 
@@ -189,7 +191,8 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId }: BlockEdito
                     <select
                         value={block.type}
                         onChange={(e) => handleTypeChange(e.target.value as BlockType)}
-                        className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border font-medium bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border font-medium bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed"
+                        disabled={readOnly}
                     >
                         <option value="warmup">Warm Up</option>
                         <option value="interval">Interval</option>

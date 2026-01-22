@@ -56,6 +56,7 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [expectedRpe, setExpectedRpe] = useState<number>(5); // Default to moderate effort
+    const [workoutName, setWorkoutName] = useState<string>(''); // Custom workout name
 
     useEffect(() => {
         if (isOpen) {
@@ -78,6 +79,7 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
             }
             setError('');
             setIsEditingWorkout(false);
+            setWorkoutName(''); // Reset workout name
         }
     }, [isOpen, trainingId, athleteId, groupId]);
 
@@ -157,6 +159,7 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                     athleteIds: [athleteId],
                     scheduledDate: new Date(scheduledDate).toISOString(),
                     expectedRpe: expectedRpe,
+                    workoutName: workoutName || undefined,
                 });
 
                 onClose();
@@ -206,6 +209,7 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                 groupIds: selectedGroupIds.length > 0 ? selectedGroupIds : undefined,
                 scheduledDate: new Date(scheduledDate).toISOString(),
                 expectedRpe: expectedRpe,
+                workoutName: workoutName || undefined,
             });
 
             onClose();
@@ -256,6 +260,23 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                             </div>
                             <p className="text-xs text-muted-foreground">
                                 {expectedRpe <= 2 ? 'Very Easy' : expectedRpe <= 4 ? 'Easy' : expectedRpe <= 6 ? 'Moderate' : expectedRpe <= 8 ? 'Hard' : 'Maximum Effort'}
+                            </p>
+                        </div>
+
+                        {/* Workout Name Input */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                Workout Name (Optional)
+                            </label>
+                            <input
+                                type="text"
+                                className="flex h-10 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-primary outline-none dark:text-white"
+                                placeholder="e.g., Monday Speed Work, Recovery Run"
+                                value={workoutName}
+                                onChange={(e) => setWorkoutName(e.target.value)}
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                Give this workout a custom name. If left empty, the workout will use the default name.
                             </p>
                         </div>
 
@@ -475,6 +496,23 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                                 </div>
                                 <p className="text-xs text-muted-foreground">
                                     {expectedRpe <= 2 ? 'Very Easy' : expectedRpe <= 4 ? 'Easy' : expectedRpe <= 6 ? 'Moderate' : expectedRpe <= 8 ? 'Hard' : 'Maximum Effort'}
+                                </p>
+                            </div>
+
+                            {/* Workout Name Input */}
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                    Workout Name (Optional)
+                                </label>
+                                <input
+                                    type="text"
+                                    className="flex h-10 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-primary outline-none dark:text-white"
+                                    placeholder="e.g., Monday Speed Work, Recovery Run"
+                                    value={workoutName}
+                                    onChange={(e) => setWorkoutName(e.target.value)}
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                    Give this workout a custom name. If left empty, the workout will use the template name.
                                 </p>
                             </div>
 
