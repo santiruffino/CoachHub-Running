@@ -216,7 +216,7 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
 
         // Pace axis (left, inverted) - Always shown
         // Calculate pace range from data
-        const validPaces = chartData.series.pace.filter((p: number) => p > 0 && p < 20);
+        const validPaces = (chartData.series.pace || []).filter((p: number) => p > 0 && p < 20);
         const minPace = validPaces.length > 0 ? Math.min(...validPaces) : 3;
         const maxPace = validPaces.length > 0 ? Math.max(...validPaces) : 8;
 
