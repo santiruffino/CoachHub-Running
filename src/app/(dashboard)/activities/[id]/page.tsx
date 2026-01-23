@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { format } from 'date-fns';
 import api from '@/lib/axios';
+import { useCache } from '@/lib/context/CacheContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -163,15 +164,25 @@ export default function ActivityDetailPage() {
         if (id) fetchActivity();
     }, [id]);
 
-    // Fetch athlete profile for HR zones
+    // Fetch athlete profile for HR zones using cache
+    const cache = useCache();
     useEffect(() => {
         const fetchHRZones = async () => {
             if (!activity?._ownerId) return;
 
             try {
-                const response = await api.get(`/v2/users/${activity._ownerId}/details`);
-                if (response.data?.athleteProfile?.hrZones) {
-                    setHeartrateZones(response.data.athleteProfile.hrZones);
+                // Use cache with 5 minute TTL
+                const data = await cache.getOrFetch(
+                    `hrZones:${activity._ownerId}`,
+                    async () => {
+                        const response = await api.get(`/v2/users/${activity._ownerId}/details`);
+                        return response.data?.athleteProfile?.hrZones || null;
+                    },
+                    5 * 60 * 1000 // 5 minutes
+                );
+
+                if (data) {
+                    setHeartrateZones(data);
                 }
             } catch (err) {
                 console.error('Failed to fetch HR zones:', err);
