@@ -402,7 +402,7 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
                 type: 'value',
                 name: 'Elevation',
                 position: 'right',
-                offset: hasHeartRateData ? 60 : 0,
+                offset: (hasHeartRateData && legendSelected['Heart Rate'] !== false) ? 60 : 0,
                 show: legendSelected['Elevation'] !== false,
                 axisLabel: {
                     formatter: '{value} m',
@@ -432,7 +432,7 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
                 type: 'value',
                 name: 'Grade',
                 position: 'right',
-                offset: (hasHeartRateData ? 60 : 0) + (hasElevationData ? 60 : 0),
+                offset: ((hasHeartRateData && legendSelected['Heart Rate'] !== false) ? 60 : 0) + ((hasElevationData && legendSelected['Elevation'] !== false) ? 60 : 0),
                 show: legendSelected['Grade'] !== false,
                 axisLabel: {
                     formatter: '{value}%',
@@ -454,9 +454,12 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
             });
         }
 
-        // Calculate grid margins
-        const leftMargin = hasCadenceData ? 100 : 60;
-        const rightMargin = 60 + (hasHeartRateData ? 60 : 0) + (hasElevationData ? 60 : 0) + (hasGradeData ? 60 : 0);
+        // Calculate grid margins based on visible metrics only
+        const leftMargin = (hasCadenceData && legendSelected['Cadence'] !== false) ? 100 : 60;
+        const rightMargin = 60
+            + ((hasHeartRateData && legendSelected['Heart Rate'] !== false) ? 60 : 0)
+            + ((hasElevationData && legendSelected['Elevation'] !== false) ? 60 : 0)
+            + ((hasGradeData && legendSelected['Grade'] !== false) ? 60 : 0);
 
         return {
             backgroundColor: 'transparent',
@@ -486,10 +489,48 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
                 top: 0,
                 textStyle: { color: '#9CA3AF' },
             },
+            dataZoom: [
+                {
+                    type: 'slider',
+                    show: true,
+                    xAxisIndex: [0],
+                    start: 0,
+                    end: 100,
+                    bottom: 10,
+                    height: 20,
+                    handleIcon: 'path://M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+                    handleSize: '80%',
+                    handleStyle: {
+                        color: '#06B6D4',
+                    },
+                    textStyle: {
+                        color: '#9CA3AF',
+                    },
+                    borderColor: '#374151',
+                    fillerColor: 'rgba(6, 182, 212, 0.2)',
+                    dataBackground: {
+                        lineStyle: {
+                            color: '#374151',
+                        },
+                        areaStyle: {
+                            color: 'rgba(6, 182, 212, 0.1)',
+                        },
+                    },
+                },
+                {
+                    type: 'inside',
+                    xAxisIndex: [0],
+                    start: 0,
+                    end: 100,
+                    zoomOnMouseWheel: true,
+                    moveOnMouseMove: true,
+                    moveOnMouseWheel: false,
+                },
+            ],
             grid: {
                 left: leftMargin,
                 right: rightMargin,
-                bottom: 50,
+                bottom: 80, // Increased to accommodate slider zoom
                 top: 50,
                 containLabel: false,
             },
