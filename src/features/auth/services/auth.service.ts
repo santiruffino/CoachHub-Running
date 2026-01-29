@@ -54,55 +54,84 @@ export const authService = {
 
     logout: async (): Promise<void> => {
         const supabase = createClient();
-        const { error } = await supabase.auth.signOut();
 
-        if (error) {
-            throw new Error(error.message);
-        }
-
-        // Clear any local storage items if needed
+        // 1. Clear local storage immediately
         if (typeof window !== 'undefined') {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
         }
+
+        try {
+            // 2. Attempt Supabase signOut with a timeout to prevent hanging
+            const signOutPromise = supabase.auth.signOut({ scope: 'local' });
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('SignOut timeout')), 2000)
+            );
+
+            await Promise.race([signOutPromise, timeoutPromise]);
+        } catch (error: any) {
+            if (error.message === 'SignOut timeout') {
+                console.warn('⚠️ [AuthService] Background signOut timed out - Local session cleared successfully');
+            } else {
+                console.error('❌ [AuthService] Background signOut failed:', error);
+            }
+        }
     },
 
     updatePassword: async (newPassword: string): Promise<void> => {
+        console.log('🔑 [AuthService] updatePassword called');
         const supabase = createClient();
 
+        console.log('🔑 [AuthService] Calling supabase.auth.updateUser...');
         const { error } = await supabase.auth.updateUser({
             password: newPassword,
         });
 
         if (error) {
+            console.error('❌ [AuthService] updateUser failed:', error);
             throw new Error(error.message);
         }
 
+        console.log('✅ [AuthService] Password updated in Supabase');
+
         // Clear must_change_password flag
+        console.log('🔑 [AuthService] Getting current user...');
         const { data: { user } } = await supabase.auth.getUser();
 
         if (user) {
+            console.log('🔑 [AuthService] Updating profile to clear must_change_password flag...');
             const { error: updateError } = await supabase
                 .from('profiles')
                 .update({ must_change_password: false })
                 .eq('id', user.id);
 
             if (updateError) {
+                console.error('❌ [AuthService] Profile update failed:', updateError);
                 throw new Error('Failed to update profile');
             }
+            console.log('✅ [AuthService] Profile updated successfully');
+        } else {
+            console.warn('⚠️ [AuthService] No user found after password update');
         }
+
+        console.log('✅ [AuthService] updatePassword complete');
     },
 
     resetPassword: async (email: string): Promise<void> => {
+        console.log('📧 [AuthService] resetPassword called for email:', email);
         const supabase = createClient();
 
+        console.log('📧 [AuthService] Calling supabase.auth.resetPasswordForEmail...');
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: `${window.location.origin}/auth/reset-password`,
+            redirectTo: `${window.location.origin}/reset-password`,
         });
 
         if (error) {
+            console.error('❌ [AuthService] resetPasswordForEmail failed:', error);
             throw new Error(error.message);
         }
+
+        console.log('✅ [AuthService] resetPasswordForEmail succeeded');
     },
 
     getCurrentUser: async (): Promise<User | null> => {

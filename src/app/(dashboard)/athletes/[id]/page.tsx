@@ -8,7 +8,6 @@ import { User } from '@/features/auth/types';
 import { Training } from '@/features/trainings/types';
 import api from '@/lib/axios';
 import { WeekCalendar } from '@/features/calendar/components/WeekCalendar';
-import { AssignTrainingModal } from '@/features/trainings/components/AssignTrainingModal';
 import { Activity as ActivityIcon, Calendar as CalendarIcon, FileText, CheckCircle2, TrendingUp, Plus, Trash, Clock } from 'lucide-react';
 import { trainingsService } from '@/features/trainings/services/trainings.service';
 import { Button } from '@/components/ui/button';
@@ -69,7 +68,6 @@ export default function AthleteDetailPage() {
     const [assignments, setAssignments] = useState<TrainingAssignment[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedDate, setSelectedDate] = useState(new Date());
-    const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
     const [weeklyData, setWeeklyData] = useState<{ day: string; value: number }[]>([]);
     const [performanceData, setPerformanceData] = useState<{ week: string; value: number }[]>([]);
 
@@ -260,17 +258,13 @@ export default function AthleteDetailPage() {
                             </div>
                         </div>
 
-                        <Button onClick={() => setIsAssignModalOpen(true)} className="w-fit">
-                            <Plus className="h-4 mr-2" />
-                            Assign Workout
-                        </Button>
+                        <Link href={`/workouts/assign?athleteId=${id}`}>
+                            <Button className="w-fit">
+                                <Plus className="h-4 mr-2" />
+                                Assign Workout
+                            </Button>
+                        </Link>
                     </div>
-
-                    <AssignTrainingModal
-                        athleteId={id}
-                        isOpen={isAssignModalOpen}
-                        onClose={() => setIsAssignModalOpen(false)}
-                    />
 
                     {/* Profile Stats */}
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm w-full">

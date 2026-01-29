@@ -19,7 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Search, UserPlus, AlertTriangle, Mail, Phone } from 'lucide-react';
 import api from '@/lib/axios';
 import { InviteAthleteModal } from '@/features/invitations/components/InviteAthleteModal';
-import { AssignTrainingModal } from '@/features/trainings/components/AssignTrainingModal';
+
 
 interface AthleteData {
   id: string;
@@ -56,8 +56,7 @@ export default function AthletesPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
-  const [assignModalOpen, setAssignModalOpen] = useState(false);
-  const [selectedAthleteId, setSelectedAthleteId] = useState<string | undefined>(undefined);
+
 
   useEffect(() => {
     const fetchAthletes = async () => {
@@ -132,15 +131,7 @@ export default function AthletesPage() {
         onClose={() => setInviteModalOpen(false)}
       />
 
-      {/* Assign Training Modal */}
-      <AssignTrainingModal
-        athleteId={selectedAthleteId}
-        isOpen={assignModalOpen}
-        onClose={() => {
-          setAssignModalOpen(false);
-          setSelectedAthleteId(undefined);
-        }}
-      />
+
 
       {/* Search */}
       <div className="relative max-w-md">
@@ -185,15 +176,10 @@ export default function AthletesPage() {
                       Ver Perfil
                     </Link>
                   </Button>
-                  <Button
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => {
-                      setSelectedAthleteId(athlete.id);
-                      setAssignModalOpen(true);
-                    }}
-                  >
-                    Asignar Entreno
+                  <Button asChild size="sm" className="flex-1">
+                    <Link href={`/workouts/assign?athleteId=${athlete.id}`}>
+                      Asignar Entreno
+                    </Link>
                   </Button>
                 </div>
               </CardContent>
@@ -315,14 +301,10 @@ export default function AthletesPage() {
                               Ver Perfil
                             </Link>
                           </Button>
-                          <Button
-                            size="sm"
-                            onClick={() => {
-                              setSelectedAthleteId(athlete.id);
-                              setAssignModalOpen(true);
-                            }}
-                          >
-                            Asignar Entreno
+                          <Button asChild size="sm">
+                            <Link href={`/workouts/assign?athleteId=${athlete.id}`}>
+                              Asignar Entreno
+                            </Link>
                           </Button>
                         </div>
                       </TableCell>

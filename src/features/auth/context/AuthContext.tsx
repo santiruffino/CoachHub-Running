@@ -20,13 +20,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
-    const supabase = createClient();
+    // Use useState to ensure supabase client is only created once
+    const [supabase] = useState(() => createClient());
 
     useEffect(() => {
         // Get initial session
         const initializeAuth = async () => {
+            console.log('🚀 [AuthContext] Initializing auth...');
             try {
                 const currentUser = await authService.getCurrentUser();
+                console.log('✅ [AuthContext] Current user fetched:', currentUser ? 'Found' : 'Null');
                 setUser(currentUser);
             } catch (error) {
                 console.error('Failed to get current user', error);
@@ -42,6 +45,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const {
             data: { subscription },
         } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
+            console.log('🔐 [AuthContext] Auth State Change:', event);
+            console.log('🔍 [AuthContext] Session:', session ? 'Exists' : 'Null');
+            if (session?.user) console.log('👤 [AuthContext] User ID:', session.user.id);
+            if (typeof window !== 'undefined') console.log('🌐 [AuthContext] URL Hash:', window.location.hash);
+
+            if (event === 'PASSWORD_RECOVERY') {
+                console.log('🛑 [AuthContext] PASSWORD_RECOVERY event detected! Redirecting...');
+                router.push('/reset-password');
+                return;
+            }
+
             if (session?.user) {
                 // User logged in or session refreshed
                 try {
@@ -60,7 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return () => {
             subscription.unsubscribe();
         };
-    }, [supabase.auth]);
+    }, [supabase.auth, router]);
 
     // Effect to enforce password change if user has the flag
     useEffect(() => {
@@ -87,9 +101,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     const logout = async () => {
-        await authService.logout();
+        console.log('👋 [AuthContext] Logout called - Starting optimistic cleanup');
+
+        // 1. Clear state immediately
         setUser(null);
+
+        // 2. Redirect immediately
+        console.log('🔄 [AuthContext] Redirecting to login (Optimistic)');
         router.push('/login');
+
+        // 3. Perform backend cleanup in background
+        try {
+            await authService.logout();
+            console.log('✅ [AuthContext] AuthService.logout finished (Background)');
+        } catch (e) {
+            console.error('❌ [AuthContext] Logout background task failed', e);
+        }
     };
 
     return (

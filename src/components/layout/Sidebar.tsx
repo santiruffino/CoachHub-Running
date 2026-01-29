@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, UsersRound, Calendar, TrendingUp, Settings, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Users, UsersRound, Calendar, TrendingUp, Settings, Menu, X, Dumbbell } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 
@@ -11,6 +11,7 @@ const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['COACH', 'ATHLETE'] },
     { name: 'Athletes', href: '/athletes', icon: Users, roles: ['COACH'] },
     { name: 'Groups', href: '/groups', icon: UsersRound, roles: ['COACH'] },
+    { name: 'Workout Library', href: '/workouts/library', icon: Dumbbell, roles: ['COACH'] },
     { name: 'Trainings', href: '/trainings', icon: Calendar, roles: ['COACH'] },
     { name: 'Calendar', href: '/dashboard/calendar', icon: Calendar, roles: ['COACH', 'ATHLETE'] },
     { name: 'Progress', href: '#', icon: TrendingUp, roles: ['COACH', 'ATHLETE'] },

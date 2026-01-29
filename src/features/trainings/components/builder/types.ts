@@ -1,6 +1,16 @@
 export type BlockType = 'warmup' | 'interval' | 'recovery' | 'cooldown';
 export type DurationType = 'distance' | 'time';
-export type TargetType = 'heart_rate' | 'pace' | 'hr_zone' | 'vam_zone' | 'power';
+export type TargetType =
+    | 'heart_rate'
+    | 'pace'
+    | 'hr_zone'
+    | 'vam_zone'
+    | 'power'
+    | 'threshold_pace' // % of threshold pace
+    | 'threshold_hr'   // % of threshold HR
+    | 'threshold_hr'   // % of threshold HR
+    | 'hr_max'         // % of max HR
+    | 'no_target';     // No specific target
 
 export interface WorkoutBlock {
     id: string;
@@ -16,12 +26,25 @@ export interface WorkoutBlock {
         min: number | string;
         max: number | string;
     };
-    intensity?: number; // RPE value (0-100) - optional
+    rpe?: number; // RPE value (1-10) - optional
+    intensity?: number; // Deprecated: old intensity value
     notes?: string;
     group?: {
         id: string;
         reps: number;
     };
+    // New fields for redesign
+    endOnLapButton?: boolean; // End step when lap button is pressed
+    cadenceRange?: {
+        min: number;
+        max: number;
+    };
+}
+
+export interface WorkoutTotals {
+    distance: number; // in km
+    duration: number; // in seconds
+    tss: number; // Training Stress Score
 }
 
 export type WorkoutBuilderStore = {

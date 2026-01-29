@@ -11,7 +11,11 @@ import { WorkoutMatch } from '@/features/trainings/types';
 export default function AthleteDashboard({ user }: { user: any }) {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [allSessions, setAllSessions] = useState<SessionData[]>([]);
-    const [eventsIndicator, setEventsIndicator] = useState<{ date: Date; hasEvent: boolean }[]>([]);
+    const [eventsIndicator, setEventsIndicator] = useState<{
+        date: Date;
+        hasPlanned?: boolean;
+        hasCompleted?: boolean;
+    }[]>([]);
 
     const fetchData = async () => {
         try {
@@ -169,7 +173,30 @@ export default function AthleteDashboard({ user }: { user: any }) {
             setAllSessions(merged);
 
             // Pre-calculate days with events for the calendar indicators
-            setEventsIndicator(merged.map(s => ({ date: s.date as Date, hasEvent: true })));
+            // Group by date and determine which types of events exist
+            const eventsByDate = new Map<string, { hasPlanned: boolean; hasCompleted: boolean }>();
+
+            merged.forEach(session => {
+                const dateStr = format(session.date as Date, 'yyyy-MM-dd');
+                const existing = eventsByDate.get(dateStr) || { hasPlanned: false, hasCompleted: false };
+
+                if (session.type === 'PLANNED') {
+                    existing.hasPlanned = true;
+                } else {
+                    existing.hasCompleted = true;
+                }
+
+                eventsByDate.set(dateStr, existing);
+            });
+
+            // Convert map to array format expected by WeekCalendar
+            const indicators = Array.from(eventsByDate.entries()).map(([dateStr, types]) => ({
+                date: new Date(dateStr),
+                hasPlanned: types.hasPlanned,
+                hasCompleted: types.hasCompleted
+            }));
+
+            setEventsIndicator(indicators);
 
         } catch (error) {
             console.error('Failed to fetch dashboard data', error);

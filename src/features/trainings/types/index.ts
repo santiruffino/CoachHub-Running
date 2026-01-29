@@ -14,6 +14,7 @@ export interface Training {
     blocks: any; // JSON
     coachId: string;
     isTemplate?: boolean;
+    expectedRpe?: number; // Global expected RPE (1-10)
 }
 
 // TODO: Define Block structure if time permits
@@ -24,6 +25,7 @@ export interface CreateTrainingDto {
     type: TrainingType;
     blocks?: any;
     isTemplate?: boolean;
+    expectedRpe?: number;
 }
 
 export interface AssignTrainingDto {

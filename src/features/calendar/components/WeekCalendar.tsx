@@ -9,7 +9,11 @@ import { es } from 'date-fns/locale';
 interface WeekCalendarProps {
     date: Date;
     onDateSelect: (date: Date) => void;
-    events: { date: Date; hasEvent: boolean }[];
+    events: {
+        date: Date;
+        hasPlanned?: boolean;
+        hasCompleted?: boolean;
+    }[];
 }
 
 export function WeekCalendar({ date, onDateSelect, events }: WeekCalendarProps) {
@@ -21,7 +25,7 @@ export function WeekCalendar({ date, onDateSelect, events }: WeekCalendarProps) 
         if (format(weekStart, 'yyyy-MM-dd') !== format(currentWeekStart, 'yyyy-MM-dd')) {
             setCurrentWeekStart(weekStart);
         }
-    }, [date]);
+    }, [date, currentWeekStart]);
 
     const weekDays = Array.from({ length: 7 }).map((_, i) => addDays(currentWeekStart, i));
 
@@ -48,7 +52,11 @@ export function WeekCalendar({ date, onDateSelect, events }: WeekCalendarProps) 
                 {weekDays.map((day) => {
                     const isSelected = isSameDay(day, date);
                     const isToday = isSameDay(day, new Date());
-                    const hasEvent = events.some(e => isSameDay(e.date, day) && e.hasEvent);
+
+                    // Find events for this day
+                    const dayEvents = events.filter(e => isSameDay(e.date, day));
+                    const hasPlanned = dayEvents.some(e => e.hasPlanned);
+                    const hasCompleted = dayEvents.some(e => e.hasCompleted);
 
                     return (
                         <div key={day.toISOString()} className="flex flex-col items-center gap-1 cursor-pointer" onClick={() => onDateSelect(day)}>
@@ -61,8 +69,17 @@ export function WeekCalendar({ date, onDateSelect, events }: WeekCalendarProps) 
                                 isToday && !isSelected && "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 font-bold"
                             )}>
                                 <span className="text-sm font-medium">{format(day, 'd')}</span>
-                                {hasEvent && !isSelected && (
-                                    <div className="absolute -bottom-1 w-1 h-1 bg-orange-500 rounded-full" />
+
+                                {/* Event indicators - show both if both exist */}
+                                {!isSelected && (hasPlanned || hasCompleted) && (
+                                    <div className="absolute -bottom-1 flex gap-0.5">
+                                        {hasPlanned && (
+                                            <div className="w-1 h-1 bg-blue-500 rounded-full" />
+                                        )}
+                                        {hasCompleted && (
+                                            <div className="w-1 h-1 bg-orange-500 rounded-full" />
+                                        )}
+                                    </div>
                                 )}
                             </div>
                         </div>

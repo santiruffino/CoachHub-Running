@@ -36,7 +36,9 @@ export function Navbar() {
         : 'U';
 
     const handleLogout = async () => {
+        console.log('🚪 [Navbar] Logout clicked');
         await logout();
+        console.log('🚪 [Navbar] Logout completed');
     };
 
     return (

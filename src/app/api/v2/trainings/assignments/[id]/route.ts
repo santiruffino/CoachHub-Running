@@ -73,8 +73,17 @@ export async function GET(
             email: string;
         };
 
+        // Fetch user's profile to get the correct role
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user!.id)
+            .single();
+
+        const userRole = profile?.role || 'ATHLETE';
+
         // Authorization check: must be the assigned athlete OR a coach
-        if (user!.role === 'ATHLETE' && assignedUser.id !== user!.id) {
+        if (userRole === 'ATHLETE' && assignedUser.id !== user!.id) {
             return NextResponse.json(
                 { error: 'Not authorized to view this assignment' },
                 { status: 403 }
@@ -82,7 +91,7 @@ export async function GET(
         }
 
         // Coaches can view any assignment, but can only edit if they own the training
-        const canEdit = user!.role === 'COACH' && training.coach_id === user!.id;
+        const canEdit = userRole === 'COACH' && training.coach_id === user!.id;
 
         return NextResponse.json({
             id: assignment.id,
@@ -135,7 +144,7 @@ export async function PATCH(
         const { supabase, user } = authResult;
         const assignmentId = id;
         const body = await request.json();
-        const { blocks } = body;
+        const { blocks, expectedRpe } = body;
 
         if (!blocks || !Array.isArray(blocks)) {
             return NextResponse.json(
@@ -183,7 +192,9 @@ export async function PATCH(
             );
         }
 
-        // Create a new non-template training with updated blocks
+        // Create a new non-template training with updated blocks (forking)
+        // We do this to preserve the history of the original training while allowing
+        // the coach to customize this specific assignment.
         const { data: newTraining, error: createError } = await supabase
             .from('trainings')
             .insert({
@@ -193,6 +204,8 @@ export async function PATCH(
                 blocks: blocks,
                 is_template: false,
                 coach_id: user!.id,
+                // We don't necessarily copy expected_rpe here because the assignment
+                // has its own expected_rpe field which overrides it.
             })
             .select()
             .single();
@@ -205,10 +218,15 @@ export async function PATCH(
             );
         }
 
-        // Update assignment to reference new training
+        // Update assignment to reference new training and update RPE if provided
+        const updatePayload: any = { training_id: newTraining.id };
+        if (expectedRpe !== undefined) {
+            updatePayload.expected_rpe = expectedRpe;
+        }
+
         const { error: updateError } = await supabase
             .from('training_assignments')
-            .update({ training_id: newTraining.id })
+            .update(updatePayload)
             .eq('id', assignmentId);
 
         if (updateError) {

@@ -33,7 +33,15 @@ export function AlertCardItem({
           <div className="flex items-center gap-2 mb-1">
             <p className="text-sm font-medium truncate">{name}</p>
             {badge && (
-              <Badge variant={badge.variant || 'default'} className="shrink-0">
+              <Badge
+                variant={
+                  badge.variant === 'error' ? 'destructive' :
+                    badge.variant === 'warning' ? 'secondary' :
+                      badge.variant === 'info' ? 'default' :
+                        (badge.variant as any) || 'default'
+                }
+                className="shrink-0"
+              >
                 {badge.label}
               </Badge>
             )}
@@ -47,9 +55,9 @@ export function AlertCardItem({
           {progress && (
             <div className="mt-2 space-y-1">
               <p className="text-xs text-muted-foreground">{progress.label}</p>
-              <Progress 
-                value={progress.value} 
-                className="h-2" 
+              <Progress
+                value={progress.value}
+                className="h-2"
                 indicatorClassName={progress.color}
               />
             </div>

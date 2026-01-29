@@ -102,6 +102,11 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
             setSelectedTraining(res.data);
             // Clone the blocks for editing
             setEditedBlocks(JSON.parse(JSON.stringify(res.data.blocks || [])));
+
+            // Set default RPE if available
+            if (res.data.expectedRpe) {
+                setExpectedRpe(res.data.expectedRpe);
+            }
         } catch (e) {
             console.error('Failed to load training', e);
         }
@@ -133,7 +138,7 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
             return;
         }
 
-        // For athlete-specific flow with builder
+        // For athlete-specific flow with builder (creating new workout from scratch)
         if (athleteId && workoutSource === 'new') {
             if (editedBlocks.length === 0) {
                 setError('Please add at least one block to the workout.');
@@ -146,7 +151,7 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
 
                 // Create a new non-template training
                 const newTraining = await trainingsService.create({
-                    title: `Workout for ${format(new Date(scheduledDate), 'MMM d, yyyy')}`,
+                    title: workoutName || `Workout for ${format(new Date(scheduledDate), 'MMM d, yyyy')}`,
                     type: 'RUNNING' as any, // Default type, could be made configurable
                     description: 'Custom workout',
                     blocks: editedBlocks,
@@ -173,7 +178,52 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
             return;
         }
 
-        // For template-based flow
+        // For athlete-specific flow with template
+        if (athleteId && workoutSource === 'template') {
+            if (!selectedTrainingId) {
+                setError('Please select a workout.');
+                return;
+            }
+
+            try {
+                setLoading(true);
+                setError('');
+
+                let trainingIdToAssign = selectedTrainingId;
+
+                // If workout was edited, create a new one-off training
+                if (isEditingWorkout && selectedTraining) {
+                    const newTraining = await trainingsService.create({
+                        title: workoutName || selectedTraining.title,
+                        type: selectedTraining.type,
+                        description: 'Modified from template',
+                        blocks: editedBlocks,
+                        isTemplate: false
+                    });
+                    trainingIdToAssign = newTraining.data.id;
+                }
+
+                // Assign
+                await trainingsService.assign({
+                    trainingId: trainingIdToAssign,
+                    athleteIds: [athleteId],
+                    scheduledDate: new Date(scheduledDate).toISOString(),
+                    expectedRpe: expectedRpe,
+                    workoutName: workoutName || undefined,
+                });
+
+                onClose();
+                window.location.reload(); // Refresh to show new assignment
+            } catch (e) {
+                console.error(e);
+                setError('Failed to assign training.');
+            } finally {
+                setLoading(false);
+            }
+            return;
+        }
+
+        // For template-based flow (group or multi-athlete)
         if (!selectedTrainingId) {
             setError('Please select a workout.');
             return;
@@ -378,6 +428,30 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                                     ))}
                                 </div>
                             </div>
+
+                            {/* Edit Workout Section */}
+                            {selectedTraining && (
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                            Workout: {selectedTraining.title}
+                                        </label>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setIsEditingWorkout(!isEditingWorkout)}
+                                        >
+                                            {isEditingWorkout ? 'View Original' : 'Edit Workout'}
+                                        </Button>
+                                    </div>
+                                    {isEditingWorkout && (
+                                        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-2 h-[300px] overflow-hidden">
+                                            <WorkoutBuilder initialBlocks={editedBlocks} onChange={setEditedBlocks} athleteId={athleteId} />
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
                             {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
                         </div>
                         <DialogFooter className="mt-4 border-t pt-4">

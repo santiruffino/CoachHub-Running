@@ -32,6 +32,10 @@ interface WorkoutAssignment {
     canEdit: boolean;
 }
 
+import { Slider } from '@/components/ui/slider';
+
+// ... existing imports
+
 export default function WorkoutDetailsPage() {
     const params = useParams();
     const router = useRouter();
@@ -42,6 +46,7 @@ export default function WorkoutDetailsPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [editedBlocks, setEditedBlocks] = useState<WorkoutBlock[]>([]);
+    const [editedExpectedRpe, setEditedExpectedRpe] = useState<number>(5);
     const [hasChanges, setHasChanges] = useState(false);
     const [error, setError] = useState('');
 
@@ -52,6 +57,7 @@ export default function WorkoutDetailsPage() {
                 const response = await api.get<WorkoutAssignment>(`/v2/trainings/assignments/${assignmentId}`);
                 setAssignment(response.data);
                 setEditedBlocks(response.data.training.blocks || []);
+                setEditedExpectedRpe(response.data.expectedRpe || 5);
             } catch (err: any) {
                 console.error('Failed to fetch assignment:', err);
                 setError(err.response?.data?.error || 'Failed to load workout');
@@ -79,12 +85,14 @@ export default function WorkoutDetailsPage() {
 
             await api.patch(`/v2/trainings/assignments/${assignmentId}`, {
                 blocks: editedBlocks,
+                expectedRpe: editedExpectedRpe
             });
 
             // Refresh assignment data
             const response = await api.get<WorkoutAssignment>(`/v2/trainings/assignments/${assignmentId}`);
             setAssignment(response.data);
             setEditedBlocks(response.data.training.blocks || []);
+            setEditedExpectedRpe(response.data.expectedRpe || 5);
             setHasChanges(false);
 
             alert('Workout updated successfully!');
@@ -234,6 +242,53 @@ export default function WorkoutDetailsPage() {
                             <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
                         </div>
                     )}
+                </CardContent>
+            </Card>
+
+            {/* Global RPE & Notes */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-lg">Workout Settings</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <div>
+                        <div className="flex items-center justify-between mb-2">
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Global Expected RPE (Entire Workout)
+                            </label>
+                            <span className="text-sm font-bold text-brand-primary">
+                                {assignment.expectedRpe || '-'} / 10
+                            </span>
+                        </div>
+                        {readOnly ? (
+                            <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                                <div
+                                    className="h-full bg-brand-primary"
+                                    style={{ width: `${(assignment.expectedRpe || 0) * 10}%` }}
+                                />
+                            </div>
+                        ) : (
+                            <div className="flex gap-4">
+                                <Slider
+                                    value={[editedExpectedRpe]}
+                                    min={1}
+                                    max={10}
+                                    step={1}
+                                    onValueChange={(val) => {
+                                        setEditedExpectedRpe(val[0]);
+                                        setHasChanges(true);
+                                    }}
+                                    className="flex-1"
+                                />
+                            </div>
+                        )}
+                        <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+                            <span>Easy</span>
+                            <span>Moderate</span>
+                            <span>Hard</span>
+                            <span>Max Effort</span>
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
 
