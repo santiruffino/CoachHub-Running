@@ -29,6 +29,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { HeartRateZonesChart } from '../components/HeartRateZonesChart';
 import { PaceZonesChart } from '../components/PaceZonesChart';
+import { flattenWorkout, matchLapsToWorkout, MatchedLap } from '@/features/trainings/utils/workoutMatcher';
 
 // Dynamic import for ECharts to avoid SSR issues
 const ActivityChart = dynamic(
@@ -144,6 +145,10 @@ export default function ActivityDetailPage() {
     const [isAthlete, setIsAthlete] = useState(false);
     const [heartrateZones, setHeartrateZones] = useState<{ zones: Array<{ min: number; max: number }> } | null>(null);
 
+    // Workout matching state
+    const [matchedLaps, setMatchedLaps] = useState<MatchedLap[]>([]);
+    const [workoutAssignment, setWorkoutAssignment] = useState<any>(null);
+
     useEffect(() => {
         const fetchActivity = async () => {
             try {
@@ -191,6 +196,45 @@ export default function ActivityDetailPage() {
 
         fetchHRZones();
     }, [activity?._ownerId]);
+
+    // Fetch workout assignment and match laps
+    useEffect(() => {
+        const fetchAndMatchWorkout = async () => {
+            if (!activity || !activity.laps || activity.laps.length === 0) return;
+
+            try {
+                // Get activity date
+                const activityDate = activity.start_date.split('T')[0];
+
+                // Fetch owner's assignments for that date
+                const assignmentsRes = await api.get(`/v2/users/${activity._ownerId}/details`);
+                const assignments = assignmentsRes.data?.assignments || [];
+
+                // Find assignment matching this date
+                const matchingAssignment = assignments.find((a: any) => {
+                    const assignmentDate = a.scheduled_date?.split('T')[0];
+                    return assignmentDate === activityDate;
+                });
+
+                if (matchingAssignment?.workout?.blocks) {
+                    setWorkoutAssignment(matchingAssignment);
+
+                    // Flatten workout and match laps
+                    const flatSteps = flattenWorkout(matchingAssignment.workout.blocks);
+                    const matched = matchLapsToWorkout(activity.laps, flatSteps);
+                    setMatchedLaps(matched);
+                } else {
+                    // No workout found for this date
+                    setMatchedLaps([]);
+                }
+            } catch (err) {
+                console.error('Failed to fetch and match workout:', err);
+                setMatchedLaps([]);
+            }
+        };
+
+        fetchAndMatchWorkout();
+    }, [activity]);
 
     // Fetch existing feedback
     useEffect(() => {
@@ -644,28 +688,52 @@ export default function ActivityDetailPage() {
                                                 {activity.laps[0]?.average_cadence && (
                                                     <TableHead>Avg Cadence</TableHead>
                                                 )}
+                                                <TableHead>Workout Step</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {activity.laps.map((lap) => (
-                                                <TableRow key={lap.id}>
-                                                    <TableCell className="font-medium">{lap.lap_index}</TableCell>
-                                                    <TableCell>{(lap.distance / 1000).toFixed(2)} km</TableCell>
-                                                    <TableCell>{formatTime(lap.moving_time)}</TableCell>
-                                                    <TableCell>{formatPace(lap.average_speed)}</TableCell>
-                                                    <TableCell>{lap.total_elevation_gain.toFixed(1)} m</TableCell>
-                                                    {lap.average_heartrate && (
+                                            {activity.laps.map((lap, idx) => {
+                                                const matchedLap = matchedLaps.find(m => m.lapIndex === idx);
+                                                const stepTypeColors: Record<string, string> = {
+                                                    warmup: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+                                                    active: 'bg-orange-500/10 text-orange-500 border-orange-500/20',
+                                                    recovery: 'bg-green-500/10 text-green-500 border-green-500/20',
+                                                    cooldown: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
+                                                    other: 'bg-gray-500/10 text-gray-500 border-gray-500/20',
+                                                };
+
+                                                return (
+                                                    <TableRow key={lap.id}>
+                                                        <TableCell className="font-medium">{lap.lap_index}</TableCell>
+                                                        <TableCell>{(lap.distance / 1000).toFixed(2)} km</TableCell>
+                                                        <TableCell>{formatTime(lap.moving_time)}</TableCell>
+                                                        <TableCell>{formatPace(lap.average_speed)}</TableCell>
+                                                        <TableCell>{lap.total_elevation_gain.toFixed(1)} m</TableCell>
+                                                        {lap.average_heartrate && (
+                                                            <TableCell>
+                                                                <span className={`px-2 py-1 rounded font-medium ${getHRZoneColor(lap.average_heartrate)}`}>
+                                                                    {lap.average_heartrate.toFixed(0)} bpm
+                                                                </span>
+                                                            </TableCell>
+                                                        )}
+                                                        {lap.average_cadence && (
+                                                            <TableCell>{lap.average_cadence.toFixed(0)} spm</TableCell>
+                                                        )}
                                                         <TableCell>
-                                                            <span className={`px-2 py-1 rounded font-medium ${getHRZoneColor(lap.average_heartrate)}`}>
-                                                                {lap.average_heartrate.toFixed(0)} bpm
-                                                            </span>
+                                                            {matchedLap ? (
+                                                                <Badge
+                                                                    variant="outline"
+                                                                    className={`${stepTypeColors[matchedLap.stepType]} border`}
+                                                                >
+                                                                    {matchedLap.stepLabel}
+                                                                </Badge>
+                                                            ) : (
+                                                                <span className="text-xs text-muted-foreground">-</span>
+                                                            )}
                                                         </TableCell>
-                                                    )}
-                                                    {lap.average_cadence && (
-                                                        <TableCell>{lap.average_cadence.toFixed(0)} spm</TableCell>
-                                                    )}
-                                                </TableRow>
-                                            ))}
+                                                    </TableRow>
+                                                );
+                                            })}
                                         </TableBody>
                                     </Table>
                                 </TabsContent>

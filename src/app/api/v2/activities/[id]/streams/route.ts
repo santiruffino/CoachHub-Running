@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/api-helpers';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 
 /**
  * GET /api/v2/activities/[id]/streams
@@ -35,24 +36,41 @@ export async function GET(
 
         // Check authorization: user must own the activity or be the coach of the athlete
         if (activity.user_id !== user.id) {
-            // Check if current user is a coach of this athlete
-            const { data: coachRelation } = await supabase
-                .from('coach_athletes')
-                .select('id')
-                .eq('coach_id', user.id)
-                .eq('athlete_id', activity.user_id)
+            // Check if they're a coach viewing an athlete's activity
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', user.id)
                 .single();
 
-            if (!coachRelation) {
+            if (profile?.role === 'COACH') {
+                // Verify athlete belongs to this coach via coach_id
+                const { data: athleteProfile } = await supabase
+                    .from('profiles')
+                    .select('coach_id')
+                    .eq('id', activity.user_id)
+                    .single();
+
+                if (!athleteProfile || athleteProfile.coach_id !== user.id) {
+                    return NextResponse.json(
+                        { error: 'Unauthorized to view this activity streams' },
+                        { status: 403 }
+                    );
+                }
+            } else {
                 return NextResponse.json(
-                    { error: 'Unauthorized to view this activity' },
+                    { error: 'Unauthorized to view this activity streams' },
                     { status: 403 }
                 );
             }
         }
 
+        // Use service role client to bypass RLS when fetching athlete's Strava connection
+        // This is safe because we've already verified authorization above
+        const serviceSupabase = createServiceRoleClient();
+
         // Get the athlete's Strava access token
-        const { data: athlete, error: athleteError } = await supabase
+        const { data: athlete, error: athleteError } = await serviceSupabase
             .from('strava_connections')
             .select('access_token, refresh_token, expires_at')
             .eq('user_id', activity.user_id)
@@ -92,8 +110,8 @@ export async function GET(
             const refreshData = await refreshResponse.json();
             accessToken = refreshData.access_token;
 
-            // Update tokens in database
-            await supabase
+            // Update tokens in database using service role client
+            await serviceSupabase
                 .from('strava_connections')
                 .update({
                     access_token: refreshData.access_token,
