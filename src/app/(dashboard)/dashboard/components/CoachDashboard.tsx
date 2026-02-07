@@ -41,22 +41,338 @@ export default function CoachDashboard({ user }: { user: any }) {
       try {
         setLoading(true);
 
-        const response = await api.get('/v2/dashboard/coach');
-        const data = response.data;
+        // Fetch all necessary data in parallel - using new stats endpoint for athletes
+        const [groupsRes, trainingsRes, athletesWithStatsRes] = await Promise.all([
+          api.get('/v2/groups'),
+          api.get('/v2/trainings'),
+          api.get('/v2/users/athletes/stats'),
+        ]);
 
-        setStats(data.stats);
-        setRecentSessions(data.recentSessions);
-        setWeeklyData(data.charts.weeklyWorkouts);
-        setPerformanceData(data.charts.performanceTrend);
-        setRpeMismatches(data.alerts.rpeMismatches);
-        setMissingWorkouts(data.alerts.missingWorkouts);
-        setLowCompliance(data.alerts.lowCompliance);
-        setAthleteFeedback(data.alerts.recentFeedback);
-        setGroupCompliance(data.groups);
+        const groups = groupsRes.data;
+        const trainings = trainingsRes.data;
+        const athletesWithStats = athletesWithStatsRes.data;
 
-        // Note: raw groups are no longer needed in state as all calculations happened on backend
-        setGroups(data.groups.map((g: any) => ({ id: g.groupId, name: g.groupName })));
+        // Calculate unique active athletes from groups
+        const uniqueAthletes = new Set<string>();
+        groups.forEach((group: any) => {
+          group.members?.forEach((member: any) => {
+            if (member.athlete) {
+              uniqueAthletes.add(member.athlete.id);
+            }
+          });
+        });
 
+        // 1. Fetch all athlete details and activities in parallel
+        // This avoids the N+1 sequential loop bottleneck
+        const athleteDataPromises = athletesWithStats.map(async (athlete: any) => {
+          try {
+            const [detailsRes, activitiesRes] = await Promise.all([
+              api.get(`/v2/users/${athlete.id}/details`),
+              api.get(`/v2/users/${athlete.id}/activities`)
+            ]);
+            return {
+              athleteId: athlete.id,
+              athleteName: athlete.name || athlete.email,
+              details: detailsRes.data,
+              activities: activitiesRes.data || []
+            };
+          } catch (err) {
+            console.error(`Failed to fetch data for athlete ${athlete.id}`, err);
+            return { athleteId: athlete.id, athleteName: athlete.name || athlete.email, details: null, activities: [] };
+          }
+        });
+
+        const athleteDataResults = await Promise.all(athleteDataPromises);
+
+        // Map for quick access to athlete details (deduplication)
+        const athleteDataMap = new Map();
+        athleteDataResults.forEach(data => athleteDataMap.set(data.athleteId, data));
+
+        // 2. Collect all assignments for stats and charts
+        const allAssignments: any[] = [];
+        athleteDataResults.forEach((data) => {
+          if (data.details?.assignments) {
+            data.details.assignments.forEach((assignment: any) => {
+              allAssignments.push({
+                ...assignment,
+                athleteName: data.athleteName,
+                athleteId: data.athleteId,
+              });
+            });
+          }
+        });
+
+        // 3. Prepare for RPE Mismatch and Feedback collection
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const sevenDaysAgo = new Date(today);
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+        const todayStr = format(today, 'yyyy-MM-dd');
+        const yesterdayStr = format(yesterday, 'yyyy-MM-dd');
+        const sevenDaysAgoStr = format(sevenDaysAgo, 'yyyy-MM-dd');
+
+        // Identify which activities need feedback fetched
+        const feedbackPromises: Promise<any>[] = [];
+
+        athleteDataResults.forEach(data => {
+          const recentActivities = data.activities.filter((activity: any) => {
+            const activityDateStr = activity.start_date.split('T')[0];
+            // Need feedback for:
+            // - RPE Mismatch (today/yesterday)
+            // - New Feedback (last 7 days)
+            return activityDateStr >= sevenDaysAgoStr;
+          });
+
+          recentActivities.forEach((activity: any) => {
+            if (activity.external_id) {
+              feedbackPromises.push(
+                api.get(`/v2/activities/${activity.external_id}/feedback`)
+                  .then(res => ({
+                    athleteId: data.athleteId,
+                    athleteName: data.athleteName,
+                    activity,
+                    feedback: res.data
+                  }))
+                  .catch(() => null)
+              );
+            }
+          });
+        });
+
+        // Fetch all necessary feedback in parallel
+        const feedbackResults = (await Promise.all(feedbackPromises)).filter(Boolean);
+
+        // 4. Calculate RPE Mismatches
+        const rpeMismatchList: RPEMismatch[] = [];
+        feedbackResults.forEach(item => {
+          const { athleteId, athleteName, activity, feedback } = item;
+          const activityDateStr = activity.start_date.split('T')[0];
+
+          // Only check RPE for today and yesterday
+          if ((activityDateStr === todayStr || activityDateStr === yesterdayStr) && feedback?.rpe) {
+            const data = athleteDataMap.get(athleteId);
+            const assignments = data?.details?.assignments || [];
+
+            const matchingAssignment = assignments.find((a: any) => {
+              const assignmentDateStr = a.scheduled_date.split('T')[0];
+              return assignmentDateStr === activityDateStr && a.completed;
+            });
+
+            if (matchingAssignment?.expected_rpe) {
+              const difference = Math.abs(feedback.rpe - matchingAssignment.expected_rpe);
+              if (difference >= 3) {
+                rpeMismatchList.push({
+                  athleteId,
+                  athleteName,
+                  workoutType: activity.type || 'Entrenamiento',
+                  expectedRPE: matchingAssignment.expected_rpe,
+                  actualRPE: feedback.rpe,
+                  difference,
+                });
+              }
+            }
+          }
+        });
+
+        rpeMismatchList.sort((a, b) => b.difference - a.difference);
+        setRpeMismatches(rpeMismatchList.slice(0, 5));
+
+        // 5. Collect Recent Athlete Feedback with Comments
+        const finalFeedbackList = feedbackResults
+          .filter(item => {
+            const activityDateStr = item.activity.start_date.split('T')[0];
+            return activityDateStr >= sevenDaysAgoStr && item.feedback?.comments && item.feedback.comments.trim() !== '';
+          })
+          .map(item => {
+            const activityDate = new Date(item.activity.start_date);
+            const hoursDiff = Math.floor((today.getTime() - activityDate.getTime()) / (1000 * 60 * 60));
+            return {
+              athleteId: item.athleteId,
+              athleteName: item.athleteName,
+              activityType: item.activity.type || 'Workout',
+              comments: item.feedback.comments,
+              rpe: item.feedback.rpe,
+              timestamp: hoursDiff < 24 ? `${hoursDiff}h ago` : `${Math.floor(hoursDiff / 24)}d ago`,
+              activityDate: item.activity.start_date
+            };
+          })
+          .sort((a, b) => new Date(b.activityDate).getTime() - new Date(a.activityDate).getTime())
+          .slice(0, 5);
+
+        setAthleteFeedback(finalFeedbackList);
+
+        // --- Rest of calculation logic (already uses allAssignments and athleteDataResults) ---
+
+        // Calculate overall stats
+        const completedCount = allAssignments.filter((a) => a.completed).length;
+        const completedToday = allAssignments.filter((a) => {
+          const assignmentDateStr = a.scheduled_date.split('T')[0];
+          return assignmentDateStr === todayStr && a.completed;
+        }).length;
+
+        const totalAssignments = allAssignments.length;
+        const weekStart = startOfWeek(today, { weekStartsOn: 1 });
+        const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
+        const weekStartStr = format(weekStart, 'yyyy-MM-dd');
+        const weekEndStr = format(weekEnd, 'yyyy-MM-dd');
+
+        const thisWeekSessions = allAssignments.filter((a) => {
+          const assignmentDateStr = a.scheduled_date.split('T')[0];
+          return assignmentDateStr >= weekStartStr && assignmentDateStr <= weekEndStr;
+        }).length;
+
+        const thisWeekCompleted = allAssignments.filter((a) => {
+          const assignmentDateStr = a.scheduled_date.split('T')[0];
+          return assignmentDateStr >= weekStartStr && assignmentDateStr <= weekEndStr && a.completed;
+        }).length;
+
+        const thisWeekCompletionRate = thisWeekSessions > 0
+          ? Math.round((thisWeekCompleted / thisWeekSessions) * 100)
+          : 0;
+
+        const nextWeekStart = addWeeks(startOfWeek(today, { weekStartsOn: 1 }), 1);
+        const nextWeekEnd = endOfWeek(nextWeekStart, { weekStartsOn: 1 });
+        const nextWeekStartStr = format(nextWeekStart, 'yyyy-MM-dd');
+        const nextWeekEndStr = format(nextWeekEnd, 'yyyy-MM-dd');
+
+        const athletesWithNextWeekWorkouts = new Set<string>();
+        allAssignments.forEach((assignment) => {
+          const assignmentDateStr = assignment.scheduled_date.split('T')[0];
+          if (assignmentDateStr >= nextWeekStartStr && assignmentDateStr <= nextWeekEndStr) {
+            athletesWithNextWeekWorkouts.add(assignment.athleteId);
+          }
+        });
+
+        const athletesWithoutNextWeek = athletesWithStats.length - athletesWithNextWeekWorkouts.size;
+
+        let groupsWithoutNextWeek = 0;
+        groups.forEach((group: any) => {
+          const hasAnyMemberWithWorkout = group.members?.some((member: any) =>
+            member.athlete && athletesWithNextWeekWorkouts.has(member.athlete.id)
+          );
+          if (!hasAnyMemberWithWorkout) {
+            groupsWithoutNextWeek++;
+          }
+        });
+
+        setStats({
+          activeAthletes: uniqueAthletes.size,
+          totalAthletes: athletesWithStats.length,
+          activePlans: trainings.length,
+          totalPlans: trainings.length,
+          completedSessions: completedCount,
+          thisWeekSessions,
+          completedToday,
+          completionRate: thisWeekCompletionRate,
+          totalGroups: groups.length,
+          athletesWithoutNextWeek,
+          groupsWithoutNextWeek,
+        });
+
+        setGroups(groups);
+
+        // Group compliance calculation
+        const groupComplianceData = groups.map((group: any) => {
+          const groupMemberIds = group.members?.map((m: any) => m.athlete?.id).filter(Boolean) || [];
+          const groupAssignments = allAssignments.filter((a: any) => groupMemberIds.includes(a.athleteId));
+          const groupThisWeek = groupAssignments.filter((a: any) => {
+            const assignmentDateStr = a.scheduled_date.split('T')[0];
+            return assignmentDateStr >= weekStartStr && assignmentDateStr <= weekEndStr;
+          });
+          const groupCompleted = groupThisWeek.filter((a: any) => a.completed);
+          const rate = groupThisWeek.length > 0 ? Math.round((groupCompleted.length / groupThisWeek.length) * 100) : 0;
+
+          return {
+            groupId: group.id,
+            groupName: group.name,
+            athleteCount: groupMemberIds.length,
+            completionRate: rate
+          };
+        });
+        setGroupCompliance(groupComplianceData);
+
+        // Weekly data for bar chart
+        const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
+        setWeeklyData(weekDays.map(day => {
+          const dayStr = format(day, 'yyyy-MM-dd');
+          const count = allAssignments.filter((a) => a.scheduled_date.split('T')[0] === dayStr).length;
+          return { day: format(day, 'EEE').slice(0, 3), value: count };
+        }));
+
+        // Performance trend data (last 6 weeks)
+        const performanceWeeks = [];
+        for (let i = 5; i >= 0; i--) {
+          const weekStart = startOfWeek(subWeeks(today, i), { weekStartsOn: 1 });
+          const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
+          const weekStartStr = format(weekStart, 'yyyy-MM-dd');
+          const weekEndStr = format(weekEnd, 'yyyy-MM-dd');
+
+          const periodAssignments = allAssignments.filter((a) => {
+            const d = a.scheduled_date.split('T')[0];
+            return d >= weekStartStr && d <= weekEndStr;
+          });
+          const completed = periodAssignments.filter(a => a.completed).length;
+          const rate = periodAssignments.length > 0 ? Math.round((completed / periodAssignments.length) * 100) : 0;
+
+          performanceWeeks.push({ week: `Sem ${6 - i}`, value: rate });
+        }
+        setPerformanceData(performanceWeeks);
+
+        // Recent sessions
+        setRecentSessions([...allAssignments]
+          .sort((a, b) => new Date(b.scheduled_date).getTime() - new Date(a.scheduled_date).getTime())
+          .slice(0, 5)
+          .map((a) => ({
+            id: a.id,
+            athleteName: a.athleteName,
+            activityType: TRAINING_TYPE_LABELS[a.training?.type] || a.training?.type || 'Entrenamiento',
+            duration: undefined,
+            date: new Date(a.scheduled_date),
+            completed: a.completed,
+          }))
+        );
+
+        // Missing Workouts calculation
+        const missingWorkoutsList: MissingWorkout[] = [];
+        groups.forEach((group: any) => {
+          if (!group.members?.some((m: any) => m.athlete && athletesWithNextWeekWorkouts.has(m.athlete.id))) {
+            missingWorkoutsList.push({ id: group.id, name: group.name, type: 'group', memberCount: group.members?.length || 0 });
+          }
+        });
+
+        athletesWithStats.forEach((athlete: any) => {
+          if (!athletesWithNextWeekWorkouts.has(athlete.id)) {
+            const inGroupWithoutWorkouts = groups.some((g: any) =>
+              !g.members?.some((m: any) => m.athlete && athletesWithNextWeekWorkouts.has(m.athlete.id)) &&
+              g.members?.some((m: any) => m.athlete?.id === athlete.id)
+            );
+            if (!inGroupWithoutWorkouts) {
+              missingWorkoutsList.push({ id: athlete.id, name: athlete.name || athlete.email, type: 'athlete' });
+            }
+          }
+        });
+        setMissingWorkouts(missingWorkoutsList.slice(0, 5));
+
+        // Low Compliance
+        const lowComplianceList: LowCompliance[] = [];
+        athleteDataResults.forEach((data) => {
+          if (data.details?.assignments) {
+            const thisWeek = data.details.assignments.filter((a: any) => {
+              const d = a.scheduled_date.split('T')[0];
+              return d >= weekStartStr && d <= weekEndStr;
+            });
+            const completed = thisWeek.filter((a: any) => a.completed).length;
+            if (thisWeek.length > 0) {
+              const rate = Math.round((completed / thisWeek.length) * 100);
+              if (rate < 50) {
+                lowComplianceList.push({ athleteId: data.athleteId, athleteName: data.athleteName, completed, total: thisWeek.length, completionRate: rate });
+              }
+            }
+          }
+        });
+        setLowCompliance(lowComplianceList.slice(0, 5));
       } catch (error) {
         console.error('Failed to fetch dashboard data', error);
       } finally {
@@ -226,46 +542,6 @@ export default function CoachDashboard({ user }: { user: any }) {
           </Card>
         </div>
       </div>
-
-      {/* Charts Grid */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <WeeklyWorkoutsChart data={weeklyData} />
-        <PerformanceTrendChart data={performanceData} />
-      </div>
-
-      {/* Recent Activity */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Actividad Reciente</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {recentSessions.length > 0 ? (
-            <div className="divide-y">
-              {recentSessions.map((session) => (
-                <SessionItem
-                  key={session.id}
-                  name={session.athleteName}
-                  activityType={session.activityType}
-                  duration={session.duration}
-                  date={session.date}
-                  status={session.completed ? 'Completada' : 'Programada'}
-                  icon={
-                    session.completed ? (
-                      <CheckCircle2 className="h-5 w-5 text-muted-foreground" />
-                    ) : (
-                      <Clock className="h-5 w-5 text-muted-foreground" />
-                    )
-                  }
-                />
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground py-8 text-center">
-              No hay actividad reciente
-            </p>
-          )}
-        </CardContent>
-      </Card>
     </div>
   );
 }
