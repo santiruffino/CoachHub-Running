@@ -9,6 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { X, Plus } from 'lucide-react';
 import { useState } from 'react';
+import { calculateTargetPace, VAM_DEFAULT, VAM_ZONES } from '@/features/profiles/constants/vam';
 
 interface StepEditorProps {
     step: WorkoutBlock;
@@ -130,81 +131,18 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                 return `CALCULATED: ${minHR} — ${maxHRCalc} bpm`;
             }
             case 'vam_zone': {
-                // VAM zones are typically 1-5
-                // Zone 1: <600, Zone 2: 600-900, Zone 3: 900-1200, Zone 4: 1200-1500, Zone 5: >1500
-                const getVAMRange = (zone: number) => {
-                    switch (Math.round(zone)) {
-                        case 1: return '< 600';
-                        case 2: return '600-900';
-                        case 3: return '900-1200';
-                        case 4: return '1200-1500';
-                        case 5: return '> 1500';
-                        default: return `${zone * 300}`;
-                    }
-                };
+                // VAM zones are defined in VAM_ZONES
+                const zoneNumber = String(min);
+                const zone = VAM_ZONES.find(z => String(z.zone) === zoneNumber);
+                if (!zone) return null;
 
-                const toVertPace = (vamStr: string) => {
-                    // Extract number from string like "< 600" or "600-900"
-                    if (vamStr.includes('<')) {
-                        const val = parseInt(vamStr.replace('<', '').trim());
-                        const pace = 60000 / val; // e.g. 60000/600 = 100 min/km
-                        return `> ${Math.floor(pace)}:00`; // Slower than 100:00
-                    }
-                    if (vamStr.includes('>')) {
-                        const val = parseInt(vamStr.replace('>', '').trim());
-                        const pace = 60000 / val; // e.g. 60000/1500 = 40 min/km
-                        return `< ${Math.floor(pace)}:00`; // Faster than 40:00
-                    }
-                    if (vamStr.includes('-')) {
-                        const [minVal, maxVal] = vamStr.split('-').map(s => parseInt(s.trim()));
-                        const minPace = 60000 / minVal; // 60000/600 = 100
-                        const maxPace = 60000 / maxVal; // 60000/900 = 66.66
+                const vamToUse = VAM_DEFAULT; // In StepEditor, we might not have the athlete VAM directly, let's use default or placeholder
+                // Note: StepEditor seems to be a generic editor, but we should ideally pass athlete VAM here too.
 
-                        const fmt = (p: number) => `${Math.floor(p)}:${Math.round((p % 1) * 60).toString().padStart(2, '0')}`;
-                        // Min VAM = Slower Pace (Higher time), Max VAM = Faster Pace (Lower time)
-                        return `${fmt(maxPace)} - ${fmt(minPace)}`;
-                    }
-                    return '';
-                };
+                const minPace = calculateTargetPace(vamToUse, zone.max);
+                const maxPace = calculateTargetPace(vamToUse, zone.min);
 
-                if (min === max) {
-                    const range = getVAMRange(min);
-                    const pace = toVertPace(range);
-                    const mph = range.includes('<') || range.includes('>') ? range : range + ' m/h';
-                    return `CALCULATED: Zone ${min} (${mph} | ${pace} min/km)`;
-                }
-
-                // Show range if different
-                const minRangeStr = getVAMRange(min);
-                const maxRangeStr = getVAMRange(max);
-
-                // Extract pure numbers for display
-                const rangeDisplay = () => {
-                    const low = minRangeStr.split('-')[0].replace('<', '').trim();
-                    const high = maxRangeStr.includes('>') ? maxRangeStr.replace('>', '').trim() : (maxRangeStr.split('-')[1] || maxRangeStr);
-                    return `${low}-${high} m/h`;
-                };
-
-                // Calculate pace range
-                const getSlowestPace = () => {
-                    // From min zone (lowest VAM)
-                    const valStr = minRangeStr.includes('<') ? minRangeStr.replace('<', '').trim()
-                        : minRangeStr.split('-')[0].trim();
-                    const val = parseInt(valStr);
-                    const pace = 60000 / val;
-                    return `${Math.floor(pace)}:${Math.round((pace % 1) * 60).toString().padStart(2, '0')}`;
-                };
-
-                const getFastestPace = () => {
-                    // From max zone (highest VAM)
-                    const valStr = maxRangeStr.includes('>') ? maxRangeStr.replace('>', '').trim()
-                        : (maxRangeStr.split('-')[1] || maxRangeStr).trim();
-                    const val = parseInt(valStr);
-                    const pace = 60000 / val;
-                    return `${Math.floor(pace)}:${Math.round((pace % 1) * 60).toString().padStart(2, '0')}`;
-                };
-
-                return `CALCULATED: Zones ${min}-${max} (${rangeDisplay()} | ${getFastestPace()} - ${getSlowestPace()} min/km)`;
+                return `CALCULATED: Zone ${min} (${zone.min}-${zone.max}% VAM | ${minPace} - ${maxPace} min/km)`;
             }
             case 'pace': {
                 return null;

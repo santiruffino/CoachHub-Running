@@ -19,13 +19,11 @@ interface WeekCalendarProps {
 export function WeekCalendar({ date, onDateSelect, events }: WeekCalendarProps) {
     const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
 
-    // Sync internal state if external date changes significantly (optional, but good UX)
+    // Sync internal state if external date changes
     useEffect(() => {
         const weekStart = startOfWeek(date, { weekStartsOn: 1 });
-        if (format(weekStart, 'yyyy-MM-dd') !== format(currentWeekStart, 'yyyy-MM-dd')) {
-            setCurrentWeekStart(weekStart);
-        }
-    }, [date, currentWeekStart]);
+        setCurrentWeekStart(weekStart);
+    }, [date]);
 
     const weekDays = Array.from({ length: 7 }).map((_, i) => addDays(currentWeekStart, i));
 

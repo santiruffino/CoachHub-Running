@@ -426,15 +426,17 @@ export default function ActivityDetailPage() {
 
             {/* Key Metrics Grid */}
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
-                <Card>
-                    <CardContent className="pt-6">
-                        <div className="flex items-center gap-2 mb-2">
-                            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                            <p className="text-sm text-muted-foreground">Distance</p>
-                        </div>
-                        <p className="text-2xl font-bold">{distanceKm} km</p>
-                    </CardContent>
-                </Card>
+                {!isWeightTraining(activity.sport_type) && (
+                    <Card>
+                        <CardContent className="pt-6">
+                            <div className="flex items-center gap-2 mb-2">
+                                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                                <p className="text-sm text-muted-foreground">Distance</p>
+                            </div>
+                            <p className="text-2xl font-bold">{distanceKm} km</p>
+                        </CardContent>
+                    </Card>
+                )}
 
                 <Card>
                     <CardContent className="pt-6">

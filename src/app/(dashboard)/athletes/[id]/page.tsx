@@ -10,6 +10,7 @@ import api from '@/lib/axios';
 import { WeekCalendar } from '@/features/calendar/components/WeekCalendar';
 import { Activity as ActivityIcon, Calendar as CalendarIcon, FileText, CheckCircle2, TrendingUp, Plus, Trash, Clock } from 'lucide-react';
 import { trainingsService } from '@/features/trainings/services/trainings.service';
+import { athletesService } from '@/features/users/services/athletes.service';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +19,8 @@ import { WeeklyWorkoutsChart } from '@/components/dashboard/WeeklyWorkoutsChart'
 import { PerformanceTrendChart } from '@/components/dashboard/PerformanceTrendChart';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HeartRateZones } from '@/features/profiles/components/HeartRateZones';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { VAM_LEVELS } from '@/features/profiles/constants/vam';
 
 interface Activity {
     id: string;
@@ -166,6 +169,22 @@ export default function AthleteDetailPage() {
         }
     };
 
+    const handleUpdateVAM = async (pace: string) => {
+        try {
+            await athletesService.updateProfile(id, { vam: pace });
+            setAthlete(prev => prev ? {
+                ...prev,
+                athleteProfile: {
+                    ...prev.athleteProfile,
+                    vam: pace
+                }
+            } : null);
+        } catch (error) {
+            console.error('Failed to update VAM:', error);
+            alert('Failed to update VAM. Please try again.');
+        }
+    };
+
     if (loading) {
         return (
             <div className="space-y-8 p-8">
@@ -284,9 +303,23 @@ export default function AthleteDetailPage() {
                             <span className="block text-muted-foreground text-xs">Max HR</span>
                             <span className="font-semibold">{athlete.athleteProfile?.maxHR || '-'} bpm</span>
                         </div>
-                        <div className="bg-muted p-3 rounded-lg text-center">
+                        <div className="bg-muted p-3 rounded-lg text-center relative group">
                             <span className="block text-muted-foreground text-xs">Test VAM</span>
-                            <span className="font-semibold">{athlete.athleteProfile?.vam || '-'}</span>
+                            <div className="flex flex-col items-center gap-1">
+                                <span className="font-semibold">{athlete.athleteProfile?.vam || '-'}</span>
+                                <Select onValueChange={handleUpdateVAM}>
+                                    <SelectTrigger className="h-6 w-fit text-[10px] px-2 py-0">
+                                        <SelectValue placeholder="Set Level" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {VAM_LEVELS.map(level => (
+                                            <SelectItem key={level.id} value={level.pace}>
+                                                {level.name} ({level.pace})
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                         <div className="bg-muted p-3 rounded-lg text-center">
                             <span className="block text-muted-foreground text-xs">Test UAN</span>

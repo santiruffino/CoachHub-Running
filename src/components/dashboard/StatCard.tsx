@@ -11,7 +11,6 @@ interface StatCardProps {
 export function StatCard({
   title,
   value,
-  change,
   icon: Icon,
 }: StatCardProps) {
   return (
@@ -23,11 +22,6 @@ export function StatCard({
               {title}
             </p>
             <p className="text-3xl font-bold mb-1">{value}</p>
-            {change && (
-              <p className="text-sm font-medium text-green-600 dark:text-green-500">
-                {change}
-              </p>
-            )}
           </div>
           <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted">
             <Icon className="h-6 w-6 text-muted-foreground" />

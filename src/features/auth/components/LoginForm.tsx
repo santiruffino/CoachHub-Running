@@ -39,7 +39,9 @@ export default function LoginForm() {
     const onSubmit = async (data: FormData) => {
         try {
             setError('');
+            console.log('📨 [LoginForm] Submitting login...');
             await login(data.email, data.password);
+            console.log('✅ [LoginForm] Login successful, waiting for redirection...');
         } catch (err: any) {
             setError(err?.message || 'Invalid credentials');
         }

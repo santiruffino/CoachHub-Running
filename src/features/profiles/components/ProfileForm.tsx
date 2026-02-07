@@ -13,6 +13,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
+import { VAM_LEVELS } from '../constants/vam';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 function ChangePasswordSection() {
     const { register, handleSubmit, reset, formState: { errors } } = useHookForm();
@@ -172,12 +174,42 @@ export function ProfileForm({ profile }: { profile: ProfileDetails }) {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label>Test VAM (Time - hh:mm)</Label>
-                                    <Input type="text" placeholder="00:00" {...register('vam')} />
+                                    <Label>Test VAM (Pace - mm:ss)</Label>
+                                    <div className="flex gap-2">
+                                        <Input
+                                            type="text"
+                                            placeholder="00:00"
+                                            {...register('vam')}
+                                            className="flex-1"
+                                        />
+                                        <Select onValueChange={(value) => {
+                                            const filtered = VAM_LEVELS.find(l => l.id === value);
+                                            if (filtered) {
+                                                // Using document selector as a fallback if setValue isn't easily accessible
+                                                const input = document.querySelector('input[name="vam"]') as HTMLInputElement;
+                                                if (input) {
+                                                    input.value = filtered.pace;
+                                                    // Trigger input event for React Hook Form
+                                                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                                                }
+                                            }
+                                        }}>
+                                            <SelectTrigger className="w-[120px]">
+                                                <SelectValue placeholder="Quick set" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {VAM_LEVELS.map(level => (
+                                                    <SelectItem key={level.id} value={level.id}>
+                                                        {level.name} ({level.pace})
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                     <span className="text-xs text-muted-foreground">Updating this saves to history.</span>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Test UAN (Time - hh:mm)</Label>
+                                    <Label>Test UAN (Pace - mm:ss)</Label>
                                     <Input type="text" placeholder="00:00" {...register('uan')} />
                                     <span className="text-xs text-muted-foreground">Updating this saves to history.</span>
                                 </div>

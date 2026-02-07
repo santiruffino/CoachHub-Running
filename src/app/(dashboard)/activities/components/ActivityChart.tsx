@@ -404,6 +404,9 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
                 position: 'right',
                 offset: (hasHeartRateData && legendSelected['Heart Rate'] !== false) ? 60 : 0,
                 show: legendSelected['Elevation'] !== false,
+                min: 'dataMin',
+                max: 'dataMax',
+                boundaryGap: ['10%', '10%'],
                 axisLabel: {
                     formatter: '{value} m',
                     color: '#22C55E',

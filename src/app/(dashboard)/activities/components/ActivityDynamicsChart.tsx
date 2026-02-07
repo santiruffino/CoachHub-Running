@@ -74,7 +74,7 @@ const CustomLapTick = (props: any) => {
 export function ActivityDynamicsChart({ activityId, laps, isRunning }: ActivityDynamicsChartProps) {
     const [streams, setStreams] = useState<StreamData | null>(null);
     const [loading, setLoading] = useState(true);
-    const [resolution, setResolution] = useState<Resolution>('medium');
+    const [resolution, setResolution] = useState<Resolution>('high');
     const [xAxisType, setXAxisType] = useState<XAxisType>('time');
 
     // Toggle state for each metric

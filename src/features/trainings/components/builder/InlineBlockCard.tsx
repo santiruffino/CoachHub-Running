@@ -3,6 +3,7 @@
 import { WorkoutBlock, DurationType, TargetType, BlockType } from './types';
 import { GripVertical, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { calculateTargetPace, VAM_DEFAULT, VAM_ZONES } from '@/features/profiles/constants/vam';
 
 interface InlineBlockCardProps {
     block: WorkoutBlock;
@@ -119,8 +120,17 @@ export function InlineBlockCard({
                 return `HR ${block.target.min || '-'} - ${block.target.max || '-'} bpm`;
             case 'hr_zone':
                 return `HR Z${block.target.min || '2'}`;
-            case 'vam_zone':
-                return `% VAM ${block.target.min ? (Number(block.target.min) * 10) : '20'}%`;
+            case 'vam_zone': {
+                const zoneNumber = String(block.target.min || '2');
+                const zone = VAM_ZONES.find(z => String(z.zone) === zoneNumber);
+                if (!zone) return 'VAM Z-';
+
+                const vamToUse = athleteVAM || VAM_DEFAULT;
+                const minPace = calculateTargetPace(vamToUse, zone.max);
+                const maxPace = calculateTargetPace(vamToUse, zone.min);
+
+                return `VAM Z${zoneNumber} (${minPace}-${maxPace})`;
+            }
             case 'power':
                 return `${block.target.min || '-'} W`;
             default:
@@ -396,12 +406,11 @@ export function InlineBlockCard({
                                     onClick={(e) => e.stopPropagation()}
                                     className="w-full text-sm px-2 py-1.5 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                                 >
-                                    <option value="1">Z1 - Regenerativo (0-70% VAM)</option>
-                                    <option value="2">Z2 - Endurance (70-85% VAM)</option>
-                                    <option value="3">Z3 - Tempo (85-92% VAM)</option>
-                                    <option value="4">Z4 - Umbral (92-97% VAM)</option>
-                                    <option value="5">Z5 - VO2 Max (97-103% VAM)</option>
-                                    <option value="6">Z6 - Potencia (103-120% VAM)</option>
+                                    {VAM_ZONES.map(z => (
+                                        <option key={z.zone} value={z.zone}>
+                                            Z{z.zone} - {z.name} ({z.min}-{z.max}% VAM)
+                                        </option>
+                                    ))}
                                 </select>
                             )}
                         </div>

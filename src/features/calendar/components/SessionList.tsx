@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Activity, Clock, MapPin, TrendingUp, Target } from 'lucide-react';
+import { Activity, Clock, MapPin, TrendingUp, Target, Heart, Zap } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MatchQualityBadge } from '@/features/trainings/components/MatchQualityBadge';
@@ -22,6 +22,8 @@ export interface SessionData {
         pace?: string;
         calories?: number;
         elevation?: number;
+        average_heartrate?: number;
+        effort_score?: number;
     };
     icon?: any;
     color?: string;
@@ -37,6 +39,13 @@ interface SessionListProps {
 export function SessionList({ sessions }: SessionListProps) {
     const [selectedMatchAssignmentId, setSelectedMatchAssignmentId] = useState<string | null>(null);
     const [selectedMatchTitle, setSelectedMatchTitle] = useState<string>('');
+
+    const formatDuration = (seconds: number) => {
+        if (!seconds) return '00:00';
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+    };
 
     if (sessions.length === 0) {
         return (
@@ -98,25 +107,31 @@ export function SessionList({ sessions }: SessionListProps) {
 
                             {session.type === 'COMPLETED' && session.stats && (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-1.5 bg-gray-50 dark:bg-gray-700 rounded-full text-gray-400">
-                                            <MapPin className="w-4 h-4" />
+                                    {/* Only show distance for non-weight training */}
+                                    {session.subtitle !== 'WeightTraining' && (
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-1.5 bg-gray-50 dark:bg-gray-700 rounded-full text-gray-400">
+                                                <MapPin className="w-4 h-4" />
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">Distancia</p>
+                                                <p className="font-bold text-gray-900 dark:text-white">{((session.stats.distance || 0) / 1000).toFixed(2)} km</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">Distancia</p>
-                                            <p className="font-bold text-gray-900 dark:text-white">{((session.stats.distance || 0) / 1000).toFixed(2)} km</p>
-                                        </div>
-                                    </div>
+                                    )}
+
                                     <div className="flex items-center gap-3">
                                         <div className="p-1.5 bg-gray-50 dark:bg-gray-700 rounded-full text-gray-400">
                                             <Clock className="w-4 h-4" />
                                         </div>
                                         <div>
                                             <p className="text-xs text-gray-500 dark:text-gray-400">Tiempo</p>
-                                            <p className="font-bold text-gray-900 dark:text-white">{Math.round((session.stats.duration || 0) / 60)} min</p>
+                                            <p className="font-bold text-gray-900 dark:text-white">{formatDuration(session.stats.duration || 0)}</p>
                                         </div>
                                     </div>
-                                    {session.stats.pace && (
+
+                                    {/* Only show pace for non-weight training */}
+                                    {session.subtitle !== 'WeightTraining' && session.stats.pace && (
                                         <div className="flex items-center gap-3">
                                             <div className="p-1.5 bg-gray-50 dark:bg-gray-700 rounded-full text-gray-400">
                                                 <TrendingUp className="w-4 h-4" />
@@ -127,7 +142,34 @@ export function SessionList({ sessions }: SessionListProps) {
                                             </div>
                                         </div>
                                     )}
-                                    {session.stats.elevation !== undefined && session.stats.elevation > 0 && (
+
+                                    {/* Show heart rate if available - now for all workouts */}
+                                    {session.stats.average_heartrate !== undefined && (
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-1.5 bg-gray-50 dark:bg-gray-700 rounded-full text-gray-400">
+                                                <Heart className="w-4 h-4" />
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">FC Media</p>
+                                                <p className="font-bold text-gray-900 dark:text-white">{Math.round(session.stats.average_heartrate)} ppm</p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Show effort score if available - for all workouts */}
+                                    {session.stats.effort_score !== undefined && (
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-1.5 bg-gray-50 dark:bg-gray-700 rounded-full text-gray-400">
+                                                <Zap className="w-4 h-4" />
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">Effort Score</p>
+                                                <p className="font-bold text-gray-900 dark:text-white">{Math.round(session.stats.effort_score)}</p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {session.subtitle !== 'WeightTraining' && session.stats.elevation !== undefined && session.stats.elevation > 0 && (
                                         <div className="flex items-center gap-3">
                                             <div className="p-1.5 bg-gray-50 dark:bg-gray-700 rounded-full text-gray-400">
                                                 <TrendingUp className="w-4 h-4" />
@@ -145,7 +187,7 @@ export function SessionList({ sessions }: SessionListProps) {
                                 <div className="flex items-center justify-between mt-3 text-sm text-gray-500 dark:text-gray-400">
                                     <div className="flex items-center gap-1">
                                         <Clock className="w-4 h-4" />
-                                        <span>~ {session.stats?.duration ? Math.round(session.stats.duration / 60) : 60} min</span>
+                                        <span>~ {formatDuration(session.stats?.duration || 3600)}</span>
                                     </div>
                                     <span className="text-orange-500 font-medium cursor-pointer hover:underline">Ver detalles</span>
                                 </div>

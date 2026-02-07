@@ -94,21 +94,30 @@ export function WeeklyVolumeChart({ activities, assignments }: WeeklyVolumeChart
                                 bottom: 5,
                             }}
                         >
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                             <XAxis
                                 dataKey="name"
-                                tick={{ fontSize: 12, fill: '#6B7280' }}
+                                tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                                axisLine={{ stroke: 'hsl(var(--border))' }}
                             />
                             <YAxis
-                                tick={{ fontSize: 12, fill: '#6B7280' }}
-                                label={{ value: 'km', angle: -90, position: 'insideLeft', style: { fill: '#9CA3AF' } }}
+                                tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                                axisLine={{ stroke: 'hsl(var(--border))' }}
+                                label={{ value: 'km', angle: -90, position: 'insideLeft', style: { fill: 'hsl(var(--muted-foreground))' } }}
                             />
                             <Tooltip
-                                cursor={{ fill: '#F3F4F6' }}
-                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                                cursor={{ fill: 'hsl(var(--muted))', opacity: 0.4 }}
+                                contentStyle={{
+                                    backgroundColor: 'hsl(var(--card))',
+                                    borderColor: 'hsl(var(--border))',
+                                    borderRadius: '8px',
+                                    color: 'hsl(var(--foreground))',
+                                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                                }}
+                                itemStyle={{ color: 'hsl(var(--foreground))' }}
                             />
                             <Legend wrapperStyle={{ paddingTop: '10px' }} />
-                            <Bar dataKey="planned" name="Planned" fill="#E5E7EB" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="planned" name="Planned" fill="hsl(var(--muted))" radius={[4, 4, 0, 0]} />
                             <Bar dataKey="actual" name="Completed" fill="#EA580C" radius={[4, 4, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>

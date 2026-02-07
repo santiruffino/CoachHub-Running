@@ -3,6 +3,7 @@
 import { WorkoutBlock, DurationType, TargetType, BlockType } from './types';
 import { Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { calculateTargetPace, VAM_DEFAULT, VAM_ZONES } from '@/features/profiles/constants/vam';
 
 interface BlockEditorProps {
     block: WorkoutBlock;
@@ -123,34 +124,16 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
     };
 
     // Calculate pace from VAM and zone
-    const calculatePaceFromVAM = (vam: string, zoneNumber: string): string => {
-        const vamZones = [
-            { min: 0.0, max: 0.70 },
-            { min: 0.70, max: 0.85 },
-            { min: 0.85, max: 0.92 },
-            { min: 0.92, max: 0.97 },
-            { min: 0.97, max: 1.03 },
-            { min: 1.03, max: 1.20 }
-        ];
+    const calculatePaceFromVAM = (vam: string | null, zoneNumber: string): string => {
+        const paceToUse = vam || VAM_DEFAULT;
+        const zone = VAM_ZONES.find(z => String(z.zone) === zoneNumber);
+        if (!zone) return '-:--';
 
-        const zone = vamZones[parseInt(zoneNumber) - 1];
-        if (!zone) return '-';
+        // Percentage range
+        const minPace = calculateTargetPace(paceToUse, zone.max);
+        const maxPace = calculateTargetPace(paceToUse, zone.min);
 
-        const vamValue = parseFloat(vam);
-        if (isNaN(vamValue) || vamValue <= 0) return '-';
-
-        // Calculate pace range (min/km)
-        // Pace = 1000 / (VAM * zone_percentage)
-        const minPaceSeconds = 1000 / (vamValue * zone.max);
-        const maxPaceSeconds = 1000 / (vamValue * zone.min);
-
-        const formatPace = (seconds: number) => {
-            const mins = Math.floor(seconds / 60);
-            const secs = Math.round(seconds % 60);
-            return `${mins}:${secs.toString().padStart(2, '0')}`;
-        };
-
-        return `${formatPace(minPaceSeconds)} - ${formatPace(maxPaceSeconds)}`;
+        return `${minPace} - ${maxPace}`;
     };
 
     return (
@@ -388,20 +371,14 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
 
                             {/* Display calculated pace or message */}
                             {athleteId ? (
-                                athleteVAM ? (
-                                    <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 rounded border border-green-200 dark:border-green-800">
-                                        <p className="text-sm text-green-800 dark:text-green-300 font-medium">
-                                            📊 Expected Pace: {calculatePaceFromVAM(athleteVAM, String(block.target.min || '2'))} min/km
-                                        </p>
-                                        <p className="text-xs text-green-700 dark:text-green-400 mt-1">
-                                            Based on VAM: {athleteVAM} m/min
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <p className="text-sm text-amber-600 dark:text-amber-400">
-                                        ⚠️ Athlete has no VAM test registered
+                                <div className={`mt-2 p-2 rounded border ${athleteVAM ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'}`}>
+                                    <p className={`text-sm font-medium ${athleteVAM ? 'text-green-800 dark:text-green-300' : 'text-amber-800 dark:text-amber-300'}`}>
+                                        📊 {athleteVAM ? 'Expected Pace:' : 'Estimated Pace (Default):'} {calculatePaceFromVAM(athleteVAM, String(block.target.min || '2'))} min/km
                                     </p>
-                                )
+                                    <p className={`text-xs mt-1 ${athleteVAM ? 'text-green-700 dark:text-green-400' : 'text-amber-700 dark:text-amber-400'}`}>
+                                        Based on VAM: {athleteVAM || VAM_DEFAULT} min/km
+                                    </p>
+                                </div>
                             ) : (
                                 <p className="text-xs text-gray-500 dark:text-gray-400">
                                     💡 Assign to an athlete to see calculated pace

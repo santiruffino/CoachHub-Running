@@ -58,16 +58,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             if (session?.user) {
                 // User logged in or session refreshed
+                console.log('🔄 [AuthContext] User detected, fetching profile...');
                 try {
                     const currentUser = await authService.getCurrentUser();
                     setUser(currentUser);
+                    console.log('✅ [AuthContext] User profile updated');
                 } catch (error) {
                     console.error('Failed to fetch user profile', error);
                     setUser(null);
                 }
-            } else {
-                // User logged out
+            } else if (event === 'SIGNED_OUT') {
+                // Explicitly handle sign out
                 setUser(null);
+                console.log('👋 [AuthContext] Signed out');
             }
         });
 
@@ -84,20 +87,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, [user, loading, router]);
 
     const login = async (email: string, password: string) => {
+        console.log('🔑 [AuthContext] Manual login called');
         const response = await authService.login(email, password);
+
+        // Update user state - this will trigger effects/re-renders
         setUser(response.user);
+        console.log('✅ [AuthContext] Manual login successful, state updated');
 
-        // Redirect based on status/role
-        if (response.user.mustChangePassword) {
-            router.push('/change-password');
-            return;
-        }
-
-        if (response.user.role === 'COACH') {
-            router.push('/dashboard');
-        } else {
-            router.push('/dashboard'); // Unified dashboard entry point
-        }
+        // Redirection is handled by useEffects in AuthContext or components
     };
 
     const logout = async () => {

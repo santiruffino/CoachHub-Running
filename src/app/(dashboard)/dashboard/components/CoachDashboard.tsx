@@ -404,25 +404,21 @@ export default function CoachDashboard({ user }: { user: any }) {
         <StatCard
           title="Total Atletas"
           value={stats?.totalAthletes || 0}
-          change={athletesChange}
           icon={Users}
         />
         <StatCard
           title="Total Grupos"
           value={stats?.totalGroups || 0}
-          change="+2"
           icon={FolderOpen}
         />
         <StatCard
           title="Entrenamientos Activos"
           value={stats?.activePlans || 0}
-          change={activeTrainingsChange}
           icon={Calendar}
         />
         <StatCard
           title="Tasa de Cumplimiento"
           value={`${stats?.completionRate || 0}%`}
-          change={completionRateChange}
           icon={TrendingUp}
         />
       </div>

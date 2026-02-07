@@ -39,54 +39,11 @@ export default function ResetPasswordForm() {
         const checkSession = async () => {
             console.log('🔍 [ResetPasswordForm] Checking for active session...');
 
-            // Check for recovery token in URL hash (Supabase format)
-            const hasHashToken = typeof window !== 'undefined' &&
-                (window.location.hash.includes('type=recovery') || window.location.hash.includes('access_token'));
-
-            // Check for recovery token in query parameters (code parameter)
-            const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-            const codeParam = urlParams?.get('code');
-            const hasCodeParam = !!codeParam;
-
-            console.log('🔍 [ResetPasswordForm] Token check - Hash:', hasHashToken, 'Code param:', hasCodeParam);
-
-            if (!hasHashToken && !hasCodeParam) {
-                console.warn('⚠️ [ResetPasswordForm] No recovery token in URL - skipping session check');
-                setHasSession(false);
-                setCheckingSession(false);
-                return;
-            }
-
             const supabase = createClient();
 
-            // If there's a code parameter, exchange it for a session
-            if (hasCodeParam && codeParam) {
-                console.log('✅ [ResetPasswordForm] Code parameter found, exchanging for session...');
-
-                // First, sign out any existing session to avoid conflicts
-                const { data: { session: existingSession } } = await supabase.auth.getSession();
-                if (existingSession) {
-                    console.log('🔄 [ResetPasswordForm] Existing session detected, signing out first...');
-                    await supabase.auth.signOut({ scope: 'local' });
-                }
-
-                // Exchange the code for a session
-                const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(codeParam);
-
-                if (exchangeError) {
-                    console.error('❌ [ResetPasswordForm] Failed to exchange code for session:', exchangeError);
-                    setHasSession(false);
-                    setCheckingSession(false);
-                    return;
-                }
-
-                console.log('✅ [ResetPasswordForm] Code exchanged successfully, checking session...');
-            }
-
-            console.log('✅ [ResetPasswordForm] Recovery token found in URL, checking session...');
-
-            // Retry up to 3 times with 300ms delay to allow token processing
-            const maxRetries = 3;
+            // Retry up to 5 times with 500ms delay to allow session/auth state to stabilize
+            // after redirection from the callback route.
+            const maxRetries = 5;
             let retryCount = 0;
 
             while (retryCount < maxRetries) {
@@ -102,7 +59,7 @@ export default function ResetPasswordForm() {
                 retryCount++;
                 if (retryCount < maxRetries) {
                     console.log(`🔄 [ResetPasswordForm] No session yet, retrying... (${retryCount}/${maxRetries})`);
-                    await new Promise(resolve => setTimeout(resolve, 300));
+                    await new Promise(resolve => setTimeout(resolve, 500));
                 }
             }
 
