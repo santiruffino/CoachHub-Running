@@ -1,7 +1,7 @@
 import { updateSession } from '@/lib/supabase/middleware';
 import { NextResponse, type NextRequest } from 'next/server';
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // Debug log forauth-related paths or root
   if (request.nextUrl.pathname === '/' || request.nextUrl.pathname.startsWith('/auth') || request.nextUrl.pathname.startsWith('/reset-password')) {
     console.log(`🛡️ [Middleware] Processing path: ${request.nextUrl.pathname}`);
