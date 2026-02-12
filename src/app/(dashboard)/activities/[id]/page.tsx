@@ -623,24 +623,6 @@ export default function ActivityDetailPage() {
                 )}
             </div>
 
-            {/* Map Section */}
-            {activity.map?.summary_polyline && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Route Map</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="relative w-full h-96 bg-muted rounded-lg overflow-hidden">
-                            <img
-                                src={`https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/polyline(${encodeURIComponent(activity.map.summary_polyline)})/auto/800x400@2x?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw`}
-                                alt="Activity route map"
-                                className="w-full h-full object-cover"
-                            />
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
-
             {/* Activity Dynamics Chart */}
             {!isWeightTraining(activity.sport_type) && (
                 <ActivityChart
