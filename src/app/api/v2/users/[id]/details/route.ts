@@ -131,6 +131,33 @@ export async function GET(
             .order('date', { ascending: false })
             .limit(20);
 
+        // Fetch recent assignments (last 30 days + next 7 days)
+        const today = new Date();
+        const thirtyDaysAgo = new Date(today);
+        thirtyDaysAgo.setDate(today.getDate() - 30);
+        const sevenDaysFromNow = new Date(today);
+        sevenDaysFromNow.setDate(today.getDate() + 7);
+
+        const { data: assignments } = await supabase
+            .from('training_assignments')
+            .select(`
+                id,
+                scheduled_date,
+                completed,
+                activity_id,
+                expected_rpe,
+                training:trainings(
+                    id,
+                    title,
+                    type,
+                    blocks
+                )
+            `)
+            .eq('user_id', athleteId)
+            .gte('scheduled_date', thirtyDaysAgo.toISOString())
+            .lte('scheduled_date', sevenDaysFromNow.toISOString())
+            .order('scheduled_date', { ascending: false });
+
         // Combine all data and transform to camelCase for frontend
         const athleteDetails = {
             ...profile,
@@ -152,6 +179,14 @@ export async function GET(
             athleteGroups: groups?.map(g => ({ group: g.group })) || [],
             recentActivities: recentActivities || [],
             metricsHistory: metricsHistory || [],
+            assignments: (assignments || []).map((a: any) => ({
+                id: a.id,
+                scheduled_date: a.scheduled_date,
+                completed: a.completed,
+                activity_id: a.activity_id,
+                expected_rpe: a.expected_rpe,
+                workout: a.training
+            })),
         };
 
         return NextResponse.json(athleteDetails);

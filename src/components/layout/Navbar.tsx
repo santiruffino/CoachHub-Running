@@ -17,10 +17,10 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['COACH', 'ATHLETE'] },
-    { name: 'Athletes', href: '/athletes', icon: Users, roles: ['COACH'] },
-    { name: 'Groups', href: '/groups', icon: UsersRound, roles: ['COACH'] },
-    { name: 'Trainings', href: '/trainings', icon: Calendar, roles: ['COACH'] },
-    { name: 'Calendar', href: '/dashboard/calendar', icon: Calendar, roles: ['COACH', 'ATHLETE'] },
+    { name: 'Atletas', href: '/athletes', icon: Users, roles: ['COACH'] },
+    { name: 'Grupos', href: '/groups', icon: UsersRound, roles: ['COACH'] },
+    { name: 'Entrenamientos', href: '/trainings', icon: Calendar, roles: ['COACH'] },
+    { name: 'Calendario', href: '/dashboard/calendar', icon: Calendar, roles: ['COACH', 'ATHLETE'] },
 ];
 
 export function Navbar() {
@@ -36,9 +36,7 @@ export function Navbar() {
         : 'U';
 
     const handleLogout = async () => {
-        console.log('🚪 [Navbar] Logout clicked');
         await logout();
-        console.log('🚪 [Navbar] Logout completed');
     };
 
     return (
@@ -99,16 +97,16 @@ export function Navbar() {
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={() => router.push('/profile')}>
                                     <User className="mr-2 h-4 w-4" />
-                                    Profile
+                                    Perfil
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => router.push('/profile')}>
                                     <Settings className="mr-2 h-4 w-4" />
-                                    Settings
+                                    Ajustes
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={handleLogout} className="text-destructive">
                                     <LogOut className="mr-2 h-4 w-4" />
-                                    Logout
+                                    Cerrar sesion
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>

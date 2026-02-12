@@ -79,10 +79,8 @@ export const authService = {
     },
 
     updatePassword: async (newPassword: string): Promise<void> => {
-        console.log('🔑 [AuthService] updatePassword called');
         const supabase = createClient();
 
-        console.log('🔑 [AuthService] Calling supabase.auth.updateUser...');
         const { error } = await supabase.auth.updateUser({
             password: newPassword,
         });
@@ -92,14 +90,11 @@ export const authService = {
             throw new Error(error.message);
         }
 
-        console.log('✅ [AuthService] Password updated in Supabase');
 
         // Clear must_change_password flag
-        console.log('🔑 [AuthService] Getting current user...');
         const { data: { user } } = await supabase.auth.getUser();
 
         if (user) {
-            console.log('🔑 [AuthService] Updating profile to clear must_change_password flag...');
             const { error: updateError } = await supabase
                 .from('profiles')
                 .update({ must_change_password: false })
@@ -109,19 +104,15 @@ export const authService = {
                 console.error('❌ [AuthService] Profile update failed:', updateError);
                 throw new Error('Failed to update profile');
             }
-            console.log('✅ [AuthService] Profile updated successfully');
         } else {
             console.warn('⚠️ [AuthService] No user found after password update');
         }
 
-        console.log('✅ [AuthService] updatePassword complete');
     },
 
     resetPassword: async (email: string): Promise<void> => {
-        console.log('📧 [AuthService] resetPassword called for email:', email);
         const supabase = createClient();
 
-        console.log('📧 [AuthService] Calling supabase.auth.resetPasswordForEmail...');
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
             redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
         });
@@ -131,7 +122,6 @@ export const authService = {
             throw new Error(error.message);
         }
 
-        console.log('✅ [AuthService] resetPasswordForEmail succeeded');
     },
 
     getCurrentUser: async (): Promise<User | null> => {

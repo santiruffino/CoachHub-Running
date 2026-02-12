@@ -102,7 +102,7 @@ export async function GET() {
 
       if (assignment.completed) {
         stats.completedAssignments++;
-      } else if (new Date(assignment.scheduled_date) >= now) {
+      } else if (new Date(assignment.scheduled_date).setHours(0, 0, 0, 0) >= now.setHours(0, 0, 0, 0)) {
         stats.plannedAssignments++;
       }
     });

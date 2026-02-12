@@ -26,6 +26,47 @@ class MatchingService {
     }
 
     /**
+     * Get candidate activities for matching
+     */
+    async getCandidateActivities(assignmentId: string): Promise<any[]> {
+        try {
+            const response = await api.get(`/v2/trainings/assignments/${assignmentId}/candidates`);
+            return response.data;
+        } catch (error: any) {
+            console.error('Failed to fetch candidate activities:', error);
+            return [];
+        }
+    }
+
+    async getCandidateAssignments(activityId: string): Promise<any[]> {
+        try {
+            const response = await api.get(`/v2/activities/${activityId}/candidates`);
+            return response.data;
+        } catch (error: any) {
+            console.error('Failed to fetch candidate assignments:', error);
+            return [];
+        }
+    }
+
+    async linkActivity(assignmentId: string, activityId: string): Promise<void> {
+        try {
+            await api.post(`/v2/trainings/assignments/${assignmentId}/link`, { activityId });
+        } catch (error: any) {
+            console.error('Failed to link activity:', error);
+            throw error;
+        }
+    }
+
+    async unlinkActivity(assignmentId: string): Promise<void> {
+        try {
+            await api.delete(`/v2/trainings/assignments/${assignmentId}/link`);
+        } catch (error: any) {
+            console.error('Failed to unlink activity:', error);
+            throw error;
+        }
+    }
+
+    /**
      * Get match color based on score
      */
     getMatchColor(score: number): string {

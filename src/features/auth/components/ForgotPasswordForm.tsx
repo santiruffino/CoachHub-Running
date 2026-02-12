@@ -26,14 +26,11 @@ export default function ForgotPasswordForm() {
     });
 
     const onSubmit = async (data: FormData) => {
-        console.log('📧 [ForgotPasswordForm] Form submitted with email:', data.email);
         try {
             setError('');
             setSuccess(false);
 
-            console.log('📧 [ForgotPasswordForm] Calling authService.resetPassword...');
             await authService.resetPassword(data.email);
-            console.log('✅ [ForgotPasswordForm] Reset email sent successfully');
             setSuccess(true);
         } catch (err: any) {
             console.error('❌ [ForgotPasswordForm] Failed to send reset email:', err);

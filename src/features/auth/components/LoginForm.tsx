@@ -39,9 +39,7 @@ export default function LoginForm() {
     const onSubmit = async (data: FormData) => {
         try {
             setError('');
-            console.log('📨 [LoginForm] Submitting login...');
             await login(data.email, data.password);
-            console.log('✅ [LoginForm] Login successful, waiting for redirection...');
         } catch (err: any) {
             setError(err?.message || 'Invalid credentials');
         }
@@ -50,7 +48,7 @@ export default function LoginForm() {
     return (
         <Card className="w-full max-w-md">
             <CardHeader>
-                <CardTitle className="text-3xl text-center">Welcome Back</CardTitle>
+                <CardTitle className="text-3xl text-center">Bienvenido</CardTitle>
             </CardHeader>
             <CardContent>
                 {error && (
@@ -74,7 +72,7 @@ export default function LoginForm() {
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="password">Password</Label>
+                        <Label htmlFor="password">Contraseña</Label>
                         <Input
                             id="password"
                             type="password"
@@ -91,18 +89,14 @@ export default function LoginForm() {
                         disabled={isSubmitting}
                         className="w-full"
                     >
-                        {isSubmitting ? 'Logging in...' : 'Log In'}
+                        {isSubmitting ? 'Ingresando...' : 'Ingresar'}
                     </Button>
                 </form>
 
                 <div className="mt-4 text-center text-sm">
                     <Link href="/forgot-password" className="text-primary hover:underline">
-                        Forgot your password?
+                        Olvidaste tu contraseña?
                     </Link>
-                </div>
-
-                <div className="mt-6 text-center text-sm text-muted-foreground">
-                    Contact your administrator to create an account.
                 </div>
             </CardContent>
         </Card>

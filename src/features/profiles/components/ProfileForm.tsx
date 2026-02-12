@@ -129,7 +129,7 @@ export function ProfileForm({ profile }: { profile: ProfileDetails }) {
     return (
         <Card className="max-w-2xl">
             <CardHeader>
-                <CardTitle>Edit Profile</CardTitle>
+                <CardTitle>Editar perfil</CardTitle>
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

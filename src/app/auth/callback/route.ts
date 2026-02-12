@@ -1,13 +1,11 @@
 import { createServerClient } from '@supabase/ssr';
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
     const { searchParams, origin } = new URL(request.url);
     const code = searchParams.get('code');
     // if "next" is in param, use it as the redirect URL
     const next = searchParams.get('next') ?? '/dashboard';
-
-    console.log(`📥 [Auth Callback] Received request. Code present: ${!!code}, Next param: ${next}`);
 
     if (code) {
         const cookieStore = new Map<string, { name: string, value: string, options: any }>();
@@ -18,7 +16,7 @@ export async function GET(request: Request) {
             {
                 cookies: {
                     getAll() {
-                        return [];
+                        return request.cookies.getAll();
                     },
                     setAll(cookiesToSet) {
                         cookiesToSet.forEach(({ name, value, options }) => {
@@ -32,7 +30,6 @@ export async function GET(request: Request) {
         const { error } = await supabase.auth.exchangeCodeForSession(code);
 
         if (!error) {
-            console.log('✅ [Auth Callback] Code exchange successful. Forwarding to:', next);
             const forwardedHost = request.headers.get('x-forwarded-host'); // original origin before load balancer
             const isLocalEnv = process.env.NODE_ENV === 'development';
 

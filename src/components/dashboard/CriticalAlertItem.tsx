@@ -18,25 +18,25 @@ interface CriticalAlertItemProps {
 
 const alertTypeConfig = {
     rpe_mismatch: {
-        label: 'Failed RPE Target',
+        label: 'Fallo en RPE objetivo',
         color: 'text-orange-500',
         bgColor: 'bg-orange-500/10',
         badgeVariant: 'secondary' as const
     },
     new_feedback: {
-        label: 'New Feedback',
+        label: 'Nuevo comentario',
         color: 'text-blue-500',
         bgColor: 'bg-blue-500/10',
         badgeVariant: 'default' as const
     },
     low_compliance: {
-        label: 'Low Compliance',
+        label: 'Bajo cumplimiento',
         color: 'text-yellow-500',
         bgColor: 'bg-yellow-500/10',
         badgeVariant: 'secondary' as const
     },
     missing_workout: {
-        label: 'Missing Workout',
+        label: 'Sin entrenamientos',
         color: 'text-red-500',
         bgColor: 'bg-red-500/10',
         badgeVariant: 'destructive' as const
@@ -93,14 +93,14 @@ export function CriticalAlertItem({
                                     variant="default"
                                     onClick={() => onAction?.('reply', athleteId)}
                                 >
-                                    Reply
+                                    Responder
                                 </Button>
                                 <Button
                                     size="sm"
                                     variant="outline"
                                     onClick={() => onAction?.('adjust_plan', athleteId)}
                                 >
-                                    Adjust Plan
+                                    Ajustar plan
                                 </Button>
                             </>
                         )}
@@ -110,7 +110,7 @@ export function CriticalAlertItem({
                                 variant="default"
                                 onClick={() => onAction?.('view_comment', athleteId)}
                             >
-                                View Comment
+                                Ver comentario
                             </Button>
                         )}
                         {alertType === 'missing_workout' && (
@@ -119,7 +119,7 @@ export function CriticalAlertItem({
                                 variant="default"
                                 onClick={() => onAction?.('flag_review', athleteId)}
                             >
-                                Flag for Review
+                                Marcar para revisar
                             </Button>
                         )}
 

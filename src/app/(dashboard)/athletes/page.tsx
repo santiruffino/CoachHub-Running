@@ -66,6 +66,7 @@ export default function AthletesPage() {
         // Fetch athletes with stats - single API call
         const athletesRes = await api.get('/v2/users/athletes');
         const athletesList = athletesRes.data;
+        console.log(athletesList)
 
         // Map API response to AthleteData interface
         const athletesData: AthleteData[] = athletesList.map((athlete: any) => ({

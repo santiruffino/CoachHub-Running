@@ -32,7 +32,7 @@ export async function GET(
         const { searchParams } = new URL(request.url);
         const manualActivityId = searchParams.get('activityId');
 
-        // Fetch assignment with training details
+        // Fetch assignment with training details and optional linked activity
         const { data: assignment, error: fetchError } = await supabase
             .from('training_assignments')
             .select(`
@@ -40,12 +40,10 @@ export async function GET(
                 user_id,
                 scheduled_date,
                 completed,
+                activity_id,
                 training:trainings!inner(
                     id,
-                    title,
-                    type,
-                    blocks,
-                    coach_id
+                    blocks
                 )
             `)
             .eq('id', assignmentId)
@@ -60,10 +58,7 @@ export async function GET(
 
         const training = assignment.training as unknown as {
             id: string;
-            title: string;
-            type: string;
-            blocks: any[];
-            coach_id: string;
+            blocks: any;
         };
 
         // Authorization check
@@ -75,23 +70,26 @@ export async function GET(
         }
 
         // If coach, verify they can access this athlete's data
-        if (user!.role === 'COACH' && training.coach_id !== user!.id) {
-            return NextResponse.json(
-                { error: 'Not authorized to view this assignment' },
-                { status: 403 }
-            );
-        }
 
         // Find matching activity
         let matchedActivity = null;
 
         if (manualActivityId) {
-            // Manual match: use specified activity
+            // Manual match from request: use specified activity
             const { data: activity } = await supabase
                 .from('activities')
                 .select('*')
                 .eq('id', manualActivityId)
                 .eq('user_id', assignment.user_id)
+                .single();
+
+            matchedActivity = activity;
+        } else if (assignment.activity_id) {
+            // Persisted match: use linked activity
+            const { data: activity } = await supabase
+                .from('activities')
+                .select('*')
+                .eq('id', assignment.activity_id)
                 .single();
 
             matchedActivity = activity;
@@ -149,6 +147,8 @@ export async function GET(
         // Calculate block-by-block comparison (optional detailed view)
         const blockComparison = calculateBlockComparison(training.blocks, matchedActivity);
 
+        const isManualMatch = !!(manualActivityId || assignment.activity_id);
+
         return NextResponse.json({
             matched: true,
             assignmentId,
@@ -163,6 +163,7 @@ export async function GET(
             },
             matchQuality,
             blockComparison,
+            isManualMatch,
         });
     } catch (error: any) {
         console.error('Get workout match error:', error);

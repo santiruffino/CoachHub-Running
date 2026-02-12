@@ -33,13 +33,11 @@ export default function AthleteDashboard({ user }: { user: any }) {
                 const cachedAssignments = cacheService.get<any[]>(assignmentsKey);
 
                 if (cachedActivities && cachedAssignments) {
-                    console.log('🚀 [AthleteDashboard] Loading from cache...');
                     await processAndSetSessions(cachedActivities, cachedAssignments);
                     // Continue to fetch in background to ensure data is fresh
                 }
             }
 
-            console.log('📡 [AthleteDashboard] Fetching fresh data...');
             const [activitiesRes, assignmentsRes] = await Promise.all([
                 api.get(`/v2/users/${user.id}/activities`),
                 api.get(`/v2/users/assignments`)

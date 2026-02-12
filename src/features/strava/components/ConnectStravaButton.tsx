@@ -17,7 +17,7 @@ export function ConnectStravaButton({ onConnect, loading }: ConnectStravaButtonP
             {loading ? (
                 <div className="flex items-center gap-2 px-4 py-2 bg-[#FC4C02] text-white rounded font-bold">
                     <Loader2 className="h-5 w-5 animate-spin" />
-                    <span>Connecting...</span>
+                    <span>Conectando...</span>
                 </div>
             ) : (
                 <Image

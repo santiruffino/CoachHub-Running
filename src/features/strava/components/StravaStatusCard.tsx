@@ -22,8 +22,8 @@ export function StravaStatusCard({ status, loading, onConnect, onDisconnect, onR
         return (
             <Card>
                 <CardHeader>
-                    <CardTitle>Strava Integration</CardTitle>
-                    <CardDescription>Connect your Strava account to sync activities.</CardDescription>
+                    <CardTitle>Integracion con Strava</CardTitle>
+                    <CardDescription>Conecta tu cuenta de Strava para sincronizar tus actividades.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <ConnectStravaButton onConnect={onConnect} loading={loading} />
@@ -40,8 +40,8 @@ export function StravaStatusCard({ status, loading, onConnect, onDisconnect, onR
                         <CardTitle className="flex items-center gap-2">
                             Strava
                             {status.isConnected ?
-                                <Badge className="bg-green-500 hover:bg-green-600">Connected</Badge> :
-                                <Badge variant="secondary">Disconnected</Badge>
+                                <Badge className="bg-green-500 hover:bg-green-600">Conectado</Badge> :
+                                <Badge variant="secondary">Sin conexion</Badge>
                             }
                         </CardTitle>
                         {status.isConnected && (
@@ -73,8 +73,8 @@ export function StravaStatusCard({ status, loading, onConnect, onDisconnect, onR
                 </div>
                 <CardDescription>
                     {status.isConnected
-                        ? `Connected to athlete ID ${status.athleteId}`
-                        : 'Connect your account to sync activities automatically.'}
+                        ? `Conectado al atleta con ID: ${status.athleteId}`
+                        : 'Conecta tu cuenta para sincronizar las actividades automaticamente.'}
                 </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
@@ -82,12 +82,12 @@ export function StravaStatusCard({ status, loading, onConnect, onDisconnect, onR
                     <div className="flex gap-4">
                         <Button variant="outline" onClick={onDisconnect} disabled={loading} className="text-red-500 hover:text-red-600">
                             <Unplug className="mr-2 h-4 w-4" />
-                            Disconnect
+                            Desconectar
                         </Button>
 
                         {status.lastSync && (
                             <div className="text-sm text-gray-500 flex items-center">
-                                Last sync: {format(new Date(status.lastSync), 'PP p')}
+                                Ultima sincronizacion: {format(new Date(status.lastSync), 'PP p')}
                             </div>
                         )}
                     </div>

@@ -30,65 +30,94 @@ export interface MatchedLap {
 export function flattenWorkout(blocks: any[]): FlatStep[] {
     const flatSteps: FlatStep[] = [];
     let stepIndex = 0;
+    // Process all blocks
+    console.log('flattenWorkout input blocks:', JSON.stringify(blocks, null, 2));
 
-    function processBlock(block: any, repeatContext?: { current: number; total: number }) {
-        if (!block) return;
+    // Group blocks by group.id to handle repeats
+    // Iterating linearly. If we encounter a block with a group.id, we need to check if we've already processed this group?
+    // Actually, the blocks are stored flat in sequence.
+    // If we see a block with a group ID:
+    // 1. Identify all consecutive blocks with the same group ID.
+    // 2. These form a "repeat block".
+    // 3. Process this sequence of blocks N times (where N = group.reps).
+    // 4. Skip the original blocks in the main loop to avoid double counting.
 
-        // Handle repeat block
-        if (block.type === 'repeat' && block.repetitions) {
-            const repetitions = block.repetitions;
-            for (let i = 0; i < repetitions; i++) {
-                block.steps?.forEach((step: any) => {
-                    processStep(step, { current: i + 1, total: repetitions });
+    let i = 0;
+    while (i < blocks.length) {
+        const block = blocks[i];
+
+        if (block.group?.id) {
+            // Start of a repeat group
+            const groupId = block.group.id;
+            const reps = block.group.reps;
+
+            // Find all blocks in this group
+            // Assuming they are contiguous in the array
+            const groupBlocks = [];
+            let j = i;
+            while (j < blocks.length && blocks[j].group?.id === groupId) {
+                groupBlocks.push(blocks[j]);
+                j++;
+            }
+
+            // Process the group N times
+            for (let r = 0; r < reps; r++) {
+                groupBlocks.forEach(groupBlock => {
+                    // Create a pseudo-step object that matches what processStep expects
+                    // Or call a adapted version of processStep
+                    // Since the flat block structure IS the step structure, we can map it directly.
+
+                    const stepName = groupBlock.stepName || groupBlock.type;
+                    const stepType = groupBlock.type; // 'interval' | 'recovery' | 'warmup' | 'cooldown'
+
+                    // Determine flat step type
+                    let flatStepType: FlatStep['stepType'] = 'other';
+                    if (stepType === 'warmup') flatStepType = 'warmup';
+                    else if (stepType === 'cooldown') flatStepType = 'cooldown';
+                    else if (stepType === 'recovery') flatStepType = 'recovery';
+                    else if (stepType === 'interval') flatStepType = 'active';
+
+                    flatSteps.push({
+                        stepIndex: stepIndex++,
+                        name: stepName,
+                        target_type: groupBlock.duration.type === 'distance' ? 'distance' : 'duration', // 'distance' | 'time' -> 'distance' | 'duration'
+                        target_value: groupBlock.duration.value,
+                        intensity: groupBlock.rpe || groupBlock.intensity,
+                        stepType: flatStepType,
+                        repeatIndex: r + 1,
+                        totalRepeats: reps,
+                    });
                 });
             }
-        } else if (block.steps) {
-            // Regular block with steps
-            block.steps.forEach((step: any) => {
-                processStep(step, repeatContext);
+
+            // Advance outer loop past the group
+            i = j;
+        } else {
+            // Regular single block
+            const stepName = block.stepName || block.type;
+            const stepType = block.type;
+
+            let flatStepType: FlatStep['stepType'] = 'other';
+            if (stepType === 'warmup') flatStepType = 'warmup';
+            else if (stepType === 'cooldown') flatStepType = 'cooldown';
+            else if (stepType === 'recovery') flatStepType = 'recovery';
+            else if (stepType === 'interval') flatStepType = 'active';
+
+            flatSteps.push({
+                stepIndex: stepIndex++,
+                name: stepName,
+                target_type: block.duration.type === 'distance' ? 'distance' : 'duration',
+                target_value: block.duration.value,
+                intensity: block.rpe || block.intensity,
+                stepType: flatStepType,
+                // No repeat context
             });
+
+            i++;
         }
     }
 
-    function processStep(step: any, repeatContext?: { current: number; total: number }) {
-        if (!step) return;
-
-        // Determine step type
-        let stepType: FlatStep['stepType'] = 'other';
-        if (step.name?.toLowerCase().includes('warmup') || step.name?.toLowerCase().includes('warm up')) {
-            stepType = 'warmup';
-        } else if (step.name?.toLowerCase().includes('cooldown') || step.name?.toLowerCase().includes('cool down')) {
-            stepType = 'cooldown';
-        } else if (step.name?.toLowerCase().includes('recovery') || step.name?.toLowerCase().includes('rest')) {
-            stepType = 'recovery';
-        } else if (step.target_type === 'duration' || step.target_type === 'distance') {
-            stepType = 'active';
-        }
-
-        // Convert target value to standard units
-        let targetValue = step.target_value || 0;
-        if (step.target_type === 'distance') {
-            // Assume target_value is in meters
-            targetValue = step.target_value;
-        } else if (step.target_type === 'duration') {
-            // Assume target_value is in seconds
-            targetValue = step.target_value;
-        }
-
-        flatSteps.push({
-            stepIndex: stepIndex++,
-            name: step.name || `Step ${stepIndex}`,
-            target_type: step.target_type,
-            target_value: targetValue,
-            intensity: step.target_rpe || step.target_hr_zone,
-            stepType,
-            repeatIndex: repeatContext?.current,
-            totalRepeats: repeatContext?.total,
-        });
-    }
-
-    // Process all blocks
-    blocks.forEach(block => processBlock(block));
+    console.log('flattenWorkout output steps:', flatSteps.length);
 
     return flatSteps;
 }

@@ -44,6 +44,7 @@ export interface WorkoutMatch {
     activityExternalId?: string;
     matchQuality?: MatchQuality;
     blockComparison?: BlockComparison[];
+    isManualMatch?: boolean;
 }
 
 export interface MatchQuality {

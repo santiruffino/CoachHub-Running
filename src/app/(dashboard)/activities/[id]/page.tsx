@@ -24,12 +24,14 @@ import {
     Mountain,
     Zap,
     Award,
-    ArrowLeft
+    ArrowLeft,
+    Link as LinkIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HeartRateZonesChart } from '../components/HeartRateZonesChart';
 import { PaceZonesChart } from '../components/PaceZonesChart';
 import { flattenWorkout, matchLapsToWorkout, MatchedLap } from '@/features/trainings/utils/workoutMatcher';
+import { LinkWorkoutModal } from '@/features/trainings/components/LinkWorkoutModal';
 
 // Dynamic import for ECharts to avoid SSR issues
 const ActivityChart = dynamic(
@@ -123,6 +125,7 @@ interface ActivityDetail {
     max_watts?: number;
     _viewerIsOwner?: boolean;
     _ownerId?: string;
+    _internalId?: string;
 }
 
 export default function ActivityDetailPage() {
@@ -148,6 +151,7 @@ export default function ActivityDetailPage() {
     // Workout matching state
     const [matchedLaps, setMatchedLaps] = useState<MatchedLap[]>([]);
     const [workoutAssignment, setWorkoutAssignment] = useState<any>(null);
+    const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
 
     useEffect(() => {
         const fetchActivity = async () => {
@@ -212,6 +216,16 @@ export default function ActivityDetailPage() {
 
                 // Find assignment matching this date
                 const matchingAssignment = assignments.find((a: any) => {
+                    // 1. Check for explicit link
+                    // Use _internalId if available (for Strava activities where id is external_id)
+                    // otherwise fallback to id (for manual activities if they use UUID as id)
+                    const currentActivityId = activity._internalId || activity.id;
+                    if (a.activity_id === currentActivityId) return true;
+
+                    // 2. If assignment is linked to ANOTHER activity, ignore it
+                    if (a.activity_id) return false;
+
+                    // 3. Fallback to date match
                     const assignmentDate = a.scheduled_date?.split('T')[0];
                     return assignmentDate === activityDate;
                 });
@@ -220,8 +234,11 @@ export default function ActivityDetailPage() {
                     setWorkoutAssignment(matchingAssignment);
 
                     // Flatten workout and match laps
+                    console.log('Matching workout blocks:', matchingAssignment.workout.blocks);
                     const flatSteps = flattenWorkout(matchingAssignment.workout.blocks);
+                    console.log('Flat steps generated:', flatSteps);
                     const matched = matchLapsToWorkout(activity.laps, flatSteps);
+                    console.log('Matched laps result:', matched);
                     setMatchedLaps(matched);
                 } else {
                     // No workout found for this date
@@ -447,6 +464,12 @@ export default function ActivityDetailPage() {
                         <Badge variant="secondary">{activity.sport_type}</Badge>
                         {activity.device_name && (
                             <Badge variant="outline">{activity.device_name}</Badge>
+                        )}
+                        {isAthlete && (
+                            <Button variant="outline" size="sm" onClick={() => setIsLinkModalOpen(true)} className="h-6 text-xs ml-2">
+                                <LinkIcon className="h-3 w-3 mr-1" />
+                                {workoutAssignment ? 'Modificar Vinculación' : 'Vincular Entrenamiento'}
+                            </Button>
                         )}
                     </div>
                 </div>
@@ -682,10 +705,10 @@ export default function ActivityDetailPage() {
                                                 <TableHead>Time</TableHead>
                                                 <TableHead>Avg Pace</TableHead>
                                                 <TableHead>Elevation</TableHead>
-                                                {activity.laps[0]?.average_heartrate && (
+                                                {!!activity.laps[0]?.average_heartrate && (
                                                     <TableHead>Avg HR</TableHead>
                                                 )}
-                                                {activity.laps[0]?.average_cadence && (
+                                                {!!activity.laps[0]?.average_cadence && (
                                                     <TableHead>Avg Cadence</TableHead>
                                                 )}
                                                 <TableHead>Workout Step</TableHead>
@@ -709,15 +732,25 @@ export default function ActivityDetailPage() {
                                                         <TableCell>{formatTime(lap.moving_time)}</TableCell>
                                                         <TableCell>{formatPace(lap.average_speed)}</TableCell>
                                                         <TableCell>{lap.total_elevation_gain.toFixed(1)} m</TableCell>
-                                                        {lap.average_heartrate && (
+                                                        {!!activity.laps![0]?.average_heartrate && (
                                                             <TableCell>
-                                                                <span className={`px-2 py-1 rounded font-medium ${getHRZoneColor(lap.average_heartrate)}`}>
-                                                                    {lap.average_heartrate.toFixed(0)} bpm
-                                                                </span>
+                                                                {lap.average_heartrate ? (
+                                                                    <span className={`px-2 py-1 rounded font-medium ${getHRZoneColor(lap.average_heartrate)}`}>
+                                                                        {lap.average_heartrate.toFixed(0)} bpm
+                                                                    </span>
+                                                                ) : (
+                                                                    <span className="text-muted-foreground">-</span>
+                                                                )}
                                                             </TableCell>
                                                         )}
-                                                        {lap.average_cadence && (
-                                                            <TableCell>{lap.average_cadence.toFixed(0)} spm</TableCell>
+                                                        {!!activity.laps![0]?.average_cadence && (
+                                                            <TableCell>
+                                                                {lap.average_cadence ? (
+                                                                    <span>{lap.average_cadence.toFixed(0)} spm</span>
+                                                                ) : (
+                                                                    <span className="text-muted-foreground">-</span>
+                                                                )}
+                                                            </TableCell>
                                                         )}
                                                         <TableCell>
                                                             {matchedLap ? (
@@ -750,7 +783,7 @@ export default function ActivityDetailPage() {
                                                 <TableHead>Time</TableHead>
                                                 <TableHead>Pace</TableHead>
                                                 <TableHead>Elevation</TableHead>
-                                                {activity.splits_metric[0]?.average_heartrate && (
+                                                {!!activity.splits_metric[0]?.average_heartrate && (
                                                     <TableHead>Avg HR</TableHead>
                                                 )}
                                                 <TableHead>Zone</TableHead>
@@ -764,11 +797,15 @@ export default function ActivityDetailPage() {
                                                     <TableCell>{formatTime(split.moving_time)}</TableCell>
                                                     <TableCell>{formatPace(split.average_speed)}</TableCell>
                                                     <TableCell>{split.elevation_difference > 0 ? '+' : ''}{split.elevation_difference.toFixed(1)} m</TableCell>
-                                                    {split.average_heartrate && (
+                                                    {!!activity.splits_metric![0]?.average_heartrate && (
                                                         <TableCell>
-                                                            <span className={`px-2 py-1 rounded font-medium ${getHRZoneColor(split.average_heartrate)}`}>
-                                                                {split.average_heartrate.toFixed(0)} bpm
-                                                            </span>
+                                                            {split.average_heartrate ? (
+                                                                <span className={`px-2 py-1 rounded font-medium ${getHRZoneColor(split.average_heartrate)}`}>
+                                                                    {split.average_heartrate.toFixed(0)} bpm
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-muted-foreground">-</span>
+                                                            )}
                                                         </TableCell>
                                                     )}
                                                     <TableCell>
@@ -792,7 +829,7 @@ export default function ActivityDetailPage() {
                                                 <TableHead>Time</TableHead>
                                                 <TableHead>Pace</TableHead>
                                                 <TableHead>Elevation</TableHead>
-                                                {activity.splits_standard[0]?.average_heartrate && (
+                                                {!!activity.splits_standard[0]?.average_heartrate && (
                                                     <TableHead>Avg HR</TableHead>
                                                 )}
                                                 <TableHead>Zone</TableHead>
@@ -806,11 +843,15 @@ export default function ActivityDetailPage() {
                                                     <TableCell>{formatTime(split.moving_time)}</TableCell>
                                                     <TableCell>{formatPace(split.average_speed)}</TableCell>
                                                     <TableCell>{split.elevation_difference > 0 ? '+' : ''}{split.elevation_difference.toFixed(1)} m</TableCell>
-                                                    {split.average_heartrate && (
+                                                    {!!activity.splits_standard![0]?.average_heartrate && (
                                                         <TableCell>
-                                                            <span className={`px-2 py-1 rounded font-medium ${getHRZoneColor(split.average_heartrate)}`}>
-                                                                {split.average_heartrate.toFixed(0)} bpm
-                                                            </span>
+                                                            {split.average_heartrate ? (
+                                                                <span className={`px-2 py-1 rounded font-medium ${getHRZoneColor(split.average_heartrate!)}`}>
+                                                                    {split.average_heartrate!.toFixed(0)} bpm
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-muted-foreground">-</span>
+                                                            )}
                                                         </TableCell>
                                                     )}
                                                     <TableCell>
@@ -827,7 +868,7 @@ export default function ActivityDetailPage() {
                         {/* HR Zone Legend */}
                         {heartrateZones?.zones && activity.average_heartrate && (
                             <div className="mt-6 pt-4 border-t">
-                                <p className="text-sm font-medium text-muted-foreground mb-3">Heart Rate Zones:</p>
+                                <p className="text-sm font-medium text-muted-foreground mb-3">Zonas de frecuencia cardiaca:</p>
                                 <div className="flex flex-wrap gap-3">
                                     <div className="flex items-center gap-2">
                                         <span className="px-3 py-1 rounded font-medium bg-gray-400 text-gray-900">Z1</span>
@@ -1001,6 +1042,24 @@ export default function ActivityDetailPage() {
                         )}
                     </CardContent>
                 </Card>
+            )}
+            {/* Link Workout Modal */}
+            {activity && (
+                <LinkWorkoutModal
+                    isOpen={isLinkModalOpen}
+                    onClose={() => setIsLinkModalOpen(false)}
+                    activityId={id}
+                    activityTitle={activity.name}
+                    onLinkSuccess={() => {
+                        setIsLinkModalOpen(false);
+                        // Trigger re-match logic by forcing effect to run? 
+                        // The simplest way is to fetch details again or just the assignments.
+                        // Ideally we extract fetchAndMatchWorkout. 
+                        // For now, refreshing the page is a crude but effective fallback if we don't want to refactor.
+                        // Or we can manually trigger the effect by adding a counter.
+                        window.location.reload();
+                    }}
+                />
             )}
         </div>
     );

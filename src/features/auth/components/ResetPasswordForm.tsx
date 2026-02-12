@@ -37,8 +37,6 @@ export default function ResetPasswordForm() {
 
     useEffect(() => {
         const checkSession = async () => {
-            console.log('🔍 [ResetPasswordForm] Checking for active session...');
-
             const supabase = createClient();
 
             // Retry up to 5 times with 500ms delay to allow session/auth state to stabilize
@@ -50,7 +48,6 @@ export default function ResetPasswordForm() {
                 const { data: { session } } = await supabase.auth.getSession();
 
                 if (session) {
-                    console.log('✅ [ResetPasswordForm] Session found:', session.user.email);
                     setHasSession(true);
                     setCheckingSession(false);
                     return;
@@ -58,7 +55,6 @@ export default function ResetPasswordForm() {
 
                 retryCount++;
                 if (retryCount < maxRetries) {
-                    console.log(`🔄 [ResetPasswordForm] No session yet, retrying... (${retryCount}/${maxRetries})`);
                     await new Promise(resolve => setTimeout(resolve, 500));
                 }
             }
@@ -72,7 +68,6 @@ export default function ResetPasswordForm() {
     }, []);
 
     const onSubmit = async (data: FormData) => {
-        console.log('🔐 [ResetPasswordForm] Form submitted');
 
         if (!hasSession) {
             console.error('❌ [ResetPasswordForm] Cannot submit - no active session');
@@ -84,14 +79,11 @@ export default function ResetPasswordForm() {
             setError('');
             setSuccess(false);
 
-            console.log('🔐 [ResetPasswordForm] Calling authService.updatePassword...');
             await authService.updatePassword(data.newPassword);
-            console.log('✅ [ResetPasswordForm] Password updated successfully');
             setSuccess(true);
 
             // Redirect to login or dashboard after successful password change
             setTimeout(() => {
-                console.log('🔄 [ResetPasswordForm] Redirecting to dashboard');
                 router.push('/dashboard');
             }, 1500);
         } catch (err: any) {

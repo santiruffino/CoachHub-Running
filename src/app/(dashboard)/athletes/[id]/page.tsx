@@ -280,7 +280,7 @@ export default function AthleteDetailPage() {
                         <Link href={`/workouts/assign?athleteId=${id}`}>
                             <Button className="w-fit">
                                 <Plus className="h-4 mr-2" />
-                                Assign Workout
+                                Asignar entrenamiento
                             </Button>
                         </Link>
                     </div>
@@ -288,19 +288,19 @@ export default function AthleteDetailPage() {
                     {/* Profile Stats */}
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm w-full">
                         <div className="bg-muted p-3 rounded-lg text-center">
-                            <span className="block text-muted-foreground text-xs">Height</span>
+                            <span className="block text-muted-foreground text-xs">Altura</span>
                             <span className="font-semibold">{athlete.athleteProfile?.height || '-'} cm</span>
                         </div>
                         <div className="bg-muted p-3 rounded-lg text-center">
-                            <span className="block text-muted-foreground text-xs">Weight</span>
+                            <span className="block text-muted-foreground text-xs">Peso</span>
                             <span className="font-semibold">{athlete.athleteProfile?.weight || '-'} kg</span>
                         </div>
                         <div className="bg-muted p-3 rounded-lg text-center">
-                            <span className="block text-muted-foreground text-xs">Rest HR</span>
+                            <span className="block text-muted-foreground text-xs">FC Reposo</span>
                             <span className="font-semibold">{athlete.athleteProfile?.restHR || '-'} bpm</span>
                         </div>
                         <div className="bg-muted p-3 rounded-lg text-center">
-                            <span className="block text-muted-foreground text-xs">Max HR</span>
+                            <span className="block text-muted-foreground text-xs">FC Max</span>
                             <span className="font-semibold">{athlete.athleteProfile?.maxHR || '-'} bpm</span>
                         </div>
                         <div className="bg-muted p-3 rounded-lg text-center relative group">
@@ -309,7 +309,7 @@ export default function AthleteDetailPage() {
                                 <span className="font-semibold">{athlete.athleteProfile?.vam || '-'}</span>
                                 <Select onValueChange={handleUpdateVAM}>
                                     <SelectTrigger className="h-6 w-fit text-[10px] px-2 py-0">
-                                        <SelectValue placeholder="Set Level" />
+                                        <SelectValue placeholder="Asignar nivel" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {VAM_LEVELS.map(level => (

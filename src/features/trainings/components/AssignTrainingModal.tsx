@@ -151,7 +151,7 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
 
                 // Create a new non-template training
                 const newTraining = await trainingsService.create({
-                    title: workoutName || `Workout for ${format(new Date(scheduledDate), 'MMM d, yyyy')}`,
+                    title: workoutName || `Workout for ${format(new Date(`${scheduledDate}T00:00:00`), 'MMM d, yyyy')}`,
                     type: 'RUNNING' as any, // Default type, could be made configurable
                     description: 'Custom workout',
                     blocks: editedBlocks,
@@ -162,7 +162,7 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                 await trainingsService.assign({
                     trainingId: newTraining.data.id,
                     athleteIds: [athleteId],
-                    scheduledDate: new Date(scheduledDate).toISOString(),
+                    scheduledDate: new Date(`${scheduledDate}T00:00:00`).toISOString(),
                     expectedRpe: expectedRpe,
                     workoutName: workoutName || undefined,
                 });
@@ -207,7 +207,7 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                 await trainingsService.assign({
                     trainingId: trainingIdToAssign,
                     athleteIds: [athleteId],
-                    scheduledDate: new Date(scheduledDate).toISOString(),
+                    scheduledDate: new Date(`${scheduledDate}T00:00:00`).toISOString(),
                     expectedRpe: expectedRpe,
                     workoutName: workoutName || undefined,
                 });
@@ -257,7 +257,7 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                 trainingId: trainingIdToAssign,
                 athleteIds: selectedAthleteIds.length > 0 ? selectedAthleteIds : undefined,
                 groupIds: selectedGroupIds.length > 0 ? selectedGroupIds : undefined,
-                scheduledDate: new Date(scheduledDate).toISOString(),
+                scheduledDate: new Date(`${scheduledDate}T00:00:00`).toISOString(),
                 expectedRpe: expectedRpe,
                 workoutName: workoutName || undefined,
             });

@@ -73,13 +73,6 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
                 if (response.data?.velocity_smooth?.data) {
                     const velocities = response.data.velocity_smooth.data;
                     const validVelocities = velocities.filter((v: number) => v > 0);
-                    console.log('📊 Velocity data stats:', {
-                        count: velocities.length,
-                        min: Math.min(...validVelocities).toFixed(2) + ' m/s',
-                        max: Math.max(...validVelocities).toFixed(2) + ' m/s',
-                        avg: (validVelocities.reduce((a: number, b: number) => a + b, 0) / validVelocities.length).toFixed(2) + ' m/s',
-                        sample: velocities.slice(0, 5).map((v: number) => v.toFixed(2))
-                    });
                 }
             } catch (error) {
                 console.error('Failed to fetch streams:', error);

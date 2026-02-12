@@ -28,7 +28,7 @@ export async function GET(
         // First, get the activity from database to find the owner and external_id
         const { data: activity, error: activityError } = await supabase
             .from('activities')
-            .select('user_id, external_id')
+            .select('id, user_id, external_id')
             .eq('external_id', id)
             .single();
 
@@ -167,6 +167,7 @@ export async function GET(
             ...activityDetail,
             _viewerIsOwner: isOwner,
             _ownerId: activityOwnerId,
+            _internalId: activity.id || (activity as any).id, // Pass internal UUID
         });
     } catch (error: any) {
         console.error('Get activity detail error:', error);

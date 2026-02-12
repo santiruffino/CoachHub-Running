@@ -7,6 +7,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { WorkoutMatch } from '../types';
 import { matchingService } from '../services/matching.service';
 import {
@@ -35,17 +36,61 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    // Manual match state
+    const [showCandidates, setShowCandidates] = useState(false);
+    const [candidates, setCandidates] = useState<any[]>([]);
+    const [loadingCandidates, setLoadingCandidates] = useState(false);
+
     useEffect(() => {
         if (isOpen && assignmentId) {
             fetchMatch();
         }
     }, [isOpen, assignmentId]);
 
-    const fetchMatch = async () => {
+    const handleFetchCandidates = async () => {
+        try {
+            setLoadingCandidates(true);
+            const data = await matchingService.getCandidateActivities(assignmentId);
+            setCandidates(data);
+            setShowCandidates(true);
+        } catch (err) {
+            console.error('Failed to load candidates', err);
+        } finally {
+            setLoadingCandidates(false);
+        }
+    };
+
+    const handleSelectCandidate = async (activityId: string) => {
+        try {
+            setLoading(true); // Show loading state on main modal
+            await matchingService.linkActivity(assignmentId, activityId);
+            await fetchMatch(); // Allow backend to pick up the new link
+            setShowCandidates(false);
+        } catch (err) {
+            console.error('Failed to link activity:', err);
+            setError('No se pudo vincular la actividad');
+            setLoading(false);
+        }
+    };
+
+    const handleUnlink = async () => {
+        if (!confirm('¿Estás seguro de que quieres desvincular esta actividad?')) return;
+        try {
+            setLoading(true);
+            await matchingService.unlinkActivity(assignmentId);
+            await fetchMatch(); // Revert to auto-match
+        } catch (err) {
+            console.error('Failed to unlink activity:', err);
+            setError('No se pudo desvincular la actividad');
+            setLoading(false);
+        }
+    };
+
+    const fetchMatch = async (activityId?: string) => {
         try {
             setLoading(true);
             setError(null);
-            const data = await matchingService.getMatch(assignmentId);
+            const data = await matchingService.getMatch(assignmentId, activityId);
             setMatch(data);
         } catch (err: any) {
             console.error('Failed to fetch match:', err);
@@ -79,12 +124,55 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
                     </div>
                 )}
 
-                {!loading && !error && match && !match.matched && (
-                    <div className="py-12 text-center text-muted-foreground">
-                        <p>No se encontró una actividad completada para este entrenamiento.</p>
-                        <p className="text-sm mt-2">
-                            Completa el entrenamiento y sincroniza con Strava para ver la comparación.
-                        </p>
+                {!loading && !error && match && !match.matched && !showCandidates && (
+                    <div className="py-12 text-center text-muted-foreground space-y-4">
+                        <div>
+                            <p>No se encontró una actividad completada para este entrenamiento.</p>
+                            <p className="text-sm mt-2">
+                                Completa el entrenamiento y sincroniza con Strava para ver la comparación.
+                            </p>
+                        </div>
+                        <div className="pt-4">
+                            <Button
+                                variant="outline"
+                                onClick={handleFetchCandidates}
+                                disabled={loadingCandidates}
+                            >
+                                {loadingCandidates ? 'Buscando...' : 'Vincular Actividad Manualmente'}
+                            </Button>
+                        </div>
+                    </div>
+                )}
+
+                {!loading && !error && showCandidates && (
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-sm font-semibold">Selecciona una actividad</h3>
+                            <Button variant="ghost" size="sm" onClick={() => setShowCandidates(false)}>Cancelar</Button>
+                        </div>
+                        <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                            {candidates.length === 0 ? (
+                                <p className="text-sm text-muted-foreground text-center py-4">
+                                    No se encontraron actividades recientes.
+                                </p>
+                            ) : (
+                                candidates.map(activity => (
+                                    <div
+                                        key={activity.id}
+                                        onClick={() => handleSelectCandidate(activity.id)}
+                                        className="p-3 border rounded-lg hover:bg-accent cursor-pointer flex items-center justify-between"
+                                    >
+                                        <div>
+                                            <div className="font-medium">{activity.title}</div>
+                                            <div className="text-sm text-muted-foreground">
+                                                {new Date(activity.start_date).toLocaleDateString()} • {(activity.distance / 1000).toFixed(2)} km
+                                            </div>
+                                        </div>
+                                        <Button size="sm" variant="ghost">Vincular</Button>
+                                    </div>
+                                ))
+                            )}
+                        </div>
                     </div>
                 )}
 
@@ -113,6 +201,18 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
                                     <CheckCircle2 className={`w-12 h-12 ${getMatchScoreColor(match.matchQuality.overallScore)}`} />
                                 </div>
                             </div>
+                            {match.isManualMatch && (
+                                <div className="mt-4 flex justify-end">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleUnlink}
+                                        className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                                    >
+                                        Desvincular Actividad
+                                    </Button>
+                                </div>
+                            )}
                         </Card>
 
                         {/* Stats Comparison */}

@@ -191,6 +191,7 @@ export default function CoachDashboard({ user }: { user: any }) {
             return {
               athleteId: item.athleteId,
               athleteName: item.athleteName,
+              activityName: item.activity.title,
               activityType: item.activity.type || 'Workout',
               comments: item.feedback.comments,
               rpe: item.feedback.rpe,
@@ -418,25 +419,25 @@ export default function CoachDashboard({ user }: { user: any }) {
       {/* Top Metric Cards */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <MetricCard
-          title="RPE MISMATCHES"
+          title="RPE Fallido"
           value={rpeMismatches.length}
-          subtitle="last 48h"
+          subtitle="Ultimas 48h"
           icon={AlertTriangle}
           accentColor="text-orange-500"
           iconBgColor="bg-orange-500/10"
         />
         <MetricCard
-          title="MISSING WORKOUTS"
+          title="Atletas sin entrenamientos"
           value={missingWorkouts.length}
-          subtitle="next week no workouts"
+          subtitle="Sin entrenamientos la proxima semana"
           icon={Calendar}
           accentColor="text-red-500"
           iconBgColor="bg-red-500/10"
         />
         <MetricCard
-          title="LOW COMPLIANCE"
+          title="Incumplimiento"
           value={lowCompliance.length}
-          subtitle="athletes < 50% completion"
+          subtitle="Atletas con <50% de ejecucion"
           icon={TrendingUp}
           accentColor="text-yellow-500"
           iconBgColor="bg-yellow-500/10"
@@ -449,8 +450,8 @@ export default function CoachDashboard({ user }: { user: any }) {
         <div className="lg:col-span-2">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Critical Alerts</CardTitle>
-              <a href="#" className="text-sm text-primary hover:underline">Mark all read</a>
+              <CardTitle>Alertas Importantes</CardTitle>
+              <a href="#" className="text-sm text-primary hover:underline">Marcar como leidas</a>
             </CardHeader>
             <CardContent className="p-0">
               {(rpeMismatches.length > 0 || lowCompliance.length > 0 || missingWorkouts.length > 0 || athleteFeedback.length > 0) ? (
@@ -463,7 +464,7 @@ export default function CoachDashboard({ user }: { user: any }) {
                       athleteName={feedback.athleteName}
                       alertType="new_feedback"
                       timestamp={feedback.timestamp}
-                      message={`Left a comment on "${feedback.activityType}"`}
+                      message={`Dejó un comentario en "${feedback.activityName}"`}
                       details={feedback.comments}
                     />
                   ))}
@@ -502,7 +503,7 @@ export default function CoachDashboard({ user }: { user: any }) {
                       athleteName={item.name}
                       alertType="missing_workout"
                       timestamp="next week"
-                      message={item.type === 'group' ? `Group has no workouts planned (${item.memberCount} athletes)` : 'No workouts scheduled'}
+                      message={item.type === 'group' ? `Group has no workouts planned (${item.memberCount} athletes)` : 'No hay entrenamientos planificados'}
                     />
                   ))}
                 </div>
@@ -520,7 +521,7 @@ export default function CoachDashboard({ user }: { user: any }) {
         <div>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Group Status</CardTitle>
+              <CardTitle>Estado de los grupos</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {groupCompliance.length > 0 ? (
@@ -535,7 +536,7 @@ export default function CoachDashboard({ user }: { user: any }) {
                 ))
               ) : (
                 <p className="text-sm text-muted-foreground text-center py-4">
-                  No groups found
+                  No se encontraron grupos
                 </p>
               )}
             </CardContent>
