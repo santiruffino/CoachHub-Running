@@ -103,6 +103,13 @@
   --color-brand-accent: #C70039;
   --color-brand-deep: #900C3F;
   --color-brand-dark: #581845;
+
+  /* Landing Page Colors */
+  --color-dark-navy: #0A0E27;
+  --color-card-bg: #1A1F3A;
+  --color-green-accent: #00FF88;
+  --color-green-dark: #00CC6A;
+  --color-gray-light: #A0A8B8;
 }
 
 * {
