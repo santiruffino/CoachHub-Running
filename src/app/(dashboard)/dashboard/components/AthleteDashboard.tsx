@@ -187,7 +187,7 @@ export default function AthleteDashboard({ user }: { user: any }) {
             return {
                 id: assign.id,
                 type: 'PLANNED' as const,
-                title: assign.training.title,
+                title: assign.workout_name || assign.training.title, // Use custom workout name if available
                 subtitle: assign.training.type,
                 description: assign.training.description,
                 assignmentId: assign.id,

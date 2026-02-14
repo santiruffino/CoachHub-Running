@@ -123,6 +123,33 @@ export default function AthleteDetailPage() {
 
                 // Performance trend data (last 6 weeks)
                 const performanceWeeks = [];
+
+                // Helper function to check if assignment is completed (moved outside loop for reuse)
+                const isAssignmentCompleted = (assignment: TrainingAssignment, activitiesList: Activity[]): boolean => {
+                    if (assignment.completed) return true;
+
+                    const assignmentDateStr = assignment.scheduled_date.split('T')[0];
+                    const assignmentType = assignment.training.type;
+
+                    return activitiesList.some(activity => {
+                        const activityDateStr = format(new Date(activity.start_date), 'yyyy-MM-dd');
+                        const normalizeType = (type: string): string => {
+                            const typeMap: Record<string, string> = {
+                                'Run': 'RUNNING',
+                                'WeightTraining': 'STRENGTH',
+                                'Workout': 'STRENGTH',
+                                'Ride': 'CYCLING',
+                                'VirtualRide': 'CYCLING',
+                                'Swim': 'SWIMMING',
+                            };
+                            return typeMap[type] || 'OTHER';
+                        };
+                        const activityType = normalizeType(activity.type);
+
+                        return activityDateStr === assignmentDateStr && activityType === assignmentType;
+                    });
+                };
+
                 for (let i = 5; i >= 0; i--) {
                     const week = subWeeks(now, i);
                     const weekStart = startOfWeek(week, { weekStartsOn: 1 });
@@ -136,7 +163,9 @@ export default function AthleteDetailPage() {
                         return assignmentDateStr >= weekStartStr && assignmentDateStr <= weekEndStr;
                     });
 
-                    const weekCompleted = weekAssignments.filter((a: TrainingAssignment) => a.completed).length;
+                    const weekCompleted = weekAssignments.filter((a: TrainingAssignment) =>
+                        isAssignmentCompleted(a, activitiesRes.data)
+                    ).length;
                     const weekTotal = weekAssignments.length;
 
                     const rate = weekTotal > 0 ? Math.round((weekCompleted / weekTotal) * 100) : 0;
@@ -202,7 +231,40 @@ export default function AthleteDetailPage() {
 
     // Calculate stats
     const totalTrainings = assignments.length;
-    const completedTrainings = assignments.filter(a => a.completed).length;
+
+    // Helper function to normalize activity type to match training type
+    const normalizeActivityType = (activityType: string): string => {
+        // Strava activity types to our training types mapping
+        const typeMap: Record<string, string> = {
+            'Run': 'RUNNING',
+            'WeightTraining': 'STRENGTH',
+            'Workout': 'STRENGTH',
+            'Ride': 'CYCLING',
+            'VirtualRide': 'CYCLING',
+            'Swim': 'SWIMMING',
+        };
+        return typeMap[activityType] || 'OTHER';
+    };
+
+    // Count assignments as completed if they have a matching activity on the same date with the same type
+    const completedTrainings = assignments.filter(assignment => {
+        // If already marked as completed, count it
+        if (assignment.completed) return true;
+
+        const assignmentDateStr = assignment.scheduled_date.split('T')[0];
+        const assignmentType = assignment.training.type;
+
+        // Check if there's a matching activity on the same date with the same type
+        const hasMatchingActivity = activities.some(activity => {
+            const activityDateStr = format(new Date(activity.start_date), 'yyyy-MM-dd');
+            const activityType = normalizeActivityType(activity.type);
+
+            return activityDateStr === assignmentDateStr && activityType === assignmentType;
+        });
+
+        return hasMatchingActivity;
+    }).length;
+
     const now = new Date();
     const weekStart = startOfWeek(now, { weekStartsOn: 1 });
     const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
