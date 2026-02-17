@@ -14,6 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
 import {
     Activity as ActivityIcon,
     Calendar,
@@ -152,6 +153,7 @@ export default function ActivityDetailPage() {
     const [matchedLaps, setMatchedLaps] = useState<MatchedLap[]>([]);
     const [workoutAssignment, setWorkoutAssignment] = useState<any>(null);
     const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+    const { alertState, showAlert, closeAlert } = useAlertDialog();
 
     useEffect(() => {
         const fetchActivity = async () => {
@@ -297,7 +299,7 @@ export default function ActivityDetailPage() {
             });
         } catch (err: any) {
             console.error('Failed to save feedback:', err);
-            alert('Failed to save feedback. Please try again.');
+            showAlert('error', 'Failed to save feedback. Please try again.');
         } finally {
             setFeedbackSaving(false);
         }
@@ -1043,6 +1045,15 @@ export default function ActivityDetailPage() {
                     }}
                 />
             )}
+
+            <AlertDialog
+                open={alertState.open}
+                onClose={closeAlert}
+                type={alertState.type}
+                title={alertState.title}
+                message={alertState.message}
+                confirmText={alertState.confirmText}
+            />
         </div>
     );
 }

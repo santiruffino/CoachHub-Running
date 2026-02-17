@@ -11,6 +11,7 @@ import api from '@/lib/axios';
 import { ArrowLeft, Users, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
+import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
 
 interface Athlete {
     id: string;
@@ -49,6 +50,7 @@ function AssignWorkoutContent() {
     const [athletes, setAthletes] = useState<Athlete[]>([]);
     const [groups, setGroups] = useState<Group[]>([]);
     const [loading, setLoading] = useState(false);
+    const { alertState, showAlert, closeAlert } = useAlertDialog();
 
     useEffect(() => {
         loadData();
@@ -88,17 +90,17 @@ function AssignWorkoutContent() {
 
     const handleAssign = async () => {
         if (selectedAthleteIds.length === 0 && selectedGroupIds.length === 0) {
-            alert('Please select at least one athlete or group');
+            showAlert('warning', 'Please select at least one athlete or group');
             return;
         }
 
         if (!scheduledDate) {
-            alert('Please select a date');
+            showAlert('warning', 'Please select a date');
             return;
         }
 
         if (blocks.length === 0) {
-            alert('Please add at least one workout block');
+            showAlert('warning', 'Please add at least one workout block');
             return;
         }
 
@@ -132,11 +134,11 @@ function AssignWorkoutContent() {
                 workoutName: workoutName || undefined,
             });
 
-            alert('Workout assigned successfully!');
-            router.push(athleteId ? `/athletes/${athleteId}` : '/athletes');
+            showAlert('success', 'Workout assigned successfully!');
+            setTimeout(() => router.push(athleteId ? `/athletes/${athleteId}` : '/athletes'), 1500);
         } catch (error) {
             console.error('Failed to assign workout:', error);
-            alert('Failed to assign workout');
+            showAlert('error', 'Failed to assign workout');
         } finally {
             setLoading(false);
         }
@@ -427,6 +429,15 @@ function AssignWorkoutContent() {
                     </div>
                 </div>
             </div>
+
+            <AlertDialog
+                open={alertState.open}
+                onClose={closeAlert}
+                type={alertState.type}
+                title={alertState.title}
+                message={alertState.message}
+                confirmText={alertState.confirmText}
+            />
         </div>
     );
 }

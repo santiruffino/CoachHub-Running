@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import api from '@/lib/axios';
 import { Check, Copy, Mail } from 'lucide-react';
+import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
 
 interface InviteAthleteModalProps {
     open: boolean;
@@ -25,6 +26,7 @@ export function InviteAthleteModal({ open, onClose }: InviteAthleteModalProps) {
     const [creating, setCreating] = useState(false);
     const [invitationLink, setInvitationLink] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
+    const { alertState, showAlert, closeAlert } = useAlertDialog();
 
     const onSubmit = async (data: any) => {
         setCreating(true);
@@ -38,7 +40,7 @@ export function InviteAthleteModal({ open, onClose }: InviteAthleteModalProps) {
             setInvitationLink(link);
         } catch (error: any) {
             console.error('Failed to create invitation:', error);
-            alert('Failed to create invitation. Please try again.');
+            showAlert('error', 'Failed to create invitation. Please try again.');
         } finally {
             setCreating(false);
         }
@@ -133,6 +135,15 @@ export function InviteAthleteModal({ open, onClose }: InviteAthleteModalProps) {
                     </div>
                 )}
             </DialogContent>
+
+            <AlertDialog
+                open={alertState.open}
+                onClose={closeAlert}
+                type={alertState.type}
+                title={alertState.title}
+                message={alertState.message}
+                confirmText={alertState.confirmText}
+            />
         </Dialog>
     );
 }

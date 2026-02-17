@@ -21,6 +21,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { HeartRateZones } from '@/features/profiles/components/HeartRateZones';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { VAM_LEVELS } from '@/features/profiles/constants/vam';
+import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
 
 interface Activity {
     id: string;
@@ -73,6 +74,7 @@ export default function AthleteDetailPage() {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [weeklyData, setWeeklyData] = useState<{ day: string; value: number }[]>([]);
     const [performanceData, setPerformanceData] = useState<{ week: string; value: number }[]>([]);
+    const { alertState, showAlert, closeAlert } = useAlertDialog();
 
     useEffect(() => {
         const fetchData = async () => {
@@ -194,7 +196,7 @@ export default function AthleteDetailPage() {
             setAssignments(prev => prev.filter(a => a.id !== assignmentId));
         } catch (error) {
             console.error('Failed to delete assignment:', error);
-            alert('Failed to delete assignment. Please try again.');
+            showAlert('error', 'Failed to delete assignment. Please try again.');
         }
     };
 
@@ -210,7 +212,7 @@ export default function AthleteDetailPage() {
             } : null);
         } catch (error) {
             console.error('Failed to update VAM:', error);
-            alert('Failed to update VAM. Please try again.');
+            showAlert('error', 'Failed to update VAM. Please try again.');
         }
     };
 
@@ -575,6 +577,15 @@ export default function AthleteDetailPage() {
                     </Card>
                 </div>
             </div>
+
+            <AlertDialog
+                open={alertState.open}
+                onClose={closeAlert}
+                type={alertState.type}
+                title={alertState.title}
+                message={alertState.message}
+                confirmText={alertState.confirmText}
+            />
         </div>
     );
 }

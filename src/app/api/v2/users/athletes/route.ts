@@ -79,7 +79,10 @@ export async function GET() {
     }
 
     // Aggregate stats per athlete
+    // Get today's date in UTC to match database dates (stored in UTC)
     const now = new Date();
+    const todayUTC = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}-${String(now.getUTCDate()).padStart(2, '0')}`;
+
     const statsMap = new Map<string, {
       totalAssignments: number;
       completedAssignments: number;
@@ -102,8 +105,15 @@ export async function GET() {
 
       if (assignment.completed) {
         stats.completedAssignments++;
-      } else if (new Date(assignment.scheduled_date).setHours(0, 0, 0, 0) >= now.setHours(0, 0, 0, 0)) {
-        stats.plannedAssignments++;
+      } else {
+        // Count as "planned" if scheduled for today or future
+        // Extract date portion from scheduled_date (which is in UTC format: YYYY-MM-DDTHH:mm:ss)
+        const scheduledDateUTC = assignment.scheduled_date.split('T')[0];
+
+        // Compare date strings (YYYY-MM-DD format)
+        if (scheduledDateUTC >= todayUTC) {
+          stats.plannedAssignments++;
+        }
       }
     });
 

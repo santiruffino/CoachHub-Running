@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Save, User, Calendar, Activity } from 'lucide-react';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import api from '@/lib/axios';
+import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
 
 interface WorkoutAssignment {
     id: string;
@@ -49,6 +50,7 @@ export default function WorkoutDetailsPage() {
     const [editedExpectedRpe, setEditedExpectedRpe] = useState<number>(5);
     const [hasChanges, setHasChanges] = useState(false);
     const [error, setError] = useState('');
+    const { alertState, showAlert, closeAlert } = useAlertDialog();
 
     useEffect(() => {
         const fetchAssignment = async () => {
@@ -95,7 +97,7 @@ export default function WorkoutDetailsPage() {
             setEditedExpectedRpe(response.data.expectedRpe || 5);
             setHasChanges(false);
 
-            alert('Workout updated successfully!');
+            showAlert('success', 'Workout updated successfully!');
         } catch (err: any) {
             console.error('Failed to save workout:', err);
             setError(err.response?.data?.error || 'Failed to save workout');
@@ -308,6 +310,15 @@ export default function WorkoutDetailsPage() {
                     </div>
                 </CardContent>
             </Card>
+
+            <AlertDialog
+                open={alertState.open}
+                onClose={closeAlert}
+                type={alertState.type}
+                title={alertState.title}
+                message={alertState.message}
+                confirmText={alertState.confirmText}
+            />
         </div>
     );
 }

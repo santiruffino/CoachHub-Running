@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import Link from 'next/link';
+import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
 
 export default function WorkoutBuilderPage() {
     const router = useRouter();
@@ -18,15 +19,16 @@ export default function WorkoutBuilderPage() {
     const [workoutDescription, setWorkoutDescription] = useState('');
     const [expectedRpe, setExpectedRpe] = useState<number>(5);
     const [saving, setSaving] = useState(false);
+    const { alertState, showAlert, closeAlert } = useAlertDialog();
 
     const handleSave = async () => {
         if (!workoutTitle.trim()) {
-            alert('Please enter a workout title');
+            showAlert('warning', 'Please enter a workout title');
             return;
         }
 
         if (blocks.length === 0) {
-            alert('Please add at least one workout block');
+            showAlert('warning', 'Please add at least one workout block');
             return;
         }
 
@@ -41,11 +43,11 @@ export default function WorkoutBuilderPage() {
                 expectedRpe: expectedRpe
             });
 
-            alert('Workout template saved successfully!');
-            router.push('/workouts/library');
+            showAlert('success', 'Workout template saved successfully!');
+            setTimeout(() => router.push('/workouts/library'), 1500);
         } catch (error) {
             console.error('Failed to save workout:', error);
-            alert('Failed to save workout template');
+            showAlert('error', 'Failed to save workout template');
         } finally {
             setSaving(false);
         }
@@ -138,6 +140,15 @@ export default function WorkoutBuilderPage() {
                     onChange={setBlocks}
                 />
             </div>
+
+            <AlertDialog
+                open={alertState.open}
+                onClose={closeAlert}
+                type={alertState.type}
+                title={alertState.title}
+                message={alertState.message}
+                confirmText={alertState.confirmText}
+            />
         </div>
     );
 }

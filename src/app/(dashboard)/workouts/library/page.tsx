@@ -7,12 +7,14 @@ import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 import Link from 'next/link';
+import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
 
 export default function WorkoutLibraryPage() {
     const router = useRouter();
     const [templates, setTemplates] = useState<Training[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const { alertState, showAlert, closeAlert } = useAlertDialog();
 
     useEffect(() => {
         loadTemplates();
@@ -38,7 +40,7 @@ export default function WorkoutLibraryPage() {
             setTemplates(prev => prev.filter(t => t.id !== id));
         } catch (error) {
             console.error('Failed to delete template:', error);
-            alert('Failed to delete template');
+            showAlert('error', 'Failed to delete template');
         }
     };
 
@@ -141,6 +143,15 @@ export default function WorkoutLibraryPage() {
                     ))}
                 </div>
             )}
+
+            <AlertDialog
+                open={alertState.open}
+                onClose={closeAlert}
+                type={alertState.type}
+                title={alertState.title}
+                message={alertState.message}
+                confirmText={alertState.confirmText}
+            />
         </div>
     );
 }

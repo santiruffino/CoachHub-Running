@@ -10,12 +10,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { AssignTrainingModal } from '@/features/trainings/components/AssignTrainingModal';
+import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
 
 export default function TrainingsPage() {
     const [trainings, setTrainings] = useState<Training[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedTrainingId, setSelectedTrainingId] = useState<string | null>(null);
     const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+    const { alertState, showAlert, closeAlert } = useAlertDialog();
 
     const fetchTrainings = async () => {
         try {
@@ -67,7 +69,7 @@ export default function TrainingsPage() {
             await fetchTrainings();
         } catch (error) {
             console.error('Failed to delete training:', error);
-            alert('Failed to delete training. Please try again.');
+            showAlert('error', 'Failed to delete training. Please try again.');
         }
     };
 
@@ -158,6 +160,15 @@ export default function TrainingsPage() {
                     onClose={handleCloseModal}
                 />
             )}
+
+            <AlertDialog
+                open={alertState.open}
+                onClose={closeAlert}
+                type={alertState.type}
+                title={alertState.title}
+                message={alertState.message}
+                confirmText={alertState.confirmText}
+            />
         </div>
     );
 }
