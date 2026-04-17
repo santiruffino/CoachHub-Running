@@ -53,93 +53,101 @@ export default function WorkoutBuilderPage() {
         }
     };
 
-    return (
-        <div className="container mx-auto px-4 py-6 h-screen flex flex-col">
-            {/* Header */}
-            <div className="mb-6">
-                <div className="flex items-center gap-4 mb-4">
-                    <Link href="/workouts/library">
-                        <Button variant="outline" size="sm">
-                            <ArrowLeft className="w-4 h-4 mr-2" />
-                            Back to Library
-                        </Button>
-                    </Link>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Workout Builder</h1>
-                </div>
+    const leftSidebarContent = (
+        <div className="p-8 pb-4">
+            <h3 className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-2">
+                Editor Phase 01
+            </h3>
+            <h2 className="text-xl font-bold font-display text-foreground dark:text-background mb-8">
+                Core Details
+            </h2>
 
-                {/* Workout Info */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Workout Title *
-                        </label>
-                        <input
-                            type="text"
-                            value={workoutTitle}
-                            onChange={(e) => setWorkoutTitle(e.target.value)}
-                            placeholder="e.g., Lactate Threshold Intervals: 4×2km"
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-primary focus:border-transparent"
-                        />
-                    </div>
-                </div>
+            <div className="space-y-6">
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Description
+                    <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-1 block">
+                        Workout Title
                     </label>
                     <input
                         type="text"
-                        value={workoutDescription}
-                        onChange={(e) => setWorkoutDescription(e.target.value)}
-                        placeholder="e.g., Track / Flat Road"
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-primary focus:border-transparent"
+                        value={workoutTitle}
+                        onChange={(e) => setWorkoutTitle(e.target.value)}
+                        placeholder="e.g. Threshold Development"
+                        className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-2 text-foreground dark:text-background focus:ring-0 focus:border-primary placeholder-muted-foreground/50 transition-colors"
                     />
                 </div>
-                <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Global Expected RPE (Mandatory) *
+
+                <div>
+                    <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-1 block">
+                        Activity Type
                     </label>
-                    <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                        <div className="flex-1">
-                            <Slider
-                                value={[expectedRpe]}
-                                min={1}
-                                max={10}
-                                step={1}
-                                onValueChange={(val) => setExpectedRpe(val[0])}
-                                className="flex-1"
-                            />
-                            <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-                                <span>Easy (1-3)</span>
-                                <span>Moderate (4-6)</span>
-                                <span>Hard (7-8)</span>
-                                <span>Max (9-10)</span>
-                            </div>
-                        </div>
-                        <div className="flex items-center justify-center w-12 h-12 rounded bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-xl font-bold text-brand-primary">
-                            {expectedRpe}
-                        </div>
-                    </div>
+                    <select className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-2 text-foreground dark:text-background focus:ring-0 focus:border-primary outline-none">
+                        <option value="RUNNING">Running</option>
+                        <option value="CYCLING">Cycling</option>
+                        <option value="SWIMMING">Swimming</option>
+                        <option value="STRENGTH">Strength</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-1 block">
+                        Coach Notes
+                    </label>
+                     <input
+                        type="text"
+                        value={workoutDescription}
+                        onChange={(e) => setWorkoutDescription(e.target.value)}
+                        placeholder="Targeting lactate threshold..."
+                        className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-2 text-foreground dark:text-background focus:ring-0 focus:border-primary placeholder-muted-foreground/50 transition-colors"
+                    />
+                </div>
+
+                 <div>
+                    <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-2 block flex items-between">
+                        Expected RPE
+                        <span className="ml-auto text-primary">{expectedRpe}/10</span>
+                    </label>
+                    <Slider
+                        value={[expectedRpe]}
+                        min={1}
+                        max={10}
+                        step={1}
+                        onValueChange={(val) => setExpectedRpe(val[0])}
+                        className="my-4"
+                    />
                 </div>
             </div>
+        </div>
+    );
 
-            <div className="flex justify-end mb-4">
-                <Button
+    const footerContent = (
+        <div className="w-full flex items-center justify-between mx-auto px-8 max-w-7xl">
+            <div className="flex flex-col">
+                 <span className="text-lg font-bold font-display">Ready to Publish?</span>
+                 <span className="text-xs text-muted-foreground/60">Ensure all intervals are calibrated to your current metrics.</span>
+            </div>
+            <div className="flex items-center gap-4">
+                <Button variant="outline" className="border-primary/20 text-foreground bg-transparent hover:bg-white/10 hover:text-white uppercase tracking-wider text-xs font-semibold px-6 py-6" onClick={() => router.push('/workouts/library')}>
+                    Cancel / Exit
+                </Button>
+                <Button 
                     onClick={handleSave}
                     disabled={saving || !workoutTitle.trim() || blocks.length === 0}
-                    className="bg-brand-primary hover:bg-brand-primary-dark text-white"
+                    className="bg-white text-foreground hover:bg-background uppercase tracking-wider text-xs font-semibold px-8 py-6 rounded shadow-lg"
                 >
-                    <Save className="w-4 h-4 mr-2" />
-                    {saving ? 'Saving...' : 'Save as Template'}
+                    {saving ? 'Saving...' : 'Finalize Workout'}
                 </Button>
             </div>
+        </div>
+    );
 
-            {/* Workout Builder */}
-            <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 overflow-hidden">
-                <WorkoutBuilder
-                    initialBlocks={blocks}
-                    onChange={setBlocks}
-                />
-            </div>
+    return (
+        <div className="h-[calc(100vh-theme(spacing.16))] w-[calc(100%+2rem)] md:w-[calc(100%+4rem)] overflow-hidden -mx-4 md:-mx-8 -my-4 md:-my-8">
+            <WorkoutBuilder
+                initialBlocks={blocks}
+                onChange={setBlocks}
+                leftSidebarContent={leftSidebarContent}
+                footerContent={footerContent}
+            />
 
             <AlertDialog
                 open={alertState.open}

@@ -25,7 +25,7 @@ export const PRESET_PATTERNS: PresetPattern[] = [
                 type: 'warmup',
                 stepName: 'Warm up',
                 duration: { type: 'time', value: 600 }, // 10 min
-                target: { type: 'pace', min: '6:00', max: '6:30' },
+                target: { type: 'vam_zone', min: '2', max: '2' },
                 intensity: 40,
                 notes: ''
             }
@@ -41,7 +41,7 @@ export const PRESET_PATTERNS: PresetPattern[] = [
                 type: 'interval',
                 stepName: 'Interval',
                 duration: { type: 'distance', value: 1000 },
-                target: { type: 'pace', min: '4:00', max: '4:30' },
+                target: { type: 'vam_zone', min: '5', max: '5' },
                 intensity: 85,
                 notes: ''
             }
@@ -57,7 +57,7 @@ export const PRESET_PATTERNS: PresetPattern[] = [
                 type: 'recovery',
                 stepName: 'Recovery',
                 duration: { type: 'time', value: 120 }, // 2 min
-                target: { type: 'pace', min: '6:00', max: '6:30' },
+                target: { type: 'vam_zone', min: '1', max: '1' },
                 intensity: 30,
                 notes: ''
             }
@@ -73,7 +73,7 @@ export const PRESET_PATTERNS: PresetPattern[] = [
                 type: 'cooldown',
                 stepName: 'Cool down',
                 duration: { type: 'time', value: 600 }, // 10 min
-                target: { type: 'pace', min: '6:00', max: '6:30' },
+                target: { type: 'vam_zone', min: '2', max: '2' },
                 intensity: 40,
                 notes: ''
             }
@@ -90,7 +90,7 @@ export const PRESET_PATTERNS: PresetPattern[] = [
                 type: 'interval',
                 stepName: 'Work',
                 duration: { type: 'distance', value: 400 },
-                target: { type: 'pace', min: '4:00', max: '4:20' },
+                target: { type: 'vam_zone', min: '5', max: '5' },
                 intensity: 85,
                 notes: ''
             },
@@ -98,7 +98,7 @@ export const PRESET_PATTERNS: PresetPattern[] = [
                 type: 'recovery',
                 stepName: 'Rest',
                 duration: { type: 'time', value: 90 },
-                target: { type: 'pace', min: '6:00', max: '6:30' },
+                target: { type: 'vam_zone', min: '1', max: '1' },
                 intensity: 30,
                 notes: ''
             }
@@ -115,7 +115,7 @@ export const PRESET_PATTERNS: PresetPattern[] = [
                 type: 'interval',
                 stepName: 'Work',
                 duration: { type: 'distance', value: 800 },
-                target: { type: 'pace', min: '4:30', max: '5:00' },
+                target: { type: 'vam_zone', min: '4', max: '4' },
                 intensity: 75,
                 notes: ''
             },
@@ -123,7 +123,7 @@ export const PRESET_PATTERNS: PresetPattern[] = [
                 type: 'interval',
                 stepName: 'Hard',
                 duration: { type: 'distance', value: 400 },
-                target: { type: 'pace', min: '4:00', max: '4:20' },
+                target: { type: 'vam_zone', min: '5', max: '5' },
                 intensity: 90,
                 notes: ''
             }
@@ -140,7 +140,7 @@ export const PRESET_PATTERNS: PresetPattern[] = [
                 type: 'interval',
                 stepName: 'Build 1',
                 duration: { type: 'distance', value: 400 },
-                target: { type: 'pace', min: '5:30', max: '6:00' },
+                target: { type: 'vam_zone', min: '2', max: '2' },
                 intensity: 40,
                 notes: ''
             },
@@ -148,7 +148,7 @@ export const PRESET_PATTERNS: PresetPattern[] = [
                 type: 'interval',
                 stepName: 'Build 2',
                 duration: { type: 'distance', value: 400 },
-                target: { type: 'pace', min: '5:00', max: '5:30' },
+                target: { type: 'vam_zone', min: '3', max: '3' },
                 intensity: 55,
                 notes: ''
             },
@@ -156,7 +156,7 @@ export const PRESET_PATTERNS: PresetPattern[] = [
                 type: 'interval',
                 stepName: 'Build 3',
                 duration: { type: 'distance', value: 400 },
-                target: { type: 'pace', min: '4:30', max: '5:00' },
+                target: { type: 'vam_zone', min: '4', max: '4' },
                 intensity: 70,
                 notes: ''
             },
@@ -164,7 +164,7 @@ export const PRESET_PATTERNS: PresetPattern[] = [
                 type: 'interval',
                 stepName: 'Build 4',
                 duration: { type: 'distance', value: 400 },
-                target: { type: 'pace', min: '4:00', max: '4:30' },
+                target: { type: 'vam_zone', min: '5', max: '5' },
                 intensity: 85,
                 notes: ''
             }
@@ -181,7 +181,7 @@ export const PRESET_PATTERNS: PresetPattern[] = [
                 type: 'interval',
                 stepName: 'Hard',
                 duration: { type: 'distance', value: 400 },
-                target: { type: 'pace', min: '4:00', max: '4:30' },
+                target: { type: 'vam_zone', min: '5', max: '5' },
                 intensity: 85,
                 notes: ''
             },
@@ -189,7 +189,7 @@ export const PRESET_PATTERNS: PresetPattern[] = [
                 type: 'interval',
                 stepName: 'Medium',
                 duration: { type: 'distance', value: 400 },
-                target: { type: 'pace', min: '4:30', max: '5:00' },
+                target: { type: 'vam_zone', min: '4', max: '4' },
                 intensity: 70,
                 notes: ''
             },
@@ -197,7 +197,7 @@ export const PRESET_PATTERNS: PresetPattern[] = [
                 type: 'interval',
                 stepName: 'Easy',
                 duration: { type: 'distance', value: 400 },
-                target: { type: 'pace', min: '5:00', max: '5:30' },
+                target: { type: 'vam_zone', min: '3', max: '3' },
                 intensity: 55,
                 notes: ''
             },
@@ -205,7 +205,7 @@ export const PRESET_PATTERNS: PresetPattern[] = [
                 type: 'interval',
                 stepName: 'Recovery',
                 duration: { type: 'distance', value: 400 },
-                target: { type: 'pace', min: '5:30', max: '6:00' },
+                target: { type: 'vam_zone', min: '2', max: '2' },
                 intensity: 40,
                 notes: ''
             }

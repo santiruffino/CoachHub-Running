@@ -8,13 +8,17 @@ import { useRouter } from 'next/navigation';
 import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
+import { useTranslations } from 'next-intl';
 
 export default function WorkoutLibraryPage() {
     const router = useRouter();
+    const t = useTranslations('workouts.libraryPage');
     const [templates, setTemplates] = useState<Training[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const { alertState, showAlert, closeAlert } = useAlertDialog();
+
+    const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
 
     useEffect(() => {
         loadTemplates();
@@ -33,20 +37,31 @@ export default function WorkoutLibraryPage() {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this template?')) return;
+        if (!confirm(t('deleteConfirm'))) return;
+
+        // Add to deleting set to disable button
+        setDeletingIds(prev => new Set(prev).add(id));
 
         try {
             await api.delete(`/v2/trainings/${id}`);
+            // Optimistically update the UI
             setTemplates(prev => prev.filter(t => t.id !== id));
         } catch (error) {
             console.error('Failed to delete template:', error);
-            showAlert('error', 'Failed to delete template');
+            showAlert('error', t('deleteError'));
+        } finally {
+            // Remove from deleting set
+            setDeletingIds(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(id);
+                return newSet;
+            });
         }
     };
 
-    const filteredTemplates = templates.filter(t =>
-        t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t.description?.toLowerCase().includes(searchQuery.toLowerCase())
+    const filteredTemplates = templates.filter(tmpl =>
+        tmpl.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        tmpl.description?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     return (
@@ -54,13 +69,13 @@ export default function WorkoutLibraryPage() {
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Workout Library</h1>
-                    <p className="text-gray-600 dark:text-gray-400 mt-1">Manage your workout templates</p>
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('title')}</h1>
+                    <p className="text-gray-600 dark:text-gray-400 mt-1">{t('subtitle')}</p>
                 </div>
                 <Link href="/workouts/builder">
                     <Button className="bg-brand-primary hover:bg-brand-primary-dark text-white">
                         <Plus className="w-4 h-4 mr-2" />
-                        Create Template
+                        {t('createTemplate')}
                     </Button>
                 </Link>
             </div>
@@ -73,7 +88,7 @@ export default function WorkoutLibraryPage() {
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search templates..."
+                        placeholder={t('searchPlaceholder')}
                         className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-primary focus:border-transparent"
                     />
                 </div>
@@ -82,18 +97,18 @@ export default function WorkoutLibraryPage() {
             {/* Templates Grid */}
             {loading ? (
                 <div className="text-center py-12">
-                    <p className="text-gray-500 dark:text-gray-400">Loading templates...</p>
+                    <p className="text-gray-500 dark:text-gray-400">{t('loadingTemplates')}</p>
                 </div>
             ) : filteredTemplates.length === 0 ? (
                 <div className="text-center py-12">
                     <p className="text-gray-500 dark:text-gray-400 mb-4">
-                        {searchQuery ? 'No templates found matching your search.' : 'No templates yet.'}
+                        {searchQuery ? t('noTemplatesSearch') : t('noTemplatesYet')}
                     </p>
                     {!searchQuery && (
                         <Link href="/workouts/builder">
                             <Button className="bg-brand-primary hover:bg-brand-primary-dark text-white">
                                 <Plus className="w-4 h-4 mr-2" />
-                                Create Your First Template
+                                {t('createFirstTemplate')}
                             </Button>
                         </Link>
                     )}
@@ -111,16 +126,22 @@ export default function WorkoutLibraryPage() {
                                         {template.title}
                                     </h3>
                                     {template.description && (
-                                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                                             {template.description}
                                         </p>
                                     )}
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 flex items-center gap-1.5 font-medium">
+                                        <span className="w-4 h-4 rounded-full bg-brand-primary/10 text-brand-primary flex items-center justify-center text-[8px] font-bold uppercase">
+                                            {template.coach?.name?.charAt(0) || 'C'}
+                                        </span>
+                                        {t('createdBy', { name: template.coach?.name || 'Team Coach' })}
+                                    </p>
                                 </div>
                             </div>
 
                             <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
                                 <span className="text-xs text-gray-500 dark:text-gray-400">
-                                    {template.blocks?.length || 0} steps
+                                    {template.blocks?.length || 0} {t('steps')}
                                 </span>
                                 <div className="flex gap-2">
                                     <Button
@@ -128,14 +149,15 @@ export default function WorkoutLibraryPage() {
                                         size="sm"
                                         onClick={() => router.push(`/workouts/assign?templateId=${template.id}`)}
                                     >
-                                        Assign
+                                        {t('assign')}
                                     </Button>
                                     <Button
                                         variant="outline"
                                         size="sm"
                                         onClick={() => handleDelete(template.id)}
+                                        disabled={deletingIds.has(template.id)}
                                     >
-                                        <Trash2 className="w-4 h-4" />
+                                        <Trash2 className={deletingIds.has(template.id) ? "w-4 h-4 animate-spin" : "w-4 h-4"} />
                                     </Button>
                                 </div>
                             </div>

@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { stravaService, StravaConnectionStatus } from '../services/strava.service';
 import { useRouter } from 'next/navigation';
 
-export function useStravaAuth() {
+export function useStravaAuth(options?: { enabled?: boolean }) {
+    const enabled = options?.enabled ?? true;
     const [status, setStatus] = useState<StravaConnectionStatus | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -23,8 +24,10 @@ export function useStravaAuth() {
     }, []);
 
     useEffect(() => {
-        fetchStatus();
-    }, [fetchStatus]);
+        if (enabled) {
+            fetchStatus();
+        }
+    }, [fetchStatus, enabled]);
 
     const connect = useCallback(async () => {
         try {

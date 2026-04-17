@@ -5,9 +5,12 @@ export interface Group {
     name: string;
     description?: string;
     coachId: string;
-    _count?: {
-        members: number;
-    }
+    group_type?: 'REGULAR' | 'RACE';
+    race_name?: string;
+    race_date?: string;
+    race_distance?: string;
+    race_priority?: 'A' | 'B' | 'C';
+    _count?: []
 }
 
 export interface GroupDetails extends Group {
@@ -19,4 +22,9 @@ export interface GroupDetails extends Group {
 export interface CreateGroupDto {
     name: string;
     description?: string;
+    group_type?: 'REGULAR' | 'RACE';
+    race_name?: string;
+    race_date?: string;
+    race_distance?: string;
+    race_priority?: 'A' | 'B' | 'C';
 }

@@ -114,12 +114,6 @@ export function InlineBlockCard({
 
     const getTargetDisplay = () => {
         switch (block.target.type) {
-            case 'pace':
-                return `PACE ${block.target.min || '-'} - ${block.target.max || '-'}`;
-            case 'heart_rate':
-                return `HR ${block.target.min || '-'} - ${block.target.max || '-'} bpm`;
-            case 'hr_zone':
-                return `HR Z${block.target.min || '2'}`;
             case 'vam_zone': {
                 const zoneNumber = String(block.target.min || '2');
                 const zone = VAM_ZONES.find(z => String(z.zone) === zoneNumber);
@@ -131,8 +125,10 @@ export function InlineBlockCard({
 
                 return `VAM Z${zoneNumber} (${minPace}-${maxPace})`;
             }
-            case 'power':
-                return `${block.target.min || '-'} W`;
+            case 'lthr':
+                return `LTHR ${block.target.min || '-'} - ${block.target.max || '-'}%`;
+            case 'rpe_target':
+                return `RPE ${block.target.min || '-'}`;
             default:
                 return '-';
         }
@@ -360,40 +356,10 @@ export function InlineBlockCard({
                                 onClick={(e) => e.stopPropagation()}
                                 className="w-full text-sm px-2 py-1.5 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white mb-2"
                             >
-                                <option value="pace">Pace (min/km)</option>
-                                <option value="heart_rate">Heart Rate</option>
-                                <option value="hr_zone">HR Zone</option>
                                 <option value="vam_zone">VAM Zone</option>
-                                <option value="power">Power</option>
+                                <option value="lthr">LTHR (%)</option>
+                                <option value="rpe_target">RPE</option>
                             </select>
-
-                            {/* Pace inputs */}
-                            {block.target.type === 'pace' && (
-                                <div className="grid grid-cols-2 gap-2">
-                                    <input
-                                        type="text"
-                                        placeholder="5:00"
-                                        value={block.target.min}
-                                        onChange={(e) => {
-                                            e.stopPropagation();
-                                            onUpdate(block.id, { target: { ...block.target, min: e.target.value } });
-                                        }}
-                                        onClick={(e) => e.stopPropagation()}
-                                        className="w-full text-sm px-2 py-1.5 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-                                    />
-                                    <input
-                                        type="text"
-                                        placeholder="5:30"
-                                        value={block.target.max}
-                                        onChange={(e) => {
-                                            e.stopPropagation();
-                                            onUpdate(block.id, { target: { ...block.target, max: e.target.value } });
-                                        }}
-                                        onClick={(e) => e.stopPropagation()}
-                                        className="w-full text-sm px-2 py-1.5 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-                                    />
-                                </div>
-                            )}
 
                             {/* VAM Zone */}
                             {block.target.type === 'vam_zone' && (
@@ -410,6 +376,51 @@ export function InlineBlockCard({
                                         <option key={z.zone} value={z.zone}>
                                             Z{z.zone} - {z.name} ({z.min}-{z.max}% VAM)
                                         </option>
+                                    ))}
+                                </select>
+                            )}
+
+                            {/* LTHR inputs */}
+                            {block.target.type === 'lthr' && (
+                                <div className="grid grid-cols-2 gap-2">
+                                    <input
+                                        type="number"
+                                        placeholder="80"
+                                        value={block.target.min}
+                                        onChange={(e) => {
+                                            e.stopPropagation();
+                                            onUpdate(block.id, { target: { ...block.target, min: e.target.value } });
+                                        }}
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="w-full text-sm px-2 py-1.5 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                                    />
+                                    <input
+                                        type="number"
+                                        placeholder="90"
+                                        value={block.target.max}
+                                        onChange={(e) => {
+                                            e.stopPropagation();
+                                            onUpdate(block.id, { target: { ...block.target, max: e.target.value } });
+                                        }}
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="w-full text-sm px-2 py-1.5 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                                    />
+                                </div>
+                            )}
+
+                            {/* RPE input */}
+                            {block.target.type === 'rpe_target' && (
+                                <select
+                                    value={block.target.min || '5'}
+                                    onChange={(e) => {
+                                        e.stopPropagation();
+                                        onUpdate(block.id, { target: { ...block.target, min: e.target.value, max: e.target.value } });
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="w-full text-sm px-2 py-1.5 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                                >
+                                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
+                                        <option key={n} value={n}>RPE {n}</option>
                                     ))}
                                 </select>
                             )}

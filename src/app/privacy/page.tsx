@@ -5,7 +5,7 @@ export default function PrivacyPage() {
         <div className="min-h-screen bg-white dark:bg-dark-navy">
             {/* Header */}
             <header className="border-b border-gray-200 dark:border-white/10">
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                     <Link
                         href="/"
                         className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-light hover:text-gray-900 dark:hover:text-white transition-colors"
@@ -19,7 +19,7 @@ export default function PrivacyPage() {
             </header>
 
             {/* Content */}
-            <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Privacy Policy</h1>
                 <p className="text-sm text-gray-600 dark:text-gray-light mb-8">Last updated: February 14, 2026</p>
 
@@ -203,7 +203,7 @@ export default function PrivacyPage() {
 
             {/* Footer */}
             <footer className="border-t border-gray-200 dark:border-white/10 mt-16">
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                     <p className="text-center text-sm text-gray-600 dark:text-gray-light">
                         © 2026 Coach Hub. All rights reserved.
                     </p>

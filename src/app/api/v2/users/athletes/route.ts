@@ -17,22 +17,22 @@ export async function GET() {
       );
     }
 
-    // Check if user is a coach
+    // Require COACH or ADMIN role using the helper or manual check
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, team_id')
       .eq('id', user.id)
       .single();
 
-    if (profile?.role !== 'COACH') {
+    if (profile?.role !== 'COACH' && profile?.role !== 'ADMIN') {
       return NextResponse.json(
-        { error: 'Only coaches can access this endpoint' },
+        { error: 'Only coaches or admins can access this endpoint' },
         { status: 403 }
       );
     }
 
-    // Get all athletes for this coach with groups
-    const { data: athletes, error } = await supabase
+    // Build query based on role
+    let query = supabase
       .from('profiles')
       .select(`
         id,
@@ -40,6 +40,11 @@ export async function GET() {
         name,
         role,
         created_at,
+        coach_id,
+        coach:profiles!coach_id(
+          id,
+          name
+        ),
         athlete_groups(
           id,
           group:groups(
@@ -48,8 +53,16 @@ export async function GET() {
           )
         )
       `)
-      .eq('role', 'ATHLETE')
-      .eq('coach_id', user.id);
+      .eq('role', 'ATHLETE');
+
+    // If it's just a COACH, filter by their coach_id. If ADMIN, filter by team_id
+    if (profile.role === 'COACH') {
+      query = query.eq('coach_id', user.id);
+    } else if (profile.role === 'ADMIN') {
+      query = query.eq('team_id', profile.team_id);
+    }
+
+    const { data: athletes, error } = await query;
 
     if (error) {
       console.error('Failed to fetch athletes:', error);
@@ -132,6 +145,7 @@ export async function GET() {
         created_at: athlete.created_at,
         groups: athlete.athlete_groups?.map((ag: any) => ag.group).filter(Boolean) || [],
         hasGroups: (athlete.athlete_groups?.length || 0) > 0,
+        coach: athlete.coach || null,
         stats: {
           totalAssignments: stats.totalAssignments,
           completedAssignments: stats.completedAssignments,

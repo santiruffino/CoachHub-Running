@@ -4,6 +4,7 @@ import { useAuth } from '@/features/auth/hooks/useAuth';
 
 import CoachDashboard from './components/CoachDashboard';
 import AthleteDashboard from './components/AthleteDashboard';
+import AdminDashboard from './components/AdminDashboard';
 
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -24,6 +25,10 @@ export default function DashboardPage() {
     }
 
     if (!user) return null;
+
+    if (user.role === 'ADMIN') {
+        return <AdminDashboard user={user} />;
+    }
 
     if (user.role === 'ATHLETE') {
         return <AthleteDashboard user={user} />;

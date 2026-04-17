@@ -13,6 +13,8 @@ export interface Training {
     type: TrainingType;
     blocks: any; // JSON
     coachId: string;
+    teamId?: string; // Links this template to a B2B Running Team
+    coach?: { name: string }; // Useful for UI display badge
     isTemplate?: boolean;
     expectedRpe?: number; // Global expected RPE (1-10)
 }
@@ -24,6 +26,7 @@ export interface CreateTrainingDto {
     description?: string;
     type: TrainingType;
     blocks?: any;
+    teamId?: string;
     isTemplate?: boolean;
     expectedRpe?: number;
 }

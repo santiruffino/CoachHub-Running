@@ -17,29 +17,36 @@ export async function GET() {
       );
     }
 
-    // Check if user is a coach
+    // Check if user is a coach or admin
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, team_id')
       .eq('id', user.id)
       .single();
 
-    if (profile?.role !== 'COACH') {
+    if (profile?.role !== 'COACH' && profile?.role !== 'ADMIN') {
       return NextResponse.json(
-        { error: 'Only coaches can access this endpoint' },
+        { error: 'Only coaches or admins can access this endpoint' },
         { status: 403 }
       );
     }
 
-    // Get all groups for this coach
-    const { data: groups, error } = await supabase
+    // Get all groups for this coach or team
+    let groupsQuery = supabase
       .from('groups')
       .select(`
         *,
         _count:athlete_groups(count)
       `)
-      .eq('coach_id', user.id)
       .order('created_at', { ascending: false });
+
+    if (profile.role === 'ADMIN') {
+      groupsQuery = groupsQuery.eq('team_id', profile.team_id);
+    } else {
+      groupsQuery = groupsQuery.eq('coach_id', user.id);
+    }
+
+    const { data: groups, error } = await groupsQuery;
 
     if (error) {
       return NextResponse.json(
@@ -73,16 +80,16 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if user is a coach
+    // Check if user is a coach or admin
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, team_id')
       .eq('id', user.id)
       .single();
 
-    if (profile?.role !== 'COACH') {
+    if (profile?.role !== 'COACH' && profile?.role !== 'ADMIN') {
       return NextResponse.json(
-        { error: 'Only coaches can create groups' },
+        { error: 'Only coaches or admins can create groups' },
         { status: 403 }
       );
     }
@@ -102,7 +109,8 @@ export async function POST(request: Request) {
       .insert({
         name,
         description,
-        coach_id: user.id,
+        coach_id: profile.role === 'ADMIN' ? null : user.id,
+        team_id: profile.team_id,
       })
       .select()
       .single();

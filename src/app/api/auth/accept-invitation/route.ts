@@ -62,14 +62,15 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Update profile with name, role, and coach relationship
+        // Update profile with name, role, and coach/team relationships
         const { error: profileError } = await supabase
             .from('profiles')
             .update({
                 name: name,
                 must_change_password: false, // User already set their own password
                 role: 'ATHLETE', // Default role for invited users
-                coach_id: invitation.coach_id, // Link athlete to coach
+                coach_id: invitation.coach_id, // Link athlete to coach (null if invited directly by Super Coach)
+                team_id: invitation.team_id,   // Link athlete directly to the Running Team
             })
             .eq('id', authData.user.id);
 

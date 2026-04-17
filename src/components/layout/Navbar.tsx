@@ -14,25 +14,27 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-
-const navigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['COACH', 'ATHLETE'] },
-    { name: 'Atletas', href: '/athletes', icon: Users, roles: ['COACH'] },
-    { name: 'Grupos', href: '/groups', icon: UsersRound, roles: ['COACH'] },
-    { name: 'Entrenamientos', href: '/trainings', icon: Calendar, roles: ['COACH'] },
-    { name: 'Calendario', href: '/dashboard/calendar', icon: Calendar, roles: ['COACH', 'ATHLETE'] },
-];
+import { useTranslations } from 'next-intl';
 
 export function Navbar() {
     const pathname = usePathname();
     const router = useRouter();
     const { user, loading, logout } = useAuth();
+    const t = useTranslations('nav');
 
     if (loading) return null;
 
+    const navigation = [
+        { name: t('dashboard'), href: '/dashboard', icon: LayoutDashboard, roles: ['COACH', 'ATHLETE'] },
+        { name: t('athletes'), href: '/athletes', icon: Users, roles: ['COACH'] },
+        { name: t('groups'), href: '/groups', icon: UsersRound, roles: ['COACH'] },
+        { name: t('trainings'), href: '/trainings', icon: Calendar, roles: ['COACH'] },
+        { name: t('calendar'), href: '/dashboard/calendar', icon: Calendar, roles: ['COACH', 'ATHLETE'] },
+    ];
+
     const userRole = user?.role || '';
     const userInitials = user?.name
-        ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+        ? user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
         : 'U';
 
     const handleLogout = async () => {
@@ -59,7 +61,7 @@ export function Navbar() {
                                     const Icon = item.icon;
                                     return (
                                         <Link
-                                            key={item.name}
+                                            key={item.href}
                                             href={item.href}
                                             className={cn(
                                                 'flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors',
@@ -97,16 +99,16 @@ export function Navbar() {
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={() => router.push('/profile')}>
                                     <User className="mr-2 h-4 w-4" />
-                                    Perfil
+                                    {t('profile')}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => router.push('/profile')}>
                                     <Settings className="mr-2 h-4 w-4" />
-                                    Ajustes
+                                    {t('settings')}
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={handleLogout} className="text-destructive">
                                     <LogOut className="mr-2 h-4 w-4" />
-                                    Cerrar sesion
+                                    {t('logout')}
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>

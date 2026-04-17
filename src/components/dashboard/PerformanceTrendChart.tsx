@@ -19,7 +19,10 @@ export function PerformanceTrendChart({ data }: PerformanceTrendChartProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Tendencia de Rendimiento</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <span>📈</span>
+          Tendencia de Cumplimiento
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-64 w-full">

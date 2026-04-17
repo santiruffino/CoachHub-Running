@@ -18,12 +18,24 @@ export async function GET(request: NextRequest) {
 
         const { supabase, user } = authResult;
 
-        // Fetch all trainings for this coach
-        const { data: trainings, error } = await supabase
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('team_id')
+            .eq('id', user!.id)
+            .single();
+
+        let query = supabase
             .from('trainings')
             .select('*')
-            .eq('coach_id', user!.id)
             .order('created_at', { ascending: false });
+
+        if (profile?.team_id) {
+            query = query.eq('team_id', profile.team_id);
+        } else {
+            query = query.eq('coach_id', user!.id);
+        }
+
+        const { data: trainings, error } = await query;
 
         if (error) {
             console.error('Fetch trainings error:', error);
@@ -31,6 +43,22 @@ export async function GET(request: NextRequest) {
                 { error: 'Failed to fetch trainings' },
                 { status: 500 }
             );
+        }
+
+        // Attach Coach Names Manually (to bypass PGRST FK missing issues)
+        const coachIds = [...new Set(trainings?.map(t => t.coach_id).filter(Boolean))];
+        if (coachIds.length > 0 && trainings) {
+            const { data: coachesData } = await supabase
+                .from('profiles')
+                .select('id, name')
+                .in('id', coachIds);
+                
+            const coachMap = new Map(coachesData?.map(c => [c.id, c.name]));
+            trainings.forEach((t: any) => {
+                if (t.coach_id) {
+                    t.coach = { name: coachMap.get(t.coach_id) || 'Unknown Coach' };
+                }
+            });
         }
 
         return NextResponse.json(trainings || []);
@@ -77,6 +105,13 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Fetch Coach Profile to get team_id
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('team_id')
+            .eq('id', user!.id)
+            .single();
+
         // Create training
         const { data: training, error } = await supabase
             .from('trainings')
@@ -87,6 +122,7 @@ export async function POST(request: NextRequest) {
                 blocks,
                 is_template: isTemplate,
                 coach_id: user!.id,
+                team_id: profile?.team_id || null, // Lock to Running Team
             })
             .select()
             .single();

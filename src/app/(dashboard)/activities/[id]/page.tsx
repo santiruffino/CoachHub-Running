@@ -438,267 +438,252 @@ export default function ActivityDetailPage() {
     const distanceKm = (activity.distance / 1000).toFixed(2);
 
     return (
-        <div className="space-y-6 p-8">
-            {/* Header */}
-            <div className="flex items-start justify-between">
-                <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => router.back()}
+        <div className="space-y-12 p-4 md:p-8 max-w-[1400px] mx-auto pb-20 bg-background min-h-screen">
+            <div className="flex items-center gap-2 mb-2">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => router.back()}
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                >
+                    <ArrowLeft className="h-4 w-4" />
+                </Button>
+            </div>
+
+            {/* Header section */}
+            <div className="space-y-4">
+                <p className="text-[10px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-widest">
+                    {activity.sport_type} - {format(new Date(activity.start_date_local), 'MMMM d, yyyy').toUpperCase()}
+                </p>
+                <h1 className="text-4xl sm:text-5xl lg:text-7xl font-display font-medium text-foreground leading-tight max-w-5xl tracking-tight">
+                    {activity.name}
+                </h1>
+                
+                <div className="flex flex-wrap items-center gap-3 pt-2">
+                    {/* Zone/Goal Badges - we can derive some basic ones from activity for now without mocking */}
+                    <span className="px-3 py-1.5 rounded-full text-xs font-semibold tracking-wider uppercase bg-accent/50 text-accent-foreground">
+                        {activity.average_heartrate ? `AVG HR: ${activity.average_heartrate.toFixed(0)} BPM` : 'GENERAL WORKOUT'}
+                    </span>
+                    {activity.suffer_score && (
+                        <span className="px-3 py-1.5 rounded-full text-xs font-semibold tracking-wider uppercase bg-accent/50 text-accent-foreground">
+                            SUFFER SCORE: {activity.suffer_score.toFixed(0)}
+                        </span>
+                    )}
+                    {isAthlete && (
+                        <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => setIsLinkModalOpen(true)} 
+                            className="text-xs text-muted-foreground hover:text-foreground ml-2"
                         >
-                            <ArrowLeft className="h-4 w-4" />
+                            <LinkIcon className="h-3 w-3 mr-1" />
+                            {workoutAssignment ? 'Edit Link' : 'Link Workout'}
                         </Button>
-                        <h1 className="text-3xl font-bold">{activity.name}</h1>
-                    </div>
-                    <div className="flex items-center gap-4 text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                            <Calendar className="h-4 w-4" />
-                            <span>{format(new Date(activity.start_date_local), 'PPP')}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                            <Clock className="h-4 w-4" />
-                            <span>{format(new Date(activity.start_date_local), 'p')}</span>
-                        </div>
-                    </div>
-                    <div className="flex gap-2">
-                        <Badge variant="secondary">{activity.sport_type}</Badge>
-                        {activity.device_name && (
-                            <Badge variant="outline">{activity.device_name}</Badge>
-                        )}
-                        {isAthlete && (
-                            <Button variant="outline" size="sm" onClick={() => setIsLinkModalOpen(true)} className="h-6 text-xs ml-2">
-                                <LinkIcon className="h-3 w-3 mr-1" />
-                                {workoutAssignment ? 'Modificar Vinculación' : 'Vincular Entrenamiento'}
-                            </Button>
-                        )}
-                    </div>
-                </div>
-                <div className="flex gap-4">
-                    {activity.achievement_count > 0 && (
-                        <div className="text-center">
-                            <Award className="h-6 w-6 text-yellow-500 mx-auto mb-1" />
-                            <p className="text-sm font-semibold">{activity.achievement_count}</p>
-                            <p className="text-xs text-muted-foreground">Achievements</p>
-                        </div>
-                    )}
-                    {activity.kudos_count > 0 && (
-                        <div className="text-center">
-                            <Heart className="h-6 w-6 text-red-500 mx-auto mb-1" />
-                            <p className="text-sm font-semibold">{activity.kudos_count}</p>
-                            <p className="text-xs text-muted-foreground">Kudos</p>
-                        </div>
                     )}
                 </div>
             </div>
 
-            {/* Key Metrics Grid */}
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
-                {!isWeightTraining(activity.sport_type) && (
-                    <Card>
-                        <CardContent className="pt-6">
-                            <div className="flex items-center gap-2 mb-2">
-                                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                                <p className="text-sm text-muted-foreground">Distance</p>
+            {/* Top Split View: Map/Chart (Left) & Core KPIs (Right) */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                {/* Left: Map/Chart Container */}
+                <div className="lg:col-span-8 bg-card rounded-3xl p-2 shadow-[0_20px_40px_rgba(43,52,55,0.02)] border border-muted">
+                    <div className="h-[400px] lg:h-[500px] w-full bg-muted rounded-2xl overflow-hidden relative">
+                        {/* We inject the ActivityChart in this premium container */}
+                        {!isWeightTraining(activity.sport_type) ? (
+                            <ActivityChart
+                                activityId={id}
+                                laps={activity.laps}
+                                hrZones={heartrateZones?.zones}
+                                isRunning={isRunning(activity.sport_type)}
+                            />
+                        ) : (
+                            <div className="h-full w-full flex items-center justify-center">
+                                <ActivityIcon className="h-12 w-12 text-muted-foreground/60" />
                             </div>
-                            <p className="text-2xl font-bold">{distanceKm} km</p>
-                        </CardContent>
-                    </Card>
-                )}
-
-                <Card>
-                    <CardContent className="pt-6">
-                        <div className="flex items-center gap-2 mb-2">
-                            <Clock className="h-4 w-4 text-muted-foreground" />
-                            <p className="text-sm text-muted-foreground">Time</p>
+                        )}
+                    </div>
+                    {/* Footer for map/chart */}
+                    <div className="flex px-6 py-4 gap-6">
+                        <div className="flex items-center gap-2 cursor-pointer text-foreground hover:text-primary">
+                            <Mountain className="h-4 w-4" />
+                            <span className="text-xs font-semibold tracking-wide uppercase">Terrain</span>
                         </div>
-                        <p className="text-2xl font-bold">{formatTime(activity.moving_time)}</p>
-                        <p className="text-xs text-muted-foreground">Elapsed: {formatTime(activity.elapsed_time)}</p>
-                    </CardContent>
-                </Card>
+                        <div className="flex items-center gap-2 cursor-pointer text-muted-foreground hover:text-foreground">
+                            <TrendingUp className="h-4 w-4" />
+                            <span className="text-xs font-semibold tracking-wide uppercase">Elevation Profile</span>
+                        </div>
+                    </div>
+                </div>
 
-                {/* Pace/Speed Card - conditional based on activity type */}
-                {!isWeightTraining(activity.sport_type) && (
-                    <Card>
-                        <CardContent className="pt-6">
-                            <div className="flex items-center gap-2 mb-2">
-                                <Footprints className="h-4 w-4 text-muted-foreground" />
-                                <p className="text-sm text-muted-foreground">
-                                    {isRunning(activity.sport_type) ? 'Avg Pace' : 'Avg Speed'}
+                {/* Right: Core Metrics Column */}
+                <div className="lg:col-span-4 bg-muted rounded-3xl p-8 flex flex-col justify-between">
+                    <div className="space-y-8">
+                        {/* Distance */}
+                        {!isWeightTraining(activity.sport_type) && (
+                            <div>
+                                <p className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase mb-1">
+                                    Distance
                                 </p>
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-4xl font-display font-medium text-foreground leading-none tracking-tighter">
+                                        {distanceKm}
+                                    </span>
+                                    <span className="text-lg font-medium text-muted-foreground mb-1">km</span>
+                                </div>
                             </div>
-                            <p className="text-2xl font-bold">
-                                {isRunning(activity.sport_type)
-                                    ? `${avgPace} /km`
-                                    : `${formatSpeed(activity.average_speed)} km/h`}
-                            </p>
-                            {isCycling(activity.sport_type) && (
-                                <p className="text-xs text-muted-foreground">
-                                    Max: {formatSpeed(activity.max_speed)} km/h
+                        )}
+
+                        <div className="w-full h-px bg-border/40" />
+
+                        {/* Pace & Duration Stack */}
+                        <div className="space-y-6">
+                            {!isWeightTraining(activity.sport_type) && (
+                                <div>
+                                    <p className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase mb-2">
+                                        Average Pace
+                                    </p>
+                                    <div className="flex items-baseline gap-1">
+                                        <span className="text-3xl font-display font-medium text-foreground">
+                                            {isRunning(activity.sport_type) ? avgPace : formatSpeed(activity.average_speed)}
+                                        </span>
+                                        <span className="text-sm font-medium text-muted-foreground">
+                                            {isRunning(activity.sport_type) ? '/km' : 'km/h'}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div>
+                                <p className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase mb-2">
+                                    Total Duration
                                 </p>
+                                <span className="text-3xl font-display font-medium text-foreground">
+                                    {formatTime(activity.moving_time)}
+                                </span>
+                            </div>
+
+                            {!isWeightTraining(activity.sport_type) && activity.total_elevation_gain > 0 && (
+                                <div>
+                                    <p className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase mb-2">
+                                        Elevation Gain
+                                    </p>
+                                    <div className="flex items-baseline gap-1">
+                                        <span className="text-3xl font-display font-medium text-foreground">
+                                            +{activity.total_elevation_gain.toFixed(0)}
+                                        </span>
+                                        <span className="text-sm font-medium text-muted-foreground">m</span>
+                                    </div>
+                                </div>
                             )}
-                        </CardContent>
-                    </Card>
-                )}
+                        </div>
+                    </div>
 
-                {/* Elevation - hide for WeightTraining */}
-                {!isWeightTraining(activity.sport_type) && (
-                    <Card>
-                        <CardContent className="pt-6">
-                            <div className="flex items-center gap-2 mb-2">
-                                <Mountain className="h-4 w-4 text-muted-foreground" />
-                                <p className="text-sm text-muted-foreground">Elevation</p>
-                            </div>
-                            <p className="text-2xl font-bold">{activity.total_elevation_gain.toFixed(0)} m</p>
-                        </CardContent>
-                    </Card>
-                )}
-
-                {activity.average_heartrate && (
-                    <Card>
-                        <CardContent className="pt-6">
-                            <div className="flex items-center gap-2 mb-2">
-                                <Heart className="h-4 w-4 text-muted-foreground" />
-                                <p className="text-sm text-muted-foreground">Avg HR</p>
-                            </div>
-                            <p className="text-2xl font-bold">{activity.average_heartrate.toFixed(0)} bpm</p>
-                            {activity.max_heartrate && (
-                                <p className="text-xs text-muted-foreground">Max: {activity.max_heartrate.toFixed(0)}</p>
-                            )}
-                        </CardContent>
-                    </Card>
-                )}
-
-                {activity.average_cadence && (
-                    <Card>
-                        <CardContent className="pt-6">
-                            <div className="flex items-center gap-2 mb-2">
-                                <Zap className="h-4 w-4 text-muted-foreground" />
-                                <p className="text-sm text-muted-foreground">Avg Cadence</p>
-                            </div>
-                            <p className="text-2xl font-bold">
-                                {activity.average_cadence.toFixed(0)} {isCycling(activity.sport_type) ? 'rpm' : 'spm'}
-                            </p>
-                        </CardContent>
-                    </Card>
-                )}
-
-                {/* Power metrics - prioritize for cycling */}
-                {activity.average_watts && isCycling(activity.sport_type) && (
-                    <Card>
-                        <CardContent className="pt-6">
-                            <div className="flex items-center gap-2 mb-2">
-                                <Zap className="h-4 w-4 text-muted-foreground" />
-                                <p className="text-sm text-muted-foreground">Avg Power</p>
-                            </div>
-                            <p className="text-2xl font-bold">{activity.average_watts.toFixed(0)} W</p>
-                            {activity.max_watts && (
-                                <p className="text-xs text-muted-foreground">Max: {activity.max_watts.toFixed(0)} W</p>
-                            )}
-                        </CardContent>
-                    </Card>
-                )}
-
-                {activity.calories && (
-                    <Card>
-                        <CardContent className="pt-6">
-                            <div className="flex items-center gap-2 mb-2">
-                                <Zap className="h-4 w-4 text-muted-foreground" />
-                                <p className="text-sm text-muted-foreground">Calories</p>
-                            </div>
-                            <p className="text-2xl font-bold">{activity.calories.toFixed(0)}</p>
-                        </CardContent>
-                    </Card>
-                )}
-
-                {activity.suffer_score && (
-                    <Card>
-                        <CardContent className="pt-6">
-                            <div className="flex items-center gap-2 mb-2">
-                                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                                <p className="text-sm text-muted-foreground">Suffer Score</p>
-                            </div>
-                            <p className="text-2xl font-bold">{activity.suffer_score.toFixed(0)}</p>
-                        </CardContent>
-                    </Card>
-                )}
+                    <div className="mt-12 space-y-3">
+                        <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-6 shadow-[0_10px_20px_rgba(78,96,115,0.15)] rounded-xl font-medium">
+                            Download Activity Report
+                        </Button>
+                        <Button variant="outline" className="w-full bg-card hover:bg-muted border-border/30 text-primary py-6 shadow-sm rounded-xl font-medium">
+                            Share Analysis
+                        </Button>
+                    </div>
+                </div>
             </div>
-
-            {/* Activity Dynamics Chart */}
-            {!isWeightTraining(activity.sport_type) && (
-                <ActivityChart
-                    activityId={id}
-                    laps={activity.laps}
-                    hrZones={heartrateZones?.zones}
-                    isRunning={isRunning(activity.sport_type)}
-                />
-            )}
 
             {/* Zone Analysis Charts */}
             {!isWeightTraining(activity.sport_type) && (activity.laps?.length || activity.splits_metric) && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Heart Rate Zones */}
-                    {activity.average_heartrate && heartrateZones?.zones && (
-                        <HeartRateZonesChart
-                            laps={activity.laps}
-                            splits={activity.splits_metric}
-                            zones={heartrateZones.zones}
-                        />
-                    )}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 bg-card rounded-3xl p-8 shadow-[0_20px_40px_rgba(43,52,55,0.02)] border border-muted">
+                    {/* Heart Rate Performance Block */}
+                    <div className="flex flex-col h-full">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="font-semibold text-foreground">Heart Rate Performance</h3>
+                            {activity.average_heartrate && (
+                                <div className="flex items-center gap-2">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                                    <span className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase">Live Tracking Data</span>
+                                </div>
+                            )}
+                        </div>
+                        <div className="flex justify-between items-baseline mb-8">
+                            <div>
+                                <span className="text-5xl font-display font-medium text-foreground">
+                                    {activity.average_heartrate?.toFixed(0) || '--'}
+                                </span>
+                                <span className="text-sm font-medium text-muted-foreground ml-2 tracking-wide">BPM AVG</span>
+                            </div>
+                            {activity.max_heartrate && (
+                                <span className="text-lg font-bold text-red-500 tracking-wide">
+                                    {activity.max_heartrate.toFixed(0)} <span className="text-xs">MAX</span>
+                                </span>
+                            )}
+                        </div>
+                        
+                        <div className="flex-1 -mx-4 -mb-4">
+                            {activity.average_heartrate && heartrateZones?.zones && (
+                                <HeartRateZonesChart
+                                    laps={activity.laps}
+                                    splits={activity.splits_metric}
+                                    zones={heartrateZones.zones}
+                                />
+                            )}
+                        </div>
+                    </div>
 
-                    {/* Pace Zones - only for running */}
-                    {isRunning(activity.sport_type) && (
-                        <PaceZonesChart
-                            laps={activity.laps}
-                            splits={activity.splits_metric}
-                            isRunning={isRunning(activity.sport_type)}
-                        />
-                    )}
+                    {/* Intensity Distribution (Pace) Block */}
+                    <div className="flex flex-col h-full pl-0 lg:pl-10 lg:border-l border-border/20 pt-8 lg:pt-0">
+                        <h3 className="font-semibold text-foreground mb-8">Intensity Distribution</h3>
+                        <div className="flex-1 -mx-4 -mb-4">
+                            {isRunning(activity.sport_type) && (
+                                <PaceZonesChart
+                                    laps={activity.laps}
+                                    splits={activity.splits_metric}
+                                    isRunning={isRunning(activity.sport_type)}
+                                />
+                            )}
+                        </div>
+                    </div>
                 </div>
             )}
 
-            {/* Splits & Laps - hide for weight training */}
+            {/* Splits & Laps - minimalist rewrite */}
             {!isWeightTraining(activity.sport_type) && (activity.laps?.length || activity.splits_metric || activity.splits_standard) && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Splits & Laps</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <Tabs defaultValue={activity.laps?.length ? "laps" : "metric"}>
-                            <TabsList className="grid w-full max-w-md grid-cols-3">
+                <div className="bg-card rounded-3xl p-8 shadow-[0_20px_40px_rgba(43,52,55,0.02)] border border-muted">
+                    <div className="flex items-center justify-between mb-8">
+                        <h2 className="text-xl font-display font-medium text-foreground">Laps & Split Analysis</h2>
+                        <Tabs defaultValue={activity.laps?.length ? "laps" : "metric"} className="w-auto">
+                            <TabsList className="bg-muted p-1 rounded-xl">
                                 {activity.laps && activity.laps.length > 0 && (
-                                    <TabsTrigger value="laps">Laps</TabsTrigger>
+                                    <TabsTrigger value="laps" className="rounded-lg text-xs tracking-widest uppercase font-semibold data-[state=active]:bg-card data-[state=active]:text-foreground">Auto Laps</TabsTrigger>
                                 )}
                                 {activity.splits_metric && (
-                                    <TabsTrigger value="metric">Splits (km)</TabsTrigger>
-                                )}
-                                {activity.splits_standard && (
-                                    <TabsTrigger value="standard">Splits (mi)</TabsTrigger>
+                                    <TabsTrigger value="metric" className="rounded-lg text-xs tracking-widest uppercase font-semibold data-[state=active]:bg-card data-[state=active]:text-foreground">KM Splits</TabsTrigger>
                                 )}
                             </TabsList>
-
+                        </Tabs>
+                    </div>
+                    
+                    <div>
+                        <Tabs defaultValue={activity.laps?.length ? "laps" : "metric"}>
                             {/* Laps Tab */}
                             {activity.laps && activity.laps.length > 0 && (
-                                <TabsContent value="laps">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>Lap</TableHead>
-                                                <TableHead>Distance</TableHead>
-                                                <TableHead>Time</TableHead>
-                                                <TableHead>Avg Pace</TableHead>
-                                                <TableHead>Elevation</TableHead>
-                                                {!!activity.laps[0]?.average_heartrate && (
-                                                    <TableHead>Avg HR</TableHead>
-                                                )}
-                                                {!!activity.laps[0]?.average_cadence && (
-                                                    <TableHead>Avg Cadence</TableHead>
-                                                )}
-                                                <TableHead>Workout Step</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
+                                <TabsContent value="laps" className="mt-0 outline-none">
+                                    <div className="overflow-x-auto">
+                                        <Table className="w-full">
+                                            <TableHeader>
+                                                <TableRow className="border-b border-muted hover:bg-transparent">
+                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4 pl-0">Lap</TableHead>
+                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">Time</TableHead>
+                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">Distance</TableHead>
+                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">Avg Pace</TableHead>
+                                                    {!!activity.laps[0]?.average_heartrate && (
+                                                        <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">Avg HR</TableHead>
+                                                    )}
+                                                    {!!activity.laps[0]?.average_cadence && (
+                                                        <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">Cadence</TableHead>
+                                                    )}
+                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4 text-right pr-0">Elev Gain</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
                                             {activity.laps.map((lap, idx) => {
                                                 const matchedLap = matchedLaps.find(m => m.lapIndex === idx);
                                                 const stepTypeColors: Record<string, string> = {
@@ -753,26 +738,29 @@ export default function ActivityDetailPage() {
                                             })}
                                         </TableBody>
                                     </Table>
+                                </div>
                                 </TabsContent>
                             )}
 
                             {/* Metric Splits Tab */}
                             {activity.splits_metric && (
-                                <TabsContent value="metric">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>Split</TableHead>
-                                                <TableHead>Distance</TableHead>
-                                                <TableHead>Time</TableHead>
-                                                <TableHead>Pace</TableHead>
-                                                <TableHead>Elevation</TableHead>
-                                                {!!activity.splits_metric[0]?.average_heartrate && (
-                                                    <TableHead>Avg HR</TableHead>
-                                                )}
-                                                <TableHead>Zone</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
+                                <TabsContent value="metric" className="mt-0 outline-none">
+                                    <div className="overflow-x-auto">
+                                        <Table className="w-full">
+                                            <TableHeader>
+                                                <TableRow className="border-b border-muted hover:bg-transparent">
+                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4 pl-0">Split</TableHead>
+                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">Distance</TableHead>
+                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">Time</TableHead>
+                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">Pace</TableHead>
+                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">Elevation</TableHead>
+                                                    {!!activity.splits_metric[0]?.average_heartrate && (
+                                                        <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">Avg HR</TableHead>
+                                                    )}
+                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4 text-right pr-0">Zone</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+
                                         <TableBody>
                                             {activity.splits_metric.map((split) => (
                                                 <TableRow key={split.split}>
@@ -798,153 +786,137 @@ export default function ActivityDetailPage() {
                                                 </TableRow>
                                             ))}
                                         </TableBody>
-                                    </Table>
+                                        </Table>
+                                    </div>
                                 </TabsContent>
                             )}
 
                             {/* Standard Splits Tab */}
                             {activity.splits_standard && (
-                                <TabsContent value="standard">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>Split</TableHead>
-                                                <TableHead>Distance</TableHead>
-                                                <TableHead>Time</TableHead>
-                                                <TableHead>Pace</TableHead>
-                                                <TableHead>Elevation</TableHead>
-                                                {!!activity.splits_standard[0]?.average_heartrate && (
-                                                    <TableHead>Avg HR</TableHead>
-                                                )}
-                                                <TableHead>Zone</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
+                                <TabsContent value="standard" className="mt-0 outline-none">
+                                    <div className="overflow-x-auto">
+                                        <Table className="w-full">
+                                            <TableHeader>
+                                                <TableRow className="border-b border-muted hover:bg-transparent">
+                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4 pl-0">Split</TableHead>
+                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">Distance</TableHead>
+                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">Time</TableHead>
+                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">Pace</TableHead>
+                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4 text-right pr-0">Elevation</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
                                             {activity.splits_standard.map((split) => (
-                                                <TableRow key={split.split}>
-                                                    <TableCell className="font-medium">{split.split}</TableCell>
+                                                <TableRow key={split.split} className="border-b border-muted hover:bg-transparent">
+                                                    <TableCell className="font-medium pl-0">{split.split}</TableCell>
                                                     <TableCell>{(split.distance / 1609.34).toFixed(2)} mi</TableCell>
                                                     <TableCell>{formatTime(split.moving_time)}</TableCell>
                                                     <TableCell>{formatPace(split.average_speed)}</TableCell>
-                                                    <TableCell>{split.elevation_difference > 0 ? '+' : ''}{split.elevation_difference.toFixed(1)} m</TableCell>
-                                                    {!!activity.splits_standard![0]?.average_heartrate && (
-                                                        <TableCell>
-                                                            {split.average_heartrate ? (
-                                                                <span className={`px-2 py-1 rounded font-medium ${getHRZoneColor(split.average_heartrate!)}`}>
-                                                                    {split.average_heartrate!.toFixed(0)} bpm
-                                                                </span>
-                                                            ) : (
-                                                                <span className="text-muted-foreground">-</span>
-                                                            )}
-                                                        </TableCell>
-                                                    )}
-                                                    <TableCell>
-                                                        <div className={`h-2 w-12 rounded ${getPaceZoneColor(split.pace_zone)}`} />
-                                                    </TableCell>
+                                                    <TableCell className="text-right pr-0">{split.elevation_difference > 0 ? '+' : ''}{split.elevation_difference.toFixed(1)} m</TableCell>
                                                 </TableRow>
                                             ))}
-                                        </TableBody>
-                                    </Table>
+                                            </TableBody>
+                                        </Table>
+                                    </div>
                                 </TabsContent>
                             )}
                         </Tabs>
 
                         {/* HR Zone Legend */}
                         {heartrateZones?.zones && activity.average_heartrate && (
-                            <div className="mt-6 pt-4 border-t">
-                                <p className="text-sm font-medium text-muted-foreground mb-3">Zonas de frecuencia cardiaca:</p>
-                                <div className="flex flex-wrap gap-3">
+                            <div className="mt-8 pt-6 border-t border-muted">
+                                <p className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase mb-4">Heart Rate Zones Reference</p>
+                                <div className="flex flex-wrap gap-4">
                                     <div className="flex items-center gap-2">
-                                        <span className="px-3 py-1 rounded font-medium bg-gray-400 text-gray-900">Z1</span>
-                                        <span className="text-sm text-muted-foreground">Recovery ({heartrateZones.zones[0]?.min}-{heartrateZones.zones[0]?.max} bpm)</span>
+                                        <span className="w-2.5 h-2.5 rounded-full bg-muted-foreground/40"></span>
+                                        <span className="text-xs font-medium text-foreground">Z1 <span className="text-muted-foreground ml-1">({heartrateZones.zones[0]?.min}-{heartrateZones.zones[0]?.max})</span></span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <span className="px-3 py-1 rounded font-medium bg-blue-500 text-white">Z2</span>
-                                        <span className="text-sm text-muted-foreground">Endurance ({heartrateZones.zones[1]?.min}-{heartrateZones.zones[1]?.max} bpm)</span>
+                                        <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                                        <span className="text-xs font-medium text-foreground">Z2 <span className="text-muted-foreground ml-1">({heartrateZones.zones[1]?.min}-{heartrateZones.zones[1]?.max})</span></span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <span className="px-3 py-1 rounded font-medium bg-green-500 text-white">Z3</span>
-                                        <span className="text-sm text-muted-foreground">Tempo ({heartrateZones.zones[2]?.min}-{heartrateZones.zones[2]?.max} bpm)</span>
+                                        <span className="w-2.5 h-2.5 rounded-full bg-green-500"></span>
+                                        <span className="text-xs font-medium text-foreground">Z3 <span className="text-muted-foreground ml-1">({heartrateZones.zones[2]?.min}-{heartrateZones.zones[2]?.max})</span></span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <span className="px-3 py-1 rounded font-medium bg-yellow-500 text-gray-900">Z4</span>
-                                        <span className="text-sm text-muted-foreground">Threshold ({heartrateZones.zones[3]?.min}-{heartrateZones.zones[3]?.max} bpm)</span>
+                                        <span className="w-2.5 h-2.5 rounded-full bg-yellow-500"></span>
+                                        <span className="text-xs font-medium text-foreground">Z4 <span className="text-muted-foreground ml-1">({heartrateZones.zones[3]?.min}-{heartrateZones.zones[3]?.max})</span></span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <span className="px-3 py-1 rounded font-medium bg-red-500 text-white">Z5</span>
-                                        <span className="text-sm text-muted-foreground">VO2 Max ({heartrateZones.zones[4]?.min}-{heartrateZones.zones[4]?.max} bpm)</span>
+                                        <span className="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+                                        <span className="text-xs font-medium text-foreground">Z5 <span className="text-muted-foreground ml-1">({heartrateZones.zones[4]?.min}-{heartrateZones.zones[4]?.max})</span></span>
                                     </div>
                                 </div>
                             </div>
                         )}
-                    </CardContent>
-                </Card>
+                    </div>
+                </div>
             )}
 
-            {/* Segment Efforts - hide for weight training */}
+            {/* Segment Efforts */}
             {!isWeightTraining(activity.sport_type) && activity.segment_efforts && activity.segment_efforts.length > 0 && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Segment Efforts</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-4">
-                            {activity.segment_efforts.map((effort) => (
-                                <div key={effort.id} className="flex items-center justify-between p-4 border rounded-lg">
-                                    <div className="flex-1">
-                                        <h4 className="font-semibold">{effort.segment.name}</h4>
-                                        <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
-                                            <span>{(effort.distance / 1000).toFixed(2)} km</span>
-                                            <span>{formatTime(effort.elapsed_time)}</span>
-                                            {effort.average_heartrate && (
-                                                <span className="flex items-center gap-1">
-                                                    <Heart className="h-3 w-3" />
-                                                    {effort.average_heartrate.toFixed(0)} bpm
-                                                </span>
-                                            )}
-                                            {effort.segment.city && (
-                                                <span>{effort.segment.city}, {effort.segment.country}</span>
-                                            )}
-                                        </div>
+                <div className="bg-card rounded-3xl p-8 shadow-[0_20px_40px_rgba(43,52,55,0.02)] border border-muted">
+                    <h2 className="text-xl font-display font-medium text-foreground mb-8">Segment Efforts</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {activity.segment_efforts.map((effort) => (
+                            <div key={effort.id} className="p-6 bg-background rounded-2xl hover:bg-muted transition-colors">
+                                <h4 className="font-semibold text-foreground mb-4 truncate">{effort.segment.name}</h4>
+                                <div className="grid grid-cols-2 gap-y-4 text-sm mb-4">
+                                    <div>
+                                        <p className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase mb-1">Time</p>
+                                        <p className="font-display font-medium text-foreground text-xl">{formatTime(effort.elapsed_time)}</p>
                                     </div>
-                                    <div className="flex gap-2">
-                                        {effort.pr_rank && (
-                                            <Badge variant="secondary">
-                                                PR #{effort.pr_rank}
-                                            </Badge>
-                                        )}
-                                        {effort.kom_rank && (
-                                            <Badge variant="destructive">
-                                                KOM #{effort.kom_rank}
-                                            </Badge>
-                                        )}
-                                        {effort.achievements.map((achievement, idx) => (
-                                            <Badge key={idx} variant="default">
-                                                <Award className="h-3 w-3 mr-1" />
-                                                {achievement.type.toUpperCase()}
-                                            </Badge>
-                                        ))}
+                                    <div>
+                                        <p className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase mb-1">Pace</p>
+                                        <p className="font-display font-medium text-foreground text-xl">{formatPace(effort.distance / (effort.moving_time / 3600))}</p>
+                                    </div>
+                                    <div className="col-span-2">
+                                        <p className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase mb-1">Distance & Area</p>
+                                        <p className="text-primary font-medium">
+                                            {(effort.distance / 1000).toFixed(2)} km {effort.segment.city && `• ${effort.segment.city}`}
+                                        </p>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
+                                
+                                <div className="flex flex-wrap gap-2 pt-4 border-t border-border/40">
+                                    {effort.pr_rank && (
+                                        <span className="px-2 py-1 rounded-md text-[10px] uppercase font-bold tracking-widest bg-yellow-100 text-yellow-800">
+                                            PR #{effort.pr_rank}
+                                        </span>
+                                    )}
+                                    {effort.kom_rank && (
+                                        <span className="px-2 py-1 rounded-md text-[10px] uppercase font-bold tracking-widest bg-red-100 text-red-800">
+                                            KOM #{effort.kom_rank}
+                                        </span>
+                                    )}
+                                    {effort.achievements.map((achievement, idx) => (
+                                        <span key={idx} className="px-2 py-1 rounded-md text-[10px] uppercase font-bold tracking-widest bg-blue-100 text-blue-800 flex items-center gap-1">
+                                            <Award className="h-3 w-3" />
+                                            {achievement.type}
+                                        </span>
+                                    ))}
+                                    {!effort.pr_rank && !effort.kom_rank && effort.achievements.length === 0 && (
+                                        <span className="text-xs text-muted-foreground/70 font-medium tracking-wide uppercase">General Effort</span>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             )}
 
             {/* Activity Feedback */}
             {feedback !== null && !feedbackLoading && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Activity Feedback</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
+                <div className="bg-card rounded-3xl p-8 shadow-[0_20px_40px_rgba(43,52,55,0.02)] border border-muted max-w-6xl">
+                    <h2 className="text-xl font-display font-medium text-foreground mb-8">Activity Feedback</h2>
+                    <div className="flex flex-col space-y-8">
                         {isAthlete ? (
                             <>
                                 {/* RPE Selector */}
-                                <div className="space-y-3">
-                                    <Label htmlFor="rpe">Rate of Perceived Exertion (RPE)</Label>
-                                    <div className="flex items-center gap-4">
+                                <div>
+                                    <Label htmlFor="rpe" className="text-xs tracking-widest uppercase font-semibold text-muted-foreground mb-4 block">Rate of Perceived Exertion</Label>
+                                    <div className="flex items-center gap-6">
                                         <Slider
                                             id="rpe"
                                             min={1}
@@ -954,78 +926,78 @@ export default function ActivityDetailPage() {
                                             onValueChange={(value) => setFeedback({ ...feedback, rpe: value[0] })}
                                             className="flex-1"
                                         />
-                                        <div className="min-w-[40px] text-center">
-                                            <p className="text-2xl font-bold">{feedback.rpe || 5}</p>
+                                        <div className="bg-muted w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 border border-muted">
+                                            <p className="text-3xl font-display font-medium text-foreground">{feedback.rpe || 5}</p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <div className={`h-2 w-full rounded ${getRPEColor(feedback.rpe || 5)}`} />
-                                        <p className="text-sm text-muted-foreground whitespace-nowrap">
+                                    <div className="flex items-center gap-3 mt-4">
+                                        <div className={`h-2 flex-1 rounded-full ${getRPEColor(feedback.rpe || 5)} opacity-80`} />
+                                        <p className="text-sm font-medium text-primary min-w-[80px] text-right">
                                             {getRPELabel(feedback.rpe || 5)}
                                         </p>
                                     </div>
-                                    <p className="text-xs text-muted-foreground">
-                                        1-2: Very Easy | 3-4: Easy | 5-6: Moderate | 7-8: Hard | 9-10: Maximum Effort
-                                    </p>
                                 </div>
 
                                 {/* Comments */}
-                                <div className="space-y-2">
-                                    <Label htmlFor="comments">Comments</Label>
+                                <div>
+                                    <Label htmlFor="comments" className="text-xs tracking-widest uppercase font-semibold text-muted-foreground mb-3 block">Athlete Notes</Label>
                                     <Textarea
                                         id="comments"
                                         placeholder="How did this workout feel? Any notes for your coach..."
                                         value={feedback.comments}
                                         onChange={(e) => setFeedback({ ...feedback, comments: e.target.value })}
                                         rows={4}
+                                        className="bg-muted border-muted rounded-xl focus-visible:ring-1 focus-visible:ring-primary resize-none text-foreground"
                                     />
                                 </div>
 
                                 {/* Save Button */}
-                                <Button
-                                    onClick={handleSaveFeedback}
-                                    disabled={feedbackSaving}
-                                    className="w-full sm:w-auto"
-                                >
-                                    {feedbackSaving ? 'Saving...' : feedback.id ? 'Update Feedback' : 'Save Feedback'}
-                                </Button>
+                                <div>
+                                    <Button
+                                        onClick={handleSaveFeedback}
+                                        disabled={feedbackSaving}
+                                        className="bg-foreground hover:bg-foreground/90 text-background px-8 py-6 rounded-xl font-medium shadow-md transition-all"
+                                    >
+                                        {feedbackSaving ? 'Saving...' : feedback.id ? 'Update Feedback' : 'Save Feedback'}
+                                    </Button>
+                                </div>
                             </>
                         ) : (
                             <>
                                 {/* Coach View - Read Only */}
-                                <div className="space-y-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                                     <div>
-                                        <Label>Rate of Perceived Exertion (RPE)</Label>
-                                        <div className="flex items-center gap-4 mt-2">
-                                            <div className={`h-3 flex-1 rounded ${getRPEColor(feedback.rpe)}`} />
-                                            <Badge variant="secondary" className="text-lg">
-                                                {feedback.rpe || 'N/A'}
-                                            </Badge>
-                                        </div>
-                                        <p className="text-sm text-muted-foreground mt-1">
-                                            {getRPELabel(feedback.rpe)}
-                                        </p>
+                                        <Label className="text-[10px] tracking-widest uppercase font-semibold text-muted-foreground pb-4 block">Perceived Exertion (RPE)</Label>
+                                        {feedback.rpe ? (
+                                            <div className="flex items-center gap-4 border border-muted rounded-2xl p-4 bg-background">
+                                                <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-muted flex items-center justify-center">
+                                                    <span className="text-2xl font-display font-medium text-foreground">{feedback.rpe}</span>
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="text-sm font-semibold text-foreground">{getRPELabel(feedback.rpe)}</p>
+                                                    <div className={`h-1.5 w-full rounded-full mt-2 ${getRPEColor(feedback.rpe)}`} />
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <p className="text-sm text-muted-foreground italic px-4">No exertion recorded.</p>
+                                        )}
                                     </div>
 
-                                    {feedback.comments && (
-                                        <div>
-                                            <Label>Athlete Comments</Label>
-                                            <div className="mt-2 p-3 bg-muted rounded-md">
-                                                <p className="text-sm whitespace-pre-wrap">{feedback.comments}</p>
+                                    <div>
+                                        <Label className="text-[10px] tracking-widest uppercase font-semibold text-muted-foreground pb-4 block">Athlete Notes</Label>
+                                        {feedback.comments ? (
+                                            <div className="bg-background border border-muted rounded-2xl p-6 h-full min-h-[100px]">
+                                                <p className="text-sm text-primary leading-relaxed whitespace-pre-wrap">{feedback.comments}</p>
                                             </div>
-                                        </div>
-                                    )}
-
-                                    {!feedback.rpe && !feedback.comments && (
-                                        <p className="text-sm text-muted-foreground italic">
-                                            No feedback provided yet.
-                                        </p>
-                                    )}
+                                        ) : (
+                                            <p className="text-sm text-muted-foreground italic px-4">No notes provided by the athlete.</p>
+                                        )}
+                                    </div>
                                 </div>
                             </>
                         )}
-                    </CardContent>
-                </Card>
+                    </div>
+                </div>
             )}
             {/* Link Workout Modal */}
             {activity && (

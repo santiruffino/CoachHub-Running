@@ -76,6 +76,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     }, [user, loading, router]);
 
+    // Effect to enforce onboarding completion for athletes
+    useEffect(() => {
+        if (!loading && user?.role === 'ATHLETE' && user?.isOnboardingCompleted === false && window.location.pathname !== '/onboarding') {
+            router.push('/onboarding');
+        }
+    }, [user, loading, router]);
+
     const login = async (email: string, password: string) => {
         const response = await authService.login(email, password);
 

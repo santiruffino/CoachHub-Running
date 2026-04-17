@@ -29,7 +29,7 @@ export async function requireAuth() {
   return { user, supabase, response: null };
 }
 
-export async function requireRole(role: 'COACH' | 'ATHLETE') {
+export async function requireRole(role: 'COACH' | 'ATHLETE' | 'ADMIN' | ('COACH' | 'ATHLETE' | 'ADMIN')[]) {
   const authResult = await requireAuth();
   
   if (authResult.response) {
@@ -42,12 +42,18 @@ export async function requireRole(role: 'COACH' | 'ATHLETE') {
     .eq('id', authResult.user!.id)
     .single();
 
-  if (profile?.role !== role) {
+  const allowedRoles = Array.isArray(role) ? role : [role];
+
+  // Admis have access to everything to act as "Super Coaches"
+  const isAllowed = profile?.role === 'ADMIN' || allowedRoles.includes(profile?.role as any);
+
+  if (!isAllowed) {
+    const roleString = Array.isArray(role) ? role.join(' or ').toLowerCase() : role.toLowerCase();
     return {
       user: null,
       supabase: authResult.supabase,
       response: NextResponse.json(
-        { error: `Only ${role.toLowerCase()}s can access this endpoint` },
+        { error: `Only ${roleString}s can access this endpoint` },
         { status: 403 }
       ),
     };

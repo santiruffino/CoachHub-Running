@@ -6,12 +6,12 @@ import { format } from 'date-fns';
 import { WorkoutBuilder } from '@/features/trainings/components/builder/WorkoutBuilder';
 import { WorkoutBlock } from '@/features/trainings/components/builder/types';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Save, User, Calendar, Activity } from 'lucide-react';
+import { ArrowLeft, Save, User, Calendar, Activity, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import api from '@/lib/axios';
 import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
+import { Slider } from '@/components/ui/slider';
+import { useTranslations } from 'next-intl';
 
 interface WorkoutAssignment {
     id: string;
@@ -33,15 +33,12 @@ interface WorkoutAssignment {
     canEdit: boolean;
 }
 
-import { Slider } from '@/components/ui/slider';
-
-// ... existing imports
-
 export default function WorkoutDetailsPage() {
     const params = useParams();
     const router = useRouter();
     const { user } = useAuth();
     const assignmentId = params.assignmentId as string;
+    const t = useTranslations('workouts.detail');
 
     const [assignment, setAssignment] = useState<WorkoutAssignment | null>(null);
     const [loading, setLoading] = useState(true);
@@ -62,7 +59,7 @@ export default function WorkoutDetailsPage() {
                 setEditedExpectedRpe(response.data.expectedRpe || 5);
             } catch (err: any) {
                 console.error('Failed to fetch assignment:', err);
-                setError(err.response?.data?.error || 'Failed to load workout');
+                setError(err.response?.data?.error || t('loadingError'));
             } finally {
                 setLoading(false);
             }
@@ -90,17 +87,16 @@ export default function WorkoutDetailsPage() {
                 expectedRpe: editedExpectedRpe
             });
 
-            // Refresh assignment data
             const response = await api.get<WorkoutAssignment>(`/v2/trainings/assignments/${assignmentId}`);
             setAssignment(response.data);
             setEditedBlocks(response.data.training.blocks || []);
             setEditedExpectedRpe(response.data.expectedRpe || 5);
             setHasChanges(false);
 
-            showAlert('success', 'Workout updated successfully!');
+            showAlert('success', t('syncSuccess'));
         } catch (err: any) {
             console.error('Failed to save workout:', err);
-            setError(err.response?.data?.error || 'Failed to save workout');
+            setError(err.response?.data?.error || t('syncFailed'));
         } finally {
             setSaving(false);
         }
@@ -108,10 +104,9 @@ export default function WorkoutDetailsPage() {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-screen">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-primary mx-auto mb-4"></div>
-                    <p className="text-muted-foreground">Loading workout...</p>
+            <div className="flex items-center justify-center h-[calc(100vh-theme(spacing.16))] w-[calc(100%+2rem)] md:w-[calc(100%+4rem)] -mx-4 md:-mx-8 -my-4 md:-my-8 bg-background dark:bg-background">
+                <div className="text-center font-inter tracking-widest text-xs uppercase text-muted-foreground">
+                    {t('establishingLink')}
                 </div>
             </div>
         );
@@ -119,21 +114,16 @@ export default function WorkoutDetailsPage() {
 
     if (error && !assignment) {
         return (
-            <div className="p-8">
-                <div className="max-w-2xl mx-auto">
-                    <Card className="border-red-200 dark:border-red-800">
-                        <CardContent className="p-6">
-                            <p className="text-red-600 dark:text-red-400 font-medium">{error}</p>
-                            <Button
-                                variant="outline"
-                                onClick={() => router.back()}
-                                className="mt-4"
-                            >
-                                <ArrowLeft className="w-4 h-4 mr-2" />
-                                Go Back
-                            </Button>
-                        </CardContent>
-                    </Card>
+             <div className="flex items-center justify-center h-[calc(100vh-theme(spacing.16))] w-[calc(100%+2rem)] md:w-[calc(100%+4rem)] -mx-4 md:-mx-8 -my-4 md:-my-8 bg-background dark:bg-background">
+                <div className="max-w-md text-center">
+                    <p className="text-red-500 font-semibold mb-6">{error}</p>
+                    <Button
+                        variant="ghost"
+                        onClick={() => router.back()}
+                        className="text-muted-foreground hover:text-foreground uppercase tracking-wider text-xs font-bold"
+                    >
+                        <ArrowLeft className="w-4 h-4 mr-2" /> {t('navigateBack')}
+                    </Button>
                 </div>
             </div>
         );
@@ -144,172 +134,130 @@ export default function WorkoutDetailsPage() {
     const isCoach = user?.role === 'COACH';
     const readOnly = !assignment.canEdit;
 
-    return (
-        <div className="p-8 space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <Button
-                    variant="ghost"
-                    onClick={() => router.back()}
-                    className="gap-2"
-                >
-                    <ArrowLeft className="w-4 h-4" />
-                    Back
-                </Button>
-
-                {assignment.canEdit && (
-                    <Button
-                        onClick={handleSave}
-                        disabled={!hasChanges || saving}
-                        className="gap-2"
-                    >
-                        <Save className="w-4 h-4" />
-                        {saving ? 'Saving...' : 'Save Changes'}
-                    </Button>
+    const leftSidebarContent = (
+        <div className="p-12 pb-4 flex flex-col h-full overflow-y-auto">
+            <Button variant="ghost" onClick={() => router.back()} className="w-min text-muted-foreground hover:text-foreground transition-colors p-0 hover:bg-transparent tracking-widest uppercase text-xs font-semibold mb-12">
+                 <ArrowLeft className="w-4 h-4 mr-2" /> {t('backToDashboard')}
+            </Button>
+            
+            <div className="mb-4">
+                {assignment.completed ? (
+                    <span className="inline-flex items-center gap-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-3 py-1 rounded text-[10px] font-bold tracking-widest uppercase">
+                        <CheckCircle2 className="w-3 h-3" /> {t('executed')}
+                    </span>
+                ) : (
+                    <span className="inline-flex items-center gap-2 bg-muted dark:bg-white/5 text-muted-foreground px-3 py-1 rounded text-[10px] font-bold tracking-widest uppercase">
+                       {t('pendingExecution')}
+                    </span>
                 )}
             </div>
+            
+            <h1 className="text-4xl font-extrabold font-display leading-tight tracking-tight text-foreground dark:text-background mb-4">
+                {assignment.training.title}
+            </h1>
+            
+            {assignment.training.description && (
+                <p className="text-muted-foreground font-medium leading-relaxed mb-12">
+                    {assignment.training.description}
+                </p>
+            )}
 
-            {/* Workout Info Card */}
-            <Card>
-                <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <CardTitle className="text-2xl">{assignment.training.title}</CardTitle>
-                        {assignment.completed && (
-                            <Badge variant="default" className="bg-green-600">
-                                Completed
-                            </Badge>
-                        )}
-                        {!assignment.completed && (
-                            <Badge variant="secondary">
-                                Planned
-                            </Badge>
-                        )}
+            <div className="space-y-8 pb-12">
+                <div className="flex gap-4 items-center">
+                    <div className="w-12 h-12 rounded-full bg-muted dark:bg-white/5 flex items-center justify-center text-primary shrink-0">
+                        <Calendar className="w-5 h-5" />
                     </div>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="flex items-center gap-2">
-                            <Calendar className="w-5 h-5 text-muted-foreground" />
-                            <div>
-                                <p className="text-xs text-muted-foreground">Scheduled Date</p>
-                                <p className="font-medium">
-                                    {format(new Date(assignment.scheduledDate), 'MMM d, yyyy')}
-                                </p>
-                            </div>
-                        </div>
-
-                        {isCoach && (
-                            <div className="flex items-center gap-2">
-                                <User className="w-5 h-5 text-muted-foreground" />
-                                <div>
-                                    <p className="text-xs text-muted-foreground">Athlete</p>
-                                    <p className="font-medium">{assignment.athlete.name || assignment.athlete.email}</p>
-                                </div>
-                            </div>
-                        )}
-
-                        <div className="flex items-center gap-2">
-                            <Activity className="w-5 h-5 text-muted-foreground" />
-                            <div>
-                                <p className="text-xs text-muted-foreground">Expected Effort (RPE)</p>
-                                <p className="font-medium">{assignment.expectedRpe}/10</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {assignment.training.description && (
-                        <div className="mt-4 pt-4 border-t">
-                            <p className="text-sm text-muted-foreground">{assignment.training.description}</p>
-                        </div>
-                    )}
-
-                    {readOnly && (
-                        <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
-                            <p className="text-sm text-blue-800 dark:text-blue-200">
-                                📖 You are viewing this workout in read-only mode
-                            </p>
-                        </div>
-                    )}
-
-                    {hasChanges && (
-                        <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md">
-                            <p className="text-sm text-amber-800 dark:text-amber-200">
-                                ⚠️ You have unsaved changes
-                            </p>
-                        </div>
-                    )}
-
-                    {error && (
-                        <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
-                            <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-
-            {/* Global RPE & Notes */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-lg">Workout Settings</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
                     <div>
-                        <div className="flex items-center justify-between mb-2">
-                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Global Expected RPE (Entire Workout)
-                            </label>
-                            <span className="text-sm font-bold text-brand-primary">
-                                {assignment.expectedRpe || '-'} / 10
-                            </span>
-                        </div>
-                        {readOnly ? (
-                            <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                                <div
-                                    className="h-full bg-brand-primary"
-                                    style={{ width: `${(assignment.expectedRpe || 0) * 10}%` }}
-                                />
-                            </div>
-                        ) : (
-                            <div className="flex gap-4">
-                                <Slider
-                                    value={[editedExpectedRpe]}
-                                    min={1}
-                                    max={10}
-                                    step={1}
-                                    onValueChange={(val) => {
-                                        setEditedExpectedRpe(val[0]);
-                                        setHasChanges(true);
-                                    }}
-                                    className="flex-1"
-                                />
-                            </div>
-                        )}
-                        <div className="flex justify-between mt-1 text-xs text-muted-foreground">
-                            <span>Easy</span>
-                            <span>Moderate</span>
-                            <span>Hard</span>
-                            <span>Max Effort</span>
+                        <div className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-1">{t('scheduled')}</div>
+                         <div className="text-sm font-bold text-foreground dark:text-background">
+                            {format(new Date(assignment.scheduledDate), 'EEEE dd/MM/yyyy')}
                         </div>
                     </div>
-                </CardContent>
-            </Card>
+                </div>
 
-            {/* Workout Builder */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Workout Details</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden min-h-[500px]">
-                        <WorkoutBuilder
-                            initialBlocks={editedBlocks}
-                            onChange={readOnly ? undefined : handleBlocksChange}
-                            athleteId={assignment.athlete.id}
-                            readOnly={readOnly}
-                        />
+                {isCoach && (
+                     <div className="flex gap-4 items-center">
+                        <div className="w-12 h-12 rounded-full bg-muted dark:bg-white/5 flex items-center justify-center text-primary shrink-0">
+                            <User className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <div className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-1">{t('targetAthlete')}</div>
+                             <div className="text-sm font-bold text-foreground dark:text-background">
+                                {assignment.athlete.name || assignment.athlete.email}
+                            </div>
+                        </div>
                     </div>
-                </CardContent>
-            </Card>
+                )}
+
+                {/* Global Expected RPE */}
+                 <div className="pt-8 border-t border-border dark:border-white/5">
+                    <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-4 flex items-center justify-between">
+                        {t('targetRpeConstraint')}
+                        <span className="text-primary font-bold text-sm bg-muted dark:bg-white/5 px-2 py-0.5 rounded">{editedExpectedRpe}/10</span>
+                    </label>
+                    
+                    {readOnly ? (
+                        <div className="h-1 bg-muted dark:bg-white/5 rounded-full mt-6 mb-2">
+                             <div className="h-full bg-primary dark:bg-white rounded-full" style={{ width: `${(editedExpectedRpe / 10) * 100}%` }} />
+                        </div>
+                    ) : (
+                        <Slider
+                            value={[editedExpectedRpe]}
+                            min={1}
+                            max={10}
+                            step={1}
+                            onValueChange={(val) => { setEditedExpectedRpe(val[0]); setHasChanges(true); }}
+                            className="my-6"
+                        />
+                    )}
+                     <div className="flex justify-between text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                        <span>{t('enduranceLoad')}</span>
+                        <span>{t('maxOutput')}</span>
+                    </div>
+                </div>
+
+                {readOnly && (
+                    <div className="bg-muted dark:bg-white/5 rounded-lg p-6">
+                        <span className="font-semibold text-sm text-foreground dark:text-background mb-1 block">{t('readOnlyMode')}</span>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{t('readOnlyDesc')}</p>
+                    </div>
+                )}
+
+                {error && (
+                    <div className="bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 rounded-lg p-4 text-sm font-semibold border-l-4 border-red-500">
+                        {error}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+
+    const footerContent = hasChanges && !readOnly ? (
+         <div className="w-full flex items-center justify-between mx-auto px-12 bg-foreground py-6 rounded-xl relative shadow-2xl -top-6 translate-y-6 animate-in slide-in-from-bottom-12">
+            <div className="flex flex-col">
+                <span className="text-base font-bold font-display text-white">{t('uncommittedAdjustments')}</span>
+                <span className="text-xs text-muted-foreground/60">{t('pushUpdates')}</span>
+            </div>
+            <Button 
+                onClick={handleSave}
+                disabled={saving}
+                className="bg-white text-foreground hover:bg-background uppercase tracking-wider text-xs font-bold px-8 py-5 rounded"
+            >
+                {saving ? t('synchronizing') : t('commitSave')}
+            </Button>
+        </div>
+    ) : null;
+
+    return (
+        <div className="h-[calc(100vh-theme(spacing.16))] w-[calc(100%+2rem)] md:w-[calc(100%+4rem)] overflow-hidden -mx-4 md:-mx-8 -my-4 md:-my-8 bg-background dark:bg-background font-inter">
+            <WorkoutBuilder
+                initialBlocks={editedBlocks}
+                onChange={readOnly ? undefined : handleBlocksChange}
+                athleteId={assignment.athlete.id}
+                readOnly={readOnly}
+                leftSidebarContent={leftSidebarContent}
+                footerContent={footerContent}
+            />
 
             <AlertDialog
                 open={alertState.open}

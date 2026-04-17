@@ -16,16 +16,16 @@ export function RepeatWizard({ onAdd, onClose }: RepeatWizardProps) {
     // Active Interval State
     const [activeDurationType, setActiveDurationType] = useState<DurationType>('time');
     const [activeDurationValue, setActiveDurationValue] = useState(180); // 3 mins default
-    const [activeTargetType, setActiveTargetType] = useState<TargetType>('pace');
-    const [activeTargetMin, setActiveTargetMin] = useState<string>('4:00');
-    const [activeTargetMax, setActiveTargetMax] = useState<string>('3:45');
+    const [activeTargetType, setActiveTargetType] = useState<TargetType>('vam_zone');
+    const [activeTargetMin, setActiveTargetMin] = useState<string>('4');
+    const [activeTargetMax, setActiveTargetMax] = useState<string>('4');
 
     // Recovery Interval State
     const [recoveryDurationType, setRecoveryDurationType] = useState<DurationType>('time');
     const [recoveryDurationValue, setRecoveryDurationValue] = useState(60); // 1 min default
-    const [recoveryTargetType, setRecoveryTargetType] = useState<TargetType>('pace');
-    const [recoveryTargetMin, setRecoveryTargetMin] = useState<string>('6:00');
-    const [recoveryTargetMax, setRecoveryTargetMax] = useState<string>('5:30');
+    const [recoveryTargetType, setRecoveryTargetType] = useState<TargetType>('vam_zone');
+    const [recoveryTargetMin, setRecoveryTargetMin] = useState<string>('2');
+    const [recoveryTargetMax, setRecoveryTargetMax] = useState<string>('2');
 
     const handleGenerate = () => {
         const groupId = uuidv4(); // Unique ID for this set of repetitions
@@ -121,8 +121,9 @@ export function RepeatWizard({ onAdd, onClose }: RepeatWizardProps) {
                                             onChange={(e) => setActiveTargetType(e.target.value as TargetType)}
                                             className="text-sm rounded border-gray-300 p-1.5 w-full"
                                         >
-                                            <option value="pace">Pace (min/km)</option>
-                                            <option value="heart_rate">Heart Rate</option>
+                                            <option value="vam_zone">VAM Zone</option>
+                                            <option value="lthr">LTHR (%)</option>
+                                            <option value="rpe_target">RPE</option>
                                         </select>
                                     </div>
                                     <div className="flex gap-2">
@@ -176,8 +177,9 @@ export function RepeatWizard({ onAdd, onClose }: RepeatWizardProps) {
                                             onChange={(e) => setRecoveryTargetType(e.target.value as TargetType)}
                                             className="text-sm rounded border-gray-300 p-1.5 w-full"
                                         >
-                                            <option value="pace">Pace (min/km)</option>
-                                            <option value="heart_rate">Heart Rate</option>
+                                            <option value="vam_zone">VAM Zone</option>
+                                            <option value="lthr">LTHR (%)</option>
+                                            <option value="rpe_target">RPE</option>
                                         </select>
                                     </div>
                                     <div className="flex gap-2">

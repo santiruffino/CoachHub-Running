@@ -1,16 +1,9 @@
 export type BlockType = 'warmup' | 'interval' | 'recovery' | 'cooldown';
 export type DurationType = 'distance' | 'time';
 export type TargetType =
-    | 'heart_rate'
-    | 'pace'
-    | 'hr_zone'
-    | 'vam_zone'
-    | 'power'
-    | 'threshold_pace' // % of threshold pace
-    | 'threshold_hr'   // % of threshold HR
-    | 'threshold_hr'   // % of threshold HR
-    | 'hr_max'         // % of max HR
-    | 'no_target';     // No specific target
+    | 'vam_zone'    // VAM Zones 1-6
+    | 'lthr'        // LTHR (% of threshold HR)
+    | 'rpe_target'; // RPE (1-10) as workout target
 
 export interface WorkoutBlock {
     id: string;

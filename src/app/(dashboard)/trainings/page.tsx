@@ -11,12 +11,16 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { AssignTrainingModal } from '@/features/trainings/components/AssignTrainingModal';
 import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
+import { useTranslations } from 'next-intl';
 
 export default function TrainingsPage() {
+    const t = useTranslations('trainings');
     const [trainings, setTrainings] = useState<Training[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedTrainingId, setSelectedTrainingId] = useState<string | null>(null);
     const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+    const [pendingDelete, setPendingDelete] = useState<{ id: string; title: string } | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
     const { alertState, showAlert, closeAlert } = useAlertDialog();
 
     const fetchTrainings = async () => {
@@ -58,35 +62,40 @@ export default function TrainingsPage() {
         setSelectedTrainingId(null);
     };
 
-    const handleDelete = async (trainingId: string, trainingTitle: string) => {
-        if (!confirm(`Are you sure you want to delete "${trainingTitle}"? This action cannot be undone.`)) {
-            return;
-        }
+    const handleDelete = (trainingId: string, trainingTitle: string) => {
+        setPendingDelete({ id: trainingId, title: trainingTitle });
+    };
 
+    const doDelete = async () => {
+        if (!pendingDelete) return;
         try {
-            await trainingsService.delete(trainingId);
-            // Refresh the list
-            await fetchTrainings();
+            setIsDeleting(true);
+            await trainingsService.delete(pendingDelete.id);
+            // Optimistically update the UI instead of re-fetching
+            setTrainings(prev => prev.filter(t => t.id !== pendingDelete.id));
         } catch (error) {
             console.error('Failed to delete training:', error);
-            showAlert('error', 'Failed to delete training. Please try again.');
+            showAlert('error', t('deleteError'));
+        } finally {
+            setIsDeleting(false);
+            setPendingDelete(null);
         }
     };
 
     return (
-        <div className="space-y-6 p-8">
+        <div className="space-y-6 p-8 pt-0">
             <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold">Training Templates</h1>
+                <h1 className="text-2xl font-bold">{t('title')}</h1>
                 <Button asChild>
                     <Link href="/trainings/new">
                         <Plus className="h-5 w-5 mr-2" />
-                        Create Training
+                        {t('createTraining')}
                     </Link>
                 </Button>
             </div>
 
             {loading ? (
-                <div>Loading...</div>
+                <div>{t('loading')}</div>
             ) : (
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     {trainings.map((training) => {
@@ -119,7 +128,7 @@ export default function TrainingsPage() {
                                         </div>
                                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                             <Users className="h-3 w-3" />
-                                            <span>{stats.blockCount} blocks</span>
+                                            <span>{t('blocks', { count: stats.blockCount })}</span>
                                         </div>
                                     </div>
 
@@ -132,7 +141,7 @@ export default function TrainingsPage() {
                                             className="flex-1 border-primary text-primary hover:bg-primary hover:text-white"
                                             onClick={() => handleAssignClick(training.id)}
                                         >
-                                            Assign to Athlete
+                                            {t('assignToAthlete')}
                                         </Button>
                                         <Button
                                             variant="outline"
@@ -148,7 +157,7 @@ export default function TrainingsPage() {
                         );
                     })}
                     {trainings.length === 0 && (
-                        <p className="text-muted-foreground col-span-full text-center py-10">No training templates found.</p>
+                        <p className="text-muted-foreground col-span-full text-center py-10">{t('noTrainings')}</p>
                     )}
                 </div>
             )}
@@ -162,12 +171,14 @@ export default function TrainingsPage() {
             )}
 
             <AlertDialog
-                open={alertState.open}
-                onClose={closeAlert}
-                type={alertState.type}
-                title={alertState.title}
-                message={alertState.message}
-                confirmText={alertState.confirmText}
+                open={alertState.open || pendingDelete !== null}
+                onClose={() => { if (!isDeleting) { closeAlert(); setPendingDelete(null); } }}
+                onConfirm={pendingDelete ? doDelete : undefined}
+                type={pendingDelete ? 'warning' : alertState.type}
+                title={pendingDelete ? t('deleteConfirmTitle') : alertState.title}
+                message={pendingDelete ? t('deleteConfirm', { title: pendingDelete.title }) : alertState.message}
+                confirmText={pendingDelete ? t('deleteConfirmButton') : alertState.confirmText}
+                loading={isDeleting}
             />
         </div>
     );

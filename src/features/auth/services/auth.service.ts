@@ -45,6 +45,11 @@ export const authService = {
             id: profile.id,
             email: profile.email,
             name: profile.name || undefined,
+            firstName: profile.first_name || undefined,
+            lastName: profile.last_name || undefined,
+            phone: profile.phone || undefined,
+            gender: profile.gender || undefined,
+            isOnboardingCompleted: profile.is_onboarding_completed || false,
             role: profile.role as Role,
             mustChangePassword: profile.must_change_password || false,
         };
@@ -154,6 +159,11 @@ export const authService = {
             id: profile.id,
             email: profile.email,
             name: profile.name || undefined,
+            firstName: profile.first_name || undefined,
+            lastName: profile.last_name || undefined,
+            phone: profile.phone || undefined,
+            gender: profile.gender || undefined,
+            isOnboardingCompleted: profile.is_onboarding_completed || false,
             role: profile.role as Role,
             mustChangePassword: profile.must_change_password || false,
         };

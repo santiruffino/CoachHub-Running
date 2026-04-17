@@ -22,6 +22,20 @@ export async function POST(request: NextRequest) {
 
         const { supabase, user } = authResult;
 
+        // In order to send invitations to the same club, we need the inviter's team_id
+        const { data: inviterProfile } = await supabase
+            .from('profiles')
+            .select('role, team_id')
+            .eq('id', user!.id)
+            .single();
+
+        if (!inviterProfile?.team_id) {
+            return NextResponse.json(
+                { error: 'You must belong to a running team to invite athletes.' },
+                { status: 400 }
+            );
+        }
+
         // Check if user already exists
         const { data: existingProfile } = await supabase
             .from('profiles')
@@ -63,6 +77,9 @@ export async function POST(request: NextRequest) {
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + 7);
 
+        // Determine if we should hard-assign a coach. If SUPER COACH (ADMIN), we assign to team but no specific coach by default.
+        const coachIdToAssign = inviterProfile.role === 'ADMIN' ? null : user!.id;
+
         // Create invitation
         const { data: invitation, error } = await supabase
             .from('invitations')
@@ -70,7 +87,8 @@ export async function POST(request: NextRequest) {
                 email,
                 token,
                 expires_at: expiresAt.toISOString(),
-                coach_id: user!.id,
+                coach_id: coachIdToAssign,
+                team_id: inviterProfile.team_id,
                 accepted: false,
             })
             .select()

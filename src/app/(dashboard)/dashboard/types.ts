@@ -52,3 +52,11 @@ export interface LowCompliance {
   total: number;
   completionRate: number;
 }
+
+export interface TimelineEvent {
+  id: string;
+  time: string;
+  athleteName: string;
+  activityName: string;
+  content: string;
+}

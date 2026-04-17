@@ -86,11 +86,16 @@ export async function PATCH(request: Request) {
     }
 
     const body = await request.json();
-    const { name, ...profileData } = body;
+    const { name, firstName, lastName, phone, gender, isOnboardingCompleted, ...profileData } = body;
 
     // Update profile
     const updates: any = {};
     if (name !== undefined) updates.name = name;
+    if (firstName !== undefined) updates.first_name = firstName;
+    if (lastName !== undefined) updates.last_name = lastName;
+    if (phone !== undefined) updates.phone = phone;
+    if (gender !== undefined) updates.gender = gender;
+    if (isOnboardingCompleted !== undefined) updates.is_onboarding_completed = isOnboardingCompleted;
 
     const { error: updateError } = await supabase
       .from('profiles')

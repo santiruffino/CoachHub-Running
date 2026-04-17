@@ -10,22 +10,28 @@ import { EstimatedTotals } from './EstimatedTotals';
 import { WorkoutProfileChart } from './WorkoutProfileChart';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface WorkoutBuilderProps {
     initialBlocks?: WorkoutBlock[];
     onChange?: (blocks: WorkoutBlock[]) => void;
     athleteId?: string;
     readOnly?: boolean;
+    leftSidebarContent?: React.ReactNode;
+    footerContent?: React.ReactNode;
 }
 
 export function WorkoutBuilder({
     initialBlocks = [],
     onChange,
     athleteId,
-    readOnly = false
+    readOnly = false,
+    leftSidebarContent,
+    footerContent
 }: WorkoutBuilderProps) {
     const [blocks, setBlocks] = useState<WorkoutBlock[]>(initialBlocks);
     const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
+    const t = useTranslations('builder');
 
     // Sync with parent component
     useEffect(() => {
@@ -51,9 +57,9 @@ export function WorkoutBuilder({
                 value: type === 'recovery' ? 120 : 1000 // 2 min or 1 km
             },
             target: {
-                type: 'threshold_pace',
-                min: type === 'interval' ? 105 : 75,
-                max: type === 'interval' ? 115 : 85
+                type: 'lthr',
+                min: type === 'interval' ? 90 : 75,
+                max: type === 'interval' ? 95 : 85
             },
             intensity: type === 'interval' ? 85 : (type === 'recovery' ? 30 : 50),
             ...(groupId && { group: { id: groupId, reps: 4 } })
@@ -72,7 +78,7 @@ export function WorkoutBuilder({
             type: 'interval',
             stepName: 'Hard',
             duration: { type: 'distance', value: 2000 },
-            target: { type: 'threshold_pace', min: 105, max: 115 },
+            target: { type: 'lthr', min: 90, max: 95 },
             intensity: 85,
             group: { id: groupId, reps: 4 }
         };
@@ -82,7 +88,7 @@ export function WorkoutBuilder({
             type: 'recovery',
             stepName: 'Easy',
             duration: { type: 'distance', value: 1000 },
-            target: { type: 'threshold_pace', min: 75, max: 85 },
+            target: { type: 'lthr', min: 75, max: 85 },
             intensity: 30,
             group: { id: groupId, reps: 4 }
         };
@@ -117,10 +123,10 @@ export function WorkoutBuilder({
 
     if (readOnly) {
         return (
-            <div className="h-full bg-white dark:bg-slate-900 text-gray-900 dark:text-white p-4">
-                <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">Read-only mode</div>
+            <div className="h-full bg-[#f8f9fa] dark:bg-[#0a0f14] text-[#2b3437] dark:text-[#f8f9fa] p-4">
+                <div className="text-sm text-[#4e6073] mb-4 font-inter">{t('readOnlyMode')}</div>
                 <EstimatedTotals blocks={blocks} />
-                <div className="mt-4">
+                <div className="mt-8">
                     <WorkoutProfileChart blocks={blocks} />
                 </div>
             </div>
@@ -128,108 +134,126 @@ export function WorkoutBuilder({
     }
 
     return (
-        <div className="h-full bg-white dark:bg-slate-900 text-gray-900 dark:text-white grid grid-cols-12 gap-4 p-4">
-            {/* Left Sidebar - Workout Sequence */}
-            <div className="col-span-3 h-full">
-                <WorkoutSequence
-                    blocks={blocks}
-                    selectedBlockId={selectedBlockId}
-                    onSelectBlock={selectBlock}
-                    onAddStep={(type) => {
-                        if (type === 'repeat') {
-                            addRepeatBlock();
-                        } else {
-                            addBlock(type === 'interval' ? 'interval' : type === 'warmup' ? 'warmup' : 'cooldown');
-                        }
-                    }}
-                />
+        <div className="h-full bg-[#f8f9fa] dark:bg-[#0a0f14] flex font-inter overflow-hidden border border-gray-100 rounded-lg dark:border-white/5 shadow-[0_20px_40px_rgba(43,52,55,0.05)]">
+            {/* Left Sidebar */}
+            <div className="w-[340px] flex-shrink-0 bg-white dark:bg-[#131b23] border-r border-[#f1f4f6] dark:border-white/5 flex flex-col overflow-y-auto">
+                {leftSidebarContent}
+                
+                {/* Block Library */}
+                <div className="p-8">
+                    <h3 className="text-[10px] font-semibold text-[#8b9bb4] tracking-[0.05em] uppercase mb-2">
+                        {t('blockLibrary')}
+                    </h3>
+                    <h2 className="text-xl font-bold font-display text-[#2b3437] dark:text-[#f8f9fa] mb-8">
+                        {t('structuralBlocks')}
+                    </h2>
+                    
+                    <div className="space-y-4">
+                        <button
+                            type="button"
+                            onClick={() => addBlock('warmup')}
+                            className="w-full flex items-center h-16 bg-white dark:bg-[#1a232c] border-none rounded shadow-[0_4px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(43,52,55,0.08)] transition-all relative overflow-hidden group"
+                        >
+                            <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-emerald-500" />
+                            <div className="flex flex-col items-start pl-5">
+                                <span className="text-[10px] text-[#8b9bb4] uppercase tracking-[0.05em] font-semibold">{t('preparatory')}</span>
+                                <span className="text-[#2b3437] dark:text-[#f8f9fa] font-medium text-sm">{t('warmUp')}</span>
+                            </div>
+                            <div className="ml-auto pr-4">
+                                <div className="w-6 h-6 rounded-full bg-[#f1f4f6] dark:bg-gray-800 flex items-center justify-center group-hover:bg-[#d1e4fb] transition-colors">
+                                    <Plus className="w-4 h-4 text-[#4e6073] group-hover:text-[#2b3437]" />
+                                </div>
+                            </div>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => addBlock('interval')}
+                            className="w-full flex items-center h-16 bg-white dark:bg-[#1a232c] border-none rounded shadow-[0_4px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(43,52,55,0.08)] transition-all relative overflow-hidden group"
+                        >
+                            <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#4e6073]" />
+                            <div className="flex flex-col items-start pl-5">
+                                <span className="text-[10px] text-[#8b9bb4] uppercase tracking-[0.05em] font-semibold">{t('performance')}</span>
+                                <span className="text-[#2b3437] dark:text-[#f8f9fa] font-medium text-sm">{t('intervalWork')}</span>
+                            </div>
+                            <div className="ml-auto pr-4">
+                                <div className="w-6 h-6 rounded-full bg-[#f1f4f6] dark:bg-gray-800 flex items-center justify-center group-hover:bg-[#d1e4fb] transition-colors">
+                                    <Plus className="w-4 h-4 text-[#4e6073] group-hover:text-[#2b3437]" />
+                                </div>
+                            </div>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => addBlock('recovery')}
+                            className="w-full flex items-center h-16 bg-white dark:bg-[#1a232c] border-none rounded shadow-[0_4px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(43,52,55,0.08)] transition-all relative overflow-hidden group"
+                        >
+                            <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#abb3b7]" />
+                            <div className="flex flex-col items-start pl-5">
+                                <span className="text-[10px] text-[#8b9bb4] uppercase tracking-[0.05em] font-semibold">{t('activeRest')}</span>
+                                <span className="text-[#2b3437] dark:text-[#f8f9fa] font-medium text-sm">{t('recovery')}</span>
+                            </div>
+                            <div className="ml-auto pr-4">
+                                <div className="w-6 h-6 rounded-full bg-[#f1f4f6] dark:bg-gray-800 flex items-center justify-center group-hover:bg-[#d1e4fb] transition-colors">
+                                    <Plus className="w-4 h-4 text-[#4e6073] group-hover:text-[#2b3437]" />
+                                </div>
+                            </div>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => addBlock('cooldown')}
+                            className="w-full flex items-center h-16 bg-white dark:bg-[#1a232c] border-none rounded shadow-[0_4px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(43,52,55,0.08)] transition-all relative overflow-hidden group"
+                        >
+                            <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-emerald-500" />
+                            <div className="flex flex-col items-start pl-5">
+                                <span className="text-[10px] text-[#8b9bb4] uppercase tracking-[0.05em] font-semibold">{t('closing')}</span>
+                                <span className="text-[#2b3437] dark:text-[#f8f9fa] font-medium text-sm">{t('coolDown')}</span>
+                            </div>
+                            <div className="ml-auto pr-4">
+                                <div className="w-6 h-6 rounded-full bg-[#f1f4f6] dark:bg-gray-800 flex items-center justify-center group-hover:bg-[#d1e4fb] transition-colors">
+                                    <Plus className="w-4 h-4 text-[#4e6073] group-hover:text-[#2b3437]" />
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
             </div>
 
             {/* Main Content Area */}
-            <div className="col-span-9 flex flex-col gap-4 h-full overflow-hidden">
-                {/* Top Section - Step/Repeat Editor */}
-                <div className="flex-1 overflow-y-auto">
-                    {selectedBlock ? (
-                        selectedGroupId ? (
-                            // Editing a repeat block
-                            <RepeatBlockEditor
-                                groupId={selectedGroupId}
-                                blocks={selectedGroupBlocks}
-                                onUpdate={updateBlock}
-                                onRemove={removeBlock}
-                                onAddStep={() => {
-                                    const newBlock: WorkoutBlock = {
-                                        id: uuidv4(),
-                                        type: 'interval',
-                                        stepName: 'New Step',
-                                        duration: { type: 'distance', value: 1000 },
-                                        target: { type: 'threshold_pace', min: 100, max: 110 },
-                                        intensity: 75,
-                                        group: { id: selectedGroupId, reps: selectedGroupBlocks[0].group!.reps }
-                                    };
-                                    setBlocks(prev => [...prev, newBlock]);
+            <div className="flex-1 flex flex-col h-full bg-[#f8f9fa] dark:bg-[#0a0f14] relative">
+                <div className="flex-1 overflow-y-auto w-full pb-24">
+                    <div className="max-w-4xl mx-auto px-8 py-12 space-y-16">
+                        <EstimatedTotals blocks={blocks} />
+                        
+                        <div className="w-full">
+                            <WorkoutSequence
+                                blocks={blocks}
+                                selectedBlockId={selectedBlockId}
+                                onSelectBlock={selectBlock}
+                                onUpdateBlock={updateBlock}
+                                onRemoveBlock={removeBlock}
+                                onAddStep={(type) => {
+                                    if (type === 'repeat') addRepeatBlock();
+                                    else addBlock(type as any);
                                 }}
                             />
-                        ) : (
-                            // Editing a single step
-                            <StepEditor
-                                step={selectedBlock}
-                                stepNumber={blocks.findIndex(b => b.id === selectedBlock.id) + 1}
-                                onUpdate={(updates) => updateBlock(selectedBlock.id, updates)}
-                                onRemove={() => removeBlock(selectedBlock.id)}
-                            />
-                        )
-                    ) : (
-                        // No block selected - show add buttons
-                        <div className="h-full flex items-center justify-center">
-                            <div className="text-center">
-                                <p className="text-gray-500 dark:text-gray-400 mb-6">
-                                    Select a step from the sequence or create a new one
-                                </p>
-                                <div className="flex gap-3 justify-center">
-                                    <Button
-                                        type="button"
-                                        onClick={() => addBlock('warmup')}
-                                        className="bg-green-600 hover:bg-green-700 text-white"
-                                    >
-                                        <Plus className="w-4 h-4 mr-2" />
-                                        Add Warm Up
-                                    </Button>
-                                    <Button
-                                        type="button"
-                                        onClick={() => addBlock('interval')}
-                                        className="bg-blue-600 hover:bg-blue-700 text-white"
-                                    >
-                                        <Plus className="w-4 h-4 mr-2" />
-                                        Add Interval
-                                    </Button>
-                                    <Button
-                                        type="button"
-                                        onClick={addRepeatBlock}
-                                        className="bg-[#FFCC00] hover:bg-[#FFD633] text-black"
-                                    >
-                                        <Plus className="w-4 h-4 mr-2" />
-                                        Add Repeat Block
-                                    </Button>
-                                    <Button
-                                        type="button"
-                                        onClick={() => addBlock('cooldown')}
-                                        className="bg-green-600 hover:bg-green-700 text-white"
-                                    >
-                                        <Plus className="w-4 h-4 mr-2" />
-                                        Add Cool Down
-                                    </Button>
-                                </div>
-                            </div>
                         </div>
-                    )}
-                </div>
 
-                {/* Bottom Section - Totals and Chart */}
-                <div className="grid grid-cols-2 gap-4">
-                    <EstimatedTotals blocks={blocks} />
-                    <WorkoutProfileChart blocks={blocks} />
+                        {blocks.length > 0 && (
+                            <div className="w-full pt-8 pb-8">
+                                <WorkoutProfileChart blocks={blocks} />
+                            </div>
+                        )}
+                    </div>
                 </div>
+                
+                {/* Footer Content Overlay */}
+                {footerContent && (
+                    <div className="absolute bottom-0 left-0 right-0 z-10 w-full mt-auto bg-[#4e6073] dark:bg-[#131b23] text-white p-6 shadow-[0_-20px_40px_rgba(43,52,55,0.1)] border-t border-white/5">
+                        {footerContent}
+                    </div>
+                )}
             </div>
         </div>
     );

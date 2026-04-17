@@ -17,19 +17,27 @@ export type AlertType = 'error' | 'success' | 'warning';
 interface AlertDialogProps {
     open: boolean;
     onClose: () => void;
+    onConfirm?: () => void;
     type: AlertType;
     title?: string;
     message: string;
     confirmText?: string;
+    cancelText?: string;
+    loading?: boolean;
+    disabled?: boolean;
 }
 
 export function AlertDialog({
     open,
     onClose,
+    onConfirm,
     type,
     title,
     message,
     confirmText = 'OK',
+    cancelText = 'Cancelar',
+    loading = false,
+    disabled = false,
 }: AlertDialogProps) {
     const getIcon = () => {
         switch (type) {
@@ -77,9 +85,25 @@ export function AlertDialog({
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
-                    <Button onClick={onClose} className="w-full sm:w-auto">
-                        {confirmText}
-                    </Button>
+                    {onConfirm ? (
+                        <>
+                            <Button variant="outline" onClick={onClose} className="w-full sm:w-auto" disabled={loading || disabled}>
+                                {cancelText}
+                            </Button>
+                            <Button
+                                variant="destructive"
+                                onClick={onConfirm}
+                                className="w-full sm:w-auto"
+                                disabled={loading || disabled}
+                            >
+                                {loading ? '...' : confirmText}
+                            </Button>
+                        </>
+                    ) : (
+                        <Button onClick={onClose} className="w-full sm:w-auto" disabled={loading || disabled}>
+                            {confirmText}
+                        </Button>
+                    )}
                 </DialogFooter>
             </DialogContent>
         </Dialog>

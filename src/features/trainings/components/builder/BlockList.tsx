@@ -74,21 +74,11 @@ export function BlockList({
     };
 
     const formatTarget = (block: WorkoutBlock) => {
-        if (block.target.type === 'pace' && (block.target.min || block.target.max)) {
-            return `${block.target.min}-${block.target.max} min/km`;
+        if (block.target.type === 'lthr' && (block.target.min || block.target.max)) {
+            return `${block.target.min}-${block.target.max}% LTHR`;
         }
-        if (block.target.type === 'heart_rate' && (block.target.min || block.target.max)) {
-            return `${block.target.min}-${block.target.max} bpm`;
-        }
-        if (block.target.type === 'hr_zone' && block.target.min) {
-            const zoneLabels: Record<string, string> = {
-                '1': 'Zone 1 (Recovery)',
-                '2': 'Zone 2 (Endurance)',
-                '3': 'Zone 3 (Tempo)',
-                '4': 'Zone 4 (Threshold)',
-                '5': 'Zone 5 (VO2 Max)'
-            };
-            return zoneLabels[block.target.min] || `Zone ${block.target.min}`;
+        if (block.target.type === 'rpe_target' && (block.target.min || block.target.max)) {
+            return `RPE ${block.target.min}-${block.target.max}`;
         }
         if (block.target.type === 'vam_zone' && block.target.min) {
             const vamZoneLabels: Record<string, string> = {
@@ -108,9 +98,6 @@ export function BlockList({
             }
 
             return zoneName;
-        }
-        if (block.target.type === 'power' && (block.target.min || block.target.max)) {
-            return `${block.target.min}-${block.target.max}W`;
         }
         return null;
     };

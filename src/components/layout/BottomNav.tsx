@@ -5,21 +5,23 @@ import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Users, Calendar, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/features/auth/hooks/useAuth';
-
-const mobileNavigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['COACH', 'ATHLETE'] },
-    { name: 'Athletes', href: '/athletes', icon: Users, roles: ['COACH'] },
-    { name: 'Calendar', href: '/dashboard/calendar', icon: Calendar, roles: ['COACH', 'ATHLETE'] },
-    { name: 'Profile', href: '/profile', icon: User, roles: ['COACH', 'ATHLETE'] },
-];
+import { useTranslations } from 'next-intl';
 
 export function BottomNav() {
     const pathname = usePathname();
     const { user, loading } = useAuth();
+    const t = useTranslations('nav');
 
     if (loading) return null;
 
     const userRole = user?.role || '';
+
+    const mobileNavigation = [
+        { name: t('dashboard'), href: '/dashboard', icon: LayoutDashboard, roles: ['COACH', 'ATHLETE', 'ADMIN'] },
+        { name: t('athletes'), href: '/athletes', icon: Users, roles: ['COACH', 'ADMIN'] },
+        { name: t('calendar'), href: '/dashboard/calendar', icon: Calendar, roles: ['COACH', 'ATHLETE', 'ADMIN'] },
+        { name: t('profile'), href: '/profile', icon: User, roles: ['COACH', 'ATHLETE', 'ADMIN'] },
+    ];
 
     return (
         <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -31,7 +33,7 @@ export function BottomNav() {
                         const Icon = item.icon;
                         return (
                             <Link
-                                key={item.name}
+                                key={item.href}
                                 href={item.href}
                                 className={cn(
                                     'flex flex-col items-center justify-center gap-1 transition-colors min-w-[60px] py-2',

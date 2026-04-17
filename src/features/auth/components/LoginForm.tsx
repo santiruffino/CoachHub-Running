@@ -10,21 +10,25 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
-
-const schema = z.object({
-    email: z.string().email('Invalid email address'),
-    password: z.string().min(6, 'Password must be at least 6 characters'),
-});
-
-type FormData = z.infer<typeof schema>;
+import { useTranslations } from 'next-intl';
 
 export default function LoginForm() {
     const [error, setError] = useState('');
     const { login, user, loading } = useAuth();
     const router = useRouter();
+    const t = useTranslations('auth.login');
+
+    const schema = z.object({
+        email: z.string().email(t('emailInvalid')),
+        password: z.string().min(6, t('passwordTooShort')),
+    });
+
+    type FormData = z.infer<typeof schema>;
+
     const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
         resolver: zodResolver(schema),
     });
@@ -41,14 +45,37 @@ export default function LoginForm() {
             setError('');
             await login(data.email, data.password);
         } catch (err: any) {
-            setError(err?.message || 'Invalid credentials');
+            setError(err?.message || t('invalidCredentials'));
         }
     };
+
+    // While we're resolving auth, show a skeleton shaped like the login card.
+    // This prevents the form from flashing for already-authenticated users.
+    if (loading) {
+        return (
+            <Card className="w-full max-w-md">
+                <CardHeader>
+                    <Skeleton className="h-8 w-32 mx-auto" />
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Skeleton className="h-4 w-16" />
+                        <Skeleton className="h-10 w-full" />
+                    </div>
+                    <div className="space-y-2">
+                        <Skeleton className="h-4 w-20" />
+                        <Skeleton className="h-10 w-full" />
+                    </div>
+                    <Skeleton className="h-10 w-full" />
+                </CardContent>
+            </Card>
+        );
+    }
 
     return (
         <Card className="w-full max-w-md">
             <CardHeader>
-                <CardTitle className="text-3xl text-center">Bienvenido</CardTitle>
+                <CardTitle className="text-3xl text-center">{t('title')}</CardTitle>
             </CardHeader>
             <CardContent>
                 {error && (
@@ -59,7 +86,7 @@ export default function LoginForm() {
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
+                        <Label htmlFor="email">{t('emailLabel')}</Label>
                         <Input
                             id="email"
                             type="email"
@@ -72,7 +99,7 @@ export default function LoginForm() {
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="password">Contraseña</Label>
+                        <Label htmlFor="password">{t('passwordLabel')}</Label>
                         <Input
                             id="password"
                             type="password"
@@ -89,13 +116,13 @@ export default function LoginForm() {
                         disabled={isSubmitting}
                         className="w-full"
                     >
-                        {isSubmitting ? 'Ingresando...' : 'Ingresar'}
+                        {isSubmitting ? t('submittingButton') : t('submitButton')}
                     </Button>
                 </form>
 
                 <div className="mt-4 text-center text-sm">
                     <Link href="/forgot-password" className="text-primary hover:underline">
-                        Olvidaste tu contraseña?
+                        {t('forgotPassword')}
                     </Link>
                 </div>
             </CardContent>

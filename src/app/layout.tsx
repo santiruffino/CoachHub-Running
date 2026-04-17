@@ -1,36 +1,42 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Manrope, Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages } from "next-intl/server";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const manrope = Manrope({
+  variable: "--font-manrope",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
   title: "Coach Hub",
-  description: "Running Coach Platform",
+  description: "Plataforma para entrenadores de running",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const messages = await getMessages();
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="es" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${inter.variable} ${manrope.variable} font-sans antialiased`}
       >
-        <Providers>
-          {children}
-        </Providers>
+        <NextIntlClientProvider messages={messages}>
+          <Providers>
+            {children}
+          </Providers>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

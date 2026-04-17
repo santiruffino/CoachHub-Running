@@ -173,6 +173,7 @@ export async function GET(
                 vam: athleteProfileData.vam,
                 uan: athleteProfileData.uan,
                 hrZones: athleteProfileData.hr_zones,
+                coachNotes: athleteProfileData.coach_notes,
                 created_at: athleteProfileData.created_at,
                 updated_at: athleteProfileData.updated_at,
             } : null,
@@ -192,6 +193,99 @@ export async function GET(
         return NextResponse.json(athleteDetails);
     } catch (error: any) {
         console.error('Get athlete details error:', error);
+        return NextResponse.json(
+            { error: 'Internal server error' },
+            { status: 500 }
+        );
+    }
+}
+
+/**
+ * Update Athlete Details
+ * 
+ * Updates athlete profile information.
+ * Supports updating: vam, uan, coachNotes, etc.
+ * 
+ * Access: COACH (for their athletes)
+ */
+export async function PATCH(
+    request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const { id } = await params;
+        const authResult = await requireAuth();
+
+        if (authResult.response) {
+            return authResult.response;
+        }
+
+        const { supabase, user } = authResult;
+        const athleteId = id;
+        const updates = await request.json();
+
+        // Only coaches can update athlete details for now
+        // (Athletes might update their own weight/height in future, but coach notes are restricted)
+        if (user!.role !== 'COACH') {
+            return NextResponse.json(
+                { error: 'Only coaches can update athlete details' },
+                { status: 403 }
+            );
+        }
+
+        // Verify coach has access to this athlete
+        const { data: athleteProfile, error: athleteError } = await supabase
+            .from('profiles')
+            .select('id, coach_id')
+            .eq('id', athleteId)
+            .eq('role', 'ATHLETE')
+            .single();
+
+        if (athleteError || !athleteProfile) {
+            return NextResponse.json(
+                { error: 'Athlete not found' },
+                { status: 404 }
+            );
+        }
+
+        if (athleteProfile.coach_id !== user!.id) {
+            return NextResponse.json(
+                { error: 'You do not have permission to update this athlete' },
+                { status: 403 }
+            );
+        }
+
+        // Prepare update object for athlete_profiles table
+        // Map frontend camelCase to DB snake_case
+        const dbUpdates: any = {
+            updated_at: new Date().toISOString(),
+        };
+
+        if (updates.vam !== undefined) dbUpdates.vam = updates.vam;
+        if (updates.uan !== undefined) dbUpdates.uan = updates.uan;
+        if (updates.restHR !== undefined) dbUpdates.rest_hr = updates.restHR;
+        if (updates.maxHR !== undefined) dbUpdates.max_hr = updates.maxHR;
+        if (updates.weight !== undefined) dbUpdates.weight = updates.weight;
+        if (updates.height !== undefined) dbUpdates.height = updates.height;
+        if (updates.coachNotes !== undefined) dbUpdates.coach_notes = updates.coachNotes;
+
+        // Update athlete_profiles
+        const { error: updateError } = await supabase
+            .from('athlete_profiles')
+            .update(dbUpdates)
+            .eq('user_id', athleteId);
+
+        if (updateError) {
+            console.error('Update athlete profile error:', updateError);
+            return NextResponse.json(
+                { error: 'Failed to update athlete profile' },
+                { status: 500 }
+            );
+        }
+
+        return NextResponse.json({ success: true });
+    } catch (error: any) {
+        console.error('Update athlete details error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
             { status: 500 }

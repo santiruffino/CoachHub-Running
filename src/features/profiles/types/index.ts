@@ -32,6 +32,11 @@ export interface HeartRateZones {
 }
 
 export interface UpdateProfileDto {
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+    gender?: string;
+    isOnboardingCompleted?: boolean;
     bio?: string;
     specialty?: string;
     experience?: string;

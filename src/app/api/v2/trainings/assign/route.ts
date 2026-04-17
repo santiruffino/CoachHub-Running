@@ -74,8 +74,13 @@ export async function POST(request: NextRequest) {
 
         const assignmentsToCreate: any[] = [];
 
-        // Collect athlete IDs from direct selection
-        const targetAthleteIds = new Set<string>(athleteIds || []);
+        // Collect athlete IDs from direct selection and map them to their source_group_id
+        const athleteSourceMap = new Map<string, string | null>();
+
+        // Direct selections are personalized (source_group_id = null)
+        (athleteIds || []).forEach((id: string) => {
+            athleteSourceMap.set(id, null);
+        });
 
         // If groupIds provided, get all athletes in those groups
         if (groupIds && groupIds.length > 0) {
@@ -96,16 +101,21 @@ export async function POST(request: NextRequest) {
             // Get all athletes in these groups
             const { data: memberships } = await supabase
                 .from('athlete_groups')
-                .select('athlete_id')
+                .select('athlete_id, group_id')
                 .in('group_id', groupIds);
 
             if (memberships) {
-                memberships.forEach(m => targetAthleteIds.add(m.athlete_id));
+                memberships.forEach(m => {
+                    // Personalized assignments take precedence over group assignments
+                    if (!athleteSourceMap.has(m.athlete_id)) {
+                        athleteSourceMap.set(m.athlete_id, m.group_id);
+                    }
+                });
             }
         }
 
         // Create assignment for each unique athlete
-        for (const athleteId of targetAthleteIds) {
+        for (const [athleteId, sourceGroupId] of athleteSourceMap.entries()) {
             assignmentsToCreate.push({
                 user_id: athleteId,
                 training_id: trainingId,
@@ -113,6 +123,7 @@ export async function POST(request: NextRequest) {
                 completed: false,
                 expected_rpe: expectedRpe || null, // Add expected RPE if provided
                 workout_name: workoutName || null, // Add custom workout name if provided
+                source_group_id: sourceGroupId,
             });
         }
 

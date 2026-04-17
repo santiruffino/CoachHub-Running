@@ -6,25 +6,28 @@ import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Users, UsersRound, Calendar, TrendingUp, Settings, Menu, X, Dumbbell } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/features/auth/hooks/useAuth';
-
-const navigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['COACH', 'ATHLETE'] },
-    { name: 'Athletes', href: '/athletes', icon: Users, roles: ['COACH'] },
-    { name: 'Groups', href: '/groups', icon: UsersRound, roles: ['COACH'] },
-    { name: 'Workout Library', href: '/workouts/library', icon: Dumbbell, roles: ['COACH'] },
-    { name: 'Trainings', href: '/trainings', icon: Calendar, roles: ['COACH'] },
-    { name: 'Calendar', href: '/dashboard/calendar', icon: Calendar, roles: ['COACH', 'ATHLETE'] },
-    { name: 'Progress', href: '#', icon: TrendingUp, roles: ['COACH', 'ATHLETE'] },
-];
+import { useTranslations } from 'next-intl';
 
 export function Sidebar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const pathname = usePathname();
     const { user, loading } = useAuth();
+    const t = useTranslations('nav');
 
     if (loading) return null;
 
     const userRole = user?.role || '';
+
+    const navigation = [
+        { name: t('dashboard'), href: '/dashboard', icon: LayoutDashboard, roles: ['COACH', 'ATHLETE', 'ADMIN'] },
+        { name: t('athletes'), href: '/athletes', icon: Users, roles: ['COACH', 'ADMIN'] },
+        { name: t('groups'), href: '/groups', icon: UsersRound, roles: ['COACH', 'ADMIN'] },
+        { name: 'Coaches', href: '/coaches', icon: Users, roles: ['ADMIN'] },
+        { name: t('workoutLibrary'), href: '/workouts/library', icon: Dumbbell, roles: ['COACH', 'ADMIN'] },
+        { name: t('trainings'), href: '/trainings', icon: Calendar, roles: ['COACH', 'ADMIN'] },
+        { name: t('calendar'), href: '/dashboard/calendar', icon: Calendar, roles: ['COACH', 'ATHLETE', 'ADMIN'] },
+        { name: t('progress'), href: '#', icon: TrendingUp, roles: ['COACH', 'ATHLETE', 'ADMIN'] },
+    ];
 
     const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
@@ -68,7 +71,7 @@ export function Sidebar() {
                         Coach Hub
                     </h1>
                     <p className="text-sm text-muted-foreground mt-1">
-                        Gestión de Atletas
+                        {t('athleteManagement')}
                     </p>
                 </div>
 
@@ -81,7 +84,7 @@ export function Sidebar() {
                                 const isActive = pathname === item.href;
                                 return (
                                     <Link
-                                        key={item.name}
+                                        key={item.href}
                                         href={item.href}
                                         onClick={closeMobileMenu}
                                         className={cn(
@@ -117,7 +120,7 @@ export function Sidebar() {
                         )}
                     >
                         <Settings className="mr-3 h-5 w-5 flex-shrink-0" />
-                        Settings
+                        {t('settings')}
                     </Link>
                 </div>
             </div>

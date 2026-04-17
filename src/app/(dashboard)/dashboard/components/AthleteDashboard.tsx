@@ -8,6 +8,7 @@ import { WeeklyVolumeChart } from '@/features/strava/components/WeeklyVolumeChar
 import { matchingService } from '@/features/trainings/services/matching.service';
 import { WorkoutMatch } from '@/features/trainings/types';
 import { cacheService } from '@/lib/cache.service';
+import { stravaService } from '@/features/strava/services/strava.service';
 
 export default function AthleteDashboard({ user }: { user: any }) {
     const [selectedDate, setSelectedDate] = useState(new Date());
@@ -24,10 +25,23 @@ export default function AthleteDashboard({ user }: { user: any }) {
 
         try {
             setIsFetching(true);
+
+            // 1. Trigger Strava sync once per session if athlete
+            const hasSynced = sessionStorage.getItem('strava_synced_this_session');
+            if (user.role === 'ATHLETE' && !hasSynced) {
+                try {
+                    await stravaService.sync();
+                    sessionStorage.setItem('strava_synced_this_session', 'true');
+                    useCache = false; // Force non-cache fetch to get new activities
+                } catch (e) {
+                    console.error('Strava auto-sync failed', e);
+                }
+            }
+
             const activitiesKey = cacheService.generateApiKey(`activities_${user.id}`);
             const assignmentsKey = cacheService.generateApiKey('assignments');
 
-            // 1. Try to load from cache first for immediate UI update
+            // 2. Try to load from cache first for immediate UI update
             if (useCache) {
                 const cachedActivities = cacheService.get<any[]>(activitiesKey);
                 const cachedAssignments = cacheService.get<any[]>(assignmentsKey);
@@ -275,8 +289,15 @@ export default function AthleteDashboard({ user }: { user: any }) {
 
     return (
         <div className="space-y-4 sm:space-y-6 max-w-md mx-auto sm:max-w-full px-4 sm:px-0 pb-20">
-            <div className="flex items-center justify-between">
-                <h1 className="text-xl sm:text-2xl font-bold">Entrenamiento</h1>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
+                <div>
+                    <h1 className="text-3xl sm:text-4xl font-display font-light mb-2 text-foreground">
+                        Hola, {user.firstName || user.name?.split(' ')[0] || 'Atleta'} 👋
+                    </h1>
+                    <p className="text-sm text-muted-foreground font-medium">
+                        {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).replace(/^\w/, c => c.toUpperCase())}
+                    </p>
+                </div>
             </div>
 
             <WeeklyVolumeChart

@@ -16,10 +16,27 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, UserPlus, AlertTriangle, Mail, Phone } from 'lucide-react';
+import { Search, UserPlus, AlertTriangle, Mail, Phone, MoreHorizontal, Edit, Trash2 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { AlertDialog } from '@/components/ui/AlertDialog';
 import api from '@/lib/axios';
 import { InviteAthleteModal } from '@/features/invitations/components/InviteAthleteModal';
-
+import { useTranslations } from 'next-intl';
+import { useAuth } from '@/features/auth/hooks/useAuth';
+import { EditAthleteModal } from './components/EditAthleteModal';
 
 interface AthleteData {
   id: string;
@@ -27,12 +44,12 @@ interface AthleteData {
   email: string;
   sport: string;
   level: string;
+  coach?: { id: string; name: string } | null;
   groups: { id: string; name: string }[];
   totalTrainings: number;
   plannedTrainings: number;
   completedTrainings: number;
   completionPercentage: number;
-  phone?: string;
 }
 
 const AVATAR_COLORS = [
@@ -44,61 +61,106 @@ const AVATAR_COLORS = [
   'bg-teal-600',
 ];
 
-function determineLevel(completedTrainings: number): string {
-  if (completedTrainings >= 50) return 'Elite';
-  if (completedTrainings >= 30) return 'Avanzado';
-  if (completedTrainings >= 10) return 'Intermedio';
-  return 'Principiante';
-}
-
 export default function AthletesPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
+
   const [athletes, setAthletes] = useState<AthleteData[]>([]);
+  const [coaches, setCoaches] = useState<{id: string, name: string}[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Modals & Action States
   const [searchTerm, setSearchTerm] = useState('');
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  
+  const [editAthlete, setEditAthlete] = useState<AthleteData | null>(null);
+  const [isEditModalOpen, setEditModalOpen] = useState(false);
+  
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
+  // Filter States
+  const [filterLevel, setFilterLevel] = useState<string>('all');
+  const [filterGroup, setFilterGroup] = useState<string>('all');
+  const [filterCoach, setFilterCoach] = useState<string>('all');
+
+  const t = useTranslations('athletes');
+
+  function determineLevel(completedTrainings: number): string {
+    if (completedTrainings >= 50) return t('levels.elite');
+    if (completedTrainings >= 30) return t('levels.advanced');
+    if (completedTrainings >= 10) return t('levels.intermediate');
+    return t('levels.beginner');
+  }
+
+  const fetchAthletes = async () => {
+    try {
+      setLoading(true);
+      const athletesRes = await api.get('/v2/users/athletes');
+      const athletesList = athletesRes.data;
+
+      const athletesData: AthleteData[] = athletesList.map((athlete: any) => ({
+        id: athlete.id,
+        name: athlete.name || athlete.email.split('@')[0],
+        email: athlete.email,
+        sport: t('sports.running'),
+        level: determineLevel(athlete.stats?.completedAssignments || 0),
+        coach: athlete.coach,
+        groups: athlete.groups || [],
+        totalTrainings: athlete.stats?.totalAssignments || 0,
+        plannedTrainings: athlete.stats?.plannedAssignments || 0,
+        completedTrainings: athlete.stats?.completedAssignments || 0,
+        completionPercentage: athlete.stats?.completionPercentage || 0,
+      }));
+
+      setAthletes(athletesData);
+
+      if (isAdmin) {
+        const coachesRes = await api.get('/v2/users/coaches');
+        setCoaches(coachesRes.data.map((c: any) => ({ id: c.id, name: c.name })));
+      }
+    } catch (error) {
+      console.error('Failed to fetch athletes', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchAthletes = async () => {
-      try {
-        setLoading(true);
-
-        // Fetch athletes with stats - single API call
-        const athletesRes = await api.get('/v2/users/athletes');
-        const athletesList = athletesRes.data;
-        console.log(athletesList)
-
-        // Map API response to AthleteData interface
-        const athletesData: AthleteData[] = athletesList.map((athlete: any) => ({
-          id: athlete.id,
-          name: athlete.name || athlete.email.split('@')[0],
-          email: athlete.email,
-          sport: 'Running',
-          level: determineLevel(athlete.stats.completedAssignments),
-          groups: athlete.groups || [],
-          totalTrainings: athlete.stats.totalAssignments,
-          plannedTrainings: athlete.stats.plannedAssignments,
-          completedTrainings: athlete.stats.completedAssignments,
-          completionPercentage: athlete.stats.completionPercentage,
-        }));
-
-        setAthletes(athletesData);
-      } catch (error) {
-        console.error('Failed to fetch athletes', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchAthletes();
-  }, []);
+  }, [isAdmin]);
 
-  const filteredAthletes = athletes.filter(
-    (athlete) =>
-      athlete.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      athlete.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      athlete.sport.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    setIsDeleting(true);
+    try {
+      await api.delete(`/v2/users/${deleteId}`);
+      // Optimistically update the UI instead of re-fetching
+      setAthletes(prev => prev.filter(a => a.id !== deleteId));
+      setDeleteId(null);
+    } catch (error) {
+      console.error('Failed to delete athlete', error);
+      alert('Failed to delete athlete');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // Extract unique groups and levels for filters
+  const availableGroups = Array.from(new Set(athletes.flatMap(a => a.groups.map(g => g.name))));
+  const availableLevels = Array.from(new Set(athletes.map(a => a.level)));
+
+  const filteredAthletes = athletes.filter((athlete) => {
+    const matchesSearch = athlete.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          athlete.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesLevel = filterLevel === 'all' || athlete.level === filterLevel;
+    const matchesGroup = filterGroup === 'all' || athlete.groups.some(g => g.name === filterGroup);
+    
+    // For ADMINs only, if filterCoach is employed
+    const matchesCoach = !isAdmin || filterCoach === 'all' || athlete.coach?.id === filterCoach;
+
+    return matchesSearch && matchesLevel && matchesGroup && matchesCoach;
+  });
 
   if (loading) {
     return (
@@ -111,38 +173,91 @@ export default function AthletesPage() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 lg:pt-0 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">Atletas</h1>
-          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-            Gestiona tu roster de atletas
-          </p>
+          <h1 className="text-2xl sm:text-3xl font-bold">{t('title')} {isAdmin && ' (Global)'}</h1>
         </div>
         <Button onClick={() => setInviteModalOpen(true)} size="sm" className="sm:size-default">
           <UserPlus className="h-4 w-4 sm:mr-2" />
-          <span className="hidden sm:inline">Añadir Atleta</span>
+          <span className="hidden sm:inline">{t('addAthlete')}</span>
         </Button>
       </div>
 
-      {/* Invite Modal */}
       <InviteAthleteModal
         open={inviteModalOpen}
         onClose={() => setInviteModalOpen(false)}
       />
+      <EditAthleteModal 
+        open={isEditModalOpen} 
+        onClose={() => setEditModalOpen(false)}
+        athlete={editAthlete}
+        onSuccess={fetchAthletes}
+        isAdmin={isAdmin}
+        coaches={coaches}
+      />
+      
+      <AlertDialog 
+        open={!!deleteId} 
+        onClose={() => { if (!isDeleting) setDeleteId(null); }}
+        onConfirm={handleDelete}
+        type="warning"
+        title="¿Eliminar atleta?"
+        message="Esta acción no se puede deshacer. Se eliminará el registro del atleta del sistema permanentemente."
+        confirmText="Sí, Eliminar"
+        loading={isDeleting}
+      />
 
+      {/* Filters Strip */}
+      <div className="flex flex-col sm:flex-row gap-4 flex-wrap">
+        <div className="relative max-w-md w-full sm:w-auto flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder={t('searchPlaceholder')}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
 
+        <Select value={filterLevel} onValueChange={setFilterLevel}>
+          <SelectTrigger className="w-full sm:w-[150px]">
+             <SelectValue placeholder="Nivel" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos los Niveles</SelectItem>
+            {availableLevels.map(lvl => (
+               <SelectItem key={lvl} value={lvl}>{lvl}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      {/* Search */}
-      <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Buscar atletas por nombre o deporte..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10"
-        />
+        <Select value={filterGroup} onValueChange={setFilterGroup}>
+          <SelectTrigger className="w-full sm:w-[150px]">
+             <SelectValue placeholder="Grupo" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos los Grupos</SelectItem>
+            {availableGroups.map(grp => (
+               <SelectItem key={grp} value={grp}>{grp}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {isAdmin && (
+          <Select value={filterCoach} onValueChange={setFilterCoach}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+               <SelectValue placeholder="Entrenador" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos los Entrenadores</SelectItem>
+              {coaches.map(c => (
+                 <SelectItem key={c.id} value={c.id}>{c.name || 'Sin nombre'}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </div>
 
       {/* Mobile Cards View */}
@@ -150,36 +265,58 @@ export default function AthletesPage() {
         {filteredAthletes.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center text-muted-foreground">
-              No se encontraron atletas
+              {t('noAthletes')}
             </CardContent>
           </Card>
         ) : (
           filteredAthletes.map((athlete, idx) => (
             <Card key={athlete.id} className="overflow-hidden">
               <CardContent className="p-4">
-                <div className="flex items-center gap-3 mb-3">
-                  <Avatar className={`h-12 w-12 ${AVATAR_COLORS[idx % AVATAR_COLORS.length]}`}>
-                    <AvatarFallback className="bg-transparent text-white font-semibold">
-                      {athlete.name.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold truncate">{athlete.name}</p>
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
-                      <Mail className="h-3 w-3 flex-shrink-0" />
-                      <span className="truncate">{athlete.email}</span>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <Avatar className={`h-12 w-12 ${AVATAR_COLORS[idx % AVATAR_COLORS.length]}`}>
+                      <AvatarFallback className="bg-transparent text-white font-semibold">
+                        {athlete.name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold truncate">{athlete.name}</p>
+                      {isAdmin && athlete.coach && (
+                        <p className="text-xs text-primary font-medium">Coach: {athlete.coach.name}</p>
+                      )}
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
+                        <Mail className="h-3 w-3 flex-shrink-0" />
+                        <span className="truncate">{athlete.email}</span>
+                      </div>
                     </div>
                   </div>
+                  {/* Actions Dropdown Mobile */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => { setEditAthlete(athlete); setEditModalOpen(true); }}>
+                        <Edit className="mr-2 h-4 w-4" /> Editar
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem className="text-red-600 focus:text-red-600" onClick={() => setDeleteId(athlete.id)}>
+                        <Trash2 className="mr-2 h-4 w-4" /> Eliminar
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
                 <div className="flex gap-2">
                   <Button asChild variant="outline" size="sm" className="flex-1">
                     <Link href={`/athletes/${athlete.id}`}>
-                      Ver Perfil
+                      {t('viewProfile')}
                     </Link>
                   </Button>
                   <Button asChild size="sm" className="flex-1">
                     <Link href={`/workouts/assign?athleteId=${athlete.id}`}>
-                      Asignar Entreno
+                      {t('assignWorkout')}
                     </Link>
                   </Button>
                 </div>
@@ -196,21 +333,21 @@ export default function AthletesPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[280px]">Atleta</TableHead>
-                  <TableHead>Deporte</TableHead>
-                  <TableHead>Nivel</TableHead>
-                  <TableHead>Grupos</TableHead>
-                  <TableHead className="text-center">Entrenamientos</TableHead>
-                  <TableHead className="text-center">Planificados</TableHead>
-                  <TableHead className="w-[150px]">Cumplimiento</TableHead>
-                  <TableHead className="text-right w-[220px]">Acciones</TableHead>
+                  <TableHead className="w-[280px]">{t('table.athlete')}</TableHead>
+                  <TableHead>{t('table.sport')}</TableHead>
+                  <TableHead>{t('table.level')}</TableHead>
+                  {isAdmin && <TableHead>Coach</TableHead>}
+                  <TableHead className="text-center">{t('table.trainings')}</TableHead>
+                  <TableHead className="text-center">{t('table.planned')}</TableHead>
+                  <TableHead className="w-[150px]">{t('table.compliance')}</TableHead>
+                  <TableHead className="text-right w-[180px]">{t('table.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredAthletes.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
-                      No se encontraron atletas
+                    <TableCell colSpan={isAdmin ? 9 : 8} className="text-center py-12 text-muted-foreground">
+                      {t('noAthletes')}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -218,6 +355,7 @@ export default function AthletesPage() {
                     <TableRow key={athlete.id}>
                       {/* Athlete Info */}
                       <TableCell>
+                      <Link href={`/athletes/${athlete.id}`}>
                         <div className="flex items-center gap-3">
                           <Avatar className={`h-10 w-10 ${AVATAR_COLORS[idx % AVATAR_COLORS.length]}`}>
                             <AvatarFallback className="bg-transparent text-white font-semibold">
@@ -232,44 +370,20 @@ export default function AthletesPage() {
                             </div>
                           </div>
                         </div>
+                      </Link>
                       </TableCell>
 
-                      {/* Sport */}
-                      <TableCell>
-                        <Badge variant="outline">{athlete.sport}</Badge>
-                      </TableCell>
+                      <TableCell><Badge variant="outline">{athlete.sport}</Badge></TableCell>
+                      <TableCell><span className="text-sm font-medium">{athlete.level}</span></TableCell>
+                      {isAdmin && (
+                        <TableCell>
+                          <span className="text-sm font-medium text-primary block truncate max-w-[120px]">
+                            {athlete.coach?.name || '-'}
+                          </span>
+                        </TableCell>
+                      )}
 
-                      {/* Level */}
-                      <TableCell>
-                        <span className="text-sm font-medium">{athlete.level}</span>
-                      </TableCell>
-
-                      {/* Groups */}
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {athlete.groups.length > 0 ? (
-                            athlete.groups.slice(0, 2).map((group) => (
-                              <Badge key={group.id} variant="secondary" className="text-xs">
-                                {group.name}
-                              </Badge>
-                            ))
-                          ) : (
-                            <span className="text-sm text-muted-foreground">-</span>
-                          )}
-                          {athlete.groups.length > 2 && (
-                            <Badge variant="secondary" className="text-xs">
-                              +{athlete.groups.length - 2}
-                            </Badge>
-                          )}
-                        </div>
-                      </TableCell>
-
-                      {/* Total Trainings */}
-                      <TableCell className="text-center">
-                        <span className="font-medium">{athlete.totalTrainings}</span>
-                      </TableCell>
-
-                      {/* Planned Trainings with Warning */}
+                      <TableCell className="text-center"><span className="font-medium">{athlete.totalTrainings}</span></TableCell>
                       <TableCell className="text-center">
                         <div className="flex items-center justify-center gap-1.5">
                           <span className="font-medium">{athlete.plannedTrainings}</span>
@@ -279,34 +393,47 @@ export default function AthletesPage() {
                         </div>
                       </TableCell>
 
-                      {/* Completion Progress */}
                       <TableCell>
                         <div className="space-y-1">
                           <div className="flex items-center justify-between text-sm">
                             <span className="font-medium text-xs">{athlete.completionPercentage}%</span>
                           </div>
-                          <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                          <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
                             <div
-                              className="h-full bg-gray-900 transition-all rounded-full"
+                              className="h-full bg-foreground transition-all rounded-full"
                               style={{ width: `${athlete.completionPercentage}%` }}
                             />
                           </div>
                         </div>
                       </TableCell>
 
-                      {/* Actions */}
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
                           <Button asChild variant="outline" size="sm">
-                            <Link href={`/athletes/${athlete.id}`}>
-                              Ver Perfil
-                            </Link>
+                            <Link href={`/athletes/${athlete.id}`}>{t('viewProfile')}</Link>
                           </Button>
-                          <Button asChild size="sm">
-                            <Link href={`/workouts/assign?athleteId=${athlete.id}`}>
-                              Asignar Entreno
-                            </Link>
-                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <span className="sr-only">Open menu</span>
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem asChild>
+                                <Link href={`/workouts/assign?athleteId=${athlete.id}`}>
+                                  {t('assignWorkout')}
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => { setEditAthlete(athlete); setEditModalOpen(true); }}>
+                                Editar
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem className="text-red-600 focus:text-red-600" onClick={() => setDeleteId(athlete.id)}>
+                                Eliminar
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </TableCell>
                     </TableRow>

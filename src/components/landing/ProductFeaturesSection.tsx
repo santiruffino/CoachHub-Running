@@ -1,69 +1,67 @@
 'use client';
 
-import { Card } from '@/components/ui/card';
+import { useEffect, useState } from 'react';
 import { LineChart, Dumbbell, Sliders, RefreshCw } from 'lucide-react';
 import { Line, LineChart as RechartsLineChart, ResponsiveContainer, YAxis } from 'recharts';
 import { motion } from 'framer-motion';
-
-const productFeatures = [
-  {
-    icon: LineChart,
-    title: 'AI Spotlight Dashboard',
-    description:
-      'Predictive modeling that highlights potential overtraining before injuries occur.',
-  },
-  {
-    icon: Dumbbell,
-    title: 'Dynamic Workout Builder',
-    description:
-      'Generate structured workouts based on real data. VAM and lactate threshold.',
-  },
-  {
-    icon: Sliders,
-    title: 'VAM Auto-Adjust',
-    description:
-      'Automatic pace adjustments based on elevation profile and vertical meters per hour.',
-  },
-  {
-    icon: RefreshCw,
-    title: 'Sync-Pace Analysis',
-    description:
-      'Synchronized heart rate, pace, and elevation overlay for surgical precision.',
-  },
-];
+import { useTranslations } from 'next-intl';
 
 const lineChartData = Array.from({ length: 20 }, (_, i) => ({
-  value: Math.sin(i / 3) * 20 + 50 + Math.random() * 10,
+  value: Math.sin(i / 3) * 20 + 50 + (i % 3) * 3,
 }));
 
 export function ProductFeaturesSection() {
+  const [mounted, setMounted] = useState(false);
+  const t = useTranslations('landing.productFeatures');
+  useEffect(() => setMounted(true), []);
+
+  const productFeatures = [
+    {
+      icon: LineChart,
+      title: t('feature1Title'),
+      description: t('feature1Desc'),
+    },
+    {
+      icon: Dumbbell,
+      title: t('feature2Title'),
+      description: t('feature2Desc'),
+    },
+    {
+      icon: Sliders,
+      title: t('feature3Title'),
+      description: t('feature3Desc'),
+    },
+    {
+      icon: RefreshCw,
+      title: t('feature4Title'),
+      description: t('feature4Desc'),
+    },
+  ];
+
   return (
-    <section className="py-20 lg:py-32 bg-card-bg/20">
+    /* bg-background alternates with the muted FeaturesSection — No-Line */
+    <section className="py-24 lg:py-36 bg-background dark:bg-[#0a0f14]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Section header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="mb-20"
         >
-          <h2 className="text-4xl lg:text-5xl font-bold text-white mb-4">
-            Built by Coaches,{' '}
-            <motion.span
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-green-accent"
-            >
-              Refined by Intelligence.
-            </motion.span>
+          <p className="text-xs text-primary font-semibold uppercase tracking-[0.05em] mb-3">
+            {t('eyebrow')}
+          </p>
+          <h2 className="font-display text-4xl lg:text-5xl font-bold text-foreground tracking-[-0.02em] max-w-2xl">
+            {t('title1')}{' '}
+            <span className="text-primary">{t('titleHighlight')}</span>
           </h2>
         </motion.div>
 
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left - Features List */}
-          <div className="space-y-6">
+        <div className="grid lg:grid-cols-2 gap-16 items-center">
+          {/* Left — Feature list (asymmetrical: large space between items) */}
+          <div className="space-y-10">
             {productFeatures.map((feature, index) => (
               <motion.div
                 key={index}
@@ -71,20 +69,18 @@ export function ProductFeaturesSection() {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ x: 8 }}
-                className="flex gap-4 group"
+                whileHover={{ x: 4 }}
+                className="flex gap-6 group"
               >
-                <motion.div
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                  className="w-12 h-12 bg-green-accent/10 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-green-accent/20 transition-colors"
-                >
-                  <feature.icon className="w-6 h-6 text-green-accent" />
-                </motion.div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">
+                {/* Thin progress-ring style icon badge */}
+                <div className="w-11 h-11 bg-accent dark:bg-[#131b23] rounded-lg flex items-center justify-center flex-shrink-0 transition-colors group-hover:bg-accent/70">
+                  <feature.icon className="w-5 h-5 text-primary" />
+                </div>
+                <div className="pt-0.5">
+                  <h3 className="font-display text-base font-semibold text-foreground mb-1.5 tracking-tight">
                     {feature.title}
                   </h3>
-                  <p className="text-gray-light leading-relaxed">
+                  <p className="text-muted-foreground text-sm leading-relaxed tracking-[0.01em]">
                     {feature.description}
                   </p>
                 </div>
@@ -92,51 +88,69 @@ export function ProductFeaturesSection() {
             ))}
           </div>
 
-          {/* Right - Analytics Chart */}
+          {/* Right — Analytics card */}
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
+            initial={{ opacity: 0, x: 24 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            <Card className="bg-card-bg/50 backdrop-blur-sm border-white/10 p-6 space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-gray-light uppercase tracking-wider">
-                  Week 7 - 1wk7 - HR Adjust
-                </p>
-                <h3 className="text-sm font-medium text-white mt-1">Form Trending</h3>
-              </div>
-            </div>
+            <div
+              className="rounded-xl overflow-hidden bg-card dark:bg-[#1a232c]"
+              style={{
+                boxShadow: '0 20px 40px rgba(43, 52, 55, 0.07)',
+                border: '1px solid rgba(171, 179, 183, 0.15)',
+              }}
+            >
+              <div className="p-6 space-y-6">
+                {/* Card header */}
+                <div>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-[0.05em] mb-1">
+                    {t('weekLabel')}
+                  </p>
+                  <h3 className="font-display text-sm font-semibold text-foreground">
+                    {t('formTrending')}
+                  </h3>
+                </div>
 
-            <div className="h-48">
-              <ResponsiveContainer width="100%" height="100%">
-                <RechartsLineChart data={lineChartData}>
-                  <YAxis hide />
-                  <Line
-                    type="monotone"
-                    dataKey="value"
-                    stroke="#00FF88"
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                </RechartsLineChart>
-              </ResponsiveContainer>
-            </div>
+                {/* Line chart — only render on client to avoid Recharts -1 dimension error */}
+                <div className="h-44">
+                  {mounted && (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RechartsLineChart data={lineChartData}>
+                        <YAxis hide />
+                        <Line
+                          type="monotone"
+                          dataKey="value"
+                          stroke="#4e6073"
+                          strokeWidth={2}
+                          dot={false}
+                          strokeLinecap="round"
+                        />
+                      </RechartsLineChart>
+                    </ResponsiveContainer>
+                  )}
+                </div>
 
-            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/10">
-              <div>
-                <p className="text-xs text-gray-light uppercase">Current Load</p>
-                <p className="text-2xl font-bold text-white">
-                  980<span className="text-sm text-gray-light ml-1">km</span>
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-light uppercase">Form Score</p>
-                <p className="text-2xl font-bold text-green-accent">88%</p>
+                {/* Stats — tonal bg shift instead of border */}
+                <div className="rounded-lg bg-muted dark:bg-[#0a0f14] px-4 py-3 grid grid-cols-2 gap-6">
+                  <div>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-[0.05em] mb-1">
+                      {t('currentLoad')}
+                    </p>
+                    <p className="font-display text-2xl font-bold text-foreground leading-none">
+                      980<span className="text-xs font-normal text-muted-foreground ml-1">km</span>
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-[0.05em] mb-1">
+                      {t('formScore')}
+                    </p>
+                    <p className="font-display text-2xl font-bold text-primary leading-none">88%</p>
+                  </div>
+                </div>
               </div>
             </div>
-          </Card>
           </motion.div>
         </div>
       </div>

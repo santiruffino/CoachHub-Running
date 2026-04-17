@@ -11,16 +11,19 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import Link from 'next/link';
-
-const schema = z.object({
-    email: z.string().email('Invalid email address'),
-});
-
-type FormData = z.infer<typeof schema>;
+import { useTranslations } from 'next-intl';
 
 export default function ForgotPasswordForm() {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
+    const t = useTranslations('auth.forgotPassword');
+
+    const schema = z.object({
+        email: z.string().email(t('emailInvalid')),
+    });
+
+    type FormData = z.infer<typeof schema>;
+
     const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
         resolver: zodResolver(schema),
     });
@@ -34,16 +37,16 @@ export default function ForgotPasswordForm() {
             setSuccess(true);
         } catch (err: any) {
             console.error('❌ [ForgotPasswordForm] Failed to send reset email:', err);
-            setError(err?.message || 'Failed to send reset email');
+            setError(err?.message || t('errorMessage'));
         }
     };
 
     return (
         <Card className="w-full max-w-md">
             <CardHeader>
-                <CardTitle className="text-2xl">Reset Password</CardTitle>
+                <CardTitle className="text-2xl">{t('title')}</CardTitle>
                 <CardDescription>
-                    Enter your email address and we&apos;ll send you a link to reset your password.
+                    {t('description')}
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -56,18 +59,18 @@ export default function ForgotPasswordForm() {
                 {success && (
                     <Alert className="mb-4 bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800">
                         <AlertDescription>
-                            Password reset email sent! Check your inbox for further instructions.
+                            {t('successMessage')}
                         </AlertDescription>
                     </Alert>
                 )}
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="email">Email Address</Label>
+                        <Label htmlFor="email">{t('emailLabel')}</Label>
                         <Input
                             id="email"
                             type="email"
-                            placeholder="you@example.com"
+                            placeholder="tu@ejemplo.com"
                             {...register('email')}
                             disabled={success}
                         />
@@ -81,13 +84,13 @@ export default function ForgotPasswordForm() {
                         disabled={isSubmitting || success}
                         className="w-full"
                     >
-                        {isSubmitting ? 'Sending...' : 'Send Reset Link'}
+                        {isSubmitting ? t('submittingButton') : t('submitButton')}
                     </Button>
                 </form>
 
                 <div className="mt-6 text-center text-sm">
                     <Link href="/login" className="text-primary hover:underline">
-                        Back to Login
+                        {t('backToLogin')}
                     </Link>
                 </div>
             </CardContent>

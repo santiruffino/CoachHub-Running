@@ -259,26 +259,24 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
                         onChange={(e) => handleTargetTypeChange(e.target.value as TargetType)}
                         className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-gray-900 dark:text-white dark:bg-gray-700 mb-3"
                     >
-                        <option value="pace">Pace (min/km)</option>
-                        <option value="heart_rate">Heart Rate (bpm)</option>
-                        <option value="hr_zone">Heart Rate Zone</option>
                         <option value="vam_zone">VAM Zone</option>
-                        <option value="power">Power (watts)</option>
+                        <option value="lthr">LTHR</option>
+                        <option value="rpe_target">RPE Target</option>
                     </select>
 
-                    {/* Pace Input */}
-                    {block.target.type === 'pace' && (
+                    {/* LTHR: Percentage Inputs */}
+                    {block.target.type === 'lthr' && (
                         <div className="grid grid-cols-2 gap-3">
                             <input
-                                type="text"
-                                placeholder="6:00"
+                                type="number"
+                                placeholder="85"
                                 value={block.target.min}
                                 onChange={(e) => onUpdate(block.id, { target: { ...block.target, min: e.target.value } })}
                                 className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-gray-900 dark:text-white dark:bg-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                             />
                             <input
-                                type="text"
-                                placeholder="6:30"
+                                type="number"
+                                placeholder="95"
                                 value={block.target.max}
                                 onChange={(e) => onUpdate(block.id, { target: { ...block.target, max: e.target.value } })}
                                 className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-gray-900 dark:text-white dark:bg-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500"
@@ -286,64 +284,27 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
                         </div>
                     )}
 
-                    {/* Heart Rate Input */}
-                    {block.target.type === 'heart_rate' && (
-                        <div>
+                    {/* RPE Target: Range Selector */}
+                    {block.target.type === 'rpe_target' && (
+                        <div className="grid grid-cols-2 gap-3">
                             <input
-                                type="text"
-                                placeholder="120-140 bpm"
-                                value={block.target.min && block.target.max ? `${block.target.min}-${block.target.max}` : ''}
-                                onChange={(e) => {
-                                    const parts = e.target.value.split('-');
-                                    onUpdate(block.id, {
-                                        target: {
-                                            ...block.target,
-                                            min: parts[0]?.trim() || '',
-                                            max: parts[1]?.trim() || ''
-                                        }
-                                    });
-                                }}
-                                className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-gray-900 dark:text-white dark:bg-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500"
-                            />
-                        </div>
-                    )}
-
-                    {/* Power Input */}
-                    {block.target.type === 'power' && (
-                        <div>
-                            <input
-                                type="text"
-                                placeholder="e.g., 250"
+                                type="number"
+                                min="1"
+                                max="10"
+                                placeholder="5"
                                 value={block.target.min}
-                                onChange={(e) => onUpdate(block.id, { target: { ...block.target, min: e.target.value, max: e.target.value } })}
+                                onChange={(e) => onUpdate(block.id, { target: { ...block.target, min: e.target.value } })}
                                 className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-gray-900 dark:text-white dark:bg-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                             />
-                        </div>
-                    )}
-
-                    {/* HR Zone Selection */}
-                    {block.target.type === 'hr_zone' && (
-                        <div className="space-y-2">
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                                Select a training zone. The actual heart rate range will be calculated based on the athlete's zones when assigned.
-                            </p>
-                            <select
-                                value={block.target.min || '2'}
-                                onChange={(e) => onUpdate(block.id, {
-                                    target: {
-                                        ...block.target,
-                                        min: e.target.value,
-                                        max: e.target.value
-                                    }
-                                })}
-                                className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-gray-900 dark:text-white dark:bg-gray-700"
-                            >
-                                <option value="1">Zone 1 - Recovery</option>
-                                <option value="2">Zone 2 - Endurance</option>
-                                <option value="3">Zone 3 - Tempo</option>
-                                <option value="4">Zone 4 - Threshold</option>
-                                <option value="5">Zone 5 - VO2 Max</option>
-                            </select>
+                            <input
+                                type="number"
+                                min="1"
+                                max="10"
+                                placeholder="7"
+                                value={block.target.max}
+                                onChange={(e) => onUpdate(block.id, { target: { ...block.target, max: e.target.value } })}
+                                className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-gray-900 dark:text-white dark:bg-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                            />
                         </div>
                     )}
 
