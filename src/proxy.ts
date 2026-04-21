@@ -18,6 +18,6 @@ export const config = {
      * - forgot-password (public password reset request page)
      * - reset-password (public password reset form page)
      */
-    '/((?!_next/static|_next/image|favicon.ico|reset-password|forgot-password|auth|api/auth|accept-invitation|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|reset-password|forgot-password|auth|api/auth|api/v2/strava/webhook|accept-invitation|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

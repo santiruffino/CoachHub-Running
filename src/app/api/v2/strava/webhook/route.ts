@@ -15,10 +15,14 @@ export async function GET(req: NextRequest) {
 
   const verifyToken = process.env.STRAVA_WEBHOOK_VERIFY_TOKEN;
 
+  console.log(`Webhook Handshake: mode=${mode}, token=${token}, expected=${verifyToken}`);
+
   if (mode === 'subscribe' && token === verifyToken) {
+    console.log('Handshake successful, echoing challenge');
     return NextResponse.json({ 'hub.challenge': challenge });
   }
 
+  console.warn('Handshake failed: Invalid mode or token');
   return new NextResponse('Forbidden', { status: 403 });
 }
 
