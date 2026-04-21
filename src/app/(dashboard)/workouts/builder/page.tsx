@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { WorkoutBuilder } from '@/features/trainings/components/builder/WorkoutBuilder';
 import { WorkoutBlock } from '@/features/trainings/components/builder/types';
@@ -12,8 +12,9 @@ import { ArrowLeft, Save } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import Link from 'next/link';
 import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
+import { useTranslations } from 'next-intl';
 
-export default function WorkoutBuilderPage() {
+function WorkoutBuilderContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const athleteId = searchParams.get('athleteId');
@@ -162,5 +163,14 @@ export default function WorkoutBuilderPage() {
                 confirmText={alertState.confirmText}
             />
         </div>
+    );
+}
+
+export default function WorkoutBuilderPage() {
+    const t = useTranslations('common');
+    return (
+        <Suspense fallback={<div className="p-8">{t('loading')}</div>}>
+            <WorkoutBuilderContent />
+        </Suspense>
     );
 }

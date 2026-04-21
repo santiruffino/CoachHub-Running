@@ -58,7 +58,7 @@ async function listSubscriptions() {
     const subs = await makeRequest(options);
     console.log('Active Subscriptions:', JSON.stringify(subs, null, 2));
   } catch (error) {
-    console.error('Error listing subscriptions:', error.message);
+    console.error('Error listing subscriptions:', error);
   }
 }
 
@@ -99,7 +99,7 @@ async function createSubscription() {
       console.error('\nStrava validation errors:', JSON.stringify(result.errors, null, 2));
     }
   } catch (error) {
-    console.error('Error creating subscription:', error.message);
+    console.error('Error creating subscription:', error);
   }
 }
 
@@ -118,7 +118,7 @@ async function deleteSubscription(id: string) {
     const result = await makeRequest(options);
     console.log('Delete Result:', result);
   } catch (error) {
-    console.error('Error deleting subscription:', error.message);
+    console.error('Error deleting subscription:', error);
   }
 }
 
