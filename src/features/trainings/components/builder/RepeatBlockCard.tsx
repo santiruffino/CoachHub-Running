@@ -4,6 +4,7 @@ import { WorkoutBlock } from './types';
 import { InlineBlockCard } from './InlineBlockCard';
 import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface RepeatBlockCardProps {
     groupId: string;
@@ -36,6 +37,7 @@ export function RepeatBlockCard({
     readOnly = false,
     dragHandleProps
 }: RepeatBlockCardProps) {
+    const t = useTranslations('builder');
     const [collapsed, setCollapsed] = useState(false);
 
     return (
@@ -44,7 +46,7 @@ export function RepeatBlockCard({
             <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
                     <span className="px-3 py-1 bg-purple-600 text-white text-xs font-bold rounded">
-                        REPEAT BLOCK
+                        {t('labels.interval')} {t('repeat').toUpperCase()}
                     </span>
 
                     {/* Editable reps */}
@@ -63,12 +65,12 @@ export function RepeatBlockCard({
                                 className="w-14 text-sm px-2 py-1 rounded border border-purple-300 dark:border-purple-700 bg-white dark:bg-gray-800 text-center font-bold text-purple-600 dark:text-purple-400"
                             />
                             <span className="text-sm font-semibold text-purple-700 dark:text-purple-300">
-                                TIMES
+                                {t('times').toUpperCase()}
                             </span>
                         </div>
                     ) : (
                         <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-sm font-bold rounded">
-                            {reps} TIMES
+                            {reps} {t('times').toUpperCase()}
                         </span>
                     )}
                 </div>
@@ -86,7 +88,7 @@ export function RepeatBlockCard({
                     {!readOnly && (
                         <button
                             onClick={() => {
-                                if (confirm(`Delete this repeat block with ${blocks.length} steps?`)) {
+                                if (confirm(`${t('deleteBlock')}?`)) {
                                     onRemoveGroup(groupId);
                                 }
                             }}
@@ -122,7 +124,7 @@ export function RepeatBlockCard({
                             className="w-full mt-2 py-2 border-2 border-dashed border-purple-300 dark:border-purple-700 rounded-lg text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors flex items-center justify-center gap-2 text-sm font-medium"
                         >
                             <Plus className="w-4 h-4" />
-                            Add Step to Repeat
+                            {t('addStepToRepeat')}
                         </button>
                     )}
                 </div>
@@ -131,7 +133,7 @@ export function RepeatBlockCard({
             {/* Collapsed summary */}
             {collapsed && (
                 <div className="text-sm text-gray-600 dark:text-gray-400">
-                    {blocks.length} step{blocks.length !== 1 ? 's' : ''} • {reps} repetitions
+                    {t('stepCount', { count: blocks.length })} • {reps} {t('repeats', { reps: '' }).trim()}
                 </div>
             )}
         </div>

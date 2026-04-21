@@ -7,6 +7,7 @@ import { Training } from '@/features/trainings/types';
 import { Moon } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import { normalizeActivityType } from '@/utils/activity-utils';
 
 interface Activity {
     id: string;
@@ -31,18 +32,6 @@ interface AthleteWeeklyCalendarProps {
     assignments: TrainingAssignment[];
     activities: Activity[];
 }
-
-const normalizeActivityType = (activityType: string): string => {
-    const typeMap: Record<string, string> = {
-        Run: 'RUNNING',
-        WeightTraining: 'STRENGTH',
-        Workout: 'STRENGTH',
-        Ride: 'CYCLING',
-        VirtualRide: 'CYCLING',
-        Swim: 'SWIMMING',
-    };
-    return typeMap[activityType] || 'OTHER';
-};
 
 const formatDuration = (seconds: number) => {
     const h = Math.floor(seconds / 3600);

@@ -36,13 +36,17 @@ export interface RPEMismatch {
   expectedRPE: number;
   actualRPE: number;
   difference: number;
+  groupName?: string;
+  targetRace?: string;
 }
 
 export interface MissingWorkout {
   id: string;
   name: string;
   type: 'athlete' | 'group';
-  memberCount?: number;
+  memberCount: number;
+  groupName?: string;
+  targetRace?: string;
 }
 
 export interface LowCompliance {
@@ -51,6 +55,8 @@ export interface LowCompliance {
   completed: number;
   total: number;
   completionRate: number;
+  groupName?: string;
+  targetRace?: string;
 }
 
 export interface TimelineEvent {

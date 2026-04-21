@@ -1,11 +1,14 @@
 'use client';
 
-import { WorkoutBlock } from './types';
+import { WorkoutBlock, AthleteProfile } from './types';
 import { Button } from '@/components/ui/button';
-import { GripVertical, Repeat } from 'lucide-react';
+import { GripVertical, Repeat, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { VAM_ZONES } from '@/features/profiles/constants/vam';
+import { BLOCK_COLORS } from './constants';
 import { StepEditor } from './StepEditor';
 import { RepeatBlockEditor } from './RepeatBlockEditor';
+import { useTranslations } from 'next-intl';
 
 interface WorkoutSequenceProps {
     blocks: WorkoutBlock[];
@@ -13,7 +16,8 @@ interface WorkoutSequenceProps {
     onSelectBlock: (blockId: string | null) => void;
     onUpdateBlock: (id: string, updates: Partial<WorkoutBlock>) => void;
     onRemoveBlock: (id: string) => void;
-    onAddStep: (type: 'warmup' | 'interval' | 'recovery' | 'cooldown' | 'repeat') => void;
+    athleteProfile?: AthleteProfile | null;
+    onAddStep: (type: 'warmup' | 'interval' | 'recovery' | 'rest' | 'cooldown' | 'repeat') => void;
 }
 
 export function WorkoutSequence({
@@ -22,21 +26,17 @@ export function WorkoutSequence({
     onSelectBlock,
     onUpdateBlock,
     onRemoveBlock,
+    athleteProfile,
     onAddStep
 }: WorkoutSequenceProps) {
+    const t = useTranslations('builder');
 
     const getBlockColorClass = (type: string) => {
-        switch (type) {
-            case 'warmup':
-            case 'cooldown':
-                return 'bg-emerald-500';
-            case 'interval':
-                return 'bg-[#4e6073]';
-            case 'recovery':
-                return 'bg-[#abb3b7]';
-            default:
-                return 'bg-gray-300';
-        }
+        return BLOCK_COLORS[type as keyof typeof BLOCK_COLORS] || '#e2e8f0';
+    };
+
+    const getBlockLabel = (type: string) => {
+        return t(`labels.${type}`);
     };
 
     const getBlockIntensity = (block: WorkoutBlock) => {
@@ -45,7 +45,7 @@ export function WorkoutSequence({
              return `${block.target.min}-${block.target.max}% LTHR`;
         }
         if (block.target.type === 'vam_zone') {
-             return `Zone ${block.target.min} VAM`;
+             return `${t('vamZone')} ${block.target.min}`;
         }
         if (block.intensity) return `${block.intensity}%`;
         
@@ -58,17 +58,58 @@ export function WorkoutSequence({
         }
     };
 
-    const getDuration = (block: WorkoutBlock) => {
-        if (block.duration.type === 'distance') {
-            return `${(block.duration.value / 1000).toFixed(2)} km`;
+    const getBlockEstimatedSeconds = (block: WorkoutBlock): number => {
+        if (block.duration.type === 'time') return block.duration.value;
+
+        let intensityFactor = (block.intensity || 50) / 100;
+
+        if (block.target?.type === 'vam_zone') {
+            const zoneNum = Number(block.target.min);
+            const zone = VAM_ZONES.find(z => z.zone === zoneNum);
+            if (zone) intensityFactor = ((zone.min + zone.max) / 2) / 100;
+        } else if (block.target?.type === 'lthr') {
+            const minTarget = Number(block.target.min);
+            const maxTarget = Number(block.target.max);
+            if (!isNaN(minTarget) && !isNaN(maxTarget)) {
+                intensityFactor = ((minTarget + maxTarget) / 2) / 100;
+            }
         }
-        const minutes = Math.floor(block.duration.value / 60);
-        const seconds = block.duration.value % 60;
-        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+        const distMeters = block.duration.unit === 'km' ? block.duration.value * 1000 : block.duration.value;
+        let vamKmh = 15; // default fallback
+        
+        if (athleteProfile?.vam) {
+            const parts = athleteProfile.vam.split(':').map(Number);
+            if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+                const secsPerKm = parts[0] * 60 + parts[1];
+                if (secsPerKm > 0) vamKmh = 3600 / secsPerKm;
+            } else if (!isNaN(Number(athleteProfile.vam))) {
+                vamKmh = Number(athleteProfile.vam);
+            }
+        }
+
+        const speedKmH = vamKmh * intensityFactor;
+        const speedMs = speedKmH / 3.6;
+        
+        if (speedMs > 0) return Math.round(distMeters / speedMs);
+        return 0;
     };
 
-    const formatTimestamp = (seconds: number, isDeterministic: boolean) => {
-        if (!isDeterministic) return '--:--';
+    const getDuration = (block: WorkoutBlock) => {
+        const seconds = getBlockEstimatedSeconds(block);
+        const minutes = Math.floor(seconds / 60);
+        const remSecs = seconds % 60;
+        const timeStr = `${minutes}:${remSecs.toString().padStart(2, '0')}`;
+        
+        if (block.duration.type === 'distance') {
+            const val = block.duration.unit === 'km' ? block.duration.value : block.duration.value;
+            const unit = block.duration.unit || 'm';
+            return `~${timeStr} (${val}${unit})`;
+        }
+        return timeStr;
+    };
+
+    const formatTimestamp = (seconds: number) => {
         const m = Math.floor(seconds / 60);
         const s = seconds % 60;
         return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
@@ -101,34 +142,33 @@ export function WorkoutSequence({
     const selectedGroupId = blocks.find(b => b.id === selectedBlockId)?.group?.id;
 
     let cumulativeSeconds = 0;
-    let timeIsDeterministic = true;
 
     return (
         <div className="w-full flex flex-col pt-4">
             {/* Sequence Header */}
             <div className="flex items-center justify-between mb-8 pb-4">
                 <h3 className="text-2xl font-display font-bold text-[#2b3437] dark:text-[#f8f9fa]">
-                    Workout Sequence
+                    {t('sequenceBuilder')}
                 </h3>
-                <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="sm" className="text-[#4e6073] hover:text-[#2b3437] font-semibold text-xs tracking-wider uppercase">
-                        Preview Graph
+                <div className="flex items-center gap-2">
+                    <Button variant="secondary" size="sm" className="bg-[#f1f4f6] text-[#4e6073] hover:bg-[#e1e5e8] dark:bg-white/5 dark:text-[#8b9bb4] font-semibold text-[10px] tracking-widest uppercase">
+                        {t('expandAll')}
                     </Button>
-                    <Button variant="ghost" size="sm" className="text-[#4e6073] hover:text-[#2b3437] font-semibold text-xs tracking-wider uppercase">
-                        Undo
+                    <Button variant="secondary" size="sm" className="bg-[#f1f4f6] text-[#4e6073] hover:bg-[#e1e5e8] dark:bg-white/5 dark:text-[#8b9bb4] font-semibold text-[10px] tracking-widest uppercase">
+                        {t('autoBalance')}
                     </Button>
                 </div>
             </div>
 
             <p className="text-sm text-[#8b9bb4] font-inter mb-12">
-                Drag and drop blocks to rearrange the intensity flow. All metrics update in real-time as you refine the structure.
+                {t('sequenceDescription')}
             </p>
 
             {/* Blocks List */}
             <div className="space-y-4 font-inter">
                 {groupedBlocks.map((item, index) => {
                     // Record start time of this group/block
-                    const currentStartTimeStr = formatTimestamp(cumulativeSeconds, timeIsDeterministic);
+                    const currentStartTimeStr = formatTimestamp(cumulativeSeconds);
                     
                     if (item.isGroup) {
                         const reps = item.blocks[0]?.group?.reps || 1;
@@ -137,8 +177,7 @@ export function WorkoutSequence({
                         // Advance cumulative time by this group's total time
                         for (let i = 0; i < reps; i++) {
                             item.blocks.forEach(b => {
-                                if (b.duration.type === 'time') cumulativeSeconds += b.duration.value;
-                                else timeIsDeterministic = false;
+                                cumulativeSeconds += getBlockEstimatedSeconds(b);
                             });
                         }
 
@@ -154,6 +193,7 @@ export function WorkoutSequence({
                                             blocks={item.blocks}
                                             onUpdate={onUpdateBlock}
                                             onRemove={onRemoveBlock}
+                                            athleteProfile={athleteProfile}
                                             onAddStep={() => {
                                                 // Handle inline add to repeat block
                                             }}
@@ -169,14 +209,13 @@ export function WorkoutSequence({
                                     {currentStartTimeStr}
                                 </div>
                                 
-                                <div className="flex-1 pl-4 border-l-2 border-dashed border-[#e1e5e8] dark:border-white/10 pb-4">
-                                    <div className="flex items-center gap-2 mb-4 text-[#8b9bb4]">
-                                        <Repeat className="w-3.5 h-3.5" />
-                                        <span className="text-[10px] uppercase font-bold tracking-widest pl-1">
-                                            Main Interval Set ({reps} Rounds)
-                                        </span>
+                                <div className="flex-1 pl-4 pb-4">
+                                    <div className="flex items-center rotate-180" style={{ writingMode: 'vertical-rl', position: 'absolute', left: '-20px', top: '10px', bottom: '10px' }}>
+                                        <div className="bg-[#4e6073] text-white text-[10px] font-bold tracking-widest uppercase py-4 px-2 rounded-l w-[32px] flex items-center justify-center">
+                                            {t('repeats', { reps })}
+                                        </div>
                                     </div>
-                                    <div className="space-y-3">
+                                    <div className="space-y-3 bg-[#f8f9fa] dark:bg-white/5 p-4 rounded-xl ml-4">
                                         {item.blocks.map((block, idx) => {
                                             const isSelected = selectedBlockId === block.id;
 
@@ -189,7 +228,7 @@ export function WorkoutSequence({
                                                             onUpdate={(updates) => onUpdateBlock(block.id, updates)}
                                                             onRemove={() => onRemoveBlock(block.id)}
                                                             isInRepeat={true}
-                                                            athleteProfile={null}
+                                                            athleteProfile={athleteProfile}
                                                         />
                                                     </div>
                                                 );
@@ -201,24 +240,32 @@ export function WorkoutSequence({
                                                     type="button"
                                                     onClick={() => onSelectBlock(block.id)}
                                                     className={cn(
-                                                        "w-full flex items-center justify-between p-6 bg-white dark:bg-[#1a232c] shadow-[0_2px_8px_rgba(43,52,55,0.02)] hover:shadow-[0_8px_24px_rgba(43,52,55,0.06)] rounded transition-all group relative overflow-hidden",
+                                                        "w-full flex items-center py-4 bg-white dark:bg-[#1a232c] shadow-[0_2px_8px_rgba(43,52,55,0.02)] hover:shadow-[0_8px_24px_rgba(43,52,55,0.06)] rounded-lg transition-all group relative overflow-hidden",
                                                     )}
                                                 >
-                                                    <div className={cn("absolute left-0 top-0 bottom-0 w-1", getBlockColorClass(block.type))} />
-                                                    <div className="flex flex-col text-left pl-2">
-                                                        <div className="text-base font-semibold text-[#2b3437] dark:text-[#f8f9fa] mb-1">
-                                                            {block.stepName || block.type}
+                                                    <div className="absolute left-0 top-0 bottom-0 w-1" style={{ backgroundColor: getBlockColorClass(block.type) }} />
+                                                    <div className="flex items-center w-full px-4 text-left">
+                                                        <div className="w-8 shrink-0 flex items-center justify-center">
+                                                            <GripVertical className="text-gray-300 dark:text-gray-600 w-4 h-4 cursor-grab" />
                                                         </div>
-                                                        <div className="text-xs text-[#8b9bb4] font-medium tracking-wide">
-                                                            {getDuration(block)} @ {getBlockIntensity(block)}
-                                                            {block.cadenceRange && `, Cadence ${block.cadenceRange.min}-${block.cadenceRange.max} rpm`}
+                                                        <div className="grid grid-cols-4 w-full items-start gap-4">
+                                                            <div className="flex flex-col">
+                                                                <span className="text-[10px] font-bold uppercase tracking-wider text-[#8b9bb4] mb-1">{t('stage')}</span>
+                                                                <span className="text-sm font-semibold whitespace-nowrap" style={{ color: getBlockColorClass(block.type) }}>{block.stepName || getBlockLabel(block.type)}</span>
+                                                            </div>
+                                                            <div className="flex flex-col">
+                                                                <span className="text-[10px] font-bold uppercase tracking-wider text-[#8b9bb4] mb-1">{t('duration')}</span>
+                                                                <span className="text-sm font-semibold text-[#2b3437] dark:text-[#f8f9fa] uppercase">{getDuration(block)}</span>
+                                                            </div>
+                                                            <div className="flex flex-col">
+                                                                <span className="text-[10px] font-bold uppercase tracking-wider text-[#8b9bb4] mb-1">{t('target')}</span>
+                                                                <span className="text-sm font-semibold text-[#2b3437] dark:text-[#f8f9fa]">{getBlockIntensity(block)}</span>
+                                                            </div>
+                                                            <div className="flex flex-col text-right items-end justify-start h-full pr-4">
+                                                                <span className="text-[10px] font-bold uppercase tracking-wider text-[#8b9bb4] mb-1">{t('notes')}</span>
+                                                                <span className="text-xs text-[#8b9bb4] italic truncate max-w-[120px]">{block.notes || '—'}</span>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    <div className="text-right flex items-center gap-4">
-                                                        <GripVertical className="text-[#d1e4fb] w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab hover:text-[#4e6073]" />
-                                                        <span className="text-sm font-semibold text-[#4e6073] dark:text-[#f8f9fa]">
-                                                            {block.duration.type === 'distance' ? '--:--' : getDuration(block)}
-                                                        </span>
                                                     </div>
                                                 </button>
                                             );
@@ -234,11 +281,7 @@ export function WorkoutSequence({
                     const isSelected = selectedBlockId === block.id;
 
                     // Advance cumulative time
-                    if (block.duration.type === 'time') {
-                        cumulativeSeconds += block.duration.value;
-                    } else {
-                        timeIsDeterministic = false;
-                    }
+                    cumulativeSeconds += getBlockEstimatedSeconds(block);
 
                     if (isSelected) {
                         return (
@@ -252,7 +295,7 @@ export function WorkoutSequence({
                                         stepNumber={index + 1}
                                         onUpdate={(updates) => onUpdateBlock(block.id, updates)}
                                         onRemove={() => onRemoveBlock(block.id)}
-                                        athleteProfile={null}
+                                        athleteProfile={athleteProfile}
                                     />
                                 </div>
                             </div>
@@ -269,35 +312,78 @@ export function WorkoutSequence({
                                 type="button"
                                 onClick={() => onSelectBlock(block.id)}
                                 className={cn(
-                                    "w-full flex items-center justify-between p-6 bg-white dark:bg-[#1a232c] shadow-[0_2px_8px_rgba(43,52,55,0.02)] hover:shadow-[0_8px_24px_rgba(43,52,55,0.06)] rounded transition-all relative overflow-hidden",
+                                    "w-full flex items-center py-4 bg-white dark:bg-[#1a232c] shadow-[0_2px_8px_rgba(43,52,55,0.02)] hover:shadow-[0_8px_24px_rgba(43,52,55,0.06)] rounded-lg transition-all relative overflow-hidden border border-[#f1f4f6] dark:border-white/5",
                                 )}
                             >
-                                <div className={cn("absolute left-0 top-0 bottom-0 w-1", getBlockColorClass(block.type))} />
-                                <div className="flex flex-col text-left pl-2">
-                                    <div className="text-base font-semibold text-[#2b3437] dark:text-[#f8f9fa] mb-1">
-                                        {block.stepName || block.type}
+                                <div className="absolute left-0 top-0 bottom-0 w-1" style={{ backgroundColor: getBlockColorClass(block.type) }} />
+                                <div className="flex items-center w-full px-4 text-left">
+                                    <div className="w-8 shrink-0 flex items-center justify-center">
+                                        <GripVertical className="text-gray-300 dark:text-gray-600 w-4 h-4 cursor-grab" />
                                     </div>
-                                    <div className="text-xs text-[#8b9bb4] font-medium tracking-wide">
-                                        {getDuration(block)} @ {getBlockIntensity(block)}
-                                        {block.cadenceRange && `, Cadence ${block.cadenceRange.min}-${block.cadenceRange.max} rpm`}
+                                    <div className="grid grid-cols-4 w-full items-start gap-4">
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#8b9bb4] mb-1">{t('stage')}</span>
+                                            <span className="text-sm font-semibold whitespace-nowrap" style={{ color: getBlockColorClass(block.type) }}>{block.stepName || getBlockLabel(block.type)}</span>
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#8b9bb4] mb-1">{t('duration')}</span>
+                                            <span className="text-sm font-semibold text-[#2b3437] dark:text-[#f8f9fa] uppercase">{getDuration(block)}</span>
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#8b9bb4] mb-1">{t('target')}</span>
+                                            <span className="text-sm font-semibold text-[#2b3437] dark:text-[#f8f9fa]">{getBlockIntensity(block)}</span>
+                                        </div>
+                                        <div className="flex flex-col text-right items-end justify-start h-full pr-4">
+                                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#8b9bb4] mb-1">{t('notes')}</span>
+                                            <span className="text-xs text-[#8b9bb4] italic truncate max-w-[120px]">{block.notes || '—'}</span>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="text-right flex flex-row items-center gap-6">
-                                     <GripVertical className="text-[#d1e4fb] w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab hover:text-[#4e6073]" />
-                                     <span className="text-sm font-semibold text-[#4e6073] dark:text-[#f8f9fa] min-w-[48px] text-right">
-                                        {block.duration.type === 'distance' ? '--:--' : getDuration(block)}
-                                    </span>
                                 </div>
                             </button>
                         </div>
                     );
                 })}
 
-                {blocks.length === 0 && (
-                     <div className="flex flex-col items-center justify-center py-20 bg-white/50 border border-dashed border-[#e1e5e8] dark:border-white/10 rounded-lg ml-12">
-                        <p className="text-[#8b9bb4] text-sm uppercase tracking-widest font-semibold mb-2">Drop a block to expand sequence</p>
-                    </div>
-                )}
+                {/* Horizontal Add Block Buttons */}
+                <div className="pt-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 pl-12">
+                    <button
+                        onClick={() => onAddStep('warmup')}
+                        className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#b1f0cc] hover:bg-[#b1f0cc]/10 transition-colors"
+                    >
+                        <span className="text-[10px] uppercase font-bold tracking-widest" style={{ color: BLOCK_COLORS.warmup }}>{t('labels.warmup')}</span>
+                    </button>
+                    <button
+                        onClick={() => onAddStep('interval')}
+                        className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#fb8b8b] hover:bg-[#fb8b8b]/10 transition-colors"
+                    >
+                        <span className="text-[10px] uppercase font-bold tracking-widest" style={{ color: BLOCK_COLORS.interval }}>{t('labels.interval')}</span>
+                    </button>
+                    <button
+                        onClick={() => onAddStep('recovery')}
+                        className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#c5e0fa] hover:bg-[#c5e0fa]/10 transition-colors"
+                    >
+                        <span className="text-[10px] uppercase font-bold tracking-widest" style={{ color: BLOCK_COLORS.recovery }}>{t('labels.recovery')}</span>
+                    </button>
+                    <button
+                        onClick={() => onAddStep('rest')}
+                        className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#e2e8f0] hover:bg-[#e2e8f0]/10 transition-colors"
+                    >
+                        <span className="text-[10px] uppercase font-bold tracking-widest" style={{ color: BLOCK_COLORS.rest }}>{t('labels.rest')}</span>
+                    </button>
+                    <button
+                        onClick={() => onAddStep('cooldown')}
+                        className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#e2e8f0] hover:bg-[#e2e8f0]/10 transition-colors"
+                    >
+                        <span className="text-[10px] uppercase font-bold tracking-widest" style={{ color: BLOCK_COLORS.cooldown }}>{t('labels.cooldown')}</span>
+                    </button>
+                    <button
+                        onClick={() => onAddStep('repeat')}
+                        className="flex items-center justify-center py-4 rounded-lg border border-dashed border-[#8b9bb4] hover:bg-[#8b9bb4]/10 transition-colors gap-2"
+                    >
+                        <Repeat size={14} className="text-[#8b9bb4]" />
+                        <span className="text-[10px] uppercase font-bold tracking-widest text-[#8b9bb4]">{t('labels.repeat') || 'REPETICONES'}</span>
+                    </button>
+                </div>
             </div>
             
             {/* Click outside to unselect */}

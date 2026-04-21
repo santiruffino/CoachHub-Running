@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AlertDialog } from '@/components/ui/AlertDialog';
 import api from '@/lib/axios';
+import { useTranslations } from 'next-intl';
 
 interface CoachData {
   id: string;
@@ -38,6 +39,7 @@ export default function CoachesPage() {
   const [coaches, setCoaches] = useState<CoachData[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const t = useTranslations();
   
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -69,7 +71,7 @@ export default function CoachesPage() {
       setDeleteId(null);
     } catch (error) {
       console.error('Failed to delete coach', error);
-      alert('Failed to delete coach');
+      alert(t('coaches.deleteFailed'));
     } finally {
       setIsDeleting(false);
     }
@@ -93,13 +95,13 @@ export default function CoachesPage() {
   return (
     <div className="p-4 sm:p-6 lg:p-8 lg:pt-0 space-y-4 sm:space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl sm:text-3xl font-bold">Gestión de Coaches</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold">{t('coaches.title')}</h1>
       </div>
 
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Buscar coach por nombre o email"
+          placeholder={t('coaches.searchPlaceholder')}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="pl-10"
@@ -111,9 +113,9 @@ export default function CoachesPage() {
         onClose={() => { if (!isDeleting) setDeleteId(null); }}
         onConfirm={handleDelete}
         type="warning"
-        title="¿Eliminar Entrenador?"
-        message="Esta acción no se puede deshacer. El entrenador será borrado y todos sus atletas serán reasignados temporalmente a tu cuenta (Administrador)."
-        confirmText="Sí, Eliminar y Reasignar"
+        title={t('coaches.deleteTitle')}
+        message={t('coaches.deleteMessage')}
+        confirmText={t('coaches.deleteConfirm')}
         loading={isDeleting}
       />
 
@@ -123,16 +125,16 @@ export default function CoachesPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[300px]">Coach</TableHead>
-                  <TableHead className="text-center">Atletas</TableHead>
-                  <TableHead className="text-right">Acciones</TableHead>
+                  <TableHead className="w-[300px]">{t('coaches.table.coach')}</TableHead>
+                  <TableHead className="text-center">{t('coaches.table.athletes')}</TableHead>
+                  <TableHead className="text-right">{t('coaches.table.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredCoaches.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={3} className="text-center py-12 text-muted-foreground">
-                      No se encontraron entrenadores.
+                      {t('coaches.table.noCoaches')}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -146,7 +148,7 @@ export default function CoachesPage() {
                             </AvatarFallback>
                           </Avatar>
                           <div className="min-w-0">
-                            <p className="font-medium truncate">{coach.name || 'Sin nombre'}</p>
+                            <p className="font-medium truncate">{coach.name || t('coaches.table.noName')}</p>
                             <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
                               <Mail className="h-3 w-3 flex-shrink-0" />
                               <span className="truncate">{coach.email}</span>
@@ -165,7 +167,7 @@ export default function CoachesPage() {
                       <TableCell className="text-right">
                          <Button variant="ghost" className="text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => setDeleteId(coach.id)}>
                             <Trash2 className="h-4 w-4 mr-2" />
-                            Eliminar
+                            {t('coaches.deleteButton')}
                          </Button>
                       </TableCell>
                     </TableRow>

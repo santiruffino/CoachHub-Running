@@ -9,6 +9,7 @@ import { matchingService } from '@/features/trainings/services/matching.service'
 import { WorkoutMatch } from '@/features/trainings/types';
 import { cacheService } from '@/lib/cache.service';
 import { stravaService } from '@/features/strava/services/strava.service';
+import { useTranslations } from 'next-intl';
 
 export default function AthleteDashboard({ user }: { user: any }) {
     const [selectedDate, setSelectedDate] = useState(new Date());
@@ -19,6 +20,7 @@ export default function AthleteDashboard({ user }: { user: any }) {
         hasCompleted?: boolean;
     }[]>([]);
     const [isFetching, setIsFetching] = useState(false);
+    const t = useTranslations();
 
     const fetchData = async (useCache = true) => {
         if (!user || isFetching) return;
@@ -292,7 +294,7 @@ export default function AthleteDashboard({ user }: { user: any }) {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
                 <div>
                     <h1 className="text-3xl sm:text-4xl font-display font-light mb-2 text-foreground">
-                        Hola, {user.firstName || user.name?.split(' ')[0] || 'Atleta'} 👋
+                        {t('dashboard.messages.hi', { name: user.firstName || user.name?.split(' ')[0] || t('dashboard.athlete.defaultName') })}
                     </h1>
                     <p className="text-sm text-muted-foreground font-medium">
                         {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).replace(/^\w/, c => c.toUpperCase())}
@@ -321,4 +323,3 @@ export default function AthleteDashboard({ user }: { user: any }) {
         </div>
     );
 }
-

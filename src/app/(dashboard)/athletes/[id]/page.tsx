@@ -8,15 +8,12 @@ import { es } from 'date-fns/locale';
 import { User } from '@/features/auth/types';
 import { Training } from '@/features/trainings/types';
 import api from '@/lib/axios';
-import { WeekCalendar } from '@/features/calendar/components/WeekCalendar';
 import { Activity as ActivityIcon, Calendar as CalendarIcon, FileText, CheckCircle2, TrendingUp, Plus, Trash, Clock, Zap, ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react';
 import { trainingsService } from '@/features/trainings/services/trainings.service';
 import { athletesService } from '@/features/users/services/athletes.service';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { StatCard } from '@/components/dashboard/StatCard';
-import { WeeklyWorkoutsChart } from '@/components/dashboard/WeeklyWorkoutsChart';
 import { PerformanceTrendChart } from '@/components/dashboard/PerformanceTrendChart';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HeartRateZones } from '@/features/profiles/components/HeartRateZones';
@@ -26,7 +23,7 @@ import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
 import { useTranslations } from 'next-intl';
 import { AthleteWeeklyCalendar } from '@/components/dashboard/AthleteWeeklyCalendar';
 import { CoachNotes } from '@/components/dashboard/CoachNotes';
-import { NextCompetition } from '@/components/dashboard/NextCompetition';
+import { normalizeActivityType } from '@/utils/activity-utils';
 
 interface Activity {
     id: string;
@@ -137,18 +134,7 @@ export default function AthleteDetailPage() {
 
                     return activitiesList.some(activity => {
                         const activityDateStr = format(new Date(activity.start_date), 'yyyy-MM-dd');
-                        const normalizeType = (type: string): string => {
-                            const typeMap: Record<string, string> = {
-                                'Run': 'RUNNING',
-                                'WeightTraining': 'STRENGTH',
-                                'Workout': 'STRENGTH',
-                                'Ride': 'CYCLING',
-                                'VirtualRide': 'CYCLING',
-                                'Swim': 'SWIMMING',
-                            };
-                            return typeMap[type] || 'OTHER';
-                        };
-                        const activityType = normalizeType(activity.type);
+                        const activityType = normalizeActivityType(activity.type);
 
                         return activityDateStr === assignmentDateStr && activityType === assignmentType;
                     });
@@ -263,18 +249,6 @@ export default function AthleteDetailPage() {
     if (!athlete) return <div className="p-8">Athlete not found</div>;
 
     const totalTrainings = assignments.length;
-
-    const normalizeActivityType = (activityType: string): string => {
-        const typeMap: Record<string, string> = {
-            'Run': 'RUNNING',
-            'WeightTraining': 'STRENGTH',
-            'Workout': 'STRENGTH',
-            'Ride': 'CYCLING',
-            'VirtualRide': 'CYCLING',
-            'Swim': 'SWIMMING',
-        };
-        return typeMap[activityType] || 'OTHER';
-    };
 
     const completedTrainings = assignments.filter(assignment => {
         if (assignment.completed) return true;

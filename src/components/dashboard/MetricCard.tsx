@@ -12,7 +12,7 @@ export function MetricCard({ title, value, valueColor = 'text-foreground' }: Met
             <h3 className="text-[10px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 sm:mb-4">
                 {title}
             </h3>
-            <div className={`text-3xl sm:text-4xl font-display font-medium leading-none ${valueColor}`}>
+            <div className={`text-3xl sm:text-4xl font-display font-medium leading-none tracking-tight ${valueColor}`}>
                 {value}
             </div>
         </Card>

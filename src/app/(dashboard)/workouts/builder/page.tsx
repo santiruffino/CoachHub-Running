@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { WorkoutBuilder } from '@/features/trainings/components/builder/WorkoutBuilder';
 import { WorkoutBlock } from '@/features/trainings/components/builder/types';
 import { TrainingType } from '@/features/trainings/types';
@@ -14,6 +15,8 @@ import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
 
 export default function WorkoutBuilderPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const athleteId = searchParams.get('athleteId');
     const [blocks, setBlocks] = useState<WorkoutBlock[]>([]);
     const [workoutTitle, setWorkoutTitle] = useState('');
     const [workoutDescription, setWorkoutDescription] = useState('');
@@ -145,6 +148,7 @@ export default function WorkoutBuilderPage() {
             <WorkoutBuilder
                 initialBlocks={blocks}
                 onChange={setBlocks}
+                athleteId={athleteId || undefined}
                 leftSidebarContent={leftSidebarContent}
                 footerContent={footerContent}
             />

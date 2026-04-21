@@ -9,8 +9,10 @@ import { AssignTrainingModal } from '@/features/trainings/components/AssignTrain
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserPlus, Plus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export default function GroupDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+    const t = useTranslations();
     // Unwrapping params properly in Nextjs 15+ convention if needed, sticking to standard.
     // Actually params is a promise in recent canary, but standard app router usually just object.
     // Wait, I used async params in the component signature which implies strict/new mode.
@@ -37,7 +39,7 @@ export default function GroupDetailsPage({ params }: { params: Promise<{ id: str
             const res = await groupsService.findOne(id);
             setGroup(res.data);
         } catch (e) {
-            // router.push('/dashboard/groups');
+            router.push('/groups');
         } finally {
             setLoading(false);
         }
@@ -47,8 +49,8 @@ export default function GroupDetailsPage({ params }: { params: Promise<{ id: str
         fetchGroup();
     }, [id]);
 
-    if (loading) return <div>Loading details...</div>;
-    if (!group) return <div>Group not found</div>;
+    if (loading) return <div>{t("groups.loadingGroups")}</div>;
+    if (!group) return <div>{t("groups.detail.notFound")}</div>;
 
     return (
         <div className="space-y-6">
@@ -62,15 +64,15 @@ export default function GroupDetailsPage({ params }: { params: Promise<{ id: str
             <Card>
                 <CardHeader>
                     <div className="flex justify-between items-center">
-                        <CardTitle>Members ({group.members.length})</CardTitle>
+                        <CardTitle>{t("groups.detail.membersCount", { count: group.members.length })}</CardTitle>
                         <div className="flex gap-2">
                             <Button variant="outline" size="sm" onClick={() => setIsAssignModalOpen(true)}>
                                 <Plus className="h-4 w-4 mr-2" />
-                                Assign Workout
+                                {t("groups.detail.assignWorkout")}
                             </Button>
                             <Button size="sm" onClick={() => setIsAddModalOpen(true)}>
                                 <UserPlus className="h-4 w-4 mr-2" />
-                                Add Member
+                                {t("groups.detail.addMember")}
                             </Button>
                         </div>
                     </div>
@@ -85,26 +87,26 @@ export default function GroupDetailsPage({ params }: { params: Promise<{ id: str
                         {group.members.map((member) => (
                             <li key={member.athlete.id} className="py-4 flex justify-between items-center">
                                 <div>
-                                    <p className="text-sm font-medium">{member.athlete.name || 'Unnamed Athlete'}</p>
+                                    <p className="text-sm font-medium">{member.athlete.name || t("groups.detail.unnamedAthlete")}</p>
                                     <p className="text-sm text-muted-foreground">{member.athlete.email}</p>
                                 </div>
                                 <Button
                                     variant="ghost"
                                     size="sm"
                                     onClick={async () => {
-                                        if (confirm('Remove athlete?')) {
+                                        if (confirm(t("groups.detail.removeConfirm"))) {
                                             await groupsService.removeMember(group.id, member.athlete.id);
                                             fetchGroup();
                                         }
                                     }}
                                     className="text-destructive hover:text-destructive"
                                 >
-                                    Remove
+                                    {t("groups.detail.remove")}
                                 </Button>
                             </li>
                         ))}
                         {group.members.length === 0 && (
-                            <p className="text-muted-foreground text-sm">No members yet.</p>
+                            <p className="text-muted-foreground text-sm">{t("groups.detail.noMembers")}</p>
                         )}
                     </ul>
 

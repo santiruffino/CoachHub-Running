@@ -1,5 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { useTranslations } from 'next-intl';
 
 interface GroupStatusCardProps {
     groupId: string;
@@ -8,24 +8,24 @@ interface GroupStatusCardProps {
     completionRate: number;
 }
 
-function getStatusConfig(rate: number) {
+function getStatusConfig(rate: number, t: (key: string, values?: any) => string) {
     if (rate >= 80) {
         return {
-            label: 'HIGH',
+            label: t('dashboard.groupStatus.high'),
             color: 'text-green-500',
             bgColor: 'bg-green-500',
             variant: 'default' as const
         };
     } else if (rate >= 50) {
         return {
-            label: 'ATTENTION NEEDED',
+            label: t('dashboard.groupStatus.attentionNeeded'),
             color: 'text-orange-500',
             bgColor: 'bg-orange-500',
             variant: 'warning' as const
         };
     } else {
         return {
-            label: 'OPTIMAL',
+            label: t('dashboard.groupStatus.optimal'),
             color: 'text-blue-500',
             bgColor: 'bg-blue-500',
             variant: 'default' as const
@@ -34,27 +34,28 @@ function getStatusConfig(rate: number) {
 }
 
 export function GroupStatusCard({ groupId, groupName, athleteCount, completionRate }: GroupStatusCardProps) {
-    const status = getStatusConfig(completionRate);
+    const t = useTranslations();
+    const status = getStatusConfig(completionRate, t);
 
     return (
-        <Card className="border-border bg-card">
+        <Card className="border-0 shadow-sm bg-card hover:shadow-[0_8px_30px_rgba(43,52,55,0.06)] transition-shadow">
             <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
-                        <h3 className="font-semibold text-sm mb-1">{groupName}</h3>
-                        <p className="text-xs text-muted-foreground">
-                            {athleteCount} Active Athlete{athleteCount !== 1 ? 's' : ''}
+                        <h3 className="font-semibold text-sm mb-1 tracking-[0.01em]">{groupName}</h3>
+                        <p className="text-xs text-muted-foreground tracking-[0.01em]">
+                            {t('dashboard.groupStatus.activeAthletes', { count: athleteCount })}
                         </p>
                     </div>
-                    <div className={`text-2xl font-bold ${status.color}`}>
+                    <div className={`text-2xl font-display font-medium tracking-tight ${status.color}`}>
                         {completionRate}%
                     </div>
                 </div>
 
                 <div className="space-y-2">
                     <div className="flex items-center justify-between text-xs">
-                        <span className="text-muted-foreground uppercase tracking-wider">COMPLIANCE</span>
-                        <span className="font-medium">{status.label}</span>
+                        <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{t('dashboard.groupStatus.compliance')}</span>
+                        <span className="text-[10px] uppercase font-semibold tracking-wider">{status.label}</span>
                     </div>
 
                     <div className="w-full h-2 bg-muted rounded-full overflow-hidden">

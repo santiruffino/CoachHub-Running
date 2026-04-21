@@ -419,7 +419,8 @@ function AssignWorkoutContent() {
             <div className="h-[calc(100vh-theme(spacing.16))] w-[calc(100%+2rem)] md:w-[calc(100%+4rem)] overflow-hidden -mx-4 md:-mx-8 -my-4 md:-my-8">
                 <WorkoutBuilder 
                     initialBlocks={blocks} 
-                    onChange={setBlocks} 
+                    onChange={setBlocks}
+                    athleteId={athleteId || undefined} 
                     leftSidebarContent={
                         <div className="p-8 pb-4">
                             <Button variant="ghost" onClick={() => setStep('select-source')} className="text-muted-foreground hover:text-foreground transition-colors p-0 hover:bg-transparent tracking-widest uppercase text-xs font-semibold mb-8">
@@ -602,7 +603,11 @@ function AssignWorkoutContent() {
             <div className="flex-1 flex flex-col h-full overflow-hidden bg-background dark:bg-background relative">
                 {editingTemplate ? (
                      <div className="flex-1 overflow-y-auto">
-                        <WorkoutBuilder initialBlocks={blocks} onChange={setBlocks} />
+                        <WorkoutBuilder 
+                            initialBlocks={blocks} 
+                            onChange={setBlocks} 
+                            athleteId={athleteId || undefined}
+                        />
                     </div>
                 ) : (
                     <div className="flex-1 p-16 flex flex-col items-center justify-center">

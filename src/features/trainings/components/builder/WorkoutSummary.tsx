@@ -2,6 +2,7 @@
 
 import { WorkoutBlock } from './types';
 import { X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface WorkoutSummaryProps {
     blocks: WorkoutBlock[];
@@ -10,8 +11,10 @@ interface WorkoutSummaryProps {
 }
 
 export function WorkoutSummary({ blocks, workoutRPE, onClose }: WorkoutSummaryProps) {
+    const t = useTranslations('builder');
+
     const generateDescription = () => {
-        if (blocks.length === 0) return "No workout steps defined.";
+        if (blocks.length === 0) return t('noStepsDefined');
 
         const parts: string[] = [];
         let i = 0;
@@ -32,8 +35,8 @@ export function WorkoutSummary({ blocks, workoutRPE, onClose }: WorkoutSummaryPr
                 const reps = block.group.reps;
                 const stepDescriptions = groupBlocks.map(b => {
                     const duration = formatDuration(b);
-                    const name = b.stepName || b.type;
-                    const intensity = b.intensity ? ` at ${b.intensity}% intensity` : '';
+                    const name = b.stepName || t(`labels.${b.type}`);
+                    const intensity = b.intensity ? t('atIntensity', { intensity: b.intensity }) : '';
                     return `${duration} ${name}${intensity}`;
                 }).join(', ');
 
@@ -41,8 +44,8 @@ export function WorkoutSummary({ blocks, workoutRPE, onClose }: WorkoutSummaryPr
                 i = j;
             } else {
                 const duration = formatDuration(block);
-                const name = block.stepName || block.type;
-                const intensity = block.intensity ? ` at ${block.intensity}% intensity` : '';
+                const name = block.stepName || t(`labels.${block.type}`);
+                const intensity = block.intensity ? t('atIntensity', { intensity: block.intensity }) : '';
                 parts.push(`${duration} ${name}${intensity}`);
                 i++;
             }
@@ -54,12 +57,12 @@ export function WorkoutSummary({ blocks, workoutRPE, onClose }: WorkoutSummaryPr
     const formatDuration = (block: WorkoutBlock) => {
         if (block.duration.type === 'distance') {
             const value = block.duration.unit === 'km' ? block.duration.value / 1000 : block.duration.value;
-            const unit = block.duration.unit || 'm';
+            const unit = block.duration.unit === 'km' ? t('units.km') : t('units.m');
             return `${value}${unit}`;
         } else {
             const val = Number(block.duration.value);
             const m = Math.floor(val / 60);
-            return `${m} min`;
+            return `${m} ${t('units.min')}`;
         }
     };
 
@@ -103,7 +106,7 @@ export function WorkoutSummary({ blocks, workoutRPE, onClose }: WorkoutSummaryPr
                 {/* Header */}
                 <div className="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                        Workout Summary
+                        {t('workoutSummary')}
                     </h2>
                     <button
                         onClick={onClose}
@@ -119,18 +122,18 @@ export function WorkoutSummary({ blocks, workoutRPE, onClose }: WorkoutSummaryPr
                     <div className="grid grid-cols-3 gap-4">
                         <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-center">
                             <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                                {totals.distance} km
+                                {totals.distance} {t('units.km')}
                             </div>
                             <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                Total Distance
+                                {t('totalDistance')}
                             </div>
                         </div>
                         <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 text-center">
                             <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                                {totals.time} min
+                                {totals.time} {t('units.min')}
                             </div>
                             <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                Estimated Time
+                                {t('estimatedTime')}
                             </div>
                         </div>
                         <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4 text-center">
@@ -138,7 +141,7 @@ export function WorkoutSummary({ blocks, workoutRPE, onClose }: WorkoutSummaryPr
                                 {totals.avgIntensity}%
                             </div>
                             <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                Avg Intensity
+                                {t('avgIntensity')}
                             </div>
                         </div>
                     </div>
@@ -147,7 +150,7 @@ export function WorkoutSummary({ blocks, workoutRPE, onClose }: WorkoutSummaryPr
                     {workoutRPE !== undefined && (
                         <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
                             <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                Expected RPE
+                                {t('expectedRpe')}
                             </div>
                             <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">
                                 {workoutRPE}/10
@@ -158,7 +161,7 @@ export function WorkoutSummary({ blocks, workoutRPE, onClose }: WorkoutSummaryPr
                     {/* Description */}
                     <div>
                         <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
-                            Workout Description
+                            {t('workoutDescription')}
                         </h3>
                         <p className="text-gray-800 dark:text-gray-200 leading-relaxed bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
                             {generateDescription()}
@@ -167,7 +170,7 @@ export function WorkoutSummary({ blocks, workoutRPE, onClose }: WorkoutSummaryPr
 
                     {/* Step Count */}
                     <div className="text-sm text-gray-600 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700 pt-4">
-                        Total steps: <span className="font-semibold">{blocks.length}</span>
+                        {t('totalSteps')} <span className="font-semibold">{blocks.length}</span>
                     </div>
                 </div>
 
@@ -177,7 +180,7 @@ export function WorkoutSummary({ blocks, workoutRPE, onClose }: WorkoutSummaryPr
                         onClick={onClose}
                         className="w-full py-2.5 bg-brand-primary hover:bg-brand-primary-dark text-white font-medium rounded-lg transition-colors"
                     >
-                        Close
+                        {t('common.close' as any)}
                     </button>
                 </div>
             </div>

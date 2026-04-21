@@ -3,6 +3,7 @@
 import { WorkoutBlock } from './types';
 import { useEffect, useRef, useMemo } from 'react';
 import * as echarts from 'echarts';
+import { useTranslations } from 'next-intl';
 
 interface WorkoutProfileChartProps {
     blocks: WorkoutBlock[];
@@ -11,6 +12,7 @@ interface WorkoutProfileChartProps {
 export function WorkoutProfileChart({ blocks }: WorkoutProfileChartProps) {
     const chartRef = useRef<HTMLDivElement>(null);
     const chartInstance = useRef<echarts.ECharts | null>(null);
+    const t = useTranslations('builder');
 
     // Prepare chart data
     const chartData = useMemo(() => {
@@ -95,7 +97,7 @@ export function WorkoutProfileChart({ blocks }: WorkoutProfileChartProps) {
                 },
                 formatter: (params: any) => {
                     const data = params[0];
-                    return `Intensity: ${data.value}%`;
+                    return `${t('intensity').replace(' (%)', '')}: ${data.value}%`;
                 }
             }
         };
@@ -126,22 +128,22 @@ export function WorkoutProfileChart({ blocks }: WorkoutProfileChartProps) {
             window.removeEventListener('resize', handleResize);
             observer.disconnect();
         };
-    }, [chartData]);
+    }, [chartData, t]);
 
     return (
         <div className="bg-gray-50 dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-4 h-full">
             <div className="flex items-center justify-between mb-3">
                 <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-                    Workout Profile
+                    {t('workoutProfile')}
                 </h3>
                 <div className="flex items-center gap-4 text-xs">
                     <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded bg-[#3B82F6]" />
-                        <span className="text-gray-600 dark:text-gray-400">Intensity</span>
+                        <span className="text-gray-600 dark:text-gray-400">{t('intensity').replace(' (%)', '')}</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded bg-[#10B981]" />
-                        <span className="text-gray-600 dark:text-gray-400">Recovery</span>
+                        <span className="text-gray-600 dark:text-gray-400">{t('labels.recovery')}</span>
                     </div>
                 </div>
             </div>

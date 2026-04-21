@@ -6,7 +6,7 @@ import { WorkoutBuilder } from '@/features/trainings/components/builder/WorkoutB
 import { WorkoutBlock } from '@/features/trainings/components/builder/types';
 import { trainingsService } from '@/features/trainings/services/trainings.service';
 import { TrainingType } from '@/features/trainings/types';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, History, Share2 } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -63,112 +63,60 @@ function CreateTrainingForm() {
     };
 
     return (
-        <div className="space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                    <Link
-                        href="/trainings"
-                        className="p-2 rounded-full hover:bg-muted transition-colors"
-                    >
-                        <ArrowLeft className="w-5 h-5 text-muted-foreground" />
-                    </Link>
-                    <h1 className="text-2xl font-bold">{t('title')}</h1>
+        <div className="flex flex-col h-[calc(100vh-64px)] w-full bg-[#f8f9fa] dark:bg-[#0a0f14] font-inter">
+            {/* Header Area */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center px-8 py-6 bg-transparent">
+                <div className="flex flex-col gap-1 w-full max-w-2xl">
+                     <input
+                        type="text"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        placeholder="Workout Title"
+                        className="text-4xl font-display font-bold bg-transparent border-none outline-none focus:ring-0 p-0 text-[#2b3437] dark:text-[#f8f9fa] placeholder:text-gray-300"
+                    />
+                     <div className="flex items-center gap-2 text-sm text-[#4e6073] mt-2">
+                        <span className="font-semibold text-[#8b9bb4]">Focus:</span>
+                        <input
+                            type="text"
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            placeholder="Threshold Development • Cycling"
+                            className="bg-transparent border-none outline-none focus:ring-0 p-0 m-0 w-full placeholder:text-gray-400 font-medium text-[#4e6073] dark:text-[#8b9bb4]"
+                        />
+                    </div>
+                </div>
+                <div className="flex items-center gap-4 mt-4 md:mt-0 shrink-0">
+                    <Button type="button" variant="outline" className="gap-2 bg-white text-[#4e6073] border-[#e1e5e8] hover:bg-gray-50 dark:bg-[#1a232c] dark:border-white/10 dark:text-[#8b9bb4] shadow-sm rounded-full px-6">
+                        <History className="w-4 h-4" />
+                        Version History
+                    </Button>
+                    <Button type="button" variant="outline" className="gap-2 bg-white text-[#4e6073] border-[#e1e5e8] hover:bg-gray-50 dark:bg-[#1a232c] dark:border-white/10 dark:text-[#8b9bb4] shadow-sm rounded-full px-6">
+                        <Share2 className="w-4 h-4" />
+                        Share with Athlete
+                    </Button>
+                    <Button type="button" onClick={handleSubmit} disabled={isSubmitting} className="gap-2 bg-[#4e6073] hover:bg-[#2b3437] text-white shadow-sm rounded-full px-6">
+                        <Save className="w-4 h-4" />
+                        {isSubmitting ? 'Saving...' : 'Save Workout'}
+                    </Button>
                 </div>
             </div>
 
-            {/* Main Form */}
-            <form onSubmit={handleSubmit} className="space-y-8">
-                {/* Details Section */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>{t('detailsCard')}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <Label>
-                                    {t('titleLabel')} <span className="text-destructive">*</span>
-                                </Label>
-                                <Input
-                                    type="text"
-                                    value={title}
-                                    onChange={(e) => setTitle(e.target.value)}
-                                    placeholder={t('titlePlaceholder')}
-                                    required
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label>{t('sportTypeLabel')}</Label>
-                                <select
-                                    value={type}
-                                    onChange={(e) => setType(e.target.value as TrainingType)}
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                                >
-                                    {Object.values(TrainingType).map((t) => (
-                                        <option key={t} value={t}>{t}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div className="col-span-1 md:col-span-2 space-y-2">
-                                <Label>{t('descriptionLabel')}</Label>
-                                <Textarea
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
-                                    placeholder={t('descriptionPlaceholder')}
-                                    rows={3}
-                                />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* Builder Section */}
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                        <h2 className="text-lg font-medium">{t('workoutStructure')}</h2>
-                        {blocks.length === 0 && (
-                            <Badge variant="outline" className="text-amber-600 bg-amber-50">
-                                {t('addBlockHint')}
-                            </Badge>
-                        )}
-                    </div>
-
-                    <WorkoutBuilder
-                        initialBlocks={blocks}
-                        onChange={setBlocks}
-                        athleteId={athleteId || undefined}
-                    />
-                </div>
-
-                {/* Error Message */}
-                {error && (
+            {/* Main Area */}
+            <div className="flex-1 overflow-hidden">
+                <WorkoutBuilder
+                    initialBlocks={blocks}
+                    onChange={setBlocks}
+                    athleteId={athleteId || undefined}
+                />
+            </div>
+            
+            {error && (
+                <div className="absolute bottom-4 right-4 z-50">
                     <Alert variant="destructive">
                         <AlertDescription>{error}</AlertDescription>
                     </Alert>
-                )}
-
-                {/* Actions */}
-                <div className="flex justify-end pt-4">
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => router.back()}
-                        className="mr-4"
-                    >
-                        {t('cancel')}
-                    </Button>
-                    <Button
-                        type="submit"
-                        disabled={isSubmitting}
-                    >
-                        <Save className="w-4 h-4 mr-2" />
-                        {isSubmitting ? t('saving') : t('save')}
-                    </Button>
                 </div>
-            </form>
+            )}
         </div>
     );
 }

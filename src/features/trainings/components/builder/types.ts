@@ -1,4 +1,4 @@
-export type BlockType = 'warmup' | 'interval' | 'recovery' | 'cooldown';
+export type BlockType = 'warmup' | 'interval' | 'recovery' | 'rest' | 'cooldown';
 export type DurationType = 'distance' | 'time';
 export type TargetType =
     | 'vam_zone'    // VAM Zones 1-6
@@ -20,7 +20,7 @@ export interface WorkoutBlock {
         max: number | string;
     };
     rpe?: number; // RPE value (1-10) - optional
-    intensity?: number; // Deprecated: old intensity value
+    intensity?: number; // Used for bar height in the workout graph (0-100)
     notes?: string;
     group?: {
         id: string;
@@ -38,6 +38,12 @@ export interface WorkoutTotals {
     distance: number; // in km
     duration: number; // in seconds
     tss: number; // Training Stress Score
+}
+
+export interface AthleteProfile {
+    vam?: string;    // e.g., "4:30" min/km
+    lthr?: number;   // e.g., 170 bpm
+    maxHR?: number;  // e.g., 190 bpm
 }
 
 export type WorkoutBuilderStore = {

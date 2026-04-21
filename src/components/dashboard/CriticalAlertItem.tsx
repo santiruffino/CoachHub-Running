@@ -16,17 +16,18 @@ export function CriticalAlertItem({
     alertType,
     timestamp,
     message,
+    details = "",
 }: CriticalAlertItemProps) {
-    
-    // Simulate real plan data for the design demo if not provided
-    const planSub = "Marathon Plan • Week 12";
 
-    // Format the alert message to look like the image (e.g. MISSED: INTERVAL SESSION)
-    let formattedMessage = message.toUpperCase();
     let messageColor = "text-red-500/90";
     
     if (alertType === 'rpe_mismatch') {
-        formattedMessage = "RPE MISMATCH";
+        messageColor = "text-orange-500/90";
+    } else if (alertType === 'new_feedback') {
+        messageColor = "text-primary/90";
+    } else if (alertType === 'low_compliance') {
+        messageColor = "text-red-500/90";
+    } else if (alertType === 'missing_workout') {
         messageColor = "text-orange-500/90";
     }
 
@@ -39,15 +40,15 @@ export function CriticalAlertItem({
             </Avatar>
 
             <div className="flex-1 min-w-0">
-                <h4 className="font-semibold text-sm text-foreground">{athleteName}</h4>
-                <p className="text-xs text-muted-foreground mt-0.5">{planSub}</p>
+                <h4 className="font-semibold text-sm text-foreground tracking-[0.01em]">{athleteName}</h4>
+                {details && <p className="text-xs text-muted-foreground mt-0.5 tracking-[0.01em]">{details}</p>}
             </div>
             
             <div className="text-right flex flex-col items-end">
-                <span className={`text-[10px] tracking-wide font-semibold ${messageColor}`}>
-                    {formattedMessage}
+                <span className={`text-[10px] tracking-wider font-semibold ${messageColor}`}>
+                    {message.toUpperCase()}
                 </span>
-                <span className="text-[10px] text-muted-foreground mt-1">
+                <span className="text-[10px] text-muted-foreground mt-1 tracking-wide">
                     {timestamp}
                 </span>
             </div>

@@ -4,6 +4,8 @@ import { WorkoutBlock, DurationType, TargetType, BlockType } from './types';
 import { Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { calculateTargetPace, VAM_DEFAULT, VAM_ZONES } from '@/features/profiles/constants/vam';
+import { BLOCK_COLORS } from './constants';
+import { useTranslations } from 'next-intl';
 
 interface BlockEditorProps {
     block: WorkoutBlock;
@@ -36,6 +38,7 @@ const hmsToSeconds = (str: string) => {
 };
 
 export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = false }: BlockEditorProps) {
+    const t = useTranslations('builder');
     const [timeString, setTimeString] = useState(
         block.duration.type === 'time' ? secondsToHms(block.duration.value) : ''
     );
@@ -115,14 +118,6 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
         return block.duration.value;
     };
 
-    const getIntensityColor = () => {
-        const intensity = block.intensity || 0;
-        if (intensity >= 80) return 'from-orange-500 to-red-500';
-        if (intensity >= 60) return 'from-yellow-500 to-orange-500';
-        if (intensity >= 40) return 'from-green-400 to-yellow-500';
-        return 'from-green-400 to-green-500';
-    };
-
     // Calculate pace from VAM and zone
     const calculatePaceFromVAM = (vam: string | null, zoneNumber: string): string => {
         const paceToUse = vam || VAM_DEFAULT;
@@ -139,11 +134,11 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
     return (
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5 shadow-sm h-full overflow-y-auto">
             <div className="flex items-center justify-between mb-5">
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Step Details</h3>
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{t('stepDetails')}</h3>
                 <button
                     onClick={() => onRemove(block.id)}
                     className="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors p-2 rounded-md hover:bg-red-50 dark:hover:bg-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="Remove Step"
+                    title={t('removeStep')}
                     disabled={readOnly}
                 >
                     <Trash2 className="w-5 h-5" />
@@ -154,13 +149,13 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
                 {/* Step Name */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Step Name
+                        {t('stepName')}
                     </label>
                     <input
                         type="text"
                         value={block.stepName || ''}
                         onChange={(e) => onUpdate(block.id, { stepName: e.target.value })}
-                        placeholder={block.type.charAt(0).toUpperCase() + block.type.slice(1)}
+                        placeholder={t(`labels.${block.type}`)}
                         className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 disabled:opacity-60 disabled:cursor-not-allowed"
                         disabled={readOnly}
                     />
@@ -169,7 +164,7 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
                 {/* Type */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Type
+                        {t('type')}
                     </label>
                     <select
                         value={block.type}
@@ -177,17 +172,18 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
                         className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border font-medium bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed"
                         disabled={readOnly}
                     >
-                        <option value="warmup">Warm Up</option>
-                        <option value="interval">Interval</option>
-                        <option value="recovery">Recovery</option>
-                        <option value="cooldown">Cool Down</option>
+                        <option value="warmup">{t('labels.warmup')}</option>
+                        <option value="interval">{t('labels.interval')}</option>
+                        <option value="recovery">{t('labels.recovery')}</option>
+                        <option value="rest">{t('labels.rest')}</option>
+                        <option value="cooldown">{t('labels.cooldown')}</option>
                     </select>
                 </div>
 
                 {/* Duration */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Duration
+                        {t('duration')}
                     </label>
                     <div className="grid grid-cols-2 gap-3">
                         <input
@@ -213,9 +209,9 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
                             }}
                             className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-gray-900 dark:text-white dark:bg-gray-700"
                         >
-                            <option value="m">Meters</option>
-                            <option value="km">Kilometers</option>
-                            <option value="time">Minutes</option>
+                            <option value="m">{t('meters')}</option>
+                            <option value="km">{t('kilometers')}</option>
+                            <option value="time">{t('minutes')}</option>
                         </select>
                     </div>
                 </div>
@@ -223,7 +219,7 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
                 {/* Intensity (RPE) Slider */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Intensity (%)
+                        {t('intensity')}
                     </label>
                     <div className="space-y-2">
                         <div className="flex items-center justify-between">
@@ -242,8 +238,11 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
                         {/* Visual intensity bar */}
                         <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                             <div
-                                className={`h-full bg-gradient-to-r ${getIntensityColor()} transition-all`}
-                                style={{ width: `${block.intensity || 50}%` }}
+                                className="h-full transition-all"
+                                style={{ 
+                                    width: `${block.intensity || 50}%`,
+                                    backgroundColor: BLOCK_COLORS[block.type]
+                                }}
                             />
                         </div>
                     </div>
@@ -252,16 +251,16 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
                 {/* Target Type Selection */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Pace/Speed
+                        {t('paceSpeed')}
                     </label>
                     <select
                         value={block.target.type}
                         onChange={(e) => handleTargetTypeChange(e.target.value as TargetType)}
                         className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-gray-900 dark:text-white dark:bg-gray-700 mb-3"
                     >
-                        <option value="vam_zone">VAM Zone</option>
-                        <option value="lthr">LTHR</option>
-                        <option value="rpe_target">RPE Target</option>
+                        <option value="vam_zone">{t('vamZone')}</option>
+                        <option value="lthr">{t('lthr')}</option>
+                        <option value="rpe_target">{t('rpeTarget')}</option>
                     </select>
 
                     {/* LTHR: Percentage Inputs */}
@@ -322,27 +321,26 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
                                 })}
                                 className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-gray-900 dark:text-white dark:bg-gray-700"
                             >
-                                <option value="1">Z1 - Regenerativo (0-70% VAM)</option>
-                                <option value="2">Z2 - Endurance (70-85% VAM)</option>
-                                <option value="3">Z3 - Tempo (85-92% VAM)</option>
-                                <option value="4">Z4 - Umbral Anaeróbico (92-97% VAM)</option>
-                                <option value="5">Z5 - VO2 Max (97-103% VAM)</option>
-                                <option value="6">Z6 - Potencia Anaeróbica (103-120% VAM)</option>
+                                {VAM_ZONES.map(z => (
+                                    <option key={z.zone} value={z.zone}>
+                                        Z{z.zone} - {z.name} ({z.min}-{z.max}% VAM)
+                                    </option>
+                                ))}
                             </select>
 
                             {/* Display calculated pace or message */}
                             {athleteId ? (
                                 <div className={`mt-2 p-2 rounded border ${athleteVAM ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'}`}>
                                     <p className={`text-sm font-medium ${athleteVAM ? 'text-green-800 dark:text-green-300' : 'text-amber-800 dark:text-amber-300'}`}>
-                                        📊 {athleteVAM ? 'Expected Pace:' : 'Estimated Pace (Default):'} {calculatePaceFromVAM(athleteVAM, String(block.target.min || '2'))} min/km
+                                        📊 {athleteVAM ? t('expectedPace') : t('estimatedPaceDefault')} {calculatePaceFromVAM(athleteVAM, String(block.target.min || '2'))} min/km
                                     </p>
                                     <p className={`text-xs mt-1 ${athleteVAM ? 'text-green-700 dark:text-green-400' : 'text-amber-700 dark:text-amber-400'}`}>
-                                        Based on VAM: {athleteVAM || VAM_DEFAULT} min/km
+                                        {t('basedOnVam')} {athleteVAM || VAM_DEFAULT} min/km
                                     </p>
                                 </div>
                             ) : (
                                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                                    💡 Assign to an athlete to see calculated pace
+                                    💡 {t('assignToAthleteHint')}
                                 </p>
                             )}
                         </div>
@@ -352,14 +350,14 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
                 {/* Step Notes */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Step Notes
+                        {t('stepNotes')}
                     </label>
                     <textarea
                         rows={3}
                         value={block.notes || ''}
                         onChange={(e) => onUpdate(block.id, { notes: e.target.value })}
                         className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-gray-900 dark:text-white dark:bg-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none"
-                        placeholder="Instructions for this step..."
+                        placeholder={t('notesPlaceholderStep')}
                     />
                 </div>
             </div>

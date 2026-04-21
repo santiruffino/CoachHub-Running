@@ -56,10 +56,9 @@ export function calculateTargetPace(vamPace: string, percentage: number): string
  * VAM Zone definitions based on percentage of VAM
  */
 export const VAM_ZONES = [
-    { zone: 1, name: 'Regenerativo', min: 0, max: 70 },
+    { zone: 1, name: 'Regenerativo', min: 55, max: 70 },
     { zone: 2, name: 'Endurance', min: 70, max: 85 },
     { zone: 3, name: 'Tempo', min: 85, max: 92 },
     { zone: 4, name: 'Umbral', min: 92, max: 97 },
     { zone: 5, name: 'VO2 Max', min: 97, max: 103 },
-    { zone: 6, name: 'Potencia', min: 103, max: 120 },
 ];

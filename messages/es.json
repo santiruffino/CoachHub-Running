@@ -14,6 +14,23 @@
     },
     "dashboard": {
         "title": "Coach Dashboard",
+        "admin": {
+            "title": "Admin Dashboard",
+            "welcome": "Bienvenido, Super Coach. Resumen global de la plataforma.",
+            "metrics": {
+                "totalAthletes": "Total Atletas",
+                "totalGroups": "Equipos / Grupos",
+                "activeCoaches": "Coaches Activos"
+            },
+            "coachesActivity": "Coaches & Actividad",
+            "noName": "Sin nombre",
+            "athletesCount": "{count} Atletas",
+            "noActivity": "Sin actividad",
+            "noCoaches": "No hay entrenadores registrados aún."
+        },
+        "athlete": {
+            "defaultName": "Atleta"
+        },
         "messages": {
             "hi": "Hola, {name} 👋"
         },
@@ -59,6 +76,14 @@
             "low_compliance": "Bajo cumplimiento",
             "missing_workout": "Sin entrenamientos"
         },
+        "groupStatus": {
+            "activeAthletes": "{count, plural, =1 {1 Atleta Activo} other {# Atletas Activos}}",
+            "compliance": "CUMPLIMIENTO",
+            "high": "ALTO",
+            "attentionNeeded": "ATENCIÓN NECESARIA",
+            "optimal": "ÓPTIMO"
+        },
+        "planSubtitle": "{groupName} - {timeframe}",
         "alertActions": {
             "reply": "Responder",
             "adjustPlan": "Ajustar plan",
@@ -86,6 +111,20 @@
         "noAthletes": "No se encontraron atletas",
         "viewProfile": "Ver Perfil",
         "assignWorkout": "Asignar Entreno",
+        "deleteTitle": "¿Eliminar atleta?",
+        "deleteMessage": "Esta acción no se puede deshacer. Se eliminará el registro del atleta del sistema permanentemente.",
+        "deleteConfirm": "Sí, Eliminar",
+        "deleteFailed": "Error al eliminar el atleta",
+        "edit": "Editar",
+        "delete": "Eliminar",
+        "filters": {
+            "level": "Nivel",
+            "group": "Grupo",
+            "coach": "Entrenador",
+            "allLevels": "Todos los Niveles",
+            "allGroups": "Todos los Grupos",
+            "allCoaches": "Todos los Entrenadores"
+        },
         "table": {
             "athlete": "Atleta",
             "sport": "Deporte",
@@ -119,6 +158,7 @@
             "completed": "Completados",
             "thisWeek": "Esta Semana",
             "complianceRate": "Tasa de Cumplimiento",
+            "updated": "actualizó",
             "weeklyVolume": "Volumen Semanal",
             "weeklyTime": "Tiempo Semanal",
             "plannedCompleted": "Planificado y Completado",
@@ -175,7 +215,8 @@
     "groups": {
         "title": "Mis Grupos",
         "createGroup": "Nuevo Grupo",
-        "loading": "Cargando grupos...",
+        "loadingGroups": "Cargando grupos...",
+        "loadingGroup": "Cargando grupo...",
         "noGroups": "No se encontraron grupos",
         "athletes": "Atletas",
         "athletesCount": "{count} Atletas",
@@ -186,7 +227,33 @@
         "event": "Evento",
         "viewDetails": "Ver detalles",
         "emptyCardTitle": "Crear un nuevo grupo",
-        "emptyCardDesc": "Agrupa a tus atletas para entrenamientos compartidos."
+        "emptyCardDesc": "Agrupa a tus atletas para entrenamientos compartidos.",
+        "detail": {
+            "notFound": "Grupo no encontrado",
+            "membersCount": "Miembros ({count})",
+            "assignWorkout": "Asignar Entrenamiento",
+            "addMember": "Añadir Miembro",
+            "unnamedAthlete": "Atleta sin nombre",
+            "removeConfirm": "¿Eliminar atleta?",
+            "remove": "Eliminar",
+            "noMembers": "No hay miembros aún."
+        }
+    },
+    "coaches": {
+        "title": "Gestión de Coaches",
+        "searchPlaceholder": "Buscar coach por nombre o email",
+        "deleteTitle": "¿Eliminar Entrenador?",
+        "deleteMessage": "Esta acción no se puede deshacer. El entrenador será borrado y todos sus atletas serán reasignados temporalmente a tu cuenta (Administrador).",
+        "deleteConfirm": "Sí, Eliminar y Reasignar",
+        "deleteFailed": "Error al eliminar el entrenador",
+        "deleteButton": "Eliminar",
+        "table": {
+            "coach": "Coach",
+            "athletes": "Atletas",
+            "actions": "Acciones",
+            "noCoaches": "No se encontraron entrenadores.",
+            "noName": "Sin nombre"
+        }
     },
     "trainings": {
         "title": "Plantillas de Entrenamiento",
@@ -373,8 +440,269 @@
         "intervalWork": "Trabajo de Intervalos",
         "activeRest": "Descanso Activo",
         "recovery": "Recuperación",
+        "rest": "Descanso",
         "closing": "Cierre",
-        "coolDown": "Enfriamiento"
+        "coolDown": "Enfriamiento",
+        "sequenceBuilder": "Constructor de Secuencia",
+        "expandAll": "Expandir Todo",
+        "autoBalance": "Auto-Balance",
+        "sequenceDescription": "Arrastra y suelta bloques para reorganizar el flujo de intensidad. Todas las métricas se actualizan en tiempo real.",
+        "stage": "Etapa",
+        "duration": "Duración",
+        "target": "Objetivo",
+        "notes": "Notas",
+        "repeats": "Repeticiones {reps}x",
+        "coachNotes": "Notas del Coach",
+        "notesPlaceholder": "Añade notas para el atleta...",
+        "linkedDrills": "Drills Vinculados",
+        "video": "Video",
+        "sessionSummary": "Resumen de la Sesión",
+        "tss": "TSS (Est.)",
+        "if": "IF (Factor de Intensidad)",
+        "estimatedLoad": "Carga Estimada",
+        "high": "Alta",
+        "projectedProfile": "Perfil de Entrenamiento Proyectado",
+        "intensity": "Intensidad",
+        "heartRate": "Frecuencia Cardíaca",
+        "emptyProfile": "Añade pasos para ver el perfil del entrenamiento",
+        "labels": {
+            "warmup": "Calentamiento",
+            "interval": "Activo",
+            "recovery": "Recuperación",
+            "rest": "Descanso",
+            "cooldown": "Enfriamiento",
+            "hard": "Fuerte",
+            "easy": "Suave"
+        },
+        "stepDetails": "Detalles del Paso",
+        "removeStep": "Eliminar Paso",
+        "stepName": "Nombre del Paso",
+        "type": "Tipo",
+        "meters": "Metros",
+        "kilometers": "Kilómetros",
+        "minutes": "Minutos",
+        "time": "Tiempo",
+        "paceSpeed": "Ritmo / Velocidad",
+        "vamZone": "Zona VAM",
+        "lthr": "LTHR (%)",
+        "rpeTarget": "RPE Objetivo",
+        "expectedPace": "Ritmo Esperado:",
+        "estimatedPaceDefault": "Ritmo Estimado (Default):",
+        "basedOnVam": "Basado en VAM:",
+        "assignToAthleteHint": "Asigna a un atleta para ver el ritmo calculado",
+        "stepNotes": "Notas del Paso",
+        "notesPlaceholderStep": "Instrucciones para este paso...",
+        "repeat": "Repetir",
+        "times": "veces",
+        "totalForBlock": "Total para este bloque:",
+        "expand": "Expandir",
+        "collapse": "Colapsar",
+        "deleteBlock": "Eliminar Bloque",
+        "addStepToRepeat": "Añadir paso a la repetición",
+        "stepDuration": "Duración del Paso",
+        "targetRange": "Rango Objetivo",
+        "endStepOnLap": "Finalizar paso al pulsar botón lap",
+        "removeCadence": "Eliminar cadencia",
+        "addCadence": "Añadir rango de cadencia",
+        "intervalRpeOptional": "RPE del Intervalo (Opcional)",
+        "noRpeSet": "Sin RPE definido",
+        "noAthleteSelectedLthr": "No se seleccionó atleta - LTHR no disponible",
+        "noAthleteVamData": "VAM no disponible para este atleta",
+        "totalDuration": "Duración Total",
+        "estimatedTss": "TSS Estimado",
+        "distanceEst": "Distancia Est.",
+        "score": "puntos",
+        "workoutSummary": "Resumen del Entrenamiento",
+        "totalDistance": "Distancia Total",
+        "estimatedTime": "Tiempo Estimado",
+        "avgIntensity": "Intensidad Promedio",
+        "expectedRpe": "RPE Esperado",
+        "workoutDescription": "Descripción del Entrenamiento",
+        "totalSteps": "Pasos totales:",
+        "noStepsDefined": "No hay pasos definidos.",
+        "noStepsAdded": "No se han añadido pasos aún.",
+        "clickBlocksHint": "Haz clic en los bloques para construir el entrenamiento",
+        "clickPresetHint": "Haz clic en cualquier ajuste para añadirlo a tu entrenamiento",
+        "repeatWizard": "Asistente de Repeticiones",
+        "repetitions": "Repeticiones",
+        "runsInterval": "Carreras (Intervalo)",
+        "recoveries": "Recuperaciones",
+        "addRepeats": "Añadir {reps}× Repeticiones",
+        "howManyRepeats": "¿Cuántas repeticiones?",
+        "addingPattern": "Añadiendo patrón:",
+        "numberOfRepetitions": "Número de repeticiones",
+        "startBuildingWorkout": "No hay bloques añadidos aún. ¡Empieza a construir tu entrenamiento!",
+        "durationMin": "Duración (min)",
+        "workoutProfile": "Perfil del Entrenamiento",
+        "atIntensity": " al {intensity}% de intensidad",
+        "units": {
+            "min": "min",
+            "h": "h",
+            "km": "km",
+            "m": "m",
+            "minPerKm": "min/km",
+            "bpm": "ppm",
+            "spm": "ppm"
+        },
+        "stepCount": "{count, plural, =1 {1 paso} other {# pasos}}",
+        "vamZoneFullNames": {
+            "1": "Z1 - Regenerativo",
+            "2": "Z2 - Endurance",
+            "3": "Z3 - Tempo",
+            "4": "Z4 - Umbral Anaeróbico",
+            "5": "Z5 - VO2 Max",
+            "6": "Z6 - Potencia Anaeróbica"
+        },
+        "placeholders": {
+            "min": "Mín",
+            "max": "Máx"
+        },
+        "presets": {
+            "twoSteps": "Dos Pasos",
+            "activeRecovery": "Activo y Recuperación",
+            "activeFaster": "Activo y Activo Rápido",
+            "rampUp": "Rampa Ascendente",
+            "rampUpDesc": "Aumentar intensidad gradualmente",
+            "rampDown": "Rampa Descendente",
+            "rampDownDesc": "Disminuir intensidad gradualmente",
+            "build": "Progreso {n}",
+            "medium": "Medio"
+        },
+        "rpeLevels": {
+            "veryEasy": "Muy Fácil",
+            "easy": "Fácil",
+            "moderate": "Moderado",
+            "hard": "Duro",
+            "maxEffort": "Esfuerzo Máximo"
+        }
+    },
+    "onboarding": {
+        "tag": "PERFIL",
+        "title": "Configura tu cuenta",
+        "subtitle": "Completa tu información personal. Estos datos servirán de base para personalizar tus métricas y planes de entrenamiento.",
+        "errorSave": "Ocurrió un error al guardar tu perfil. Intenta de nuevo.",
+        "sections": {
+            "identity": {
+                "tag": "IDENTIDAD",
+                "title": "Identificación básica",
+                "description": "Datos de contacto e identificación personal para tu perfil."
+            },
+            "physical": {
+                "tag": "PERFIL FÍSICO",
+                "title": "Datos fisiológicos",
+                "description": "Necesarios para calcular zonas de intensidad y cargas metabólicas."
+            }
+        },
+        "fields": {
+            "firstName": "NOMBRE",
+            "firstNamePlaceholder": "ej. Marcos",
+            "firstNameRequired": "El nombre es obligatorio",
+            "lastName": "APELLIDO",
+            "lastNamePlaceholder": "ej. Alfaro",
+            "lastNameRequired": "El apellido es obligatorio",
+            "email": "CORREO ELECTRÓNICO",
+            "phone": "TELÉFONO",
+            "phonePlaceholder": "+1 (555) 000-0000",
+            "phoneRequired": "El teléfono es obligatorio",
+            "dob": "FECHA DE NACIMIENTO",
+            "dobRequired": "La fecha de nacimiento es obligatoria",
+            "gender": "GÉNERO",
+            "genderRequired": "El género es obligatorio",
+            "height": "ALTURA (CM)",
+            "heightPlaceholder": "175",
+            "heightRequired": "La altura es obligatoria",
+            "heightMin": "Mínimo 50 cm",
+            "heightMax": "Máximo 250 cm",
+            "weight": "PESO (KG)",
+            "weightPlaceholder": "70.0",
+            "weightRequired": "El peso es obligatorio",
+            "weightMin": "Mínimo 20 kg",
+            "weightMax": "Máximo 300 kg"
+        },
+        "footer": "Toda la información puede editarse más adelante desde tu perfil.",
+        "submit": "Completar perfil",
+        "submitting": "Guardando..."
+    },
+    "profile": {
+        "successUpdate": "Perfil actualizado correctamente.",
+        "errorUpdate": "Error al actualizar el perfil. Intenta de nuevo.",
+        "calculator": {
+            "calculate": "Calcular",
+            "distancePlaceholder": "Km",
+            "timePlaceholder": "MM:SS",
+            "testLabel": "Test"
+        },
+        "testSpeed": {
+            "calculate": "Aplicar Test",
+            "distancePlaceholder": "3.0",
+            "timePlaceholder": "11:30",
+            "currentPaceLabel": "Ritmo Actual:",
+            "unit": "min/km"
+        },
+        "changePassword": {
+            "title": "Cambiar contraseña",
+            "tag": "SEGURIDAD",
+            "description": "Actualiza tu contraseña de acceso. Necesitarás tu contraseña actual.",
+            "currentPassword": "CONTRASEÑA ACTUAL",
+            "newPassword": "NUEVA CONTRASEÑA",
+            "confirmPassword": "CONFIRMAR CONTRASEÑA",
+            "submit": "Actualizar contraseña",
+            "success": "Contraseña actualizada correctamente",
+            "error": "Error al cambiar la contraseña. Verifica la contraseña actual.",
+            "mismatch": "Las contraseñas no coinciden",
+            "required": "Requerido",
+            "tooShort": "Mínimo 6 caracteres"
+        },
+        "sections": {
+            "identity": {
+                "tag": "IDENTIDAD",
+                "title": "Identificación básica",
+                "description": "Datos de contacto e identificación personal de tu cuenta."
+            },
+            "performance": {
+                "tag": "RENDIMIENTO",
+                "title": "Historial de rendimiento",
+                "description": "Tests de umbral VAM y UAN. Al actualizar se guardará un registro histórico.",
+                "vamHint": "Actualizar guarda historial.",
+                "uanHint": "Actualizar guarda historial."
+            },
+            "coach": {
+                "tag": "DATOS DE ENTRENADOR",
+                "title": "Perfil profesional",
+                "description": "Información que tus atletas verán en tu perfil de entrenador."
+            }
+        },
+        "fields": {
+            "restHR": "FC REPOSO (BPM)",
+            "restHRPlaceholder": "55",
+            "maxHR": "FC MÁXIMA (BPM)",
+            "maxHRPlaceholder": "190",
+            "vam": "TEST VAM (mm:ss)",
+            "uan": "TEST UAN (mm:ss)",
+            "pacePlaceholder": "00:00",
+            "preset": "Nivel preset",
+            "injuries": "LESIONES / NOTAS MÉDICAS",
+            "injuriesPlaceholder": "ej. Tendinitis rotuliana derecha (rehabilitación completada)",
+            "bio": "BIO",
+            "bioPlaceholder": "Cuéntanos sobre tu experiencia como entrenador...",
+            "specialty": "ESPECIALIDAD",
+            "specialtyPlaceholder": "ej. Trail Running, Maratón",
+            "experience": "EXPERIENCIA",
+            "experiencePlaceholder": "ej. 8 años"
+        },
+        "vamLevels": {
+            "amateur": "Amateur",
+            "intermediate": "Intermedio",
+            "advanced": "Avanzado",
+            "elite": "Elite"
+        },
+        "vamZones": {
+            "regenerativo": "Regenerativo",
+            "endurance": "Endurance",
+            "tempo": "Tempo",
+            "umbral": "Umbral",
+            "vo2max": "VO2 Max"
+        }
     },
     "calendar": {
         "restDay": "Dia de descanso"

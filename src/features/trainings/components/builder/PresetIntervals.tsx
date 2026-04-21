@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { WorkoutBlock } from './types';
 import { RepetitionDialog } from './RepetitionDialog';
+import { useTranslations } from 'next-intl';
 
 interface PresetPattern {
     id: string;
@@ -14,211 +15,212 @@ interface PresetPattern {
     requiresRepetitions?: boolean; // If true, ask for repetitions before adding
 }
 
-export const PRESET_PATTERNS: PresetPattern[] = [
-    {
-        id: 'warmup',
-        name: 'Warm up',
-        description: 'Single warm-up block',
-        visualPattern: [50],
-        blocks: [
-            {
-                type: 'warmup',
-                stepName: 'Warm up',
-                duration: { type: 'time', value: 600 }, // 10 min
-                target: { type: 'vam_zone', min: '2', max: '2' },
-                intensity: 40,
-                notes: ''
-            }
-        ]
-    },
-    {
-        id: 'active',
-        name: 'Active',
-        description: 'Single interval block',
-        visualPattern: [90],
-        blocks: [
-            {
-                type: 'interval',
-                stepName: 'Interval',
-                duration: { type: 'distance', value: 1000 },
-                target: { type: 'vam_zone', min: '5', max: '5' },
-                intensity: 85,
-                notes: ''
-            }
-        ]
-    },
-    {
-        id: 'recovery',
-        name: 'Recovery',
-        description: 'Single recovery block',
-        visualPattern: [30],
-        blocks: [
-            {
-                type: 'recovery',
-                stepName: 'Recovery',
-                duration: { type: 'time', value: 120 }, // 2 min
-                target: { type: 'vam_zone', min: '1', max: '1' },
-                intensity: 30,
-                notes: ''
-            }
-        ]
-    },
-    {
-        id: 'cooldown',
-        name: 'Cool Down',
-        description: 'Single cool-down block',
-        visualPattern: [50],
-        blocks: [
-            {
-                type: 'cooldown',
-                stepName: 'Cool down',
-                duration: { type: 'time', value: 600 }, // 10 min
-                target: { type: 'vam_zone', min: '2', max: '2' },
-                intensity: 40,
-                notes: ''
-            }
-        ]
-    },
-    {
-        id: 'two-steps-active-recovery',
-        name: 'Two Steps',
-        description: 'Active and Recovery',
-        visualPattern: [85, 30],
-        requiresRepetitions: true,
-        blocks: [
-            {
-                type: 'interval',
-                stepName: 'Work',
-                duration: { type: 'distance', value: 400 },
-                target: { type: 'vam_zone', min: '5', max: '5' },
-                intensity: 85,
-                notes: ''
-            },
-            {
-                type: 'recovery',
-                stepName: 'Rest',
-                duration: { type: 'time', value: 90 },
-                target: { type: 'vam_zone', min: '1', max: '1' },
-                intensity: 30,
-                notes: ''
-            }
-        ]
-    },
-    {
-        id: 'two-steps-active-faster',
-        name: 'Two Steps',
-        description: 'Active and Faster Active',
-        visualPattern: [75, 90],
-        requiresRepetitions: true,
-        blocks: [
-            {
-                type: 'interval',
-                stepName: 'Work',
-                duration: { type: 'distance', value: 800 },
-                target: { type: 'vam_zone', min: '4', max: '4' },
-                intensity: 75,
-                notes: ''
-            },
-            {
-                type: 'interval',
-                stepName: 'Hard',
-                duration: { type: 'distance', value: 400 },
-                target: { type: 'vam_zone', min: '5', max: '5' },
-                intensity: 90,
-                notes: ''
-            }
-        ]
-    },
-    {
-        id: 'ramp-up',
-        name: 'Ramp Up',
-        description: 'Gradually increase intensity',
-        visualPattern: [40, 55, 70, 85],
-        requiresRepetitions: true,
-        blocks: [
-            {
-                type: 'interval',
-                stepName: 'Build 1',
-                duration: { type: 'distance', value: 400 },
-                target: { type: 'vam_zone', min: '2', max: '2' },
-                intensity: 40,
-                notes: ''
-            },
-            {
-                type: 'interval',
-                stepName: 'Build 2',
-                duration: { type: 'distance', value: 400 },
-                target: { type: 'vam_zone', min: '3', max: '3' },
-                intensity: 55,
-                notes: ''
-            },
-            {
-                type: 'interval',
-                stepName: 'Build 3',
-                duration: { type: 'distance', value: 400 },
-                target: { type: 'vam_zone', min: '4', max: '4' },
-                intensity: 70,
-                notes: ''
-            },
-            {
-                type: 'interval',
-                stepName: 'Build 4',
-                duration: { type: 'distance', value: 400 },
-                target: { type: 'vam_zone', min: '5', max: '5' },
-                intensity: 85,
-                notes: ''
-            }
-        ]
-    },
-    {
-        id: 'ramp-down',
-        name: 'Ramp Down',
-        description: 'Gradually decrease intensity',
-        visualPattern: [85, 70, 55, 40],
-        requiresRepetitions: true,
-        blocks: [
-            {
-                type: 'interval',
-                stepName: 'Hard',
-                duration: { type: 'distance', value: 400 },
-                target: { type: 'vam_zone', min: '5', max: '5' },
-                intensity: 85,
-                notes: ''
-            },
-            {
-                type: 'interval',
-                stepName: 'Medium',
-                duration: { type: 'distance', value: 400 },
-                target: { type: 'vam_zone', min: '4', max: '4' },
-                intensity: 70,
-                notes: ''
-            },
-            {
-                type: 'interval',
-                stepName: 'Easy',
-                duration: { type: 'distance', value: 400 },
-                target: { type: 'vam_zone', min: '3', max: '3' },
-                intensity: 55,
-                notes: ''
-            },
-            {
-                type: 'interval',
-                stepName: 'Recovery',
-                duration: { type: 'distance', value: 400 },
-                target: { type: 'vam_zone', min: '2', max: '2' },
-                intensity: 40,
-                notes: ''
-            }
-        ]
-    }
-];
-
 interface PresetIntervalsProps {
     onSelectPreset: (blocks: WorkoutBlock[]) => void;
 }
 
 export function PresetIntervals({ onSelectPreset }: PresetIntervalsProps) {
+    const t = useTranslations('builder');
     const [pendingPattern, setPendingPattern] = useState<PresetPattern | null>(null);
+
+    const PRESET_PATTERNS: PresetPattern[] = [
+        {
+            id: 'warmup',
+            name: t('labels.warmup'),
+            description: 'Single warm-up block',
+            visualPattern: [50],
+            blocks: [
+                {
+                    type: 'warmup',
+                    stepName: t('labels.warmup'),
+                    duration: { type: 'time', value: 600 }, // 10 min
+                    target: { type: 'vam_zone', min: '2', max: '2' },
+                    intensity: 40,
+                    notes: ''
+                }
+            ]
+        },
+        {
+            id: 'active',
+            name: t('labels.interval'),
+            description: 'Single interval block',
+            visualPattern: [90],
+            blocks: [
+                {
+                    type: 'interval',
+                    stepName: t('labels.interval'),
+                    duration: { type: 'distance', value: 1000 },
+                    target: { type: 'vam_zone', min: '5', max: '5' },
+                    intensity: 85,
+                    notes: ''
+                }
+            ]
+        },
+        {
+            id: 'recovery',
+            name: t('labels.recovery'),
+            description: 'Single recovery block',
+            visualPattern: [30],
+            blocks: [
+                {
+                    type: 'recovery',
+                    stepName: t('labels.recovery'),
+                    duration: { type: 'time', value: 120 }, // 2 min
+                    target: { type: 'vam_zone', min: '1', max: '1' },
+                    intensity: 30,
+                    notes: ''
+                }
+            ]
+        },
+        {
+            id: 'cooldown',
+            name: t('labels.cooldown'),
+            description: 'Single cool-down block',
+            visualPattern: [50],
+            blocks: [
+                {
+                    type: 'cooldown',
+                    stepName: t('labels.cooldown'),
+                    duration: { type: 'time', value: 600 }, // 10 min
+                    target: { type: 'vam_zone', min: '2', max: '2' },
+                    intensity: 40,
+                    notes: ''
+                }
+            ]
+        },
+        {
+            id: 'two-steps-active-recovery',
+            name: t('presets.twoSteps'),
+            description: t('presets.activeRecovery'),
+            visualPattern: [85, 30],
+            requiresRepetitions: true,
+            blocks: [
+                {
+                    type: 'interval',
+                    stepName: t('labels.interval'),
+                    duration: { type: 'distance', value: 400 },
+                    target: { type: 'vam_zone', min: '5', max: '5' },
+                    intensity: 85,
+                    notes: ''
+                },
+                {
+                    type: 'recovery',
+                    stepName: t('labels.rest'),
+                    duration: { type: 'time', value: 90 },
+                    target: { type: 'vam_zone', min: '1', max: '1' },
+                    intensity: 30,
+                    notes: ''
+                }
+            ]
+        },
+        {
+            id: 'two-steps-active-faster',
+            name: t('presets.twoSteps'),
+            description: t('presets.activeFaster'),
+            visualPattern: [75, 90],
+            requiresRepetitions: true,
+            blocks: [
+                {
+                    type: 'interval',
+                    stepName: t('labels.interval'),
+                    duration: { type: 'distance', value: 800 },
+                    target: { type: 'vam_zone', min: '4', max: '4' },
+                    intensity: 75,
+                    notes: ''
+                },
+                {
+                    type: 'interval',
+                    stepName: t('labels.hard'),
+                    duration: { type: 'distance', value: 400 },
+                    target: { type: 'vam_zone', min: '5', max: '5' },
+                    intensity: 90,
+                    notes: ''
+                }
+            ]
+        },
+        {
+            id: 'ramp-up',
+            name: t('presets.rampUp'),
+            description: t('presets.rampUpDesc'),
+            visualPattern: [40, 55, 70, 85],
+            requiresRepetitions: true,
+            blocks: [
+                {
+                    type: 'interval',
+                    stepName: t('presets.build', { n: 1 }),
+                    duration: { type: 'distance', value: 400 },
+                    target: { type: 'vam_zone', min: '2', max: '2' },
+                    intensity: 40,
+                    notes: ''
+                },
+                {
+                    type: 'interval',
+                    stepName: t('presets.build', { n: 2 }),
+                    duration: { type: 'distance', value: 400 },
+                    target: { type: 'vam_zone', min: '3', max: '3' },
+                    intensity: 55,
+                    notes: ''
+                },
+                {
+                    type: 'interval',
+                    stepName: t('presets.build', { n: 3 }),
+                    duration: { type: 'distance', value: 400 },
+                    target: { type: 'vam_zone', min: '4', max: '4' },
+                    intensity: 70,
+                    notes: ''
+                },
+                {
+                    type: 'interval',
+                    stepName: t('presets.build', { n: 4 }),
+                    duration: { type: 'distance', value: 400 },
+                    target: { type: 'vam_zone', min: '5', max: '5' },
+                    intensity: 85,
+                    notes: ''
+                }
+            ]
+        },
+        {
+            id: 'ramp-down',
+            name: t('presets.rampDown'),
+            description: t('presets.rampDownDesc'),
+            visualPattern: [85, 70, 55, 40],
+            requiresRepetitions: true,
+            blocks: [
+                {
+                    type: 'interval',
+                    stepName: t('labels.hard'),
+                    duration: { type: 'distance', value: 400 },
+                    target: { type: 'vam_zone', min: '5', max: '5' },
+                    intensity: 85,
+                    notes: ''
+                },
+                {
+                    type: 'interval',
+                    stepName: t('presets.medium'),
+                    duration: { type: 'distance', value: 400 },
+                    target: { type: 'vam_zone', min: '4', max: '4' },
+                    intensity: 70,
+                    notes: ''
+                },
+                {
+                    type: 'interval',
+                    stepName: t('labels.easy'),
+                    duration: { type: 'distance', value: 400 },
+                    target: { type: 'vam_zone', min: '3', max: '3' },
+                    intensity: 55,
+                    notes: ''
+                },
+                {
+                    type: 'interval',
+                    stepName: t('labels.recovery'),
+                    duration: { type: 'distance', value: 400 },
+                    target: { type: 'vam_zone', min: '2', max: '2' },
+                    intensity: 40,
+                    notes: ''
+                }
+            ]
+        }
+    ];
 
     const handlePresetClick = (pattern: PresetPattern) => {
         if (pattern.requiresRepetitions) {
@@ -282,12 +284,12 @@ export function PresetIntervals({ onSelectPreset }: PresetIntervalsProps) {
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 shadow-sm">
                 <div className="flex items-center justify-between mb-2">
                     <h3 className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                        Click blocks to build workout
+                        {t('clickBlocksHint')}
                     </h3>
                     <button
                         type="button"
                         className="w-4 h-4 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-gray-600 dark:text-gray-300 text-[10px] hover:bg-gray-400 dark:hover:bg-gray-500 transition"
-                        title="Click any preset to add it to your workout"
+                        title={t('clickPresetHint')}
                     >
                         ?
                     </button>

@@ -1,6 +1,6 @@
 'use client';
 
-import { WorkoutBlock, TargetType, DurationType } from './types';
+import { WorkoutBlock, TargetType, DurationType, AthleteProfile } from './types';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
@@ -10,12 +10,7 @@ import { Label } from '@/components/ui/label';
 import { X, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { calculateTargetPace, VAM_DEFAULT, VAM_ZONES } from '@/features/profiles/constants/vam';
-
-interface AthleteProfile {
-    vam?: string;    // e.g., "4:30" min/km
-    lthr?: number;   // e.g., 170 bpm
-    maxHR?: number;  // e.g., 190 bpm
-}
+import { useTranslations } from 'next-intl';
 
 interface StepEditorProps {
     step: WorkoutBlock;
@@ -26,21 +21,22 @@ interface StepEditorProps {
     athleteProfile?: AthleteProfile | null;
 }
 
-const TARGET_TYPES: { value: TargetType; label: string }[] = [
-    { value: 'vam_zone', label: 'VAM Zone' },
-    { value: 'lthr', label: 'LTHR' },
-    { value: 'rpe_target', label: 'RPE Target' },
-];
-
-const WORK_TYPES: { value: string; label: string }[] = [
-    { value: 'warmup', label: 'Warm Up' },
-    { value: 'interval', label: 'Work' },
-    { value: 'recovery', label: 'Recover' },
-    { value: 'cooldown', label: 'Cool Down' },
-];
-
 export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = false, athleteProfile = null }: StepEditorProps) {
+    const t = useTranslations('builder');
     const [showCadence, setShowCadence] = useState(!!step.cadenceRange);
+
+    const TARGET_TYPES: { value: TargetType; label: string }[] = [
+        { value: 'vam_zone', label: t('vamZone') },
+        { value: 'lthr', label: t('lthr') },
+        { value: 'rpe_target', label: t('rpeTarget') },
+    ];
+
+    const WORK_TYPES: { value: string; label: string }[] = [
+        { value: 'warmup', label: t('labels.warmup') },
+        { value: 'interval', label: t('labels.interval') },
+        { value: 'recovery', label: t('labels.recovery') },
+        { value: 'cooldown', label: t('labels.cooldown') },
+    ];
 
     const getDurationValue = () => {
         if (step.duration.type === 'distance') {
@@ -94,13 +90,13 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
             case 'lthr': {
                 // LTHR: percentage of lactate threshold heart rate
                 if (!athleteProfile?.lthr) {
-                    return 'No athlete selected - LTHR unavailable';
+                    return t('noAthleteSelectedLthr');
                 }
                 if (!min || !max) return null;
 
                 const minHR = Math.round((athleteProfile.lthr * min) / 100);
                 const maxHR = Math.round((athleteProfile.lthr * max) / 100);
-                return `${minHR} — ${maxHR} bpm`;
+                return `${minHR} — ${maxHR} ${t('units.bpm')}`;
             }
             case 'vam_zone': {
                 // VAM zones are defined in VAM_ZONES
@@ -109,12 +105,8 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                 if (!zone) return null;
 
                 if (!athleteProfile?.vam) {
-                    return `Zone ${min} - No athlete VAM data`;
+                    return `Zone ${min} - ${t('noAthleteVamData')}`;
                 }
-
-                // Parse VAM from "4:30" format to decimal
-                const [vamMin, vamSec] = athleteProfile.vam.split(':').map((s: string) => parseInt(s));
-                const vamDecimal = vamMin + vamSec / 60;
 
                 // Calculate pace range based on zone percentages
                 const minPace = calculateTargetPace(athleteProfile.vam, zone.max);
@@ -145,8 +137,8 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                     <Input
                         value={step.stepName || ''}
                         onChange={(e) => onUpdate({ stepName: e.target.value })}
-                        placeholder="Step name"
-                        className="bg-transparent border-0 border-b border-[#abb3b7]/30 px-0 py-1 text-[#2b3437] dark:text-[#f8f9fa] font-semibold text-xl w-64 rounded-none focus:ring-0 focus:border-[#4e6073]"
+                        placeholder={t('stepName')}
+                        className="bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-2 py-1 text-[#2b3437] dark:text-[#f8f9fa] font-semibold text-xl w-64 rounded-t-md focus:ring-0 focus:border-[#4e6073] transition-colors"
                     />
                 </div>
                 <div className="flex items-center gap-3">
@@ -154,7 +146,7 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                         value={step.type}
                         onValueChange={(value) => onUpdate({ type: value as any })}
                     >
-                        <SelectTrigger className="w-32 bg-transparent border-0 border-b border-[#abb3b7]/30 rounded-none focus:ring-0 text-[#2b3437] dark:text-[#f8f9fa] text-sm font-semibold">
+                        <SelectTrigger className="w-[140px] bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-2 rounded-t-md focus:ring-0 text-[#2b3437] dark:text-[#f8f9fa] text-sm font-semibold transition-colors">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -177,12 +169,12 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                             })
                         }
                     >
-                        <SelectTrigger className="w-28 bg-transparent border-0 border-b border-[#abb3b7]/30 rounded-none focus:ring-0 text-[#2b3437] dark:text-[#f8f9fa] text-sm font-semibold">
+                        <SelectTrigger className="w-[120px] bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-2 rounded-t-md focus:ring-0 text-[#2b3437] dark:text-[#f8f9fa] text-sm font-semibold transition-colors">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="distance">Distance</SelectItem>
-                            <SelectItem value="time">Time</SelectItem>
+                            <SelectItem value="distance">{t('kilometers')}</SelectItem>
+                            <SelectItem value="time">{t('minutes')}</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -190,9 +182,9 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
 
             <div className="grid grid-cols-2 gap-8">
                 {/* Duration */}
-                <div>
+                <div className="min-w-0">
                     <Label className="text-[10px] font-semibold text-[#8b9bb4] tracking-[0.05em] uppercase mb-3 block">
-                        Step Duration
+                        {t('stepDuration')}
                     </Label>
                     <div className="flex items-baseline gap-2">
                         {step.duration.type === 'distance' ? (
@@ -201,7 +193,7 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                                 step="0.1"
                                 value={getDurationValue().toFixed(2)}
                                 onChange={(e) => handleDurationChange(parseFloat(e.target.value))}
-                                className="flex-1 bg-transparent border-0 border-b border-[#abb3b7]/30 px-0 py-1 text-[#2b3437] dark:text-[#f8f9fa] text-3xl font-extrabold font-display focus:ring-0 focus:border-[#4e6073] transition-colors outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                className="flex-1 min-w-0 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-2 py-1 text-[#2b3437] dark:text-[#f8f9fa] text-3xl font-extrabold font-display rounded-t-md focus:ring-0 focus:border-[#4e6073] transition-colors outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
                         ) : (
                             <input
@@ -224,7 +216,7 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                                         }
                                     }
                                 }}
-                                className="flex-1 bg-transparent border-0 border-b border-[#abb3b7]/30 px-0 py-1 text-[#2b3437] dark:text-[#f8f9fa] text-3xl font-extrabold font-display font-mono focus:ring-0 focus:border-[#4e6073] transition-colors outline-none"
+                                className="flex-1 min-w-0 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-2 py-1 text-[#2b3437] dark:text-[#f8f9fa] text-3xl font-extrabold font-display font-mono rounded-t-md focus:ring-0 focus:border-[#4e6073] transition-colors outline-none"
                             />
                         )}
                         <span className="text-[#8b9bb4] text-sm font-semibold shrink-0">
@@ -235,9 +227,9 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
 
 
                 {/* Target Range */}
-                <div>
+                <div className="min-w-0">
                     <Label className="text-[10px] font-semibold text-[#8b9bb4] tracking-[0.05em] uppercase mb-3 block">
-                        Target Range
+                        {t('targetRange')}
                     </Label>
                     <div className="flex items-center gap-2">
                         {/* LTHR: Percentage Inputs */}
@@ -249,7 +241,7 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                                     onChange={(e) => onUpdate({
                                         target: { ...step.target, min: parseFloat(e.target.value) }
                                     })}
-                                    className="w-16 bg-transparent border-0 border-b border-[#abb3b7]/30 px-0 py-1 text-[#2b3437] dark:text-[#f8f9fa] text-2xl font-extrabold font-display text-center focus:ring-0 focus:border-[#4e6073] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                    className="w-16 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-1 py-1 rounded-t-md text-[#2b3437] dark:text-[#f8f9fa] text-2xl font-extrabold font-display text-center focus:ring-0 focus:border-[#4e6073] transition-colors outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 />
                                 <span className="text-[#8b9bb4] font-semibold">—</span>
                                 <input
@@ -258,7 +250,7 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                                     onChange={(e) => onUpdate({
                                         target: { ...step.target, max: parseFloat(e.target.value) }
                                     })}
-                                    className="w-16 bg-transparent border-0 border-b border-[#abb3b7]/30 px-0 py-1 text-[#2b3437] dark:text-[#f8f9fa] text-2xl font-extrabold font-display text-center focus:ring-0 focus:border-[#4e6073] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                    className="w-16 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-1 py-1 rounded-t-md text-[#2b3437] dark:text-[#f8f9fa] text-2xl font-extrabold font-display text-center focus:ring-0 focus:border-[#4e6073] transition-colors outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 />
                                 <span className="text-[#8b9bb4] text-sm font-semibold">%</span>
                             </>
@@ -275,7 +267,7 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                                     onChange={(e) => onUpdate({
                                         target: { ...step.target, min: parseFloat(e.target.value) }
                                     })}
-                                    className="w-16 bg-transparent border-0 border-b border-[#abb3b7]/30 px-0 py-1 text-[#2b3437] dark:text-[#f8f9fa] text-2xl font-extrabold font-display text-center focus:ring-0 focus:border-[#4e6073] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                    className="w-16 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-1 py-1 rounded-t-md text-[#2b3437] dark:text-[#f8f9fa] text-2xl font-extrabold font-display text-center focus:ring-0 focus:border-[#4e6073] transition-colors outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 />
                                 <span className="text-[#8b9bb4] font-semibold">—</span>
                                 <input
@@ -286,7 +278,7 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                                     onChange={(e) => onUpdate({
                                         target: { ...step.target, max: parseFloat(e.target.value) }
                                     })}
-                                    className="w-16 bg-transparent border-0 border-b border-[#abb3b7]/30 px-0 py-1 text-[#2b3437] dark:text-[#f8f9fa] text-2xl font-extrabold font-display text-center focus:ring-0 focus:border-[#4e6073] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                    className="w-16 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-1 py-1 rounded-t-md text-[#2b3437] dark:text-[#f8f9fa] text-2xl font-extrabold font-display text-center focus:ring-0 focus:border-[#4e6073] transition-colors outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 />
                             </>
                         )}
@@ -299,16 +291,15 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                                     target: { ...step.target, min: value, max: value }
                                 })}
                             >
-                                <SelectTrigger className="flex-1 bg-transparent border-0 border-b border-[#abb3b7]/30 rounded-none focus:ring-0 text-[#2b3437] dark:text-[#f8f9fa] font-semibold text-sm">
+                                <SelectTrigger className="flex-1 min-w-0 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-2 rounded-t-md focus:ring-0 text-[#2b3437] dark:text-[#f8f9fa] font-semibold text-sm transition-colors truncate">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="1">Z1 — Regenerativo (0–70% VAM)</SelectItem>
-                                    <SelectItem value="2">Z2 — Endurance (70–85% VAM)</SelectItem>
-                                    <SelectItem value="3">Z3 — Tempo (85–92% VAM)</SelectItem>
-                                    <SelectItem value="4">Z4 — Umbral (92–97% VAM)</SelectItem>
-                                    <SelectItem value="5">Z5 — VO₂ Max (97–103% VAM)</SelectItem>
-                                    <SelectItem value="6">Z6 — Potencia (103–120% VAM)</SelectItem>
+                                    <SelectItem value="1">{t('vamZoneFullNames.1' as any)}</SelectItem>
+                                    <SelectItem value="2">{t('vamZoneFullNames.2' as any)}</SelectItem>
+                                    <SelectItem value="3">{t('vamZoneFullNames.3' as any)}</SelectItem>
+                                    <SelectItem value="4">{t('vamZoneFullNames.4' as any)}</SelectItem>
+                                    <SelectItem value="5">{t('vamZoneFullNames.5' as any)}</SelectItem>
                                 </SelectContent>
                             </Select>
                         )}
@@ -321,7 +312,7 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                                 onUpdate({ target: { type: value, min: defaults.min, max: defaults.max } });
                             }}
                         >
-                            <SelectTrigger className="w-40 bg-transparent border-0 border-b border-[#abb3b7]/30 rounded-none focus:ring-0 text-[#2b3437] dark:text-[#f8f9fa] text-sm font-semibold">
+                            <SelectTrigger className="w-[140px] shrink-0 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-2 rounded-t-md focus:ring-0 text-[#2b3437] dark:text-[#f8f9fa] text-sm font-semibold transition-colors truncate">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -351,7 +342,7 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                             className="data-[state=checked]:bg-[#4e6073]"
                         />
                         <Label className="text-xs font-semibold text-[#8b9bb4] uppercase tracking-wider cursor-pointer">
-                            End step on lap button
+                            {t('endStepOnLap')}
                         </Label>
                     </div>
                     <Button
@@ -362,7 +353,7 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                         className="text-xs font-semibold text-[#4e6073] hover:text-[#2b3437] dark:hover:text-white hover:bg-transparent uppercase tracking-wider p-0"
                     >
                         <Plus className="w-3 h-3 mr-1" />
-                        {showCadence ? 'Remove cadence' : 'Add cadence range'}
+                        {showCadence ? t('removeCadence') : t('addCadence')}
                     </Button>
                 </div>
                 <Button
@@ -373,7 +364,7 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                     className="text-xs font-semibold text-[#8b9bb4] hover:text-red-500 hover:bg-transparent uppercase tracking-wider p-0"
                 >
                     <X className="w-3 h-3 mr-1" />
-                    Remove step
+                    {t('removeStep')}
                 </Button>
             </div>
 
@@ -381,7 +372,7 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
             {showCadence && step.cadenceRange && (
                 <div className="mt-6 pt-4 border-t border-[#e1e5e8] dark:border-white/5">
                     <Label className="text-[10px] font-semibold text-[#8b9bb4] tracking-[0.05em] uppercase mb-4 block">
-                        Cadence Range — spm
+                        Cadence Range — {t('units.spm')}
                     </Label>
                     <div className="flex items-baseline gap-3">
                         <input
@@ -390,7 +381,7 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                             onChange={(e) => onUpdate({
                                 cadenceRange: { ...step.cadenceRange!, min: parseInt(e.target.value) }
                             })}
-                            className="w-20 bg-transparent border-0 border-b border-[#abb3b7]/30 px-0 py-1 text-[#2b3437] dark:text-[#f8f9fa] text-2xl font-extrabold font-display text-center focus:ring-0 focus:border-[#4e6073] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            className="w-20 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-1 py-1 rounded-t-md text-[#2b3437] dark:text-[#f8f9fa] text-2xl font-extrabold font-display text-center focus:ring-0 focus:border-[#4e6073] transition-colors outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                         <span className="text-[#8b9bb4] font-semibold">—</span>
                         <input
@@ -399,7 +390,7 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                             onChange={(e) => onUpdate({
                                 cadenceRange: { ...step.cadenceRange!, max: parseInt(e.target.value) }
                             })}
-                            className="w-20 bg-transparent border-0 border-b border-[#abb3b7]/30 px-0 py-1 text-[#2b3437] dark:text-[#f8f9fa] text-2xl font-extrabold font-display text-center focus:ring-0 focus:border-[#4e6073] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            className="w-20 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-1 py-1 rounded-t-md text-[#2b3437] dark:text-[#f8f9fa] text-2xl font-extrabold font-display text-center focus:ring-0 focus:border-[#4e6073] transition-colors outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         />
                     </div>
                 </div>
@@ -408,7 +399,7 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
             {/* Interval RPE (Optional) */}
             <div className="mt-6 pt-4 border-t border-[#e1e5e8] dark:border-white/5">
                 <Label className="text-[10px] font-semibold text-[#8b9bb4] tracking-[0.05em] uppercase mb-4 flex items-center justify-between">
-                    Interval RPE (Optional)
+                    {t('intervalRpeOptional')}
                     {step.rpe && <span className="text-[#4e6073] dark:text-white text-sm font-bold bg-[#f1f4f6] dark:bg-white/5 px-2 py-0.5 rounded">{step.rpe}/10</span>}
                 </Label>
                 <div className="flex items-center gap-4">
@@ -423,12 +414,12 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                 </div>
                 <p className="text-[11px] font-semibold text-[#8b9bb4] uppercase tracking-wider mt-3">
                     {step.rpe
-                        ? step.rpe <= 2 ? 'Very Easy'
-                            : step.rpe <= 4 ? 'Easy'
-                                : step.rpe <= 6 ? 'Moderate'
-                                    : step.rpe <= 8 ? 'Hard'
-                                        : 'Max Effort'
-                        : 'No RPE set'}
+                        ? step.rpe <= 2 ? t('rpeLevels.veryEasy')
+                            : step.rpe <= 4 ? t('rpeLevels.easy')
+                                : step.rpe <= 6 ? t('rpeLevels.moderate')
+                                    : step.rpe <= 8 ? t('rpeLevels.hard')
+                                        : t('rpeLevels.maxEffort')
+                        : t('noRpeSet')}
                 </p>
             </div>
         </div>

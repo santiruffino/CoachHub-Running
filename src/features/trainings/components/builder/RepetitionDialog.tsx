@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface RepetitionDialogProps {
     patternName: string;
@@ -10,6 +11,7 @@ interface RepetitionDialogProps {
 }
 
 export function RepetitionDialog({ patternName, onConfirm, onCancel }: RepetitionDialogProps) {
+    const t = useTranslations('builder');
     const [reps, setReps] = useState(4);
 
     const handleConfirm = () => {
@@ -24,7 +26,7 @@ export function RepetitionDialog({ patternName, onConfirm, onCancel }: Repetitio
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                        How many repeats?
+                        {t('howManyRepeats')}
                     </h3>
                     <button
                         onClick={onCancel}
@@ -37,12 +39,12 @@ export function RepetitionDialog({ patternName, onConfirm, onCancel }: Repetitio
                 {/* Content */}
                 <div className="p-6">
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                        Adding pattern: <span className="font-semibold text-gray-900 dark:text-white">{patternName}</span>
+                        {t('addingPattern')} <span className="font-semibold text-gray-900 dark:text-white">{patternName}</span>
                     </p>
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Number of repetitions
+                            {t('numberOfRepetitions')}
                         </label>
                         <input
                             type="number"
@@ -67,13 +69,13 @@ export function RepetitionDialog({ patternName, onConfirm, onCancel }: Repetitio
                         onClick={onCancel}
                         className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
                     >
-                        Cancel
+                        {t('common.cancel' as any)}
                     </button>
                     <button
                         onClick={handleConfirm}
                         className="px-6 py-2 bg-brand-primary hover:bg-brand-primary-dark text-white font-semibold rounded-lg transition-colors"
                     >
-                        Add {reps}× Repeats
+                        {t('addRepeats', { reps })}
                     </button>
                 </div>
             </div>

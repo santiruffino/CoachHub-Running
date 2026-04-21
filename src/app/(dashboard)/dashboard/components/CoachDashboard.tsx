@@ -76,36 +76,48 @@ export default function CoachDashboard({ user }: { user: any }) {
   const lowComplianceCount = data?.alerts?.lowCompliance?.length ?? 0;
   const pendingActionCount = rpeCount + missingCount + lowComplianceCount;
   const groupCount = data?.stats?.totalGroups ?? 0;
-  
+
+  const formatPlanSub = (groupName?: string, raceDate?: string) => {
+    if (!groupName && !raceDate) return "";
+    return t("dashboard.planSubtitle", { 
+        groupName: groupName || t("dashboard.athlete.defaultName"), 
+        timeframe: raceDate || "" 
+    }).replace(/ - $/, ""); // Remove trailing separator if no timeframe
+  };
+
   // Real alerts mapped to UI properties
   const allAlerts = [
-    ...(data?.alerts?.recentFeedback?.map(fb => ({
+    ...(data?.alerts?.recentFeedback?.map((fb: any) => ({
       id: fb.athleteId,
       name: fb.athleteName,
       type: 'new_feedback' as const,
       time: fb.timestamp || t("dashboard.alerts.new"),
-      message: `FEEDBACK: ${fb.activityName}`
+      message: t("dashboard.alertTypes.new_feedback"),
+      details: fb.activityName,
     })) || []),
-    ...(data?.alerts?.rpeMismatches?.map(m => ({
+    ...(data?.alerts?.rpeMismatches?.map((m: RPEMismatch) => ({
       id: m.athleteId,
       name: m.athleteName,
       type: 'rpe_mismatch' as const,
       time: t("dashboard.alerts.rpeCheck"),
-      message: t("dashboard.alerts.rpeDetails", {expected: m.expectedRPE, actual: m.actualRPE, diff: m.difference})
+      message: t("dashboard.alertTypes.rpe_mismatch"),
+      details: formatPlanSub(m.groupName, m.targetRace)
     })) || []),
-    ...(data?.alerts?.lowCompliance?.map(l => ({
+    ...(data?.alerts?.lowCompliance?.map((l: LowCompliance) => ({
       id: l.athleteId,
       name: l.athleteName,
       type: 'low_compliance' as const,
-      time: `Porcentaje de cumplimiento: ${l.completionRate}%`,
-      message: t("dashboard.alerts.complianceLow")
+      time: t("athletes.detail.complianceRate") + `: ${l.completionRate}%`,
+      message: t("dashboard.alertTypes.low_compliance"),
+      details: formatPlanSub(l.groupName, l.targetRace)
     })) || []),
-    ...(data?.alerts?.missingWorkouts?.map(m => ({
+    ...(data?.alerts?.missingWorkouts?.map((m: MissingWorkout) => ({
       id: m.id,
       name: m.name,
       type: 'missing_workout' as const,
       time: t("dashboard.alerts.nextWeek"),
-      message: m.type === 'group' ? t("dashboard.alerts.groupNoWorkouts") : t("dashboard.alerts.athleteNoWorkouts")
+      message: t("dashboard.alertTypes.missing_workout"),
+      details: formatPlanSub(m.groupName, m.targetRace)
     })) || [])
   ];
 
@@ -113,12 +125,12 @@ export default function CoachDashboard({ user }: { user: any }) {
 
   return (
     <div className="p-4 md:p-8 pt-4 pb-20 max-w-[1400px] mx-auto">
-      
+
       {/* Header Area */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-display font-light mb-2 text-foreground">
-            {t("dashboard.messages.hi", {name: user.firstName || user.name?.split(' ')[0]})}
+          <h1 className="text-3xl sm:text-4xl font-display tracking-tight font-light mb-2 text-foreground">
+            {t("dashboard.messages.hi", { name: user.firstName || user.name?.split(' ')[0] })}
           </h1>
           <p className="text-sm text-muted-foreground font-medium">
             {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).replace(/^\w/, c => c.toUpperCase())}
@@ -136,16 +148,16 @@ export default function CoachDashboard({ user }: { user: any }) {
 
       {/* Main Asymmetrical Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-        
+
         {/* Left Column (Approx 65%) */}
         <div className="lg:col-span-8 space-y-12">
-          
+
           {/* Athlete Compliance Wrapper */}
-          <div className="bg-muted/60 p-6 md:p-8 rounded-[1.5rem]">
+          <div className="bg-muted p-6 md:p-8 rounded-[1.5rem]">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold text-foreground">{t("dashboard.alerts.athletesCompliance")}</h2>
             </div>
-            
+
             <div className="space-y-3">
               {allAlerts.length > 0 ? allAlerts.map((alert, idx) => (
                 <CriticalAlertItem
@@ -155,6 +167,7 @@ export default function CoachDashboard({ user }: { user: any }) {
                   alertType={alert.type}
                   timestamp={alert.time}
                   message={alert.message}
+                  details={alert.details}
                 />
               )) : (
                 <p className="text-sm text-muted-foreground p-4 text-center">{t("dashboard.alerts.noCurrentAlerts")}</p>
@@ -184,18 +197,26 @@ export default function CoachDashboard({ user }: { user: any }) {
 
         {/* Right Column (Approx 35%) */}
         <div className="lg:col-span-4 space-y-8 lg:space-y-10">
-          
+
           {/* Recent Activity Timeline */}
-          <div className="bg-muted/30 p-6 rounded-2xl">
+          <div className="bg-muted p-6 rounded-2xl">
             <h2 className="text-base font-semibold text-foreground mb-6">{t("dashboard.alerts.recentActivity")}</h2>
             <div className="space-y-1">
               {data?.activityTimeline && data.activityTimeline.length > 0 ? (
                 data.activityTimeline.map((item, idx) => (
-                  <TimelineItem 
+                  <TimelineItem
                     key={item.id || idx}
-                    time={new Date(item.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} 
+                    time={new Date(item.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     isSystem={false}
-                    content={<><span className="font-semibold text-foreground">{item.athleteName}</span> actualizó <span className="text-primary hover:underline cursor-pointer">{item.activityName}</span>.<br/><br/><span className="italic text-muted-foreground">&#34;{item.content}&#34;</span></>}
+                    content={
+                      <>
+                        <span className="font-semibold text-foreground">{item.athleteName}</span>{" "}
+                        {t('athletes.detail.updated')}{" "}
+                        <span className="text-primary hover:underline cursor-pointer">{item.activityName}</span>.
+                        <br /><br />
+                        <span className="italic text-muted-foreground">&#34;{item.content}&#34;</span>
+                      </>
+                    }
                   />
                 ))
               ) : (

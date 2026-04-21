@@ -1,18 +1,20 @@
 'use client';
 
-import { WorkoutBlock } from './types';
+import { WorkoutBlock, AthleteProfile } from './types';
 import { StepEditor } from './StepEditor';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Repeat, Plus, ChevronDown, ChevronUp } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface RepeatBlockEditorProps {
     groupId: string;
     blocks: WorkoutBlock[];
     onUpdate: (blockId: string, updates: Partial<WorkoutBlock>) => void;
     onRemove: (blockId: string) => void;
+    athleteProfile?: AthleteProfile | null;
     onAddStep: () => void;
 }
 
@@ -21,8 +23,10 @@ export function RepeatBlockEditor({
     blocks,
     onUpdate,
     onRemove,
+    athleteProfile,
     onAddStep
 }: RepeatBlockEditorProps) {
+    const t = useTranslations('builder');
     const [isCollapsed, setIsCollapsed] = useState(false);
 
     const reps = blocks[0]?.group?.reps || 1;
@@ -58,7 +62,7 @@ export function RepeatBlockEditor({
                 <div className="flex items-center gap-3">
                     <Repeat className="w-5 h-5 text-[#FFCC00]" />
                     <div className="flex items-center gap-2">
-                        <span className="text-gray-900 dark:text-white font-semibold">Repeat</span>
+                        <span className="text-gray-900 dark:text-white font-semibold">{t('repeat')}</span>
                         <Input
                             type="number"
                             min="1"
@@ -66,10 +70,10 @@ export function RepeatBlockEditor({
                             onChange={(e) => updateReps(parseInt(e.target.value) || 1)}
                             className="w-16 h-8 bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white text-center font-bold"
                         />
-                        <span className="text-gray-900 dark:text-white font-semibold">times</span>
+                        <span className="text-gray-900 dark:text-white font-semibold">{t('times')}</span>
                     </div>
                     <span className="text-sm text-gray-600 dark:text-gray-400 ml-4">
-                        Total for this block: <span className="text-[#FFCC00] font-semibold">{getTotalDistance()} km</span>
+                        {t('totalForBlock')} <span className="text-[#FFCC00] font-semibold">{getTotalDistance()} {t('units.km')}</span>
                     </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -83,12 +87,12 @@ export function RepeatBlockEditor({
                         {isCollapsed ? (
                             <>
                                 <ChevronDown className="w-4 h-4 mr-1" />
-                                Expand
+                                {t('expand')}
                             </>
                         ) : (
                             <>
                                 <ChevronUp className="w-4 h-4 mr-1" />
-                                Collapse
+                                {t('collapse')}
                             </>
                         )}
                     </Button>
@@ -102,7 +106,7 @@ export function RepeatBlockEditor({
                         }}
                         className="text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-gray-300 dark:hover:bg-slate-600"
                     >
-                        Delete Block
+                        {t('deleteBlock')}
                     </Button>
                 </div>
             </div>
@@ -118,6 +122,7 @@ export function RepeatBlockEditor({
                             onUpdate={(updates) => onUpdate(block.id, updates)}
                             onRemove={() => onRemove(block.id)}
                             isInRepeat={true}
+                            athleteProfile={athleteProfile}
                         />
                     ))}
 
@@ -128,7 +133,7 @@ export function RepeatBlockEditor({
                         onClick={onAddStep}
                     >
                         <Plus className="w-4 h-4 mr-2" />
-                        Add step to repeat
+                        {t('addStepToRepeat')}
                     </Button>
                 </div>
             )}

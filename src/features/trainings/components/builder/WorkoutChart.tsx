@@ -3,6 +3,7 @@
 import { WorkoutBlock, BlockType } from './types';
 import { useMemo } from 'react';
 import ReactECharts from 'echarts-for-react';
+import { useTranslations } from 'next-intl';
 
 interface WorkoutChartProps {
     blocks: WorkoutBlock[];
@@ -16,9 +17,12 @@ const BLOCK_COLORS: Record<BlockType, string> = {
     interval: '#3B82F6',  // Blue  
     recovery: '#F97316',  // Orange
     cooldown: '#06B6D4',  // Cyan
+    rest: '#94A3B8'       // Slate
 };
 
 export function WorkoutChart({ blocks, selectedId, onBlockClick }: WorkoutChartProps) {
+    const t = useTranslations('builder');
+
     const chartData = useMemo(() => {
         const labels: string[] = [];
         const durations: number[] = [];
@@ -61,7 +65,7 @@ export function WorkoutChart({ blocks, selectedId, onBlockClick }: WorkoutChartP
                             gbDuration = (gb.duration.value / 1000) * 5;
                         }
 
-                        labels.push(gb.stepName || gb.type);
+                        labels.push(gb.stepName || t(`labels.${gb.type}`));
                         durations.push(gbDuration);
                         colors.push(BLOCK_COLORS[gb.type]);
                         blockIds.push(gb.id);
@@ -71,7 +75,7 @@ export function WorkoutChart({ blocks, selectedId, onBlockClick }: WorkoutChartP
                 i = j;
             } else {
                 // Regular non-grouped block
-                labels.push(block.stepName || block.type);
+                labels.push(block.stepName || t(`labels.${block.type}`));
                 durations.push(durationMinutes);
                 colors.push(BLOCK_COLORS[block.type]);
                 blockIds.push(block.id);
@@ -80,7 +84,7 @@ export function WorkoutChart({ blocks, selectedId, onBlockClick }: WorkoutChartP
         }
 
         return { labels, durations, colors, blockIds };
-    }, [blocks]);
+    }, [blocks, t]);
 
     const option = useMemo(() => {
         if (chartData.durations.length === 0) {
@@ -96,7 +100,7 @@ export function WorkoutChart({ blocks, selectedId, onBlockClick }: WorkoutChartP
                 },
                 formatter: (params: any) => {
                     const param = params[0];
-                    return `<strong>${param.name}</strong><br/>Duration: ${param.value.toFixed(1)} min`;
+                    return `<strong>${param.name}</strong><br/>${t('duration')}: ${param.value.toFixed(1)} ${t('units.min')}`;
                 }
             },
             grid: {
@@ -121,7 +125,7 @@ export function WorkoutChart({ blocks, selectedId, onBlockClick }: WorkoutChartP
             },
             yAxis: {
                 type: 'value',
-                name: 'Duration (min)',
+                name: t('durationMin'),
                 nameTextStyle: {
                     color: '#9CA3AF',
                     fontSize: 11
@@ -161,7 +165,7 @@ export function WorkoutChart({ blocks, selectedId, onBlockClick }: WorkoutChartP
                 }
             ]
         };
-    }, [chartData, selectedId]);
+    }, [chartData, selectedId, t]);
 
     const onChartEvents = {
         click: (params: any) => {
@@ -175,7 +179,7 @@ export function WorkoutChart({ blocks, selectedId, onBlockClick }: WorkoutChartP
     if (!option) {
         return (
             <div className="h-full flex items-center justify-center text-gray-400 dark:text-gray-500 text-sm">
-                No blocks added yet. Start building your workout!
+                {t('startBuildingWorkout')}
             </div>
         );
     }

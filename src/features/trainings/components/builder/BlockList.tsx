@@ -3,7 +3,8 @@
 import { WorkoutBlock, BlockType } from './types';
 import { GripVertical, Trash2, Plus, ChevronDown, ChevronRight, X } from 'lucide-react';
 import { clsx } from 'clsx';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface BlockListProps {
     blocks: WorkoutBlock[];
@@ -22,14 +23,13 @@ export function BlockList({
     blocks,
     selectedId,
     onSelect,
-    onReorder,
     onRemove,
-    onRemoveGroup,
     onRemoveMultiple,
     onAddStepToGroup,
     onUpdateGroupReps,
     athleteVAM
 }: BlockListProps) {
+    const t = useTranslations('builder');
     const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
 
     const toggleGroup = (groupKey: string) => {
@@ -37,17 +37,11 @@ export function BlockList({
     };
 
     const getDisplayName = (block: WorkoutBlock) => {
-        return block.stepName || block.type.charAt(0).toUpperCase() + block.type.slice(1);
+        return block.stepName || t(`labels.${block.type}`);
     };
 
     const getTypeTag = (type: BlockType) => {
-        const tags = {
-            warmup: 'warmup',
-            interval: 'work',
-            recovery: 'rest',
-            cooldown: 'cooldown'
-        };
-        return tags[type];
+        return t(`labels.${type}`).toLowerCase();
     };
 
     const getTagColor = (type: BlockType) => {
@@ -55,7 +49,8 @@ export function BlockList({
             warmup: 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300',
             interval: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
             recovery: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300',
-            cooldown: 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+            cooldown: 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300',
+            rest: 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
         };
         return colors[type];
     };
@@ -63,13 +58,12 @@ export function BlockList({
     const formatDuration = (block: WorkoutBlock) => {
         if (block.duration.type === 'distance') {
             const value = block.duration.unit === 'km' ? block.duration.value / 1000 : block.duration.value;
-            const unit = block.duration.unit || 'm';
+            const unit = block.duration.unit === 'km' ? t('units.km') : t('units.m');
             return `${value} ${unit}`;
         } else {
             const val = Number(block.duration.value);
             const m = Math.floor(val / 60);
-            const s = val % 60;
-            return `${m} min`;
+            return `${m} ${t('units.min')}`;
         }
     };
 
@@ -81,15 +75,7 @@ export function BlockList({
             return `RPE ${block.target.min}-${block.target.max}`;
         }
         if (block.target.type === 'vam_zone' && block.target.min) {
-            const vamZoneLabels: Record<string, string> = {
-                '1': 'Z1 Regenerativo',
-                '2': 'Z2 Endurance',
-                '3': 'Z3 Tempo',
-                '4': 'Z4 Umbral Anaeróbico',
-                '5': 'Z5 VO2 Max',
-                '6': 'Z6 Potencia Anaeróbica'
-            };
-            const zoneName = vamZoneLabels[block.target.min] || `Z${block.target.min}`;
+            const zoneName = t(`vamZoneFullNames.${block.target.min}` as any) || `Z${block.target.min}`;
 
             // If athleteVAM is available, calculate and show pace
             if (athleteVAM) {
@@ -129,7 +115,7 @@ export function BlockList({
             return `${mins}:${secs.toString().padStart(2, '0')}`;
         };
 
-        return `${formatPace(minPaceSeconds)} - ${formatPace(maxPaceSeconds)} min/km`;
+        return `${formatPace(minPaceSeconds)} - ${formatPace(maxPaceSeconds)} ${t('units.minPerKm')}`;
     };
 
     // Render a single block item
@@ -186,7 +172,7 @@ export function BlockList({
                 <button
                     onClick={(e) => { e.stopPropagation(); onRemove(block.id); }}
                     className="p-1.5 text-gray-400 hover:text-red-500 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                    title="Remove Step"
+                    title={t('removeStep')}
                 >
                     <Trash2 className="w-4 h-4" />
                 </button>
@@ -199,7 +185,7 @@ export function BlockList({
         if (blocks.length === 0) {
             return (
                 <div className="text-center py-10 text-gray-400 dark:text-gray-500 text-sm">
-                    No steps added yet.
+                    {t('noStepsAdded')}
                 </div>
             );
         }
@@ -238,7 +224,7 @@ export function BlockList({
                                     <ChevronRight className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                                 )}
                                 <span className="text-sm font-bold text-purple-900 dark:text-purple-200">
-                                    Repeats
+                                    {t('repeat')}
                                 </span>
                                 {onUpdateGroupReps ? (
                                     <input
@@ -262,7 +248,7 @@ export function BlockList({
                                     </span>
                                 )}
                                 <span className="text-xs text-purple-700 dark:text-purple-300">
-                                    times
+                                    {t('times')}
                                 </span>
                             </div>
 
@@ -273,7 +259,7 @@ export function BlockList({
                                     onRemoveMultiple(idsToRemove);
                                 }}
                                 className="p-1.5 text-purple-500 hover:text-red-500 dark:text-purple-400 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                                title="Remove Repeat Block"
+                                title={t('deleteBlock')}
                             >
                                 <X className="w-4 h-4" />
                             </button>
@@ -293,7 +279,7 @@ export function BlockList({
                                         className="w-full mt-2 py-2 border-2 border-dashed border-purple-300 dark:border-purple-700 rounded-md text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition flex items-center justify-center gap-2 text-sm font-medium"
                                     >
                                         <Plus className="w-4 h-4" />
-                                        Add Step to Block
+                                        {t('addStepToRepeat')}
                                     </button>
                                 )}
                             </div>

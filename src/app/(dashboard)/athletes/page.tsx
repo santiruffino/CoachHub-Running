@@ -85,6 +85,7 @@ export default function AthletesPage() {
   const [filterCoach, setFilterCoach] = useState<string>('all');
 
   const t = useTranslations('athletes');
+  const tDashboard = useTranslations('dashboard');
 
   function determineLevel(completedTrainings: number): string {
     if (completedTrainings >= 50) return t('levels.elite');
@@ -140,7 +141,7 @@ export default function AthletesPage() {
       setDeleteId(null);
     } catch (error) {
       console.error('Failed to delete athlete', error);
-      alert('Failed to delete athlete');
+      alert(t('deleteFailed'));
     } finally {
       setIsDeleting(false);
     }
@@ -203,9 +204,9 @@ export default function AthletesPage() {
         onClose={() => { if (!isDeleting) setDeleteId(null); }}
         onConfirm={handleDelete}
         type="warning"
-        title="¿Eliminar atleta?"
-        message="Esta acción no se puede deshacer. Se eliminará el registro del atleta del sistema permanentemente."
-        confirmText="Sí, Eliminar"
+        title={t('deleteTitle')}
+        message={t('deleteMessage')}
+        confirmText={t('deleteConfirm')}
         loading={isDeleting}
       />
 
@@ -223,10 +224,10 @@ export default function AthletesPage() {
 
         <Select value={filterLevel} onValueChange={setFilterLevel}>
           <SelectTrigger className="w-full sm:w-[150px]">
-             <SelectValue placeholder="Nivel" />
+             <SelectValue placeholder={t('filters.level')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todos los Niveles</SelectItem>
+            <SelectItem value="all">{t('filters.allLevels')}</SelectItem>
             {availableLevels.map(lvl => (
                <SelectItem key={lvl} value={lvl}>{lvl}</SelectItem>
             ))}
@@ -235,10 +236,10 @@ export default function AthletesPage() {
 
         <Select value={filterGroup} onValueChange={setFilterGroup}>
           <SelectTrigger className="w-full sm:w-[150px]">
-             <SelectValue placeholder="Grupo" />
+             <SelectValue placeholder={t('filters.group')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todos los Grupos</SelectItem>
+            <SelectItem value="all">{t('filters.allGroups')}</SelectItem>
             {availableGroups.map(grp => (
                <SelectItem key={grp} value={grp}>{grp}</SelectItem>
             ))}
@@ -248,12 +249,12 @@ export default function AthletesPage() {
         {isAdmin && (
           <Select value={filterCoach} onValueChange={setFilterCoach}>
             <SelectTrigger className="w-full sm:w-[180px]">
-               <SelectValue placeholder="Entrenador" />
+               <SelectValue placeholder={t('filters.coach')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos los Entrenadores</SelectItem>
+              <SelectItem value="all">{t('filters.allCoaches')}</SelectItem>
               {coaches.map(c => (
-                 <SelectItem key={c.id} value={c.id}>{c.name || 'Sin nombre'}</SelectItem>
+                 <SelectItem key={c.id} value={c.id}>{c.name || tDashboard('admin.noName')}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -282,7 +283,7 @@ export default function AthletesPage() {
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold truncate">{athlete.name}</p>
                       {isAdmin && athlete.coach && (
-                        <p className="text-xs text-primary font-medium">Coach: {athlete.coach.name}</p>
+                        <p className="text-xs text-primary font-medium">{t('filters.coach')}: {athlete.coach.name}</p>
                       )}
                       <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
                         <Mail className="h-3 w-3 flex-shrink-0" />
@@ -299,11 +300,11 @@ export default function AthletesPage() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => { setEditAthlete(athlete); setEditModalOpen(true); }}>
-                        <Edit className="mr-2 h-4 w-4" /> Editar
+                        <Edit className="mr-2 h-4 w-4" /> {t('edit')}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem className="text-red-600 focus:text-red-600" onClick={() => setDeleteId(athlete.id)}>
-                        <Trash2 className="mr-2 h-4 w-4" /> Eliminar
+                        <Trash2 className="mr-2 h-4 w-4" /> {t('delete')}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -336,7 +337,7 @@ export default function AthletesPage() {
                   <TableHead className="w-[280px]">{t('table.athlete')}</TableHead>
                   <TableHead>{t('table.sport')}</TableHead>
                   <TableHead>{t('table.level')}</TableHead>
-                  {isAdmin && <TableHead>Coach</TableHead>}
+                  {isAdmin && <TableHead>{t('filters.coach')}</TableHead>}
                   <TableHead className="text-center">{t('table.trainings')}</TableHead>
                   <TableHead className="text-center">{t('table.planned')}</TableHead>
                   <TableHead className="w-[150px]">{t('table.compliance')}</TableHead>
@@ -426,11 +427,11 @@ export default function AthletesPage() {
                                 </Link>
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => { setEditAthlete(athlete); setEditModalOpen(true); }}>
-                                Editar
+                                {t('edit')}
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem className="text-red-600 focus:text-red-600" onClick={() => setDeleteId(athlete.id)}>
-                                Eliminar
+                                {t('delete')}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>

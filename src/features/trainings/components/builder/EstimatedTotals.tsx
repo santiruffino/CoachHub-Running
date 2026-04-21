@@ -2,6 +2,7 @@
 
 import { WorkoutBlock, WorkoutTotals } from './types';
 import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface EstimatedTotalsProps {
     blocks: WorkoutBlock[];
@@ -42,6 +43,7 @@ function calculateTotals(blocks: WorkoutBlock[]): WorkoutTotals {
 
 export function EstimatedTotals({ blocks }: EstimatedTotalsProps) {
     const totals = useMemo(() => calculateTotals(blocks), [blocks]);
+    const t = useTranslations('builder');
 
     const formatDurationParts = (seconds: number) => {
         const hours = Math.floor(seconds / 3600);
@@ -56,20 +58,20 @@ export function EstimatedTotals({ blocks }: EstimatedTotalsProps) {
             {/* Total Duration */}
             <div className="bg-white dark:bg-[#1a232c] rounded-xl p-8 shadow-[0_4px_24px_rgba(43,52,55,0.04)] relative overflow-hidden flex flex-col justify-between h-40">
                 <div className="text-[10px] font-semibold text-[#8b9bb4] uppercase tracking-[0.05em] mb-4">
-                    Total Duration
+                    {t('totalDuration')}
                 </div>
                 <div className="flex items-baseline gap-1 mt-auto">
                     {hours > 0 ? (
                         <>
                             <span className="text-5xl font-display font-extrabold text-[#2b3437] dark:text-[#f8f9fa] tracking-tight">{hours}</span>
-                            <span className="text-sm font-semibold text-[#8b9bb4] mr-2">h</span>
+                            <span className="text-sm font-semibold text-[#8b9bb4] mr-2">{t('units.h')}</span>
                             <span className="text-5xl font-display font-extrabold text-[#2b3437] dark:text-[#f8f9fa] tracking-tight">{minutes.toString().padStart(2, '0')}</span>
-                            <span className="text-sm font-semibold text-[#8b9bb4]">min</span>
+                            <span className="text-sm font-semibold text-[#8b9bb4]">{t('units.min')}</span>
                         </>
                     ) : (
                         <>
                             <span className="text-5xl font-display font-extrabold text-[#2b3437] dark:text-[#f8f9fa] tracking-tight">{minutes}</span>
-                            <span className="text-sm font-semibold text-[#8b9bb4]">min</span>
+                            <span className="text-sm font-semibold text-[#8b9bb4]">{t('units.min')}</span>
                         </>
                     )}
                 </div>
@@ -83,11 +85,11 @@ export function EstimatedTotals({ blocks }: EstimatedTotalsProps) {
             {/* Estimated TSS */}
             <div className="bg-white dark:bg-[#1a232c] rounded-xl p-8 shadow-[0_4px_24px_rgba(43,52,55,0.04)] relative overflow-hidden flex flex-col justify-between h-40">
                 <div className="text-[10px] font-semibold text-[#8b9bb4] uppercase tracking-[0.05em] mb-4">
-                    Estimated TSS
+                    {t('estimatedTss')}
                 </div>
                 <div className="flex items-baseline gap-2 mt-auto">
                     <span className="text-5xl font-display font-extrabold text-[#2b3437] dark:text-[#f8f9fa] tracking-tight">{totals.tss}</span>
-                    <span className="text-sm font-semibold text-[#8b9bb4]">score</span>
+                    <span className="text-sm font-semibold text-[#8b9bb4]">{t('score')}</span>
                 </div>
                 
                 {/* Visual Bar */}
@@ -99,11 +101,11 @@ export function EstimatedTotals({ blocks }: EstimatedTotalsProps) {
             {/* Distance Est */}
             <div className="bg-white dark:bg-[#1a232c] rounded-xl p-8 shadow-[0_4px_24px_rgba(43,52,55,0.04)] relative overflow-hidden flex flex-col justify-between h-40">
                 <div className="text-[10px] font-semibold text-[#8b9bb4] uppercase tracking-[0.05em] mb-4">
-                    Distance Est.
+                    {t('distanceEst')}
                 </div>
                 <div className="flex items-baseline gap-2 mt-auto">
                     <span className="text-5xl font-display font-extrabold text-[#2b3437] dark:text-[#f8f9fa] tracking-tight">{(totals.distance > 0 ? totals.distance : 0).toFixed(1)}</span>
-                    <span className="text-sm font-semibold text-[#8b9bb4]">km</span>
+                    <span className="text-sm font-semibold text-[#8b9bb4]">{t('units.km')}</span>
                 </div>
                 
                 {/* Visual Bar */}

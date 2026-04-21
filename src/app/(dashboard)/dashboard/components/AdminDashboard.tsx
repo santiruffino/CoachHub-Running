@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Users, Building2, UserCircle2, Activity } from 'lucide-react';
 import api from '@/lib/axios';
+import { useTranslations } from 'next-intl';
 
 interface Coach {
   id: string;
@@ -26,6 +27,7 @@ interface AdminData {
 export default function AdminDashboard({ user }: { user: any }) {
   const [data, setData] = useState<AdminData | null>(null);
   const [loading, setLoading] = useState(true);
+  const t = useTranslations();
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -59,15 +61,15 @@ export default function AdminDashboard({ user }: { user: any }) {
   return (
     <div className="space-y-8 p-8 pt-0">
       <div>
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <p className="text-muted-foreground mt-2">Bienvenido, Super Coach. Resumen global de la plataforma.</p>
+        <h1 className="text-3xl font-bold">{t('dashboard.admin.title')}</h1>
+        <p className="text-muted-foreground mt-2">{t('dashboard.admin.welcome')}</p>
       </div>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {/* Metric Cards */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Atletas</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('dashboard.admin.metrics.totalAthletes')}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -77,7 +79,7 @@ export default function AdminDashboard({ user }: { user: any }) {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Equipos / Grupos</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('dashboard.admin.metrics.totalGroups')}</CardTitle>
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -87,7 +89,7 @@ export default function AdminDashboard({ user }: { user: any }) {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Coaches Activos</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('dashboard.admin.metrics.activeCoaches')}</CardTitle>
             <UserCircle2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -99,7 +101,7 @@ export default function AdminDashboard({ user }: { user: any }) {
       <div className="grid grid-cols-1 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Coaches & Actividad</CardTitle>
+            <CardTitle>{t('dashboard.admin.coachesActivity')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -110,24 +112,24 @@ export default function AdminDashboard({ user }: { user: any }) {
                       {coach.name ? coach.name.charAt(0).toUpperCase() : 'C'}
                     </div>
                     <div>
-                      <p className="font-medium">{coach.name || 'Sin nombre'}</p>
+                      <p className="font-medium">{coach.name || t('dashboard.admin.noName')}</p>
                       <p className="text-sm text-muted-foreground">{coach.email}</p>
                     </div>
                   </div>
                   <div className="text-right text-sm">
                     <p className="flex items-center gap-2 justify-end">
-                      <Users className="h-3 w-3" /> {coach.totalAthletes} Atletas
+                      <Users className="h-3 w-3" /> {t('dashboard.admin.athletesCount', { count: coach.totalAthletes })}
                     </p>
                     <p className="text-muted-foreground flex items-center gap-2 justify-end mt-1">
                       <Activity className="h-3 w-3" /> 
-                      {coach.lastActivity ? new Date(coach.lastActivity).toLocaleDateString() : 'Sin actividad'}
+                      {coach.lastActivity ? new Date(coach.lastActivity).toLocaleDateString() : t('dashboard.admin.noActivity')}
                     </p>
                   </div>
                 </div>
               ))}
               
               {data.coaches.length === 0 && (
-                <p className="text-muted-foreground text-center py-4">No hay entrenadores registrados aún.</p>
+                <p className="text-muted-foreground text-center py-4">{t('dashboard.admin.noCoaches')}</p>
               )}
             </div>
           </CardContent>
