@@ -23,6 +23,7 @@ import { MatchQualityBadge } from './MatchQualityBadge';
 import { Card } from '@/components/ui/card';
 import { Target, Clock, MapPin, TrendingUp, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
 interface WorkoutMatchModalProps {
     isOpen: boolean;
@@ -32,6 +33,7 @@ interface WorkoutMatchModalProps {
 }
 
 export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle }: WorkoutMatchModalProps) {
+    const t = useTranslations('workouts.matchModal');
     const [match, setMatch] = useState<WorkoutMatch | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -68,20 +70,20 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
             setShowCandidates(false);
         } catch (err) {
             console.error('Failed to link activity:', err);
-            setError('No se pudo vincular la actividad');
+            setError(t('errorLink'));
             setLoading(false);
         }
     };
 
     const handleUnlink = async () => {
-        if (!confirm('¿Estás seguro de que quieres desvincular esta actividad?')) return;
+        if (!confirm(t('confirmUnlink'))) return;
         try {
             setLoading(true);
             await matchingService.unlinkActivity(assignmentId);
             await fetchMatch(); // Revert to auto-match
         } catch (err) {
             console.error('Failed to unlink activity:', err);
-            setError('No se pudo desvincular la actividad');
+            setError(t('errorUnlink'));
             setLoading(false);
         }
     };
@@ -94,7 +96,7 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
             setMatch(data);
         } catch (err: any) {
             console.error('Failed to fetch match:', err);
-            setError('No se pudo cargar la comparación');
+            setError(t('errorLoad'));
         } finally {
             setLoading(false);
         }
@@ -107,14 +109,14 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
             <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className="text-xl font-bold">
-                        Comparación de Entrenamiento
+                        {t('title')}
                     </DialogTitle>
                     <p className="text-sm text-muted-foreground">{workoutTitle}</p>
                 </DialogHeader>
 
                 {loading && (
                     <div className="py-12 text-center text-muted-foreground">
-                        Cargando comparación...
+                        {t('loading')}
                     </div>
                 )}
 
@@ -127,9 +129,9 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
                 {!loading && !error && match && !match.matched && !showCandidates && (
                     <div className="py-12 text-center text-muted-foreground space-y-4">
                         <div>
-                            <p>No se encontró una actividad completada para este entrenamiento.</p>
+                            <p>{t('notFound')}</p>
                             <p className="text-sm mt-2">
-                                Completa el entrenamiento y sincroniza con Strava para ver la comparación.
+                                {t('notFoundDesc')}
                             </p>
                         </div>
                         <div className="pt-4">
@@ -138,7 +140,7 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
                                 onClick={handleFetchCandidates}
                                 disabled={loadingCandidates}
                             >
-                                {loadingCandidates ? 'Buscando...' : 'Vincular Actividad Manualmente'}
+                                {loadingCandidates ? t('searching') : t('linkManual')}
                             </Button>
                         </div>
                     </div>
@@ -147,13 +149,13 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
                 {!loading && !error && showCandidates && (
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                            <h3 className="text-sm font-semibold">Selecciona una actividad</h3>
-                            <Button variant="ghost" size="sm" onClick={() => setShowCandidates(false)}>Cancelar</Button>
+                            <h3 className="text-sm font-semibold">{t('selectActivity')}</h3>
+                            <Button variant="ghost" size="sm" onClick={() => setShowCandidates(false)}>{t('cancel')}</Button>
                         </div>
                         <div className="space-y-2 max-h-[300px] overflow-y-auto">
                             {candidates.length === 0 ? (
                                 <p className="text-sm text-muted-foreground text-center py-4">
-                                    No se encontraron actividades recientes.
+                                    {t('noRecentActivities')}
                                 </p>
                             ) : (
                                 candidates.map(activity => (
@@ -168,7 +170,7 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
                                                 {new Date(activity.start_date).toLocaleDateString()} • {(activity.distance / 1000).toFixed(2)} km
                                             </div>
                                         </div>
-                                        <Button size="sm" variant="ghost">Vincular</Button>
+                                        <Button size="sm" variant="ghost">{t('link')}</Button>
                                     </div>
                                 ))
                             )}
@@ -183,7 +185,7 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
                             <div className="flex items-center justify-between">
                                 <div>
                                     <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide mb-2">
-                                        Calificación General
+                                        {t('overallScore')}
                                     </h3>
                                     <div className="flex items-center gap-3">
                                         <span className={`text-4xl font-bold ${getMatchScoreColor(match.matchQuality.overallScore)}`}>
@@ -194,7 +196,7 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
                                         </span>
                                     </div>
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                                        Objetivo: <span className="font-semibold capitalize">{match.matchQuality.objectiveType === 'distance' ? 'Distancia' : 'Tiempo'}</span>
+                                        {t('objective')} <span className="font-semibold capitalize">{match.matchQuality.objectiveType === 'distance' ? t('objectiveDistance') : t('objectiveTime')}</span>
                                     </p>
                                 </div>
                                 <div className={`p-4 rounded-full ${getMatchScoreBgColor(match.matchQuality.overallScore)}`}>
@@ -209,7 +211,7 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
                                         onClick={handleUnlink}
                                         className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
                                     >
-                                        Desvincular Actividad
+                                        {t('unlinkActivity')}
                                     </Button>
                                 </div>
                             )}
@@ -225,23 +227,23 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
                                     </div>
                                     <div className="flex-1">
                                         <h4 className="text-sm font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide mb-2">
-                                            Distancia
+                                            {t('distance')}
                                         </h4>
                                         <div className="space-y-1">
                                             <div className="flex justify-between items-center">
-                                                <span className="text-xs text-gray-500 dark:text-gray-400">Planificado:</span>
+                                                <span className="text-xs text-gray-500 dark:text-gray-400">{t('planned')}</span>
                                                 <span className="font-semibold text-gray-900 dark:text-white">
                                                     {formatDistance(match.matchQuality.plannedDistance || 0)}
                                                 </span>
                                             </div>
                                             <div className="flex justify-between items-center">
-                                                <span className="text-xs text-gray-500 dark:text-gray-400">Realizado:</span>
+                                                <span className="text-xs text-gray-500 dark:text-gray-400">{t('actual')}</span>
                                                 <span className="font-semibold text-gray-900 dark:text-white">
                                                     {formatDistance(match.matchQuality.actualDistance || 0)}
                                                 </span>
                                             </div>
                                             <div className="flex justify-between items-center pt-2 border-t border-gray-200 dark:border-gray-700">
-                                                <span className="text-xs text-gray-500 dark:text-gray-400">Diferencia:</span>
+                                                <span className="text-xs text-gray-500 dark:text-gray-400">{t('difference')}</span>
                                                 <span className={`font-bold ${getDifferenceColor(match.matchQuality.distanceMatch || 0)}`}>
                                                     {formatDifference(match.matchQuality.distanceMatch || 0)}
                                                 </span>
@@ -259,23 +261,23 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
                                     </div>
                                     <div className="flex-1">
                                         <h4 className="text-sm font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide mb-2">
-                                            Duración
+                                            {t('duration')}
                                         </h4>
                                         <div className="space-y-1">
                                             <div className="flex justify-between items-center">
-                                                <span className="text-xs text-gray-500 dark:text-gray-400">Planificado:</span>
+                                                <span className="text-xs text-gray-500 dark:text-gray-400">{t('planned')}</span>
                                                 <span className="font-semibold text-gray-900 dark:text-white">
                                                     {formatDuration(match.matchQuality.plannedDuration || 0)}
                                                 </span>
                                             </div>
                                             <div className="flex justify-between items-center">
-                                                <span className="text-xs text-gray-500 dark:text-gray-400">Realizado:</span>
+                                                <span className="text-xs text-gray-500 dark:text-gray-400">{t('actual')}</span>
                                                 <span className="font-semibold text-gray-900 dark:text-white">
                                                     {formatDuration(match.matchQuality.actualDuration || 0)}
                                                 </span>
                                             </div>
                                             <div className="flex justify-between items-center pt-2 border-t border-gray-200 dark:border-gray-700">
-                                                <span className="text-xs text-gray-500 dark:text-gray-400">Diferencia:</span>
+                                                <span className="text-xs text-gray-500 dark:text-gray-400">{t('difference')}</span>
                                                 <span className={`font-bold ${getDifferenceColor(match.matchQuality.durationMatch || 0)}`}>
                                                     {formatDifference(match.matchQuality.durationMatch || 0)}
                                                 </span>
@@ -294,7 +296,7 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
                                     className="text-orange-600 dark:text-orange-400 hover:underline font-medium flex items-center gap-2"
                                 >
                                     <TrendingUp className="w-4 h-4" />
-                                    Ver detalles completos de la actividad
+                                    {t('viewDetails')}
                                 </Link>
                             </div>
                         )}
@@ -303,7 +305,7 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
                         {match.blockComparison && match.blockComparison.length > 0 && (
                             <Card className="p-5">
                                 <h4 className="text-sm font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide mb-4">
-                                    Bloques del Entrenamiento
+                                    {t('workoutBlocks')}
                                 </h4>
                                 <div className="space-y-2">
                                     {match.blockComparison.map((block, index) => (
@@ -328,7 +330,7 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
                                                 )}
                                                 {block.planned.targetPace && (
                                                     <span className="col-span-2">
-                                                        🎯 Ritmo: {block.planned.targetPace.min} - {block.planned.targetPace.max} min/km
+                                                        🎯 {t('pace', { min: block.planned.targetPace.min, max: block.planned.targetPace.max })}
                                                     </span>
                                                 )}
                                             </div>

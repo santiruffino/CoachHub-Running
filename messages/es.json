@@ -94,6 +94,16 @@
             "title": "Estado de los grupos",
             "noGroups": "No se encontraron grupos"
         },
+        "coachNotes": {
+            "title": "Notas del Entrenador",
+            "placeholder": "Añade observaciones sobre la progresión del atleta...",
+            "lastEdited": "Última edición: {date} {time}",
+            "save": "Guardar Nota",
+            "saving": "Guardando..."
+        },
+        "performanceTrend": {
+            "title": "Tendencia de Cumplimiento"
+        },
         "trainingTypes": {
             "RUNNING": "Running",
             "STRENGTH": "Fuerza",
@@ -233,6 +243,10 @@
             "membersCount": "Miembros ({count})",
             "assignWorkout": "Asignar Entrenamiento",
             "addMember": "Añadir Miembro",
+            "addAthleteTitle": "Añadir Atleta al Grupo",
+            "noAvailableAthletes": "No hay atletas disponibles para añadir.",
+            "selectAthlete": "Seleccionar Atleta",
+            "selectAthletePlaceholder": "Selecciona un atleta...",
             "unnamedAthlete": "Atleta sin nombre",
             "removeConfirm": "¿Eliminar atleta?",
             "remove": "Eliminar",
@@ -428,6 +442,35 @@
             "syncFailed": "Sincronización fallida.",
             "loadingError": "Error al inicializar los parámetros del entrenamiento",
             "backToDashboard": "Volver al Dashboard"
+        },
+        "matchModal": {
+            "errorLink": "No se pudo vincular la actividad",
+            "confirmUnlink": "¿Estás seguro de que quieres desvincular esta actividad?",
+            "errorUnlink": "No se pudo desvincular la actividad",
+            "errorLoad": "No se pudo cargar la comparación",
+            "title": "Comparación de Entrenamiento",
+            "loading": "Cargando comparación...",
+            "notFound": "No se encontró una actividad completada para este entrenamiento.",
+            "notFoundDesc": "Completa el entrenamiento y sincroniza con Strava para ver la comparación.",
+            "searching": "Buscando...",
+            "linkManual": "Vincular Actividad Manualmente",
+            "selectActivity": "Selecciona una actividad",
+            "cancel": "Cancelar",
+            "noRecentActivities": "No se encontraron actividades recientes.",
+            "link": "Vincular",
+            "overallScore": "Calificación General",
+            "objective": "Objetivo:",
+            "objectiveDistance": "Distancia",
+            "objectiveTime": "Tiempo",
+            "unlinkActivity": "Desvincular Actividad",
+            "distance": "Distancia",
+            "duration": "Duración",
+            "planned": "Planificado:",
+            "actual": "Realizado:",
+            "difference": "Diferencia:",
+            "viewDetails": "Ver detalles completos de la actividad",
+            "workoutBlocks": "Bloques del Entrenamiento",
+            "pace": "Ritmo: {min} - {max} min/km"
         }
     },
     "builder": {
@@ -721,7 +764,10 @@
         }
     },
     "calendar": {
-        "restDay": "Dia de descanso"
+        "restDay": "Día de descanso",
+        "done": "✓ Hecho",
+        "customWorkout": "Entrenamiento diario personalizado.",
+        "strava": "Strava"
     },
     "common": {
         "loading": "Cargando...",
@@ -739,7 +785,8 @@
         "error": "Ocurrió un error",
         "success": "¡Éxito!",
         "required": "Este campo es obligatorio",
-        "today": "Hoy"
+        "today": "Hoy",
+        "distance_km": "{distance} km"
     },
     "landing": {
         "navbar": {

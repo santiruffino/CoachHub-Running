@@ -55,6 +55,7 @@ const activityTypeLabel: Record<string, string> = {
 // standalone (orange): Strava activity with no matching planned workout
 
 function CompletedCard({ assignment, activity }: { assignment: TrainingAssignment; activity: Activity }) {
+    const t = useTranslations();
     const typeText = assignment.training.type;
     const nameText = assignment.workout_name || assignment.training.title;
 
@@ -70,7 +71,7 @@ function CompletedCard({ assignment, activity }: { assignment: TrainingAssignmen
                         {typeText}
                     </span>
                     <span className="text-[8px] font-bold uppercase tracking-widest text-emerald-400">
-                        ✓ Done
+                        {t('calendar.done')}
                     </span>
                 </div>
 
@@ -79,7 +80,7 @@ function CompletedCard({ assignment, activity }: { assignment: TrainingAssignmen
                 </h4>
 
                 <p className="text-[11px] text-muted-foreground px-2 line-clamp-2 leading-relaxed">
-                    {assignment.training.description || 'Custom daily workout.'}
+                    {assignment.training.description || t('calendar.customWorkout')}
                 </p>
 
                 {/* Progress bar – full */}
@@ -91,7 +92,7 @@ function CompletedCard({ assignment, activity }: { assignment: TrainingAssignmen
 
                 {/* Activity stats */}
                 <div className="px-2 flex items-center gap-3 text-[10px] text-emerald-400/80 font-medium">
-                    {activity.distance > 0 && <span>{(activity.distance / 1000).toFixed(2)} km</span>}
+                    {activity.distance > 0 && <span>{t('common.distance_km', { distance: (activity.distance / 1000).toFixed(2) })}</span>}
                     {activity.duration > 0 && <span>{formatDuration(activity.duration)}</span>}
                 </div>
             </div>
@@ -100,6 +101,7 @@ function CompletedCard({ assignment, activity }: { assignment: TrainingAssignmen
 }
 
 function PlannedCard({ assignment }: { assignment: TrainingAssignment }) {
+    const t = useTranslations();
     const typeText = assignment.training.type;
     const nameText = assignment.workout_name || assignment.training.title;
 
@@ -121,7 +123,7 @@ function PlannedCard({ assignment }: { assignment: TrainingAssignment }) {
                 </h4>
 
                 <p className="text-[11px] text-muted-foreground px-2 line-clamp-2 leading-relaxed">
-                    {assignment.training.description || 'Custom daily workout.'}
+                    {assignment.training.description || t('calendar.customWorkout')}
                 </p>
 
                 {/* Progress bar – empty */}
@@ -134,6 +136,7 @@ function PlannedCard({ assignment }: { assignment: TrainingAssignment }) {
 }
 
 function StandaloneActivityCard({ activity }: { activity: Activity }) {
+    const t = useTranslations();
     const label = activityTypeLabel[activity.type] || activity.type.toUpperCase();
 
     return (
@@ -148,7 +151,7 @@ function StandaloneActivityCard({ activity }: { activity: Activity }) {
                         {label}
                     </span>
                     <span className="text-[8px] font-bold uppercase tracking-widest text-orange-400">
-                        Strava
+                        {t('calendar.strava')}
                     </span>
                 </div>
 
@@ -157,7 +160,7 @@ function StandaloneActivityCard({ activity }: { activity: Activity }) {
                 </h4>
 
                 <div className="px-2 flex items-center gap-3 text-[10px] text-orange-400/80 font-medium">
-                    {activity.distance > 0 && <span>{(activity.distance / 1000).toFixed(2)} km</span>}
+                    {activity.distance > 0 && <span>{t('common.distance_km', { distance: (activity.distance / 1000).toFixed(2) })}</span>}
                     {activity.duration > 0 && <span>{formatDuration(activity.duration)}</span>}
                 </div>
             </div>
@@ -228,7 +231,7 @@ export function AthleteWeeklyCalendar({ weekStart, assignments, activities }: At
                                     </span>
                                 </div>
                                 <span className="text-[10px] font-semibold text-muted-foreground">
-                                    {totalDistance > 0 ? `${totalDistance.toFixed(1)} km` : '0.0 km'}
+                                    {totalDistance > 0 ? t('common.distance_km', { distance: totalDistance.toFixed(1) }) : t('common.distance_km', { distance: '0.0' })}
                                 </span>
                             </div>
 

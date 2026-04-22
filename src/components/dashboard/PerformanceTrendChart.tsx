@@ -1,6 +1,7 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTranslations } from 'next-intl';
 import {
   LineChart,
   Line,
@@ -16,12 +17,13 @@ interface PerformanceTrendChartProps {
 }
 
 export function PerformanceTrendChart({ data }: PerformanceTrendChartProps) {
+  const t = useTranslations('dashboard.performanceTrend');
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <span>📈</span>
-          Tendencia de Cumplimiento
+          {t('title')}
         </CardTitle>
       </CardHeader>
       <CardContent>

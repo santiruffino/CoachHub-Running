@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Loader2, UserPlus } from 'lucide-react';
-import api from '@/lib/axios'; // Or use usersService if available, but for now direct axios or import service
+import api from '@/lib/axios';
+import { useTranslations } from 'next-intl';
 
 interface AddMemberModalProps {
     groupId: string;
@@ -17,6 +18,7 @@ export function AddMemberModal({ groupId, currentMemberIds, open, onClose, onAdd
     const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [selectedId, setSelectedId] = useState<string>('');
+    const t = useTranslations();
 
     useEffect(() => {
         if (open) {
@@ -49,7 +51,7 @@ export function AddMemberModal({ groupId, currentMemberIds, open, onClose, onAdd
         <Dialog open={open} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle>Add Athlete to Group</DialogTitle>
+                    <DialogTitle>{t('groups.detail.addAthleteTitle')}</DialogTitle>
                 </DialogHeader>
 
                 {loading ? (
@@ -57,16 +59,16 @@ export function AddMemberModal({ groupId, currentMemberIds, open, onClose, onAdd
                 ) : (
                     <div className="py-4">
                         {athletes.length === 0 ? (
-                            <p className="text-center text-gray-500">No available athletes to add.</p>
+                            <p className="text-center text-gray-500">{t('groups.detail.noAvailableAthletes')}</p>
                         ) : (
                             <div className="space-y-4">
-                                <label className="text-sm font-medium text-gray-700">Select Athlete</label>
+                                <label className="text-sm font-medium text-gray-700">{t('groups.detail.selectAthlete')}</label>
                                 <select
                                     className="w-full border rounded p-2"
                                     value={selectedId}
                                     onChange={(e) => setSelectedId(e.target.value)}
                                 >
-                                    <option value="">Select an athlete...</option>
+                                    <option value="">{t('groups.detail.selectAthletePlaceholder')}</option>
                                     {athletes.map(a => (
                                         <option key={a.id} value={a.id}>
                                             {a.name || a.email}
@@ -79,10 +81,10 @@ export function AddMemberModal({ groupId, currentMemberIds, open, onClose, onAdd
                 )}
 
                 <DialogFooter>
-                    <Button variant="outline" onClick={onClose}>Cancel</Button>
+                    <Button variant="outline" onClick={onClose}>{t('common.cancel')}</Button>
                     <Button onClick={handleSubmit} disabled={submitting || !selectedId}>
                         {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Add Member
+                        {t('groups.detail.addMember')}
                     </Button>
                 </DialogFooter>
             </DialogContent>
