@@ -20,7 +20,7 @@ export function RoadmapSection() {
       title: t('item2Title'),
       description: t('item2Desc'),
       status: t('item2Status'),
-      statusType: 'upcoming' as const,
+      statusType: 'active' as const,
     },
     {
       icon: Smartphone,

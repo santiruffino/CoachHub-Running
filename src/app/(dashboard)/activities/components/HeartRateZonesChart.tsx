@@ -1,6 +1,7 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTranslations } from 'next-intl';
 
 interface Lap {
     id: number;
@@ -40,7 +41,19 @@ interface HeartRateZonesChartProps {
     zoneNames?: string[];
 }
 
-export function HeartRateZonesChart({ laps, splits, zones, zoneNames = ['Z1 - Recovery', 'Z2 - Endurance', 'Z3 - Tempo', 'Z4 - Threshold', 'Z5 - VO2 Max'] }: HeartRateZonesChartProps) {
+export function HeartRateZonesChart({ laps, splits, zones, zoneNames }: HeartRateZonesChartProps) {
+    const t = useTranslations('activities.detail.zones');
+    
+    const defaultZoneNames = [
+        t('names.z1'),
+        t('names.z2_hr'),
+        t('names.z3'),
+        t('names.z4'),
+        t('names.z5_hr')
+    ];
+
+    const actualZoneNames = zoneNames || defaultZoneNames;
+
     // Calculate time in each zone from laps or splits
     const calculateZoneDistribution = (): Array<{ zone: number; time: number; percentage: number }> => {
         const zoneDistribution = new Array(zones.length).fill(0);
@@ -103,7 +116,7 @@ export function HeartRateZonesChart({ laps, splits, zones, zoneNames = ['Z1 - Re
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Heart Rate Zones</CardTitle>
+                <CardTitle>{t('hrTitle')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
                 {distribution.map((item, index) => {
@@ -112,13 +125,13 @@ export function HeartRateZonesChart({ laps, splits, zones, zoneNames = ['Z1 - Re
                     return (
                         <div key={index} className="space-y-1">
                             <div className="flex items-center justify-between text-sm">
-                                <span className="font-medium">{zoneNames[index]}</span>
+                                <span className="font-medium">{actualZoneNames[index]}</span>
                                 <div className="flex items-center gap-3">
                                     <span className="text-muted-foreground">
                                         {formatTime(item.time)} ({item.percentage.toFixed(1)}%)
                                     </span>
                                     <span className="text-xs text-muted-foreground">
-                                        {zones[index].min}-{index === zones.length - 1 ? zones[index].max : zones[index].max} bpm
+                                        {zones[index].min}-{index === zones.length - 1 ? zones[index].max : zones[index].max} ppm
                                     </span>
                                 </div>
                             </div>
@@ -134,7 +147,7 @@ export function HeartRateZonesChart({ laps, splits, zones, zoneNames = ['Z1 - Re
 
                 {totalTime === 0 && (
                     <p className="text-sm text-muted-foreground text-center py-8">
-                        No heart rate data available for this activity.
+                        {t('noHrData')}
                     </p>
                 )}
             </CardContent>

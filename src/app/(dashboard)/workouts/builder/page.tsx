@@ -63,7 +63,7 @@ function WorkoutBuilderContent() {
             <h3 className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-2">
                 {t('editorPhase')}
             </h3>
-            <h2 className="text-xl font-bold font-display text-foreground dark:text-background mb-8">
+            <h2 className="text-xl font-bold font-display text-foreground mb-8">
                 {t('coreDetails')}
             </h2>
 
@@ -77,7 +77,7 @@ function WorkoutBuilderContent() {
                         value={workoutTitle}
                         onChange={(e) => setWorkoutTitle(e.target.value)}
                         placeholder={t('workoutTitlePlaceholder')}
-                        className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-2 text-foreground dark:text-background focus:ring-0 focus:border-primary placeholder-muted-foreground/50 transition-colors"
+                        className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-2 text-foreground focus:ring-0 focus:border-primary placeholder-muted-foreground/50 transition-colors"
                     />
                 </div>
 
@@ -85,7 +85,7 @@ function WorkoutBuilderContent() {
                     <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-1 block">
                         {t('activityTypeLabel')}
                     </label>
-                    <select className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-2 text-foreground dark:text-background focus:ring-0 focus:border-primary outline-none">
+                    <select className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-2 text-foreground focus:ring-0 focus:border-primary outline-none">
                         <option value="RUNNING">Running</option>
                         <option value="CYCLING">Cycling</option>
                         <option value="SWIMMING">Swimming</option>
@@ -102,7 +102,7 @@ function WorkoutBuilderContent() {
                         value={workoutDescription}
                         onChange={(e) => setWorkoutDescription(e.target.value)}
                         placeholder={t('coachNotesPlaceholder')}
-                        className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-2 text-foreground dark:text-background focus:ring-0 focus:border-primary placeholder-muted-foreground/50 transition-colors"
+                        className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-2 text-foreground focus:ring-0 focus:border-primary placeholder-muted-foreground/50 transition-colors"
                     />
                 </div>
 
@@ -146,14 +146,18 @@ function WorkoutBuilderContent() {
     );
 
     return (
-        <div className="h-[calc(100vh-theme(spacing.16))] w-[calc(100%+2rem)] md:w-[calc(100%+4rem)] overflow-hidden -mx-4 md:-mx-8 -my-4 md:-my-8">
-            <WorkoutBuilder
-                initialBlocks={blocks}
-                onChange={setBlocks}
-                athleteId={athleteId || undefined}
-                leftSidebarContent={leftSidebarContent}
-                footerContent={footerContent}
-            />
+        <div className="h-[calc(100vh-theme(spacing.16))] w-[calc(100%+2rem)] md:w-[calc(100%+4rem)] overflow-hidden -mx-4 md:-mx-8 -my-4 md:-my-8 bg-background dark:bg-background font-inter flex relative">
+            <div className="w-[320px] lg:w-[380px] flex-shrink-0 bg-card dark:bg-muted border-r border-border dark:border-white/5 overflow-y-auto z-10">
+                {leftSidebarContent}
+            </div>
+            <div className="flex-1 overflow-hidden relative">
+                <WorkoutBuilder
+                    initialBlocks={blocks}
+                    onChange={setBlocks}
+                    athleteId={athleteId || undefined}
+                    footerContent={footerContent}
+                />
+            </div>
 
             <AlertDialog
                 open={alertState.open}

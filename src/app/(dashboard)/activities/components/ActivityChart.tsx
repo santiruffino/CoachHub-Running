@@ -5,6 +5,7 @@ import ReactECharts from 'echarts-for-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import api from '@/lib/axios';
+import { useTranslations } from 'next-intl';
 
 interface Lap {
     id: number;
@@ -47,6 +48,7 @@ type Resolution = 'low' | 'medium' | 'high';
 type XAxisType = 'time' | 'distance';
 
 export function ActivityChart({ activityId, laps, hrZones, isRunning }: ActivityChartProps) {
+    const t = useTranslations('activities.detail.dynamics');
     const [streams, setStreams] = useState<StreamData | null>(null);
     const [loading, setLoading] = useState(true);
     const [resolution, setResolution] = useState<Resolution>('medium');
@@ -55,11 +57,11 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
 
     // Track which series are selected in the legend
     const [legendSelected, setLegendSelected] = useState<Record<string, boolean>>({
-        'Pace': true,
-        'Heart Rate': true,
-        'Cadence': true,
-        'Elevation': true,
-        'Grade': true,
+        [t('metrics.pace')]: true,
+        [t('metrics.heartRate')]: true,
+        [t('metrics.cadence')]: true,
+        [t('metrics.elevation')]: true,
+        [t('metrics.grade')]: true,
     });
 
     useEffect(() => {
@@ -68,12 +70,6 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
                 setLoading(true);
                 const response = await api.get(`/v2/activities/${activityId}/streams`);
                 setStreams(response.data);
-
-                // Debug: Log velocity data stats
-                if (response.data?.velocity_smooth?.data) {
-                    const velocities = response.data.velocity_smooth.data;
-                    const validVelocities = velocities.filter((v: number) => v > 0);
-                }
             } catch (error) {
                 console.error('Failed to fetch streams:', error);
                 setStreams(null);
@@ -119,25 +115,13 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
     // Convert m/s to min/km for pace (returns decimal minutes)
     const metersPerSecondToPace = (mps: number): number => {
         if (mps === 0 || mps < 0) return 0;
-
-        // Convert m/s to min/km
-        // velocity in m/s -> seconds per km = 1000 / velocity
-        // seconds per km -> minutes per km = (1000 / velocity) / 60
-        const paceMinPerKm = (1000 / mps) / 60;
-
-        // Validate realistic pace range (2:00 to 20:00 min/km)
-        // Anything outside this is likely bad data
-        if (paceMinPerKm < 2 || paceMinPerKm > 20) {
-            console.warn(`Unusual pace detected: ${paceMinPerKm.toFixed(2)} min/km from velocity ${mps.toFixed(2)} m/s`);
-        }
-
-        return paceMinPerKm;
+        return (1000 / mps) / 60;
     };
 
     // Format pace as mm:ss string
     const formatPace = (paceMinutes: number): string => {
         if (paceMinutes === 0 || paceMinutes < 0) return '0:00';
-        if (paceMinutes > 20) return '20:00+'; // Cap display for very slow paces
+        if (paceMinutes > 20) return '20:00+';
 
         const mins = Math.floor(paceMinutes);
         const secs = Math.round((paceMinutes - mins) * 60);
@@ -208,24 +192,22 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
         const hasGradeData = chartData.series.grade?.some((v: any) => v !== null);
 
         // Pace axis (left, inverted) - Always shown
-        // Calculate pace range from data
         const validPaces = (chartData.series.pace || []).filter((p: number) => p > 0 && p < 20);
         const minPace = validPaces.length > 0 ? Math.min(...validPaces) : 3;
         const maxPace = validPaces.length > 0 ? Math.max(...validPaces) : 8;
 
-        // Add some padding to min/max
         const paceMin = Math.max(2, Math.floor(minPace - 0.5));
         const paceMax = Math.min(20, Math.ceil(maxPace + 0.5));
 
         yAxisArray.push({
             type: 'value',
-            name: 'Pace',
+            name: t('metrics.pace'),
             position: 'left',
             inverse: true,
             min: paceMin,
             max: paceMax,
-            interval: 1, // 1 minute intervals
-            show: legendSelected['Pace'] !== false, // Hide axis if metric is deselected
+            interval: 1,
+            show: legendSelected[t('metrics.pace')] !== false,
             axisLabel: {
                 formatter: (value: number) => formatPace(value),
                 color: '#06B6D4',
@@ -235,7 +217,7 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
         });
 
         const paceSeries: any = {
-            name: 'Pace',
+            name: t('metrics.pace'),
             type: 'line',
             yAxisIndex: yAxisIndex,
             data: chartData.series.pace,
@@ -249,7 +231,6 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
         yAxisIndex++;
 
         // Add lap markAreas as a separate invisible series if showLaps is enabled
-        // This ensures laps are visible regardless of which metrics are selected
         if (showLaps && laps && laps.length > 0 && streams?.time && chartData.xAxisData.length > 0) {
             const lapMarkAreas: any[] = [];
             let cumulativeTime = 0;
@@ -259,8 +240,7 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
                 const lapStartTime = cumulativeTime;
                 const lapEndTime = cumulativeTime + lap.elapsed_time;
 
-                // Find the first and last data point indices in this lap
-                let startIdx = -1; // Use -1 as sentinel to indicate not found yet
+                let startIdx = -1;
                 let endIdx = chartData.xAxisData.length - 1;
 
                 for (let i = 0; i < timeData.length; i++) {
@@ -274,9 +254,7 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
                     }
                 }
 
-                // Only add markArea if we have valid indices (startIdx was found)
                 if (startIdx >= 0 && startIdx < chartData.xAxisData.length && endIdx > startIdx) {
-                    // Alternating colors with better contrast
                     const color = lapIdx % 2 === 0 ? 'rgba(100, 116, 139, 0.15)' : 'rgba(148, 163, 184, 0.15)';
 
                     lapMarkAreas.push([
@@ -289,17 +267,16 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
             });
 
             if (lapMarkAreas.length > 0) {
-                // Create an invisible series just for the lap markAreas
                 seriesArray.push({
-                    name: 'Lap Boundaries',
+                    name: t('metrics.lapBoundaries'),
                     type: 'line',
-                    yAxisIndex: 0, // Use the pace axis
-                    data: [], // No actual data, just markAreas
-                    lineStyle: { opacity: 0 }, // Invisible line
+                    yAxisIndex: 0,
+                    data: [],
+                    lineStyle: { opacity: 0 },
                     itemStyle: { opacity: 0 },
                     showSymbol: false,
-                    silent: true, // Don't respond to mouse events
-                    legendHoverLink: false, // Don't highlight on legend hover
+                    silent: true,
+                    legendHoverLink: false,
                     animation: false,
                     markArea: {
                         silent: true,
@@ -314,11 +291,11 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
         if (hasHeartRateData) {
             const hrYAxis: any = {
                 type: 'value',
-                name: 'Heart Rate',
+                name: t('metrics.heartRate'),
                 position: 'right',
-                show: legendSelected['Heart Rate'] !== false,
+                show: legendSelected[t('metrics.heartRate')] !== false,
                 axisLabel: {
-                    formatter: '{value} bpm',
+                    formatter: '{value} ppm',
                     color: '#A855F7',
                 },
                 axisLine: { lineStyle: { color: '#A855F7' } },
@@ -326,7 +303,7 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
             };
 
             const hrSeries: any = {
-                name: 'Heart Rate',
+                name: t('metrics.heartRate'),
                 type: 'line',
                 yAxisIndex: yAxisIndex,
                 data: chartData.series.heartRate,
@@ -336,14 +313,13 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
                 showSymbol: false,
             };
 
-            // Add HR zone backgrounds
             if (hrZones && hrZones.length > 0) {
                 const zoneColors = [
-                    'rgba(156, 163, 175, 0.1)',  // Z1 Gray
-                    'rgba(59, 130, 246, 0.1)',   // Z2 Blue
-                    'rgba(34, 197, 94, 0.1)',    // Z3 Green
-                    'rgba(234, 179, 8, 0.1)',    // Z4 Yellow
-                    'rgba(239, 68, 68, 0.1)',    // Z5 Red
+                    'rgba(156, 163, 175, 0.1)',
+                    'rgba(59, 130, 246, 0.1)',
+                    'rgba(34, 197, 94, 0.1)',
+                    'rgba(234, 179, 8, 0.1)',
+                    'rgba(239, 68, 68, 0.1)',
                 ];
 
                 hrSeries.markArea = {
@@ -364,12 +340,12 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
         if (hasCadenceData) {
             yAxisArray.push({
                 type: 'value',
-                name: 'Cadence',
+                name: t('metrics.cadence'),
                 position: 'left',
                 offset: 60,
-                show: legendSelected['Cadence'] !== false,
+                show: legendSelected[t('metrics.cadence')] !== false,
                 axisLabel: {
-                    formatter: '{value} spm',
+                    formatter: '{value} ppm',
                     color: '#F97316',
                 },
                 axisLine: { lineStyle: { color: '#F97316' } },
@@ -377,7 +353,7 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
             });
 
             seriesArray.push({
-                name: 'Cadence',
+                name: t('metrics.cadence'),
                 type: 'line',
                 yAxisIndex: yAxisIndex,
                 data: chartData.series.cadence,
@@ -393,10 +369,10 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
         if (hasElevationData) {
             yAxisArray.push({
                 type: 'value',
-                name: 'Elevation',
+                name: t('metrics.elevation'),
                 position: 'right',
-                offset: (hasHeartRateData && legendSelected['Heart Rate'] !== false) ? 60 : 0,
-                show: legendSelected['Elevation'] !== false,
+                offset: (hasHeartRateData && legendSelected[t('metrics.heartRate')] !== false) ? 60 : 0,
+                show: legendSelected[t('metrics.elevation')] !== false,
                 min: 'dataMin',
                 max: 'dataMax',
                 boundaryGap: ['10%', '10%'],
@@ -409,7 +385,7 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
             });
 
             seriesArray.push({
-                name: 'Elevation',
+                name: t('metrics.elevation'),
                 type: 'line',
                 yAxisIndex: yAxisIndex,
                 data: chartData.series.elevation,
@@ -426,10 +402,10 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
         if (hasGradeData) {
             yAxisArray.push({
                 type: 'value',
-                name: 'Grade',
+                name: t('metrics.grade'),
                 position: 'right',
-                offset: ((hasHeartRateData && legendSelected['Heart Rate'] !== false) ? 60 : 0) + ((hasElevationData && legendSelected['Elevation'] !== false) ? 60 : 0),
-                show: legendSelected['Grade'] !== false,
+                offset: ((hasHeartRateData && legendSelected[t('metrics.heartRate')] !== false) ? 60 : 0) + ((hasElevationData && legendSelected[t('metrics.elevation')] !== false) ? 60 : 0),
+                show: legendSelected[t('metrics.grade')] !== false,
                 axisLabel: {
                     formatter: '{value}%',
                     color: '#EAB308',
@@ -439,7 +415,7 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
             });
 
             seriesArray.push({
-                name: 'Grade',
+                name: t('metrics.grade'),
                 type: 'line',
                 yAxisIndex: yAxisIndex,
                 data: chartData.series.grade,
@@ -450,12 +426,11 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
             });
         }
 
-        // Calculate grid margins based on visible metrics only
-        const leftMargin = (hasCadenceData && legendSelected['Cadence'] !== false) ? 100 : 60;
+        const leftMargin = (hasCadenceData && legendSelected[t('metrics.cadence')] !== false) ? 100 : 60;
         const rightMargin = 60
-            + ((hasHeartRateData && legendSelected['Heart Rate'] !== false) ? 60 : 0)
-            + ((hasElevationData && legendSelected['Elevation'] !== false) ? 60 : 0)
-            + ((hasGradeData && legendSelected['Grade'] !== false) ? 60 : 0);
+            + ((hasHeartRateData && legendSelected[t('metrics.heartRate')] !== false) ? 60 : 0)
+            + ((hasElevationData && legendSelected[t('metrics.elevation')] !== false) ? 60 : 0)
+            + ((hasGradeData && legendSelected[t('metrics.grade')] !== false) ? 60 : 0);
 
         return {
             backgroundColor: 'transparent',
@@ -468,10 +443,9 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
                 formatter: (params: any) => {
                     let tooltipText = `<strong>${params[0].axisValue}</strong><br/>`;
                     params.forEach((param: any) => {
-                        // Skip the invisible Lap Boundaries series
-                        if (param.seriesName === 'Lap Boundaries') return;
+                        if (param.seriesName === t('metrics.lapBoundaries')) return;
 
-                        if (param.seriesName === 'Pace' && param.value) {
+                        if (param.seriesName === t('metrics.pace') && param.value) {
                             tooltipText += `${param.marker} ${param.seriesName}: ${formatPace(param.value)}<br/>`;
                         } else if (param.value !== null && param.value !== undefined) {
                             tooltipText += `${param.marker} ${param.seriesName}: ${param.value.toFixed(1)}<br/>`;
@@ -481,7 +455,7 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
                 }
             },
             legend: {
-                data: seriesArray.map(s => s.name).filter(name => name !== 'Lap Boundaries'),
+                data: seriesArray.map(s => s.name).filter(name => name !== t('metrics.lapBoundaries')),
                 top: 0,
                 textStyle: { color: '#9CA3AF' },
             },
@@ -526,7 +500,7 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
             grid: {
                 left: leftMargin,
                 right: rightMargin,
-                bottom: 80, // Increased to accommodate slider zoom
+                bottom: 80,
                 top: 50,
                 containLabel: false,
             },
@@ -542,9 +516,8 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
             yAxis: yAxisArray,
             series: seriesArray,
         };
-    }, [chartData, hrZones, xAxisType, showLaps, laps, streams, legendSelected]);
+    }, [chartData, hrZones, xAxisType, showLaps, laps, streams, legendSelected, t]);
 
-    // Event handler for legend selection changes
     const onChartEvents = {
         legendselectchanged: (params: any) => {
             setLegendSelected(params.selected);
@@ -555,7 +528,7 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
         return (
             <Card>
                 <CardContent className="py-12">
-                    <p className="text-center text-muted-foreground">Loading activity data...</p>
+                    <p className="text-center text-muted-foreground">{t('loading')}</p>
                 </CardContent>
             </Card>
         );
@@ -571,53 +544,49 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
                 <div className="flex items-start justify-between flex-wrap gap-4">
                     <CardTitle className="flex items-center gap-2">
                         <span>📊</span>
-                        Activity Dynamics
+                        {t('title')}
                     </CardTitle>
 
-                    {/* Controls */}
                     <div className="flex flex-wrap gap-3 items-center">
-                        {/* X-Axis Selector */}
                         <div className="flex items-center gap-2">
-                            <span className="text-sm text-muted-foreground">X-Axis:</span>
+                            <span className="text-sm text-muted-foreground">{t('xAxis')}:</span>
                             <Select value={xAxisType} onValueChange={(value: XAxisType) => setXAxisType(value)}>
                                 <SelectTrigger className="w-[120px] h-8">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="time">Time</SelectItem>
-                                    <SelectItem value="distance">Distance</SelectItem>
+                                    <SelectItem value="time">{t('types.time')}</SelectItem>
+                                    <SelectItem value="distance">{t('types.distance')}</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
 
-                        {/* Resolution Selector */}
                         {streams && (
                             <div className="flex items-center gap-2">
-                                <span className="text-sm text-muted-foreground">Detail:</span>
+                                <span className="text-sm text-muted-foreground">{t('detail')}:</span>
                                 <Select value={resolution} onValueChange={(value: Resolution) => setResolution(value)}>
                                     <SelectTrigger className="w-[120px] h-8">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="low">Low</SelectItem>
-                                        <SelectItem value="medium">Medium</SelectItem>
-                                        <SelectItem value="high">High</SelectItem>
+                                        <SelectItem value="low">{t('resolutions.low')}</SelectItem>
+                                        <SelectItem value="medium">{t('resolutions.medium')}</SelectItem>
+                                        <SelectItem value="high">{t('resolutions.high')}</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
                         )}
 
-                        {/* Show Laps Toggle */}
                         {laps && laps.length > 0 && (
                             <div className="flex items-center gap-2">
-                                <span className="text-sm text-muted-foreground">Laps:</span>
+                                <span className="text-sm text-muted-foreground">{t('laps')}:</span>
                                 <Select value={showLaps ? "show" : "hide"} onValueChange={(value) => setShowLaps(value === "show")}>
                                     <SelectTrigger className="w-[100px] h-8">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="hide">Hide</SelectItem>
-                                        <SelectItem value="show">Show</SelectItem>
+                                        <SelectItem value="hide">{t('visibility.hide')}</SelectItem>
+                                        <SelectItem value="show">{t('visibility.show')}</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>

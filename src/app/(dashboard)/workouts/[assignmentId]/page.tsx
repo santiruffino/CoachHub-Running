@@ -152,7 +152,7 @@ export default function WorkoutDetailsPage() {
                 )}
             </div>
             
-            <h1 className="text-4xl font-extrabold font-display leading-tight tracking-tight text-foreground dark:text-background mb-4">
+            <h1 className="text-4xl font-extrabold font-display leading-tight tracking-tight text-foreground mb-4">
                 {assignment.training.title}
             </h1>
             
@@ -169,7 +169,7 @@ export default function WorkoutDetailsPage() {
                     </div>
                     <div>
                         <div className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-1">{t('scheduled')}</div>
-                         <div className="text-sm font-bold text-foreground dark:text-background">
+                         <div className="text-sm font-bold text-foreground">
                             {format(new Date(assignment.scheduledDate), 'EEEE dd/MM/yyyy')}
                         </div>
                     </div>
@@ -182,7 +182,7 @@ export default function WorkoutDetailsPage() {
                         </div>
                         <div>
                             <div className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-1">{t('targetAthlete')}</div>
-                             <div className="text-sm font-bold text-foreground dark:text-background">
+                             <div className="text-sm font-bold text-foreground">
                                 {assignment.athlete.name || assignment.athlete.email}
                             </div>
                         </div>
@@ -218,7 +218,7 @@ export default function WorkoutDetailsPage() {
 
                 {readOnly && (
                     <div className="bg-muted dark:bg-white/5 rounded-lg p-6">
-                        <span className="font-semibold text-sm text-foreground dark:text-background mb-1 block">{t('readOnlyMode')}</span>
+                        <span className="font-semibold text-sm text-foreground mb-1 block">{t('readOnlyMode')}</span>
                         <p className="text-xs text-muted-foreground leading-relaxed">{t('readOnlyDesc')}</p>
                     </div>
                 )}
@@ -249,15 +249,19 @@ export default function WorkoutDetailsPage() {
     ) : null;
 
     return (
-        <div className="h-[calc(100vh-theme(spacing.16))] w-[calc(100%+2rem)] md:w-[calc(100%+4rem)] overflow-hidden -mx-4 md:-mx-8 -my-4 md:-my-8 bg-background dark:bg-background font-inter">
-            <WorkoutBuilder
-                initialBlocks={editedBlocks}
-                onChange={readOnly ? undefined : handleBlocksChange}
-                athleteId={assignment.athlete.id}
-                readOnly={readOnly}
-                leftSidebarContent={leftSidebarContent}
-                footerContent={footerContent}
-            />
+        <div className="h-[calc(100vh-theme(spacing.16))] w-[calc(100%+2rem)] md:w-[calc(100%+4rem)] overflow-hidden -mx-4 md:-mx-8 -my-4 md:-my-8 bg-background dark:bg-background font-inter flex relative">
+            <div className="w-[380px] lg:w-[480px] flex-shrink-0 bg-card dark:bg-muted border-r border-border dark:border-white/5 overflow-y-auto z-10">
+                {leftSidebarContent}
+            </div>
+            <div className="flex-1 overflow-hidden relative">
+                <WorkoutBuilder
+                    initialBlocks={editedBlocks}
+                    onChange={readOnly ? undefined : handleBlocksChange}
+                    athleteId={assignment.athlete.id}
+                    readOnly={readOnly}
+                    footerContent={footerContent}
+                />
+            </div>
 
             <AlertDialog
                 open={alertState.open}

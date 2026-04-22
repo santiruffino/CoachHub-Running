@@ -1,6 +1,7 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTranslations } from 'next-intl';
 
 interface Lap {
     id: number;
@@ -36,14 +37,16 @@ interface PaceZonesChartProps {
 
 // Standard pace zones for running (min/km)
 const PACE_ZONES = [
-    { name: 'Z1 - Recovery', min: 360, max: 420 }, // 6:00-7:00 min/km
-    { name: 'Z2 - Easy', min: 300, max: 360 }, // 5:00-6:00 min/km
-    { name: 'Z3 - Tempo', min: 240, max: 300 }, // 4:00-5:00 min/km
-    { name: 'Z4 - Threshold', min: 210, max: 240 }, // 3:30-4:00 min/km
-    { name: 'Z5 - Anaerobic', min: 0, max: 210 }, // <3:30 min/km
+    { key: 'z1', min: 360, max: 420 }, // 6:00-7:00 min/km
+    { key: 'z2_pace', min: 300, max: 360 }, // 5:00-6:00 min/km
+    { key: 'z3', min: 240, max: 300 }, // 4:00-5:00 min/km
+    { key: 'z4', min: 210, max: 240 }, // 3:30-4:00 min/km
+    { key: 'z5_pace', min: 0, max: 210 }, // <3:30 min/km
 ];
 
 export function PaceZonesChart({ laps, splits, isRunning }: PaceZonesChartProps) {
+    const t = useTranslations('activities.detail.zones');
+
     if (!isRunning) {
         return null; // Only show for running activities
     }
@@ -112,12 +115,12 @@ export function PaceZonesChart({ laps, splits, isRunning }: PaceZonesChartProps)
     ];
 
     const reversedZones = [...PACE_ZONES].reverse();
-    const reversedNames = [...PACE_ZONES].map(z => z.name).reverse();
+    const reversedNames = [...PACE_ZONES].map(z => t(`names.${z.key}` as any)).reverse();
 
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Pace Zones</CardTitle>
+                <CardTitle>{t('paceTitle')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
                 {distribution.map((item, index) => {
@@ -150,7 +153,7 @@ export function PaceZonesChart({ laps, splits, isRunning }: PaceZonesChartProps)
 
                 {totalTime === 0 && (
                     <p className="text-sm text-muted-foreground text-center py-8">
-                        No pace data available for this activity.
+                        {t('noPaceData')}
                     </p>
                 )}
             </CardContent>

@@ -22,7 +22,6 @@ interface WorkoutBuilderProps {
     onChange?: (blocks: WorkoutBlock[]) => void;
     athleteId?: string;
     readOnly?: boolean;
-    leftSidebarContent?: React.ReactNode;
     footerContent?: React.ReactNode;
 }
 
@@ -31,7 +30,6 @@ export function WorkoutBuilder({
     onChange,
     athleteId,
     readOnly = false,
-    leftSidebarContent,
     footerContent
 }: WorkoutBuilderProps) {
     const [blocks, setBlocks] = useState<WorkoutBlock[]>(initialBlocks);
@@ -159,45 +157,42 @@ export function WorkoutBuilder({
 
     return (
         <div className="h-full w-full bg-[#f8f9fa] dark:bg-[#0a0f14] flex font-inter overflow-hidden relative">
-            {/* Left Sidebar Area */}
-            {leftSidebarContent && (
-                <div className="w-[320px] flex-shrink-0 bg-white dark:bg-[#1a232c] border-r border-[#e1e5e8] dark:border-white/10 overflow-y-auto">
-                    {leftSidebarContent}
-                </div>
-            )}
+            {/* Main Content Area */}
+            <div className="flex-1 flex flex-col h-full border-r border-[#e1e5e8] dark:border-white/10 overflow-hidden bg-white dark:bg-transparent">
+                
+                {/* Scrollable Form Content */}
+                <div className="flex-1 overflow-y-auto px-8 py-8 w-full">
+                    <div className="max-w-4xl mx-auto space-y-12 pb-24">
+                        {/* Projected Training Profile Chart */}
+                        <div className="w-full">
+                            <WorkoutIntensityChart 
+                                blocks={blocks} 
+                                selectedId={selectedBlockId}
+                                onBlockClick={selectBlock}
+                            />
+                        </div>
 
-            {/* Left Main Content Area */}
-            <div className="flex-1 flex flex-col h-full relative overflow-y-auto pb-32 border-r border-[#e1e5e8] dark:border-white/10">
-                <div className="max-w-4xl mx-auto px-8 py-8 space-y-12 w-full">
-                    {/* Projected Training Profile Chart */}
-                    <div className="w-full">
-                        <WorkoutIntensityChart 
-                            blocks={blocks} 
-                            selectedId={selectedBlockId}
-                            onBlockClick={selectBlock}
-                        />
-                    </div>
-
-                    {/* Sequence Builder */}
-                    <div className="w-full">
-                        <WorkoutSequence
-                            blocks={blocks}
-                            selectedBlockId={selectedBlockId}
-                            onSelectBlock={selectBlock}
-                            onUpdateBlock={updateBlock}
-                            onRemoveBlock={removeBlock}
-                            athleteProfile={athleteProfile}
-                            onAddStep={(type) => {
-                                if (type === 'repeat') addRepeatBlock();
-                                else addBlock(type as any);
-                            }}
-                        />
+                        {/* Sequence Builder */}
+                        <div className="w-full">
+                            <WorkoutSequence
+                                blocks={blocks}
+                                selectedBlockId={selectedBlockId}
+                                onSelectBlock={selectBlock}
+                                onUpdateBlock={updateBlock}
+                                onRemoveBlock={removeBlock}
+                                athleteProfile={athleteProfile}
+                                onAddStep={(type) => {
+                                    if (type === 'repeat') addRepeatBlock();
+                                    else addBlock(type as any);
+                                }}
+                            />
+                        </div>
                     </div>
                 </div>
 
-                {/* Footer Area */}
+                {/* Sticky Footer Area anchored perfectly to flex bottom */}
                 {footerContent && (
-                    <div className="absolute bottom-0 left-0 right-0 h-24 bg-[#2b3437] text-white flex items-center z-30 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
+                    <div className="flex-none h-24 bg-[#2b3437] text-white flex items-center shadow-[0_-4px_20px_rgba(0,0,0,0.1)] relative z-30 ring-1 ring-black/5 dark:ring-white/10">
                         {footerContent}
                     </div>
                 )}

@@ -75,7 +75,7 @@ function SearchableMultiSelect({
                         const item = items.find(i => i.id === id);
                         if (!item) return null;
                         return (
-                            <div key={id} className="flex items-center bg-muted dark:bg-card text-foreground dark:text-background px-3 py-1 rounded text-xs font-semibold tracking-wide">
+                            <div key={id} className="flex items-center bg-muted dark:bg-card text-foreground px-3 py-1 rounded text-xs font-semibold tracking-wide">
                                 {item.label}
                                 <button type="button" onClick={(e) => removeSelectedItem(e, id)} className="ml-2 text-muted-foreground hover:text-primary">
                                     <X className="w-3 h-3" />
@@ -97,7 +97,7 @@ function SearchableMultiSelect({
                     }}
                     onFocus={() => setIsOpen(true)}
                     placeholder={placeholder}
-                    className="w-full bg-transparent border-0 border-b border-border/30 pl-8 pr-0 py-2 text-foreground dark:text-background focus:ring-0 focus:border-primary placeholder-muted-foreground/50 transition-colors"
+                    className="w-full bg-transparent border-0 border-b border-border/30 pl-8 pr-0 py-2 text-foreground focus:ring-0 focus:border-primary placeholder-muted-foreground/50 transition-colors"
                 />
             </div>
 
@@ -128,7 +128,7 @@ function SearchableMultiSelect({
                                         <div className="flex flex-col">
                                             <span className={cn(
                                                 "text-sm font-semibold transition-colors",
-                                                isSelected ? "text-primary dark:text-white" : "text-foreground dark:text-background"
+                                                isSelected ? "text-primary dark:text-white" : "text-foreground"
                                             )}>
                                                 {item.label}
                                             </span>
@@ -357,7 +357,7 @@ function AssignWorkoutContent() {
                     </Button>
                     <div className="flex items-end justify-between">
                         <div>
-                             <h1 className="text-4xl font-extrabold font-display text-foreground dark:text-background tracking-tight mb-2">
+                             <h1 className="text-4xl font-extrabold font-display text-foreground tracking-tight mb-2">
                                 {tAssign('templateMatrix')}
                             </h1>
                             <p className="text-muted-foreground">{tAssign('templateMatrixSubtitle')}</p>
@@ -370,7 +370,7 @@ function AssignWorkoutContent() {
                                 <input
                                     type="text"
                                     placeholder={tAssign('filterRoutines')}
-                                    className="w-full bg-transparent border-0 border-b border-border/30 pl-8 pr-0 py-2 text-foreground dark:text-background focus:ring-0 focus:border-primary transition-colors"
+                                    className="w-full bg-transparent border-0 border-b border-border/30 pl-8 pr-0 py-2 text-foreground focus:ring-0 focus:border-primary transition-colors"
                                 />
                             </div>
                         </div>
@@ -390,7 +390,7 @@ function AssignWorkoutContent() {
                             >
                                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-transparent group-hover:bg-primary transition-colors" />
                                 <div>
-                                    <h3 className="text-xl font-bold font-display text-foreground dark:text-background mb-1">
+                                    <h3 className="text-xl font-bold font-display text-foreground mb-1">
                                         {template.title}
                                     </h3>
                                     <p className="text-sm text-muted-foreground max-w-2xl line-clamp-1">
@@ -416,43 +416,37 @@ function AssignWorkoutContent() {
     // Step 3: Build new workout (Inline Full Page Builder)
     if (step === 'build') {
         return (
-            <div className="h-[calc(100vh-theme(spacing.16))] w-[calc(100%+2rem)] md:w-[calc(100%+4rem)] overflow-hidden -mx-4 md:-mx-8 -my-4 md:-my-8">
-                <WorkoutBuilder 
-                    initialBlocks={blocks} 
-                    onChange={setBlocks}
-                    athleteId={athleteId || undefined} 
-                    leftSidebarContent={
-                        <div className="p-8 pb-4">
-                            <Button variant="ghost" onClick={() => setStep('select-source')} className="text-muted-foreground hover:text-foreground transition-colors p-0 hover:bg-transparent tracking-widest uppercase text-xs font-semibold mb-8">
-                                <ArrowLeft className="w-4 h-4 mr-2" /> {tAssign('restart')}
-                            </Button>
-                            <h3 className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-2">
-                                {tAssign('editorPhase')}
-                            </h3>
-                            <h2 className="text-xl font-bold font-display text-foreground dark:text-background mb-8">
-                                {tAssign('constructProtocol')}
-                            </h2>
-
-                            <div className="space-y-6 hidden"> {/* Hiding generic inputs for custom build, handled later in assign-details */}
+            <div className="h-[calc(100vh-theme(spacing.16))] w-[calc(100%+2rem)] md:w-[calc(100%+4rem)] overflow-hidden -mx-4 md:-mx-8 -my-4 md:-my-8 bg-background dark:bg-background flex flex-col">
+                <div className="p-6 px-12 border-b border-border/40 flex items-center shrink-0">
+                    <Button variant="ghost" onClick={() => setStep('select-source')} className="text-muted-foreground hover:text-foreground transition-colors p-0 hover:bg-transparent tracking-widest uppercase text-xs font-semibold">
+                        <ArrowLeft className="w-4 h-4 mr-2" /> {tAssign('restart')}
+                    </Button>
+                    <div className="ml-auto text-xs font-semibold text-muted-foreground tracking-[0.05em] uppercase">
+                        {tAssign('editorPhase')}
+                    </div>
+                </div>
+                <div className="flex-1 overflow-hidden">
+                    <WorkoutBuilder 
+                        initialBlocks={blocks} 
+                        onChange={setBlocks}
+                        athleteId={athleteId || undefined} 
+                        footerContent={
+                            <div className="w-full flex items-center justify-between mx-auto px-8">
+                                <div className="flex flex-col">
+                                    <span className="text-lg font-bold font-display">{tAssign('blocksRegistered')}</span>
+                                    <span className="text-xs text-muted-foreground/60">{tAssign('proceedToScheduling')}</span>
+                                </div>
+                                <Button 
+                                    onClick={() => setStep('assign-details')}
+                                    disabled={blocks.length === 0}
+                                    className="bg-white text-foreground hover:bg-background uppercase tracking-wider text-xs font-semibold px-8 py-6 rounded shadow-lg"
+                                >
+                                    {tAssign('continueToScheduling')}
+                                </Button>
                             </div>
-                        </div>
-                    }
-                    footerContent={
-                        <div className="w-full flex items-center justify-between mx-auto px-8">
-                            <div className="flex flex-col">
-                                <span className="text-lg font-bold font-display">{tAssign('blocksRegistered')}</span>
-                                <span className="text-xs text-muted-foreground/60">{tAssign('proceedToScheduling')}</span>
-                            </div>
-                            <Button 
-                                onClick={() => setStep('assign-details')}
-                                disabled={blocks.length === 0}
-                                className="bg-white text-foreground hover:bg-background uppercase tracking-wider text-xs font-semibold px-8 py-6 rounded shadow-lg"
-                            >
-                                {tAssign('continueToScheduling')}
-                            </Button>
-                        </div>
-                    }
-                />
+                        }
+                    />
+                </div>
             </div>
         );
     }
@@ -468,7 +462,7 @@ function AssignWorkoutContent() {
                      <ArrowLeft className="w-4 h-4 mr-2" /> {tAssign('modifyBlueprint')}
                 </Button>
 
-                <h1 className="text-3xl font-extrabold font-display tracking-tight text-foreground dark:text-background mb-12">
+                <h1 className="text-3xl font-extrabold font-display tracking-tight text-foreground mb-12">
                     {tAssign('actionCalendar')}
                 </h1>
 
@@ -482,7 +476,7 @@ function AssignWorkoutContent() {
                             type="date"
                             value={scheduledDate}
                             onChange={(e) => setScheduledDate(e.target.value)}
-                            className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-2 text-xl font-bold font-display text-foreground dark:text-background focus:ring-0 focus:border-primary transition-colors"
+                            className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-2 text-xl font-bold font-display text-foreground focus:ring-0 focus:border-primary transition-colors"
                         />
                     </div>
 
@@ -497,7 +491,7 @@ function AssignWorkoutContent() {
                                 value={workoutName}
                                 onChange={(e) => setWorkoutName(e.target.value)}
                                 placeholder={tAssign('exampleLongRun')}
-                                className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-2 text-lg font-medium text-foreground dark:text-background focus:ring-0 focus:border-primary placeholder-muted-foreground/50 transition-colors"
+                                className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-2 text-lg font-medium text-foreground focus:ring-0 focus:border-primary placeholder-muted-foreground/50 transition-colors"
                             />
                         </div>
                     )}
@@ -513,7 +507,7 @@ function AssignWorkoutContent() {
                                 value={workoutName}
                                 onChange={(e) => setWorkoutName(e.target.value)}
                                 placeholder={tAssign('overwritesTemplateName')}
-                                className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-2 text-lg font-medium text-foreground dark:text-background focus:ring-0 focus:border-primary placeholder-muted-foreground/50 transition-colors"
+                                className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-2 text-lg font-medium text-foreground focus:ring-0 focus:border-primary placeholder-muted-foreground/50 transition-colors"
                             />
                         </div>
                     )}
@@ -581,7 +575,7 @@ function AssignWorkoutContent() {
                                     className="w-5 h-5 mt-0.5 rounded border-gray-300 text-primary focus:ring-[#4e6073]"
                                 />
                                 <div className="flex flex-col">
-                                    <span className="font-semibold text-sm text-foreground dark:text-background mb-1">{tAssign('catalogStructure')}</span>
+                                    <span className="font-semibold text-sm text-foreground mb-1">{tAssign('catalogStructure')}</span>
                                     <p className="text-xs text-muted-foreground leading-relaxed">{tAssign('catalogStructureDesc')}</p>
                                 </div>
                             </label>
@@ -591,7 +585,7 @@ function AssignWorkoutContent() {
                                     value={templateTitle}
                                     onChange={(e) => setTemplateTitle(e.target.value)}
                                     placeholder={tAssign('enterLibraryTitle')}
-                                    className="mt-6 w-full bg-white dark:bg-background border border-border dark:border-white/10 rounded px-4 py-3 text-sm font-medium text-foreground dark:text-background focus:outline-none focus:border-primary transition-colors"
+                                    className="mt-6 w-full bg-white dark:bg-background border border-border dark:border-white/10 rounded px-4 py-3 text-sm font-medium text-foreground focus:outline-none focus:border-primary transition-colors"
                                 />
                             )}
                         </div>
@@ -613,7 +607,7 @@ function AssignWorkoutContent() {
                     <div className="flex-1 p-16 flex flex-col items-center justify-center">
                         <div className="max-w-md text-center">
                             <Clock className="w-16 h-16 text-accent mx-auto mb-8" />
-                            <h2 className="text-4xl font-display font-extrabold text-foreground dark:text-background mb-4">
+                            <h2 className="text-4xl font-display font-extrabold text-foreground mb-4">
                                 {selectedTemplate ? selectedTemplate.title : (workoutName || tAssign('customProtocol'))}
                             </h2>
                             <p className="text-lg text-muted-foreground mb-8">

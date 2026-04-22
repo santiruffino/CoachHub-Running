@@ -187,6 +187,145 @@
             "coachComments": "Comentarios del coach"
         }
     },
+    "activities": {
+        "detail": {
+            "loadingChart": "Cargando gráfico...",
+            "errorLoad": "Error al cargar la actividad",
+            "errorSaveFeedback": "Error al guardar el feedback. Por favor, inténtalo de nuevo.",
+            "rpe": {
+                "notRated": "Sin calificar",
+                "veryEasy": "Muy fácil",
+                "easy": "Fácil",
+                "moderate": "Moderado",
+                "hard": "Difícil",
+                "maximumEffort": "Esfuerzo máximo"
+            },
+            "notFound": {
+                "title": "Actividad no encontrada",
+                "description": "La actividad que buscas no existe."
+            },
+            "actions": {
+                "goBack": "Volver",
+                "share": "Compartir",
+                "analysis": "Análisis",
+                "download": "Descargar",
+                "report": "Informe",
+                "editLink": "Editar vínculo",
+                "linkWorkout": "Vincular entrenamiento"
+            },
+            "metrics": {
+                "avgHr": "FC MEDIA",
+                "bpm": "BPM",
+                "generalWorkout": "ENTRENAMIENTO GENERAL",
+                "sufferScore": "PUNTUACIÓN DE ESFUERZO",
+                "distance": "Distancia",
+                "avgPace": "Ritmo Medio",
+                "avgSpeed": "Velocidad Media",
+                "duration": "Duración Total",
+                "elevationGain": "Desnivel Positivo",
+                "avgHrLabel": "BPM MEDIA",
+                "maxHrLabel": "MÁX",
+                "units": {
+                    "km": "km",
+                    "m": "m",
+                    "bpm": "ppm",
+                    "spm": "ppm",
+                    "kmh": "km/h",
+                    "perKm": "/km"
+                }
+            },
+            "charts": {
+                "terrain": "Terreno",
+                "elevationProfile": "Perfil de Elevación",
+                "hrPerformance": "Rendimiento de Frecuencia Cardíaca",
+                "liveTracking": "Datos en Tiempo Real",
+                "intensityDistribution": "Distribución de Intensidad"
+            },
+            "tabs": {
+                "analysis": "Análisis de Vueltas y Splits",
+                "autoLaps": "Vueltas Automáticas",
+                "kmSplits": "Splits por KM"
+            },
+            "table": {
+                "lap": "Vuelta",
+                "time": "Tiempo",
+                "distance": "Distancia",
+                "avgPace": "Ritmo Medio",
+                "avgHr": "FC Media",
+                "cadence": "Cadencia",
+                "elevGain": "Desnivel",
+                "split": "Split",
+                "pace": "Ritmo",
+                "elevation": "Elevación",
+                "zone": "Zona"
+            },
+            "legend": {
+                "hrZones": "Referencia de Zonas de Frecuencia Cardíaca"
+            },
+            "zones": {
+                "hrTitle": "Zonas de Frecuencia Cardíaca",
+                "paceTitle": "Zonas de Ritmo",
+                "noHrData": "No hay datos de frecuencia cardíaca disponibles para esta actividad.",
+                "noPaceData": "No hay datos de ritmo disponibles para esta actividad.",
+                "names": {
+                    "z1": "Z1 - Recuperación",
+                    "z2_hr": "Z2 - Resistencia",
+                    "z2_pace": "Z2 - Fácil",
+                    "z3": "Z3 - Tempo",
+                    "z4": "Z4 - Umbral",
+                    "z5_hr": "Z5 - VO2 Max",
+                    "z5_pace": "Z5 - Anaeróbico"
+                }
+            },
+            "dynamics": {
+                "title": "Dinámicas de la Actividad",
+                "loading": "Cargando datos de la actividad...",
+                "xAxis": "Eje X",
+                "detail": "Detalle",
+                "laps": "Vueltas",
+                "types": {
+                    "time": "Tiempo",
+                    "distance": "Distancia"
+                },
+                "resolutions": {
+                    "low": "Bajo",
+                    "medium": "Medio",
+                    "high": "Alto"
+                },
+                "visibility": {
+                    "show": "Mostrar",
+                    "hide": "Ocultar"
+                },
+                "metrics": {
+                    "pace": "Ritmo",
+                    "heartRate": "Frecuencia Cardíaca",
+                    "cadence": "Cadencia",
+                    "elevation": "Elevación",
+                    "grade": "Pendiente",
+                    "lapBoundaries": "Límites de Vuelta"
+                }
+            },
+            "segments": {
+                "title": "Esfuerzos de Segmento",
+                "time": "Tiempo",
+                "pace": "Ritmo",
+                "distanceArea": "Distancia y Área",
+                "generalEffort": "Esfuerzo General"
+            },
+            "feedback": {
+                "title": "Feedback de la Actividad",
+                "rpeLabel": "Percepción del Esfuerzo (RPE)",
+                "notesLabel": "Notas del Atleta",
+                "placeholder": "¿Cómo te sentiste en este entrenamiento? Notas para tu coach...",
+                "saving": "Guardando...",
+                "update": "Actualizar Feedback",
+                "save": "Guardar Feedback",
+                "coachViewRpe": "Percepción del Esfuerzo (RPE)",
+                "noExertion": "No se registró esfuerzo.",
+                "noNotes": "El atleta no proporcionó notas."
+            }
+        }
+    },
     "auth": {
         "login": {
             "title": "Bienvenido",
@@ -515,7 +654,8 @@
             "rest": "Descanso",
             "cooldown": "Enfriamiento",
             "hard": "Fuerte",
-            "easy": "Suave"
+            "easy": "Suave",
+            "repeat": "Repeticion"
         },
         "stepDetails": "Detalles del Paso",
         "removeStep": "Eliminar Paso",
@@ -798,10 +938,10 @@
         },
         "hero": {
             "eyebrow": "RENDIMIENTO POTENCIADO POR IA",
-            "title1": "Entrena con Inteligencia,",
-            "title2": "No con Esfuerzo.",
+            "title1": "Automatiza tu Coaching en",
+            "title2": "Tiempo Real.",
             "titleHighlight": "Tu Centro de Comando.",
-            "subtitle": "Aprovecha el entrenamiento ajustado por VAM, la creación automatizada de sesiones e información en tiempo real sobre tus atletas en un único dashboard.",
+            "subtitle": "Sincronización instantánea con Strava y Garmin. Crea sesiones avanzadas ajustadas por VAM y deja que nuestro motor de matching automatice el seguimiento de tus atletas.",
             "startFreeTrial": "Comenzar Prueba Gratis",
             "viewPricing": "Ver Planes y Precios",
             "analyticsLabel": "ANÁLISIS DE RENDIMIENTO V2.6",
@@ -819,26 +959,26 @@
         },
         "features": {
             "eyebrow": "POR QUÉ LOS COACHES NOS ELIGEN",
-            "title": "Los problemas que resolvemos para ti.",
-            "card1Title": "La Trampa Manual",
-            "card1Desc": "Deja de perder horas con planillas y entrada manual de datos. Nuestro motor de automatización sincroniza los entrenamientos al instante en todas las plataformas.",
-            "card2Title": "El Ruido",
-            "card2Desc": "Los datos crudos son inútiles sin contexto. Coach Hub separa los insights más críticos de las métricas cotidianas de forma automática usando IA propia.",
-            "card3Title": "La Brecha de Comunicación",
-            "card3Desc": "No vuelvas a perderte una señal de alerta. Los circuitos de feedback centralizados garantizan que los atletas se sientan escuchados y los coaches estén informados 24/7."
+            "title": "Eficiencia quirúrgica para tu equipo.",
+            "card1Title": "Workout Builder Avanzado",
+            "card1Desc": "Diseña intervalos complejos basados en zonas de ritmo, frecuencia cardíaca o VAM. Calibración automática según el perfil fisiológico de cada atleta.",
+            "card2Title": "Motor de Matching Inteligente",
+            "card2Desc": "Olvídate de comparar actividades manualmente. Nuestra IA correlaciona automáticamente los entrenos planificados con los ejecutados en Strava.",
+            "card3Title": "Alertas de Cumplimiento 24/7",
+            "card3Desc": "Detecta instantáneamente discrepancias en el RPE, falta de entrenamientos o bajo volumen antes de que afecten el rendimiento o causen lesiones."
         },
         "productFeatures": {
             "eyebrow": "CONSTRUIDO PARA EL RENDIMIENTO",
             "title1": "Creado por coaches,",
             "titleHighlight": "refinado por inteligencia.",
-            "feature1Title": "Dashboard IA Spotlight",
-            "feature1Desc": "Modelos predictivos que detectan el sobreentrenamiento antes de que ocurran las lesiones.",
-            "feature2Title": "Constructor de Sesiones Dinámico",
-            "feature2Desc": "Genera sesiones estructuradas basadas en datos reales. VAM y umbral de lactato.",
-            "feature3Title": "Ajuste Automático VAM",
-            "feature3Desc": "Ajustes automáticos de ritmo según el perfil de desnivel y los metros verticales por hora.",
-            "feature4Title": "Análisis de Ritmo Sincronizado",
-            "feature4Desc": "Frecuencia cardíaca, ritmo y desnivel superpuestos para una precisión quirúrgica.",
+            "feature1Title": "Sync Automático con Strava",
+            "feature1Desc": "Recepción de actividades en tiempo real vía Webhooks. Tus datos están actualizados al segundo sin necesidad de recargar la página.",
+            "feature2Title": "Constructor Dinámico de Series",
+            "feature2Desc": "Genera protocolos de carga estructurados. Repeticiones, bloques y fases de enfriamiento calibradas con precisión VAM.",
+            "feature3Title": "Métricas VAM Quirúrgicas",
+            "feature3Desc": "Seguimiento exhaustivo de metros verticales, desnivel acumulado y Velocidad de Ascenso Media por cada sesión.",
+            "feature4Title": "Dashboard de Control Central",
+            "feature4Desc": "Vista unificada de calendario, historial de progreso y comunicación directa. Todo lo que necesitas en una sola pantalla.",
             "weekLabel": "Semana 7 — Ajuste FC",
             "formTrending": "Forma en Ascenso",
             "currentLoad": "Carga Actual",
@@ -846,22 +986,22 @@
         },
         "roadmap": {
             "eyebrow": "HOJA DE RUTA ELITE",
-            "title": "Lo que viene para el coach orientado al rendimiento.",
-            "item1Title": "Garmin Push",
-            "item1Desc": "Sincronización directa de entrenamientos a todos los dispositivos Garmin de los atletas. Sin configuración manual.",
+            "title": "Evolución constante hacia el alto rendimiento.",
+            "item1Title": "Sincronización Webhook Real-time",
+            "item1Desc": "Integración total con Strava para recepción de datos instantánea. Olvida la sincronización manual.",
             "item1Status": "DISPONIBLE AHORA",
-            "item2Title": "Auditor de Prevención de Lesiones",
-            "item2Desc": "Analizador biométrico propietario que detecta señales tempranas de lesiones comunes.",
-            "item2Status": "Q2 2025",
-            "item3Title": "App Móvil Nativa",
-            "item3Desc": "Un centro de comando móvil optimizado para coaching en cancha y feedback instantáneo.",
-            "item3Status": "Q3 2025"
+            "item2Title": "Push a Dispositivos Garmin",
+            "item2Desc": "Envía tus entrenamientos directamente al reloj de tus atletas. Integración nativa con Garmin Connect API.",
+            "item2Status": "DISPONIBLE AHORA",
+            "item3Title": "Predicción de Lesiones por IA",
+            "item3Desc": "Modelos predictivos basados en variabilidad de la frecuencia cardíaca (HRV) y carga crónica de entrenamiento.",
+            "item3Status": "Q2 2025"
         },
         "cta": {
             "eyebrow": "COMIENZA HOY",
-            "title1": "Entrena de forma",
-            "titleHighlight": "gratuita.",
-            "subtitle": "Atletas ilimitados durante tus primeros 14 días. Escala según crezcas.",
+            "title1": "Lleva tu coaching al",
+            "titleHighlight": "siguiente nivel.",
+            "subtitle": "Automatiza la gestión de tus atletas con nuestra integración real-time de Strava. Prueba gratis por 14 días.",
             "startTrial": "Comenzar Prueba de 14 Días Gratis",
             "viewPricing": "Ver Planes y Precios",
             "noCreditCard": "Sin tarjeta de crédito · Cancela cuando quieras",

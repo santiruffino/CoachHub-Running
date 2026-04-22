@@ -237,19 +237,31 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                             <>
                                 <input
                                     type="number"
-                                    value={step.target.min}
+                                    value={step.target.min ?? ''}
                                     onChange={(e) => onUpdate({
-                                        target: { ...step.target, min: parseFloat(e.target.value) }
+                                        target: { ...step.target, min: e.target.value as any }
                                     })}
+                                    onBlur={(e) => {
+                                        const val = parseFloat(e.target.value);
+                                        onUpdate({
+                                            target: { ...step.target, min: isNaN(val) ? 0 : val }
+                                        });
+                                    }}
                                     className="w-16 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-1 py-1 rounded-t-md text-[#2b3437] dark:text-[#f8f9fa] text-2xl font-extrabold font-display text-center focus:ring-0 focus:border-[#4e6073] transition-colors outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 />
                                 <span className="text-[#8b9bb4] font-semibold">—</span>
                                 <input
                                     type="number"
-                                    value={step.target.max}
+                                    value={step.target.max ?? ''}
                                     onChange={(e) => onUpdate({
-                                        target: { ...step.target, max: parseFloat(e.target.value) }
+                                        target: { ...step.target, max: e.target.value as any }
                                     })}
+                                    onBlur={(e) => {
+                                        const val = parseFloat(e.target.value);
+                                        onUpdate({
+                                            target: { ...step.target, max: isNaN(val) ? 0 : val }
+                                        });
+                                    }}
                                     className="w-16 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-1 py-1 rounded-t-md text-[#2b3437] dark:text-[#f8f9fa] text-2xl font-extrabold font-display text-center focus:ring-0 focus:border-[#4e6073] transition-colors outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 />
                                 <span className="text-[#8b9bb4] text-sm font-semibold">%</span>
@@ -263,10 +275,16 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                                     type="number"
                                     min="1"
                                     max="10"
-                                    value={step.target.min}
+                                    value={step.target.min ?? ''}
                                     onChange={(e) => onUpdate({
-                                        target: { ...step.target, min: parseFloat(e.target.value) }
+                                        target: { ...step.target, min: e.target.value as any }
                                     })}
+                                    onBlur={(e) => {
+                                        const val = parseFloat(e.target.value);
+                                        onUpdate({
+                                            target: { ...step.target, min: isNaN(val) ? 1 : val }
+                                        });
+                                    }}
                                     className="w-16 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-1 py-1 rounded-t-md text-[#2b3437] dark:text-[#f8f9fa] text-2xl font-extrabold font-display text-center focus:ring-0 focus:border-[#4e6073] transition-colors outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 />
                                 <span className="text-[#8b9bb4] font-semibold">—</span>
@@ -274,10 +292,16 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                                     type="number"
                                     min="1"
                                     max="10"
-                                    value={step.target.max}
+                                    value={step.target.max ?? ''}
                                     onChange={(e) => onUpdate({
-                                        target: { ...step.target, max: parseFloat(e.target.value) }
+                                        target: { ...step.target, max: e.target.value as any }
                                     })}
+                                    onBlur={(e) => {
+                                        const val = parseFloat(e.target.value);
+                                        onUpdate({
+                                            target: { ...step.target, max: isNaN(val) ? 1 : val }
+                                        });
+                                    }}
                                     className="w-16 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-1 py-1 rounded-t-md text-[#2b3437] dark:text-[#f8f9fa] text-2xl font-extrabold font-display text-center focus:ring-0 focus:border-[#4e6073] transition-colors outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 />
                             </>
