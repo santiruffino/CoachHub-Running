@@ -22,8 +22,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ 'hub.challenge': challenge });
   }
 
-  console.warn('Handshake failed: Invalid mode or token');
-  return new NextResponse('Forbidden', { status: 403 });
+  console.warn(`Handshake failed: Invalid mode or token. Expected: ${verifyToken}, Received: ${token}`);
+  return new NextResponse(`Forbidden: Invalid verify token. Expected: ${verifyToken}`, { status: 403 });
 }
 
 export async function POST(req: NextRequest) {

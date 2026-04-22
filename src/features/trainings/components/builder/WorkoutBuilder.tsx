@@ -158,9 +158,16 @@ export function WorkoutBuilder({
     }
 
     return (
-        <div className="h-full w-full bg-[#f8f9fa] dark:bg-[#0a0f14] flex font-inter overflow-hidden">
+        <div className="h-full w-full bg-[#f8f9fa] dark:bg-[#0a0f14] flex font-inter overflow-hidden relative">
+            {/* Left Sidebar Area */}
+            {leftSidebarContent && (
+                <div className="w-[320px] flex-shrink-0 bg-white dark:bg-[#1a232c] border-r border-[#e1e5e8] dark:border-white/10 overflow-y-auto">
+                    {leftSidebarContent}
+                </div>
+            )}
+
             {/* Left Main Content Area */}
-            <div className="flex-1 flex flex-col h-full relative overflow-y-auto pb-24 border-r border-[#e1e5e8] dark:border-white/10">
+            <div className="flex-1 flex flex-col h-full relative overflow-y-auto pb-32 border-r border-[#e1e5e8] dark:border-white/10">
                 <div className="max-w-4xl mx-auto px-8 py-8 space-y-12 w-full">
                     {/* Projected Training Profile Chart */}
                     <div className="w-full">
@@ -187,6 +194,13 @@ export function WorkoutBuilder({
                         />
                     </div>
                 </div>
+
+                {/* Footer Area */}
+                {footerContent && (
+                    <div className="absolute bottom-0 left-0 right-0 h-24 bg-[#2b3437] text-white flex items-center z-30 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
+                        {footerContent}
+                    </div>
+                )}
             </div>
 
             {/* Right Sidebar Area */}

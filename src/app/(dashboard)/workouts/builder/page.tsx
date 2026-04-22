@@ -24,15 +24,16 @@ function WorkoutBuilderContent() {
     const [expectedRpe, setExpectedRpe] = useState<number>(5);
     const [saving, setSaving] = useState(false);
     const { alertState, showAlert, closeAlert } = useAlertDialog();
+    const t = useTranslations('builder');
 
     const handleSave = async () => {
         if (!workoutTitle.trim()) {
-            showAlert('warning', 'Please enter a workout title');
+            showAlert('warning', t('enterTitleWarning'));
             return;
         }
 
         if (blocks.length === 0) {
-            showAlert('warning', 'Please add at least one workout block');
+            showAlert('warning', t('addBlockWarning'));
             return;
         }
 
@@ -47,11 +48,11 @@ function WorkoutBuilderContent() {
                 expectedRpe: expectedRpe
             });
 
-            showAlert('success', 'Workout template saved successfully!');
+            showAlert('success', t('saveSuccess'));
             setTimeout(() => router.push('/workouts/library'), 1500);
         } catch (error) {
             console.error('Failed to save workout:', error);
-            showAlert('error', 'Failed to save workout template');
+            showAlert('error', t('saveError'));
         } finally {
             setSaving(false);
         }
@@ -60,29 +61,29 @@ function WorkoutBuilderContent() {
     const leftSidebarContent = (
         <div className="p-8 pb-4">
             <h3 className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-2">
-                Editor Phase 01
+                {t('editorPhase')}
             </h3>
             <h2 className="text-xl font-bold font-display text-foreground dark:text-background mb-8">
-                Core Details
+                {t('coreDetails')}
             </h2>
 
             <div className="space-y-6">
                 <div>
                     <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-1 block">
-                        Workout Title
+                        {t('workoutTitleLabel')}
                     </label>
                     <input
                         type="text"
                         value={workoutTitle}
                         onChange={(e) => setWorkoutTitle(e.target.value)}
-                        placeholder="e.g. Threshold Development"
+                        placeholder={t('workoutTitlePlaceholder')}
                         className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-2 text-foreground dark:text-background focus:ring-0 focus:border-primary placeholder-muted-foreground/50 transition-colors"
                     />
                 </div>
 
                 <div>
                     <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-1 block">
-                        Activity Type
+                        {t('activityTypeLabel')}
                     </label>
                     <select className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-2 text-foreground dark:text-background focus:ring-0 focus:border-primary outline-none">
                         <option value="RUNNING">Running</option>
@@ -94,20 +95,20 @@ function WorkoutBuilderContent() {
 
                 <div>
                     <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-1 block">
-                        Coach Notes
+                        {t('coachNotesLabel')}
                     </label>
                      <input
                         type="text"
                         value={workoutDescription}
                         onChange={(e) => setWorkoutDescription(e.target.value)}
-                        placeholder="Targeting lactate threshold..."
+                        placeholder={t('coachNotesPlaceholder')}
                         className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-2 text-foreground dark:text-background focus:ring-0 focus:border-primary placeholder-muted-foreground/50 transition-colors"
                     />
                 </div>
 
                  <div>
                     <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-2 block flex items-between">
-                        Expected RPE
+                        {t('expectedRpeLabel')}
                         <span className="ml-auto text-primary">{expectedRpe}/10</span>
                     </label>
                     <Slider
@@ -125,20 +126,20 @@ function WorkoutBuilderContent() {
 
     const footerContent = (
         <div className="w-full flex items-center justify-between mx-auto px-8 max-w-7xl">
-            <div className="flex flex-col">
-                 <span className="text-lg font-bold font-display">Ready to Publish?</span>
-                 <span className="text-xs text-muted-foreground/60">Ensure all intervals are calibrated to your current metrics.</span>
+            <div className="flex flex-col text-white">
+                 <span className="text-lg font-bold font-display">{t('readyToPublish')}</span>
+                 <span className="text-xs text-white/60">{t('publishDescription')}</span>
             </div>
             <div className="flex items-center gap-4">
-                <Button variant="outline" className="border-primary/20 text-foreground bg-transparent hover:bg-white/10 hover:text-white uppercase tracking-wider text-xs font-semibold px-6 py-6" onClick={() => router.push('/workouts/library')}>
-                    Cancel / Exit
+                <Button variant="outline" className="border-white/20 text-white bg-transparent hover:bg-white/10 hover:text-white uppercase tracking-wider text-xs font-semibold px-6 py-6" onClick={() => router.push('/workouts/library')}>
+                    {t('cancelExit')}
                 </Button>
                 <Button 
                     onClick={handleSave}
                     disabled={saving || !workoutTitle.trim() || blocks.length === 0}
-                    className="bg-white text-foreground hover:bg-background uppercase tracking-wider text-xs font-semibold px-8 py-6 rounded shadow-lg"
+                    className="bg-white text-[#2b3437] hover:bg-gray-100 uppercase tracking-wider text-xs font-semibold px-8 py-6 rounded shadow-lg transition-colors"
                 >
-                    {saving ? 'Saving...' : 'Finalize Workout'}
+                    {saving ? t('saving') : t('finalizeWorkout')}
                 </Button>
             </div>
         </div>
