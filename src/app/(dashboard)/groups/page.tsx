@@ -51,7 +51,21 @@ export default function GroupsPage() {
         fetchGroups();
     }, []);
 
-    // ... (keep handleStartEdit, handleCancelEdit, handleSaveName but update setGroups usage)
+    const handleStartEdit = (e: React.MouseEvent, group: Group) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setEditingGroupId(group.id);
+        setEditingName(group.name);
+    };
+
+    const handleCancelEdit = (e?: React.MouseEvent | React.KeyboardEvent) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        setEditingGroupId(null);
+        setEditingName('');
+    };
 
     const handleSaveName = async (e: React.MouseEvent, groupId: string) => {
         e.preventDefault();
