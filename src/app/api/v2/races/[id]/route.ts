@@ -9,9 +9,10 @@ import { requireRole } from '@/lib/supabase/api-helpers';
  */
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const authResult = await requireRole(['COACH', 'ADMIN']);
     if (authResult.response) {
       return authResult.response;
@@ -32,7 +33,7 @@ export async function PATCH(
         location,
         team_id: team_id === undefined ? undefined : (team_id || null),
       })
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single();
 
@@ -61,9 +62,10 @@ export async function PATCH(
  */
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const authResult = await requireRole(['COACH', 'ADMIN']);
     if (authResult.response) {
       return authResult.response;
@@ -74,7 +76,7 @@ export async function DELETE(
     const { error } = await supabase
       .from('races')
       .delete()
-      .eq('id', params.id);
+      .eq('id', id);
 
     if (error) {
       console.error('Delete race error:', error);

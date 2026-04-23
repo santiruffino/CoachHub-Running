@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { WorkoutBuilder } from '@/features/trainings/components/builder/WorkoutBuilder';
 import { WorkoutBlock } from '@/features/trainings/components/builder/types';
@@ -8,9 +8,7 @@ import { TrainingType } from '@/features/trainings/types';
 import { Button } from '@/components/ui/button';
 import { trainingsService } from '@/features/trainings/services/trainings.service';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Save } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
-import Link from 'next/link';
 import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
 import { useTranslations } from 'next-intl';
 

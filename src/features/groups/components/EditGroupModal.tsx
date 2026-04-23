@@ -93,7 +93,7 @@ export function EditGroupModal({ group, isOpen, onClose, onUpdated }: EditGroupM
         name,
         description,
         group_type,
-        race_id: group_type === 'RACE' ? (finalRaceId || null) : null,
+        race_id: group_type === 'RACE' ? (finalRaceId || undefined) : undefined,
       };
 
       // Maintaining legacy fields for compatibility
