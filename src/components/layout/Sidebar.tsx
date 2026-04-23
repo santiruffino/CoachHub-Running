@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, UsersRound, Calendar, TrendingUp, Settings, Menu, X, Dumbbell } from 'lucide-react';
+import { LayoutDashboard, Users, UsersRound, Calendar, TrendingUp, Settings, Menu, X, Dumbbell, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useTranslations } from 'next-intl';
@@ -25,7 +25,7 @@ export function Sidebar() {
         { name: 'Coaches', href: '/coaches', icon: Users, roles: ['ADMIN'] },
         { name: t('workoutLibrary'), href: '/workouts/library', icon: Dumbbell, roles: ['COACH', 'ADMIN'] },
         { name: t('trainings'), href: '/trainings', icon: Calendar, roles: ['COACH', 'ADMIN'] },
-        { name: t('calendar'), href: '/dashboard/calendar', icon: Calendar, roles: ['COACH', 'ATHLETE', 'ADMIN'] },
+        { name: t('races'), href: '/races', icon: Trophy, roles: ['COACH', 'ATHLETE', 'ADMIN'] },
         { name: t('progress'), href: '#', icon: TrendingUp, roles: ['COACH', 'ATHLETE', 'ADMIN'] },
     ];
 

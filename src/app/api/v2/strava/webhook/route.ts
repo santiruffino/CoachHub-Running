@@ -48,19 +48,27 @@ export async function POST(req: NextRequest) {
     });
 
     // 3. Trigger asynchronous processing via Supabase Edge Function
-    const edgeFunctionUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/process-strava-activity`;
+    // We AWAIT this call to ensure the connection is established and the function is triggered
+    // in serverless environments. Fire-and-forget can lead to ECONNRESET if the runtime
+    // terminates before the TLS handshake completes.
+    console.log('Triggering process-strava-activity...');
     
-    // Fire-and-forget call to Supabase Edge Function with the full payload
-    fetch(edgeFunctionUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        // Pass the service role key as a custom header to bypass JWT validation
-        // which fails for opaque API keys. The edge function MUST be deployed with --no-verify-jwt
-        'X-Webhook-Secret': process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || '',
-      },
-      body: JSON.stringify(payload),
-    }).catch(err => console.error('Failed to trigger process-strava-activity:', err));
+    try {
+      const { data: funcData, error: funcError } = await supabase.functions.invoke('process-strava-activity', {
+        body: payload,
+        headers: {
+          'X-Webhook-Secret': process.env.SUPABASE_SECRET_KEY || '',
+        },
+      });
+
+      if (funcError) {
+        console.error('Edge Function invocation error:', funcError);
+      } else {
+        console.log('Edge Function triggered successfully:', funcData);
+      }
+    } catch (fetchErr) {
+      console.error('Network error triggering Edge Function:', fetchErr);
+    }
 
     console.log(`Strava webhook event logged and processing triggered in ${Date.now() - start}ms`);
     return NextResponse.json({ status: 'ok' }, { status: 200 });

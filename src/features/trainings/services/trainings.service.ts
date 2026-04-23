@@ -6,8 +6,16 @@ export const trainingsService = {
         return api.get<Training[]>('/v2/trainings');
     },
 
+    findOne: async (id: string) => {
+        return api.get<Training>(`/v2/trainings/${id}`);
+    },
+
     create: async (data: CreateTrainingDto) => {
         return api.post<Training>('/v2/trainings', data);
+    },
+
+    update: async (id: string, data: Partial<CreateTrainingDto>) => {
+        return api.patch<Training>(`/v2/trainings/${id}`, data);
     },
 
     assign: async (data: AssignTrainingDto) => {

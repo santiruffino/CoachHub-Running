@@ -3,14 +3,17 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { format, startOfWeek, endOfWeek, isWithinInterval, eachDayOfInterval, startOfDay, isToday, subWeeks, addWeeks } from 'date-fns';
+import { format, startOfWeek, endOfWeek, isWithinInterval, eachDayOfInterval, startOfDay, isToday, subWeeks, addWeeks, differenceInDays, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { User } from '@/features/auth/types';
 import { Training } from '@/features/trainings/types';
 import api from '@/lib/axios';
-import { Activity as ActivityIcon, Calendar as CalendarIcon, FileText, CheckCircle2, TrendingUp, Plus, Trash, Clock, Zap, ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react';
+import { Activity as ActivityIcon, Calendar as CalendarIcon, FileText, CheckCircle2, TrendingUp, Plus, Trash, Clock, Zap, ChevronLeft, ChevronRight, MessageSquare, Trophy } from 'lucide-react';
 import { trainingsService } from '@/features/trainings/services/trainings.service';
 import { athletesService } from '@/features/users/services/athletes.service';
+import { racesService } from '@/features/races/services/races.service';
+import { AthleteRace } from '@/features/races/types';
+import { AssignRaceModal } from '@/features/races/components/AssignRaceModal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -74,6 +77,8 @@ export default function AthleteDetailPage() {
     const [athlete, setAthlete] = useState<AthleteDetails | null>(null);
     const [activities, setActivities] = useState<Activity[]>([]);
     const [assignments, setAssignments] = useState<TrainingAssignment[]>([]);
+    const [assignedRaces, setAssignedRaces] = useState<AthleteRace[]>([]);
+    const [isAssignRaceModalOpen, setIsAssignRaceModalOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
     const [weeklyData, setWeeklyData] = useState<{ day: string; value: number }[]>([]);
@@ -81,19 +86,30 @@ export default function AthleteDetailPage() {
     const [pendingDeleteAssignment, setPendingDeleteAssignment] = useState<string | null>(null);
     const { alertState, showAlert, closeAlert } = useAlertDialog();
 
+    const fetchRaces = async () => {
+        try {
+            const res = await racesService.findByUser(id);
+            setAssignedRaces(res.data);
+        } catch (error) {
+            console.error('Failed to fetch races:', error);
+        }
+    };
+
     useEffect(() => {
         const fetchData = async () => {
             try {
                 setLoading(true);
-                const [detailsRes, activitiesRes, calendarRes] = await Promise.all([
+                const [detailsRes, activitiesRes, calendarRes, racesRes] = await Promise.all([
                     api.get<AthleteDetails>(`/v2/users/${id}/details`),
                     api.get<Activity[]>(`/v2/users/${id}/activities`),
-                    api.get<TrainingAssignment[]>(`/v2/trainings/calendar?studentIds=${id}&startDate=${new Date(new Date().setMonth(new Date().getMonth() - 2)).toISOString()}&endDate=${new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString()}`)
+                    api.get<TrainingAssignment[]>(`/v2/trainings/calendar?studentIds=${id}&startDate=${new Date(new Date().setMonth(new Date().getMonth() - 2)).toISOString()}&endDate=${new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString()}`),
+                    racesService.findByUser(id)
                 ]);
 
                 setAthlete(detailsRes.data);
                 setActivities(activitiesRes.data);
                 setAssignments(calendarRes.data);
+                setAssignedRaces(racesRes.data);
 
                 const now = new Date();
                 const weekStart = startOfWeek(now, { weekStartsOn: 1 });
@@ -293,6 +309,10 @@ export default function AthleteDetailPage() {
     const hrs = Math.floor(totalWeeklyDuration / 3600);
     const mins = Math.floor((totalWeeklyDuration % 3600) / 60);
 
+    const upcomingRaces = assignedRaces
+        .filter(r => new Date(r.date) >= startOfDay(new Date()))
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
     return (
         <div className="space-y-8 p-4 md:p-8 max-w-[1400px] mx-auto pb-20 bg-background min-h-screen">
             {/* Header - Designer Layout */}
@@ -402,23 +422,6 @@ export default function AthleteDetailPage() {
                                 <span className="text-xs font-semibold text-muted-foreground">min/km</span>
                             )}
                         </div>
-                        {athlete.athleteProfile?.vam && (
-                            <Select
-                                value={athlete.athleteProfile.vam}
-                                onValueChange={handleUpdateVAM}
-                            >
-                                <SelectTrigger className="h-6 text-[10px] font-bold uppercase tracking-wider text-primary bg-muted dark:bg-white/5 border-0 rounded px-2 w-fit gap-1 focus:ring-0 mt-1">
-                                    <SelectValue placeholder="Assign level" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {VAM_LEVELS.map((level) => (
-                                        <SelectItem key={level.pace} value={level.pace}>
-                                            {level.name} ({level.pace})
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        )}
                         {!athlete.athleteProfile?.vam && (
                             <Select onValueChange={handleUpdateVAM}>
                                 <SelectTrigger className="h-6 text-[10px] font-bold uppercase tracking-wider text-primary bg-muted dark:bg-white/5 border-0 rounded px-2 w-fit gap-1 focus:ring-0 mt-1">
@@ -508,31 +511,102 @@ export default function AthleteDetailPage() {
                     </div>
                 </div>
 
-                {/* Upcoming Goal */}
-                <div className="lg:col-span-4 h-full">
-                    <div className="bg-primary dark:bg-primary/80 text-primary-foreground rounded-3xl p-8 shadow-[0_20px_40px_rgba(108,126,142,0.2)] border-0 h-full flex flex-col relative overflow-hidden text-left min-h-[280px]">
-                        <div className="relative z-10 flex-1 flex flex-col">
-                            <div>
-                                <h3 className="text-xl font-display font-medium mb-1">Upcoming Goal</h3>
-                                <p className="text-sm opacity-90 font-medium tracking-wide">Valencia Marathon</p>
-                            </div>
-                            
-                            <div className="mt-auto mb-8">
-                                <p className="text-[10px] uppercase tracking-widest font-bold opacity-70 mb-2">COUNT DOWN</p>
-                                <div className="flex items-baseline gap-3">
-                                    <span className="text-4xl font-display leading-[0.8] tracking-tight">42</span>
-                                    <span className="text-sm opacity-90 font-medium">Days Left</span>
-                                </div>
-                            </div>
-                            
-                            <Button className="w-full bg-card text-primary hover:bg-muted dark:border dark:border-white/5 shadow-sm border-0 font-semibold h-12">
-                                View Prep Strategy
+                {/* Upcoming Goal Section */}
+                <div className="lg:col-span-8 h-full">
+                    <div className="flex flex-col gap-4 h-full">
+                        <div className="flex items-center justify-between mb-2">
+                            <h3 className="text-xl font-display font-medium text-foreground px-2">
+                                {t("races.athlete.upcomingTitle")}
+                            </h3>
+                            <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => setIsAssignRaceModalOpen(true)}
+                                className="text-primary font-bold text-[10px] uppercase tracking-wider gap-1.5"
+                            >
+                                <Plus className="h-3 w-3" />
+                                {t("races.athlete.addRace")}
                             </Button>
                         </div>
-                        <div className="absolute right-[-24px] top-6 opacity-30 pointer-events-none text-white mix-blend-overlay">
-                            <MessageSquare className="w-32 h-32" />
-                        </div>
-                        <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+
+                        {upcomingRaces.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {upcomingRaces.slice(0, 2).map((race, index) => {
+                                    const raceDate = parseISO(race.date);
+                                    const daysLeft = differenceInDays(raceDate, startOfDay(new Date()));
+                                    
+                                    return (
+                                        <div 
+                                            key={race.id}
+                                            className={`${index === 0 ? 'bg-primary dark:bg-primary/80 text-primary-foreground shadow-[0_20px_40px_rgba(108,126,142,0.2)]' : 'bg-card dark:border dark:border-white/5 text-card-foreground shadow-sm'} rounded-3xl p-6 relative overflow-hidden flex flex-col min-h-[180px]`}
+                                        >
+                                            <div className="relative z-10 flex-1 flex flex-col">
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <div>
+                                                        <h4 className={`text-lg font-display font-medium mb-0.5 ${index === 0 ? 'text-white' : 'text-foreground'}`}>
+                                                            {race.name_override || race.race?.name || 'Carrera'}
+                                                        </h4>
+                                                        <p className={`text-xs ${index === 0 ? 'text-white/80' : 'text-muted-foreground'} font-medium`}>
+                                                            {format(raceDate, "d 'de' MMMM, yyyy", { locale: es })}
+                                                            {race.race?.distance && ` • ${race.race.distance}`}
+                                                        </p>
+                                                    </div>
+                                                    <Badge className={`${index === 0 ? 'bg-white/20 text-white hover:bg-white/30' : 'bg-primary/10 text-primary hover:bg-primary/20'} border-none font-bold text-[10px]`}>
+                                                        {t("races.athlete.priority", { priority: race.priority })}
+                                                    </Badge>
+                                                </div>
+
+                                                <div className="mt-auto flex justify-between items-end">
+                                                    <div>
+                                                        <p className={`text-[9px] uppercase tracking-widest font-bold ${index === 0 ? 'text-white/60' : 'text-muted-foreground'} mb-1`}>
+                                                            {daysLeft > 0 ? 'COUNTDOWN' : 'HOY'}
+                                                        </p>
+                                                        <div className="flex items-baseline gap-2">
+                                                            <span className="text-3xl font-display leading-none tracking-tight">
+                                                                {Math.max(0, daysLeft)}
+                                                            </span>
+                                                            <span className={`text-xs ${index === 0 ? 'text-white/80' : 'text-muted-foreground'} font-medium`}>
+                                                                Days Left
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    {race.target_time && (
+                                                        <div className="text-right">
+                                                            <p className={`text-[9px] uppercase tracking-widest font-bold ${index === 0 ? 'text-white/60' : 'text-muted-foreground'} mb-1`}>
+                                                                OBJETIVO
+                                                            </p>
+                                                            <p className="text-sm font-mono font-bold">
+                                                                {race.target_time}
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            {index === 0 && (
+                                                <>
+                                                    <div className="absolute right-[-16px] top-4 opacity-20 pointer-events-none text-white mix-blend-overlay">
+                                                        <Trophy className="w-24 h-24" />
+                                                    </div>
+                                                    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+                                                </>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <div className="bg-muted/50 dark:bg-white/5 rounded-3xl p-8 flex flex-col items-center justify-center text-center min-h-[200px] border-2 border-dashed border-muted/50">
+                                <Trophy className="w-12 h-12 text-muted-foreground/30 mb-4" />
+                                <h4 className="text-foreground font-medium mb-2">{t("races.athlete.noRaces")}</h4>
+                                <Button 
+                                    variant="outline" 
+                                    onClick={() => setIsAssignRaceModalOpen(true)}
+                                    className="mt-2 border-primary/20 text-primary font-bold text-xs uppercase tracking-wider"
+                                >
+                                    {t("races.athlete.addRace")}
+                                </Button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -556,6 +630,13 @@ export default function AthleteDetailPage() {
                 title={pendingDeleteAssignment ? t?.('deleteAssignmentTitle') : alertState.title}
                 message={pendingDeleteAssignment ? t?.('deleteAssignmentConfirm') : alertState.message}
                 confirmText={pendingDeleteAssignment ? t?.('deleteAssignmentButton') : alertState.confirmText}
+            />
+
+            <AssignRaceModal
+                open={isAssignRaceModalOpen}
+                onOpenChange={setIsAssignRaceModalOpen}
+                athleteId={id}
+                onSuccess={fetchRaces}
             />
         </div>
     );

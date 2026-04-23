@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, Calendar, User } from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, User, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useTranslations } from 'next-intl';
@@ -19,7 +19,7 @@ export function BottomNav() {
     const mobileNavigation = [
         { name: t('dashboard'), href: '/dashboard', icon: LayoutDashboard, roles: ['COACH', 'ATHLETE', 'ADMIN'] },
         { name: t('athletes'), href: '/athletes', icon: Users, roles: ['COACH', 'ADMIN'] },
-        { name: t('calendar'), href: '/dashboard/calendar', icon: Calendar, roles: ['COACH', 'ATHLETE', 'ADMIN'] },
+        { name: t('races'), href: '/races', icon: Trophy, roles: ['COACH', 'ATHLETE', 'ADMIN'] },
         { name: t('profile'), href: '/profile', icon: User, roles: ['COACH', 'ATHLETE', 'ADMIN'] },
     ];
 

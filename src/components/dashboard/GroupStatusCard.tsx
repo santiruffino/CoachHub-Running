@@ -25,10 +25,10 @@ function getStatusConfig(rate: number, t: (key: string, values?: any) => string)
         };
     } else {
         return {
-            label: t('dashboard.groupStatus.optimal'),
-            color: 'text-blue-500',
-            bgColor: 'bg-blue-500',
-            variant: 'default' as const
+            label: t('dashboard.groupStatus.critical') || 'Crítico',
+            color: 'text-red-500',
+            bgColor: 'bg-red-500',
+            variant: 'destructive' as const
         };
     }
 }

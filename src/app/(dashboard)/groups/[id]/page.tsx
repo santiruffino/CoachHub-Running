@@ -6,6 +6,7 @@ import { GroupDetails } from '@/features/groups/types';
 import { groupsService } from '@/features/groups/services/groups.service';
 import { useRouter } from 'next/navigation';
 import { AddMemberModal } from '@/features/groups/components/AddMemberModal';
+import { EditGroupModal } from '@/features/groups/components/EditGroupModal';
 import { AssignTrainingModal } from '@/features/trainings/components/AssignTrainingModal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,6 +29,9 @@ import {
   MoreHorizontal,
   Trash2,
   AlertTriangle,
+  Settings,
+  Calendar,
+  Trophy,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -71,6 +75,7 @@ export default function GroupDetailsPage({ params }: { params: Promise<{ id: str
   const [groupAthletes, setGroupAthletes] = useState<GroupAthleteData[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
 
   function determineLevel(completedTrainings: number): string {
@@ -144,14 +149,36 @@ export default function GroupDetailsPage({ params }: { params: Promise<{ id: str
 
   return (
     <div className="space-y-6">
-      {/* Header with Back Button */}
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" asChild>
-          <Link href="/groups">
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
+      {/* Header with Back Button and Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" asChild>
+            <Link href="/groups">
+              <ArrowLeft className="h-5 w-5" />
+            </Link>
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold">{group.name}</h1>
+            {group.group_type === 'RACE' && (
+              <div className="flex items-center gap-3 mt-1">
+                <Badge variant="secondary" className="bg-primary/10 text-primary border-none">
+                  <Trophy className="h-3 w-3 mr-1" />
+                  {group.race_name}
+                </Badge>
+                {group.race_date && (
+                  <span className="text-xs text-muted-foreground flex items-center">
+                    <Calendar className="h-3 w-3 mr-1" />
+                    {new Date(group.race_date).toLocaleDateString()}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => setIsEditModalOpen(true)}>
+          <Settings className="h-4 w-4 mr-2" />
+          Editar Grupo
         </Button>
-        <h1 className="text-2xl font-bold">{group.name}</h1>
       </div>
 
       <Card>
@@ -348,6 +375,13 @@ export default function GroupDetailsPage({ params }: { params: Promise<{ id: str
             open={isAddModalOpen}
             onClose={() => setIsAddModalOpen(false)}
             onAdded={fetchGroupData}
+          />
+
+          <EditGroupModal
+            group={group}
+            isOpen={isEditModalOpen}
+            onClose={() => setIsEditModalOpen(false)}
+            onUpdated={fetchGroupData}
           />
         </CardContent>
       </Card>

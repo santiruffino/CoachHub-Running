@@ -115,3 +115,66 @@ export async function DELETE(
         );
     }
 }
+
+/**
+ * Update Training
+ * 
+ * Updates an existing training template.
+ * 
+ * Access: COACH only
+ */
+export async function PATCH(
+    request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const { id } = await params;
+        const authResult = await requireRole('COACH');
+
+        if (authResult.response) {
+            return authResult.response;
+        }
+
+        const { supabase, user } = authResult;
+        const body = await request.json();
+
+        // Verify ownership first
+        const { data: existing, error: fetchError } = await supabase
+            .from('trainings')
+            .select('coach_id')
+            .eq('id', id)
+            .single();
+
+        if (fetchError || !existing) {
+            return NextResponse.json({ error: 'Training not found' }, { status: 404 });
+        }
+
+        if (existing.coach_id !== user!.id) {
+            return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+        }
+
+        const { data: training, error } = await supabase
+            .from('trainings')
+            .update({
+                title: body.title,
+                description: body.description,
+                type: body.type,
+                blocks: body.blocks,
+                expected_rpe: body.expectedRpe,
+                updated_at: new Date().toISOString(),
+            })
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) {
+            console.error('Update training error:', error);
+            return NextResponse.json({ error: 'Failed to update training' }, { status: 500 });
+        }
+
+        return NextResponse.json(training);
+    } catch (error: any) {
+        console.error('Update training error:', error);
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    }
+}

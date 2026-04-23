@@ -5,7 +5,7 @@
         "groups": "Grupos",
         "workoutLibrary": "Biblioteca de Entrenamientos",
         "trainings": "Entrenamientos",
-        "calendar": "Calendario",
+        "races": "Carreras",
         "progress": "Progreso",
         "profile": "Perfil",
         "settings": "Ajustes",
@@ -394,7 +394,20 @@
             "unnamedAthlete": "Atleta sin nombre",
             "removeConfirm": "¿Eliminar atleta?",
             "remove": "Eliminar",
-            "noMembers": "No hay miembros aún."
+            "noMembers": "No hay miembros aún.",
+            "editGroup": "Editar Grupo",
+            "isRaceGroup": "¿Es un grupo de preparación para una carrera?",
+            "raceName": "Nombre de la Carrera",
+            "raceDate": "Fecha de Carrera",
+            "raceDistance": "Distancia",
+            "racePriority": "Prioridad",
+            "priorityA": "A (Objetivo Principal)",
+            "priorityB": "B (Secundaria)",
+            "priorityC": "C (Entrenamiento)",
+            "selectExistingRace": "Seleccionar carrera existente",
+            "createNewRace": "Crear nueva carrera",
+            "pickFromLibrary": "Elegir de la biblioteca",
+            "raceDetails": "Detalles de la Carrera"
         }
     },
     "coaches": {
@@ -1025,5 +1038,84 @@
             "contact": "Contáctanos",
             "copyright": "© 2025 Coach Hub & Athletics. Todos los derechos reservados."
         }
+    },
+    "races": {
+        "library": {
+            "title": "Biblioteca de Carreras",
+            "subtitle": "Gestiona plantillas de carreras para asignar a tus atletas.",
+            "createTemplate": "Crear Plantilla",
+            "searchPlaceholder": "Buscar carreras...",
+            "noRaces": "No se encontraron carreras.",
+            "distance": "Distancia: {distance}",
+            "location": "Ubicación: {location}",
+            "deleteConfirm": "¿Eliminar esta plantilla de carrera?",
+            "deleteDescription": "Esta acción no se puede deshacer.",
+            "edit": "Editar",
+            "delete": "Eliminar",
+            "assign": "Asignar",
+            "locationLabel": "Ubicación",
+            "viewDetails": "Ver Detalles",
+            "activeRaces": "Carreras Próximas",
+            "finishedRaces": "Historial de Carreras",
+            "createFirstTemplate": "Crear tu primera carrera",
+            "searchPlaceholder": "Buscar carreras...",
+            "title": "Biblioteca de Carreras",
+            "subtitle": "Gestiona plantillas de carreras para asignar a tus atletas.",
+            "createTemplate": "Crear Plantilla",
+            "noRaces": "No se encontraron carreras."
+        },
+        "dialog": {
+            "createTitle": "Crear Plantilla de Carrera",
+            "editTitle": "Editar Plantilla de Carrera",
+            "nameLabel": "NOMBRE DE LA CARRERA",
+            "namePlaceholder": "Ej: Maratón de Valencia",
+            "descriptionLabel": "DESCRIPCIÓN",
+            "descriptionPlaceholder": "Detalles sobre la carrera...",
+            "distanceLabel": "DISTANCIA",
+            "dateLabel": "FECHA",
+            "locationLabel": "UBICACIÓN",
+            "locationPlaceholder": "Valencia, España",
+            "distancePlaceholder": "42k, 21k, 10k...",
+            "cancel": "Cancelar",
+            "save": "Guardar",
+            "saving": "Guardando..."
+        },
+        "assign": {
+            "title": "Asignar Carrera",
+            "selectTemplate": "SELECCIONAR PLANTILLA",
+            "selectTemplatePlaceholder": "Elige una carrera de la biblioteca...",
+            "dateLabel": "FECHA DE LA CARRERA",
+            "priorityLabel": "PRIORIDAD",
+            "priorityA": "Prioridad A (Objetivo Principal)",
+            "priorityB": "Prioridad B (Secundaria)",
+            "priorityC": "Prioridad C (Preparación)",
+            "targetTimeLabel": "TIEMPO OBJETIVO",
+            "targetTimePlaceholder": "HH:MM:SS",
+            "notesLabel": "NOTAS / ESTRATEGIA",
+            "notesPlaceholder": "Escribe aquí la estrategia o notas para el atleta...",
+            "success": "Carrera asignada correctamente",
+            "error": "Error al asignar la carrera",
+            "assigning": "Asignando...",
+            "submit": "Asignar a Atleta"
+        },
+        "athlete": {
+            "upcomingTitle": "Mis Carreras",
+            "manageSubtitle": "Gestiona tu calendario competitivo.",
+            "noRaces": "No hay carreras programadas.",
+            "addRace": "Añadir Carrera",
+            "priority": "Prioridad {priority}",
+            "priorityLabel": "PRIORIDAD {priority}",
+            "target": "Objetivo: {time}",
+            "defaultRaceName": "Carrera",
+            "resultTime": "Tiempo Real",
+            "countdown": "T - {days} días",
+            "daysLeft": "{days} DÍAS",
+            "status": {
+                "PLANNED": "Planificada",
+                "COMPLETED": "Completada",
+                "DNR": "No finalizada"
+            }
+        },
+        "recordResult": "Registrar Resultado"
     }
 }

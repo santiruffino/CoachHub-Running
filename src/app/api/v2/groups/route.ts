@@ -36,6 +36,7 @@ export async function GET() {
       .from('groups')
       .select(`
         *,
+        race:races(*),
         _count:athlete_groups(count)
       `)
       .order('created_at', { ascending: false });
@@ -95,7 +96,16 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { name, description, group_type, race_name, race_date, race_distance, race_priority } = body;
+    const { 
+      name, 
+      description, 
+      group_type, 
+      race_id,
+      race_name, 
+      race_date, 
+      race_distance, 
+      race_priority 
+    } = body;
 
     if (!name) {
       return NextResponse.json(
@@ -110,6 +120,7 @@ export async function POST(request: Request) {
         name,
         description,
         group_type: group_type || 'REGULAR',
+        race_id: race_id || null,
         race_name: race_name || null,
         race_date: race_date || null,
         race_distance: race_distance || null,
@@ -117,7 +128,10 @@ export async function POST(request: Request) {
         coach_id: profile.role === 'ADMIN' ? null : user.id,
         team_id: profile.team_id,
       })
-      .select()
+      .select(`
+        *,
+        race:races(*)
+      `)
       .single();
 
     if (error) {

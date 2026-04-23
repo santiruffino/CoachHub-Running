@@ -18,13 +18,40 @@ function WorkoutBuilderContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const athleteId = searchParams.get('athleteId');
+    const workoutId = searchParams.get('id');
     const [blocks, setBlocks] = useState<WorkoutBlock[]>([]);
     const [workoutTitle, setWorkoutTitle] = useState('');
     const [workoutDescription, setWorkoutDescription] = useState('');
     const [expectedRpe, setExpectedRpe] = useState<number>(5);
+    const [activityType, setActivityType] = useState<TrainingType>(TrainingType.RUNNING);
+    const [loading, setLoading] = useState(!!workoutId);
     const [saving, setSaving] = useState(false);
     const { alertState, showAlert, closeAlert } = useAlertDialog();
     const t = useTranslations('builder');
+
+    useEffect(() => {
+        if (workoutId) {
+            loadWorkout(workoutId);
+        }
+    }, [workoutId]);
+
+    const loadWorkout = async (id: string) => {
+        try {
+            setLoading(true);
+            const res = await trainingsService.findOne(id);
+            const workout = res.data;
+            setWorkoutTitle(workout.title);
+            setWorkoutDescription(workout.description || '');
+            setExpectedRpe(workout.expectedRpe || 5);
+            setActivityType(workout.type || TrainingType.RUNNING);
+            setBlocks(workout.blocks || []);
+        } catch (error) {
+            console.error('Failed to load workout:', error);
+            showAlert('error', 'Error al cargar el entrenamiento');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleSave = async () => {
         if (!workoutTitle.trim()) {
@@ -39,14 +66,20 @@ function WorkoutBuilderContent() {
 
         try {
             setSaving(true);
-            await trainingsService.create({
+            const payload = {
                 title: workoutTitle,
-                type: TrainingType.RUNNING,
+                type: activityType,
                 description: workoutDescription,
                 blocks: blocks,
                 isTemplate: true,
                 expectedRpe: expectedRpe
-            });
+            };
+
+            if (workoutId) {
+                await trainingsService.update(workoutId, payload);
+            } else {
+                await trainingsService.create(payload);
+            }
 
             showAlert('success', t('saveSuccess'));
             setTimeout(() => router.push('/workouts/library'), 1500);
@@ -85,7 +118,11 @@ function WorkoutBuilderContent() {
                     <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-1 block">
                         {t('activityTypeLabel')}
                     </label>
-                    <select className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-2 text-foreground focus:ring-0 focus:border-primary outline-none">
+                    <select 
+                        value={activityType}
+                        onChange={(e) => setActivityType(e.target.value as TrainingType)}
+                        className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-2 text-foreground focus:ring-0 focus:border-primary outline-none"
+                    >
                         <option value="RUNNING">Running</option>
                         <option value="CYCLING">Cycling</option>
                         <option value="SWIMMING">Swimming</option>
@@ -123,6 +160,10 @@ function WorkoutBuilderContent() {
             </div>
         </div>
     );
+
+    if (loading) {
+        return <div className="flex-1 flex items-center justify-center">Cargando...</div>;
+    }
 
     const footerContent = (
         <div className="w-full flex items-center justify-between mx-auto px-8 max-w-7xl">

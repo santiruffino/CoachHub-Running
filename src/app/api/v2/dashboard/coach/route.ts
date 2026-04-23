@@ -159,6 +159,10 @@ export async function GET() {
             });
         };
 
+        // --- Filter assignments for compliance checking (only previous days) ---
+        const todayStr = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+        const pastAssignments = assignments.filter((a) => a.scheduled_date.slice(0, 10) < todayStr);
+
         // --- Stats ---
         const completedThisWeek = assignments.filter((a) => isAssignmentCompleted(a, activities)).length;
         const totalThisWeek = assignments.length;
@@ -200,9 +204,9 @@ export async function GET() {
             ...groupMissingResults.filter(Boolean) as { id: string; name: string; type: 'group'; memberCount: number }[],
         ];
 
-        // --- Low compliance (< 50% this week, at least 1 assignment) ---
+        // --- Low compliance (< 50% this week, at least 1 past assignment) ---
         const complianceByAthlete = new Map<string, { completed: number; total: number }>();
-        assignments.forEach((a) => {
+        pastAssignments.forEach((a) => {
             const entry = complianceByAthlete.get(a.user_id) || { completed: 0, total: 0 };
             entry.total++;
             if (isAssignmentCompleted(a, activities)) entry.completed++;
@@ -248,7 +252,7 @@ export async function GET() {
                     .eq('group_id', group.id);
 
                 const memberIds = (members || []).map((m) => m.athlete_id);
-                const groupAssignments = assignments.filter((a) => memberIds.includes(a.user_id));
+                const groupAssignments = pastAssignments.filter((a) => memberIds.includes(a.user_id));
                 const groupCompleted = groupAssignments.filter((a) => isAssignmentCompleted(a, activities)).length;
                 const groupTotal = groupAssignments.length;
                 const countArr = group.athlete_groups as any;
@@ -261,7 +265,8 @@ export async function GET() {
                     groupId: group.id,
                     groupName: group.name,
                     athleteCount,
-                    completionRate: groupTotal > 0 ? Math.round((groupCompleted / groupTotal) * 100) : 0,
+                    // If no past assignments yet, assume 100% compliance
+                    completionRate: groupTotal > 0 ? Math.round((groupCompleted / groupTotal) * 100) : 100,
                 };
             })
         );

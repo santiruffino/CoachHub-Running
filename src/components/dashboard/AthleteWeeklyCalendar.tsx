@@ -4,7 +4,8 @@ import { format, addDays, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { Training } from '@/features/trainings/types';
-import { Moon } from 'lucide-react';
+import { AthleteRace } from '@/features/races/types';
+import { Moon, Trophy } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { normalizeActivityType } from '@/utils/activity-utils';
@@ -31,6 +32,7 @@ interface AthleteWeeklyCalendarProps {
     weekStart: Date;
     assignments: TrainingAssignment[];
     activities: Activity[];
+    races?: AthleteRace[];
 }
 
 const formatDuration = (seconds: number) => {
@@ -61,16 +63,16 @@ function CompletedCard({ assignment, activity }: { assignment: TrainingAssignmen
 
     return (
         <Link href={`/activities/${activity.external_id}`} className="block group">
-            <div className="bg-emerald-950/40 dark:bg-emerald-950/60 border border-emerald-500/30 rounded-xl p-4 flex flex-col gap-2 relative overflow-hidden transition-all group-hover:border-emerald-400/60 group-hover:-translate-y-0.5 group-hover:shadow-lg group-hover:shadow-emerald-900/20">
+            <div className="bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-500/30 rounded-xl p-4 flex flex-col gap-2 relative overflow-hidden transition-all group-hover:border-emerald-300 dark:group-hover:border-emerald-400/60 group-hover:-translate-y-0.5 group-hover:shadow-lg group-hover:shadow-emerald-100 dark:group-hover:shadow-emerald-900/20">
                 {/* Left accent */}
-                <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl bg-emerald-400" />
+                <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl bg-emerald-500 dark:bg-emerald-400" />
 
                 {/* Header row */}
                 <div className="flex items-center justify-between pl-2">
-                    <span className="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-widest bg-emerald-500/20 text-emerald-300">
+                    <span className="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-widest bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
                         {typeText}
                     </span>
-                    <span className="text-[8px] font-bold uppercase tracking-widest text-emerald-400">
+                    <span className="text-[8px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
                         {t('calendar.done')}
                     </span>
                 </div>
@@ -85,13 +87,13 @@ function CompletedCard({ assignment, activity }: { assignment: TrainingAssignmen
 
                 {/* Progress bar – full */}
                 <div className="mt-1 px-2">
-                    <div className="h-0.5 w-full bg-emerald-900 rounded-full overflow-hidden">
-                        <div className="h-full w-full bg-emerald-400 rounded-full" />
+                    <div className="h-0.5 w-full bg-emerald-200 dark:bg-emerald-900 rounded-full overflow-hidden">
+                        <div className="h-full w-full bg-emerald-500 dark:bg-emerald-400 rounded-full" />
                     </div>
                 </div>
 
                 {/* Activity stats */}
-                <div className="px-2 flex items-center gap-3 text-[10px] text-emerald-400/80 font-medium">
+                <div className="px-2 flex items-center gap-3 text-[10px] text-emerald-700 dark:text-emerald-400/80 font-medium">
                     {activity.distance > 0 && <span>{t('common.distance_km', { distance: (activity.distance / 1000).toFixed(2) })}</span>}
                     {activity.duration > 0 && <span>{formatDuration(activity.duration)}</span>}
                 </div>
@@ -141,16 +143,16 @@ function StandaloneActivityCard({ activity }: { activity: Activity }) {
 
     return (
         <Link href={`/activities/${activity.external_id}`} className="block group">
-            <div className="bg-orange-950/30 dark:bg-orange-950/50 border border-orange-500/30 rounded-xl p-4 flex flex-col gap-2 relative overflow-hidden transition-all group-hover:border-orange-400/60 group-hover:-translate-y-0.5 group-hover:shadow-lg group-hover:shadow-orange-900/20">
+            <div className="bg-orange-50 dark:bg-orange-950/50 border border-orange-200 dark:border-orange-500/30 rounded-xl p-4 flex flex-col gap-2 relative overflow-hidden transition-all group-hover:border-orange-300 dark:group-hover:border-orange-400/60 group-hover:-translate-y-0.5 group-hover:shadow-lg group-hover:shadow-orange-100 dark:group-hover:shadow-orange-900/20">
                 {/* Left accent */}
-                <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl bg-orange-400" />
+                <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl bg-orange-500 dark:bg-orange-400" />
 
                 {/* Header row */}
                 <div className="flex items-center justify-between pl-2">
-                    <span className="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-widest bg-orange-500/20 text-orange-300">
+                    <span className="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-widest bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-300">
                         {label}
                     </span>
-                    <span className="text-[8px] font-bold uppercase tracking-widest text-orange-400">
+                    <span className="text-[8px] font-bold uppercase tracking-widest text-orange-600 dark:text-orange-400">
                         {t('calendar.strava')}
                     </span>
                 </div>
@@ -159,7 +161,7 @@ function StandaloneActivityCard({ activity }: { activity: Activity }) {
                     {activity.title}
                 </h4>
 
-                <div className="px-2 flex items-center gap-3 text-[10px] text-orange-400/80 font-medium">
+                <div className="px-2 flex items-center gap-3 text-[10px] text-orange-700 dark:text-orange-400/80 font-medium">
                     {activity.distance > 0 && <span>{t('common.distance_km', { distance: (activity.distance / 1000).toFixed(2) })}</span>}
                     {activity.duration > 0 && <span>{formatDuration(activity.duration)}</span>}
                 </div>
@@ -168,8 +170,52 @@ function StandaloneActivityCard({ activity }: { activity: Activity }) {
     );
 }
 
+function RaceCard({ race }: { race: AthleteRace }) {
+    const t = useTranslations();
+    const name = race.name_override || race.race?.name || t('races.athlete.defaultRaceName');
+    
+    return (
+        <div className="bg-violet-50 dark:bg-violet-950/50 border border-violet-200 dark:border-violet-500/30 rounded-xl p-4 flex flex-col gap-2 relative overflow-hidden transition-all hover:border-violet-300 dark:hover:border-violet-400/60 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-violet-100 dark:hover:shadow-violet-900/20">
+            {/* Left accent */}
+            <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl bg-violet-500 dark:bg-violet-400" />
+
+            {/* Header row */}
+            <div className="flex items-center justify-between pl-2">
+                <span className="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-widest bg-violet-100 dark:bg-violet-500/20 text-violet-700 dark:text-violet-300 flex items-center gap-1">
+                    <Trophy className="h-2 w-2" />
+                    {t('groups.targetRace')}
+                </span>
+                <span className={cn(
+                    "text-[8px] font-bold px-1.5 py-0.5 rounded",
+                    race.priority === 'A' ? "bg-red-100 text-red-700" : 
+                    race.priority === 'B' ? "bg-orange-100 text-orange-700" : 
+                    "bg-blue-100 text-blue-700"
+                )}>
+                    PRIO {race.priority}
+                </span>
+            </div>
+
+            <h4 className="text-sm font-bold text-foreground leading-tight px-2 line-clamp-2">
+                {name}
+            </h4>
+
+            {race.target_time && (
+                <p className="text-[10px] text-violet-700 dark:text-violet-300 font-medium px-2">
+                    {t('races.athlete.target', { time: race.target_time })}
+                </p>
+            )}
+
+            {race.status === 'COMPLETED' && race.result_time && (
+                <div className="mt-1 px-2 py-1 bg-emerald-100/50 dark:bg-emerald-900/30 rounded text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
+                    {t('races.athlete.resultTime')}: {race.result_time}
+                </div>
+            )}
+        </div>
+    );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
-export function AthleteWeeklyCalendar({ weekStart, assignments, activities }: AthleteWeeklyCalendarProps) {
+export function AthleteWeeklyCalendar({ weekStart, assignments, activities, races = [] }: AthleteWeeklyCalendarProps) {
     const t = useTranslations();
     const weekDays = Array.from({ length: 7 }).map((_, i) => addDays(weekStart, i));
 
@@ -182,6 +228,10 @@ export function AthleteWeeklyCalendar({ weekStart, assignments, activities }: At
 
                     const dayTrainings = assignments.filter(
                         (a) => a.scheduled_date.split('T')[0] === dayStr
+                    );
+
+                    const dayRaces = races.filter(
+                        (r) => r.date.split('T')[0] === dayStr
                     );
 
                     const dayActivities = activities.filter(
@@ -207,7 +257,7 @@ export function AthleteWeeklyCalendar({ weekStart, assignments, activities }: At
                     // Standalone activities (no planned workout that day)
                     const standaloneActivities = dayActivities.filter((act) => !matchedActivityIds.has(act.id));
 
-                    const isEmpty = dayTrainings.length === 0 && standaloneActivities.length === 0;
+                    const isEmpty = dayTrainings.length === 0 && standaloneActivities.length === 0 && dayRaces.length === 0;
 
                     return (
                         <div
@@ -236,6 +286,11 @@ export function AthleteWeeklyCalendar({ weekStart, assignments, activities }: At
                             </div>
 
                             <div className="space-y-3 flex-1">
+                                {/* Races */}
+                                {dayRaces.map((race) => (
+                                    <RaceCard key={race.id} race={race} />
+                                ))}
+
                                 {/* Rest day */}
                                 {isEmpty && (
                                     <div className="h-32 mt-6 rounded-xl border border-dashed border-border flex flex-col gap-2 items-center justify-center bg-transparent">

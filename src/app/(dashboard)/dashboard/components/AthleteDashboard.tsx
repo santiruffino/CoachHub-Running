@@ -16,80 +16,85 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 
 import { stravaService } from '@/features/strava/services/strava.service';
+import { racesService } from '@/features/races/services/races.service';
 import { cacheService } from '@/lib/cache.service';
 import { normalizeActivityType } from '@/utils/activity-utils';
+import { NextRaces } from './NextRaces';
 
 export default function AthleteDashboard({ user }: { user: any }) {
     const t = useTranslations();
     const [loading, setLoading] = useState(true);
     const [activities, setActivities] = useState<any[]>([]);
     const [assignments, setAssignments] = useState<any[]>([]);
+    const [races, setRaces] = useState<any[]>([]);
     const [athleteDetails, setAthleteDetails] = useState<any>(null);
     const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
     const [performanceData, setPerformanceData] = useState<any[]>([]);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            if (!user) return;
-            try {
-                setLoading(true);
+    const fetchData = async () => {
+        if (!user) return;
+        try {
+            setLoading(true);
 
-                // Strava Sync Logic
-                const hasSynced = sessionStorage.getItem('strava_synced_this_session');
-                if (!hasSynced) {
-                    try {
-                        await stravaService.sync();
-                        sessionStorage.setItem('strava_synced_this_session', 'true');
-                    } catch (e) {
-                        console.error('Strava auto-sync failed', e);
-                    }
+            // Strava Sync Logic
+            const hasSynced = sessionStorage.getItem('strava_synced_this_session');
+            if (!hasSynced) {
+                try {
+                    await stravaService.sync();
+                    sessionStorage.setItem('strava_synced_this_session', 'true');
+                } catch (e) {
+                    console.error('Strava auto-sync failed', e);
                 }
-
-                // Parallel fetching with cache awareness
-                const [detailsRes, activitiesRes, calendarRes] = await Promise.all([
-                    api.get(`/v2/users/${user.id}/details`),
-                    api.get(`/v2/users/${user.id}/activities`),
-                    api.get(`/v2/trainings/calendar?studentIds=${user.id}&startDate=${subWeeks(new Date(), 8).toISOString()}&endDate=${addWeeks(new Date(), 4).toISOString()}`)
-                ]);
-
-                setAthleteDetails(detailsRes.data);
-                setActivities(activitiesRes.data);
-                setAssignments(calendarRes.data);
-
-                // Calculate Performance Trend (Last 6 weeks)
-                const trend = [];
-                for (let i = 5; i >= 0; i--) {
-                    const week = subWeeks(new Date(), i);
-                    const wStart = startOfWeek(week, { weekStartsOn: 1 });
-                    const wEnd = endOfWeek(week, { weekStartsOn: 1 });
-                    
-                    const weekAssignments = calendarRes.data.filter((a: any) => {
-                        const d = a.scheduled_date.split('T')[0];
-                        return d >= format(wStart, 'yyyy-MM-dd') && d <= format(wEnd, 'yyyy-MM-dd');
-                    });
-
-                    const completed = weekAssignments.filter((a: any) => {
-                        if (a.completed) return true;
-                        return activitiesRes.data.some((act: any) => 
-                            format(new Date(act.start_date), 'yyyy-MM-dd') === a.scheduled_date.split('T')[0] &&
-                            normalizeActivityType(act.type) === a.training.type
-                        );
-                    }).length;
-
-                    trend.push({
-                        week: format(wStart, 'dd/MM'),
-                        value: weekAssignments.length > 0 ? Math.round((completed / weekAssignments.length) * 100) : 0
-                    });
-                }
-                setPerformanceData(trend);
-
-            } catch (error) {
-                console.error('Failed to fetch dashboard data', error);
-            } finally {
-                setLoading(false);
             }
-        };
 
+            // Parallel fetching with cache awareness
+            const [detailsRes, activitiesRes, calendarRes, racesRes] = await Promise.all([
+                api.get(`/v2/users/${user.id}/details`),
+                api.get(`/v2/users/${user.id}/activities`),
+                api.get(`/v2/trainings/calendar?studentIds=${user.id}&startDate=${subWeeks(new Date(), 8).toISOString()}&endDate=${addWeeks(new Date(), 4).toISOString()}`),
+                racesService.findByUser(user.id)
+            ]);
+
+            setAthleteDetails(detailsRes.data);
+            setActivities(activitiesRes.data);
+            setAssignments(calendarRes.data);
+            setRaces(racesRes.data);
+
+            // Calculate Performance Trend (Last 6 weeks)
+            const trend = [];
+            for (let i = 5; i >= 0; i--) {
+                const week = subWeeks(new Date(), i);
+                const wStart = startOfWeek(week, { weekStartsOn: 1 });
+                const wEnd = endOfWeek(week, { weekStartsOn: 1 });
+                
+                const weekAssignments = calendarRes.data.filter((a: any) => {
+                    const d = a.scheduled_date.split('T')[0];
+                    return d >= format(wStart, 'yyyy-MM-dd') && d <= format(wEnd, 'yyyy-MM-dd');
+                });
+
+                const completed = weekAssignments.filter((a: any) => {
+                    if (a.completed) return true;
+                    return activitiesRes.data.some((act: any) => 
+                        format(new Date(act.start_date), 'yyyy-MM-dd') === a.scheduled_date.split('T')[0] &&
+                        normalizeActivityType(act.type) === a.training.type
+                    );
+                }).length;
+
+                trend.push({
+                    week: format(wStart, 'dd/MM'),
+                    value: weekAssignments.length > 0 ? Math.round((completed / weekAssignments.length) * 100) : 0
+                });
+            }
+            setPerformanceData(trend);
+
+        } catch (error) {
+            console.error('Failed to fetch dashboard data', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchData();
     }, [user]);
 
@@ -158,11 +163,19 @@ export default function AthleteDashboard({ user }: { user: any }) {
                 </Button>
             </div>
 
-            <AthleteWeeklyCalendar 
-                weekStart={currentWeekStart}
-                assignments={assignments}
-                activities={activities}
-            />
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div className="lg:col-span-9">
+                    <AthleteWeeklyCalendar 
+                        weekStart={currentWeekStart}
+                        assignments={assignments}
+                        activities={activities}
+                        races={races}
+                    />
+                </div>
+                <div className="lg:col-span-3">
+                    <NextRaces athleteRaces={races} />
+                </div>
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-12">
                 <div className="lg:col-span-5">

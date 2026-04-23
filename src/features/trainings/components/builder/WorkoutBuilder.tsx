@@ -64,7 +64,7 @@ export function WorkoutBuilder({
 
     // Update when initialBlocks change
     useEffect(() => {
-        if (initialBlocks.length > 0 && blocks.length === 0) {
+        if (initialBlocks && initialBlocks.length > 0) {
             setBlocks(initialBlocks);
         }
     }, [initialBlocks]);

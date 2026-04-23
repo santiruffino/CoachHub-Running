@@ -1,4 +1,5 @@
 import { User } from '@/features/auth/types';
+import { Race } from '@/features/races/types';
 
 export interface Group {
     id: string;
@@ -6,6 +7,8 @@ export interface Group {
     description?: string;
     coachId: string;
     group_type?: 'REGULAR' | 'RACE';
+    race_id?: string;
+    race?: Race;
     race_name?: string;
     race_date?: string;
     race_distance?: string;
@@ -24,6 +27,7 @@ export interface CreateGroupDto {
     name: string;
     description?: string;
     group_type?: 'REGULAR' | 'RACE';
+    race_id?: string;
     race_name?: string;
     race_date?: string;
     race_distance?: string;

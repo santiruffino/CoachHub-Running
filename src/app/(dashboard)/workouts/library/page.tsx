@@ -147,6 +147,13 @@ export default function WorkoutLibraryPage() {
                                     <Button
                                         variant="outline"
                                         size="sm"
+                                        onClick={() => router.push(`/workouts/builder?id=${template.id}`)}
+                                    >
+                                        <Edit className="w-4 h-4" />
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
                                         onClick={() => router.push(`/workouts/assign?templateId=${template.id}`)}
                                     >
                                         {t('assign')}
