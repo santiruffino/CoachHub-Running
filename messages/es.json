@@ -68,7 +68,9 @@
             "noCurrentAlerts": "No hay alertas actuales",
             "groupStatus": "Estado de grupos",
             "recentActivity": "Actividad Reciente",
-            "noRecentActivity": "No hay actividad reciente"
+            "noRecentActivity": "No hay actividad reciente",
+            "nextRaces": "Próximas Carreras",
+            "noNextRaces": "No hay carreras próximas programadas"
         },
         "alertTypes": {
             "rpe_mismatch": "Fallo en RPE objetivo",
@@ -377,6 +379,9 @@
         "viewDetails": "Ver detalles",
         "emptyCardTitle": "Crear un nuevo grupo",
         "emptyCardDesc": "Agrupa a tus atletas para entrenamientos compartidos.",
+        "activeGroups": "Grupos Activos",
+        "finishedGroups": "Grupos Históricos",
+        "finished": "Finalizado",
         "detail": {
             "notFound": "Grupo no encontrado",
             "membersCount": "Miembros ({count})",

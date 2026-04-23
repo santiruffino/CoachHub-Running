@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { CriticalAlertItem } from '@/components/dashboard/CriticalAlertItem';
 import { GroupStatusCard } from '@/components/dashboard/GroupStatusCard';
+import { NextRaces } from './NextRaces';
 import { Skeleton } from '@/components/ui/skeleton';
 import api from '@/lib/axios';
 import { DashboardStats, LowCompliance, MissingWorkout, RPEMismatch, TimelineEvent } from '../types';
@@ -198,30 +199,51 @@ export default function CoachDashboard({ user }: { user: any }) {
         {/* Right Column (Approx 35%) */}
         <div className="lg:col-span-4 space-y-8 lg:space-y-10">
 
+          {/* Next Races Section */}
+          <NextRaces />
+
           {/* Recent Activity Timeline */}
           <div className="bg-muted p-6 rounded-2xl">
             <h2 className="text-base font-semibold text-foreground mb-6">{t("dashboard.alerts.recentActivity")}</h2>
             <div className="space-y-1">
-              {data?.activityTimeline && data.activityTimeline.length > 0 ? (
-                data.activityTimeline.map((item, idx) => (
-                  <TimelineItem
-                    key={item.id || idx}
-                    time={new Date(item.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    isSystem={false}
-                    content={
-                      <>
-                        <span className="font-semibold text-foreground">{item.athleteName}</span>{" "}
-                        {t('athletes.detail.updated')}{" "}
-                        <span className="text-primary hover:underline cursor-pointer">{item.activityName}</span>.
-                        <br /><br />
-                        <span className="italic text-muted-foreground">&#34;{item.content}&#34;</span>
-                      </>
-                    }
-                  />
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground">{t("dashboard.alerts.noRecentActivity")}</p>
-              )}
+              {(() => {
+                const filteredTimeline = data?.activityTimeline?.filter(item => {
+                  const hasFeedback = item.content && item.content.trim().length > 0;
+                  const isRPEMismatch = data.alerts?.rpeMismatches?.some(
+                    m => m.athleteName === item.athleteName && m.workoutType === item.activityName
+                  );
+                  return hasFeedback || isRPEMismatch;
+                }) || [];
+
+                if (filteredTimeline.length === 0) {
+                  return <p className="text-sm text-muted-foreground">{t("dashboard.alerts.noRecentActivity")}</p>;
+                }
+
+                return filteredTimeline.map((item, idx) => {
+                  const hasFeedback = item.content && item.content.trim().length > 0;
+                  
+                  return (
+                    <TimelineItem
+                      key={item.id || idx}
+                      time={new Date(item.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      isSystem={!hasFeedback}
+                      content={
+                        <>
+                          <span className="font-semibold text-foreground">{item.athleteName}</span>{" "}
+                          {t('athletes.detail.updated')}{" "}
+                          <span className="text-primary hover:underline cursor-pointer">{item.activityName}</span>.
+                          <br /><br />
+                          {hasFeedback ? (
+                            <span className="italic text-muted-foreground">&#34;{item.content}&#34;</span>
+                          ) : (
+                            <span className="text-[13px] text-orange-500/90 font-medium tracking-wide">⚠️ {t("dashboard.alertTypes.rpe_mismatch")}</span>
+                          )}
+                        </>
+                      }
+                    />
+                  );
+                });
+              })()}
             </div>
           </div>
         </div>

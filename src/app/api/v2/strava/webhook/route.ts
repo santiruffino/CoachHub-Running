@@ -55,7 +55,9 @@ export async function POST(req: NextRequest) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY}`,
+        // Pass the service role key as a custom header to bypass JWT validation
+        // which fails for opaque API keys. The edge function MUST be deployed with --no-verify-jwt
+        'X-Webhook-Secret': process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || '',
       },
       body: JSON.stringify(payload),
     }).catch(err => console.error('Failed to trigger process-strava-activity:', err));

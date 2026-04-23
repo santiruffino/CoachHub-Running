@@ -10,6 +10,7 @@ export interface Group {
     race_date?: string;
     race_distance?: string;
     race_priority?: 'A' | 'B' | 'C';
+    is_archived?: boolean;
     _count?: []
 }
 

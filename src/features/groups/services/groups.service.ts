@@ -14,6 +14,10 @@ export const groupsService = {
         return api.post<Group>('/v2/groups', data);
     },
 
+    update: async (id: string, data: Partial<CreateGroupDto>) => {
+        return api.patch<Group>(`/v2/groups/${id}`, data);
+    },
+
     delete: async (id: string) => {
         return api.delete(`/v2/groups/${id}`);
     },
