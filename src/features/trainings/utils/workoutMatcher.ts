@@ -82,7 +82,7 @@ export function flattenWorkout(blocks: any[]): FlatStep[] {
                         name: stepName,
                         target_type: groupBlock.duration.type === 'distance' ? 'distance' : 'duration', // 'distance' | 'time' -> 'distance' | 'duration'
                         target_value: groupBlock.duration.value,
-                        intensity: groupBlock.rpe || groupBlock.intensity,
+                        intensity: groupBlock.rpe || (groupBlock.intensity ? Math.max(1, Math.min(10, Math.round(groupBlock.intensity / 10))) : undefined),
                         stepType: flatStepType,
                         repeatIndex: r + 1,
                         totalRepeats: reps,
@@ -108,7 +108,7 @@ export function flattenWorkout(blocks: any[]): FlatStep[] {
                 name: stepName,
                 target_type: block.duration.type === 'distance' ? 'distance' : 'duration',
                 target_value: block.duration.value,
-                intensity: block.rpe || block.intensity,
+                intensity: block.rpe || (block.intensity ? Math.max(1, Math.min(10, Math.round(block.intensity / 10))) : undefined),
                 stepType: flatStepType,
                 // No repeat context
             });

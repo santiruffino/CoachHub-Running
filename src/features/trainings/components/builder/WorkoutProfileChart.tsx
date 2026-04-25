@@ -28,7 +28,7 @@ export function WorkoutProfileChart({ blocks }: WorkoutProfileChartProps) {
                 if (!processedGroups.has(block.group.id)) {
                     processedGroups.add(block.group.id);
                     const groupBlocks = blocks.filter(b => b.group?.id === block.group?.id);
-                    for (let i = 0; i < block.group.reps; i++) {
+                    for (let i = 0; i < (block.group.reps || 1); i++) {
                         groupBlocks.forEach(b => {
                             data.push({
                                 value: b.intensity || 50,
@@ -51,13 +51,13 @@ export function WorkoutProfileChart({ blocks }: WorkoutProfileChartProps) {
     useEffect(() => {
         if (!chartRef.current) return;
 
-        // Check if dark mode
-        const isDark = document.documentElement.classList.contains('dark');
+        // Dispose previous instance
+        if (chartInstance.current) {
+            chartInstance.current.dispose();
+        }
 
         // Initialize chart
-        if (!chartInstance.current) {
-            chartInstance.current = echarts.init(chartRef.current);
-        }
+        chartInstance.current = echarts.init(chartRef.current);
 
         const option: echarts.EChartsOption = {
             backgroundColor: 'transparent',
@@ -70,7 +70,7 @@ export function WorkoutProfileChart({ blocks }: WorkoutProfileChartProps) {
             },
             xAxis: {
                 type: 'category',
-                data: chartData.map((_, i) => ''),
+                data: chartData.map(() => ''),
                 axisLine: { show: false },
                 axisTick: { show: false },
                 axisLabel: { show: false }
@@ -112,9 +112,9 @@ export function WorkoutProfileChart({ blocks }: WorkoutProfileChartProps) {
 
         // Handle theme changes
         const observer = new MutationObserver(() => {
-            if (chartInstance.current) {
+            if (chartInstance.current && chartRef.current) {
                 chartInstance.current.dispose();
-                chartInstance.current = echarts.init(chartRef.current!);
+                chartInstance.current = echarts.init(chartRef.current);
                 chartInstance.current.setOption(option);
             }
         });
@@ -127,6 +127,8 @@ export function WorkoutProfileChart({ blocks }: WorkoutProfileChartProps) {
         return () => {
             window.removeEventListener('resize', handleResize);
             observer.disconnect();
+            chartInstance.current?.dispose();
+            chartInstance.current = null;
         };
     }, [chartData, t]);
 

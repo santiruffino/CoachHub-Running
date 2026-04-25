@@ -42,13 +42,13 @@ export function WorkoutSequence({
     const getBlockIntensity = (block: WorkoutBlock) => {
         if (block.rpe) return `RPE ${block.rpe}/10`;
         if (block.target.type === 'lthr') {
-             return `${block.target.min}-${block.target.max}% LTHR`;
+            return `${block.target.min}-${block.target.max}% LTHR`;
         }
         if (block.target.type === 'vam_zone') {
-             return `${t('vamZone')} ${block.target.min}`;
+            return `${t('vamZone')} ${block.target.min}`;
         }
         if (block.intensity) return `${block.intensity}%`;
-        
+
         switch (block.type) {
             case 'warmup':
             case 'cooldown': return '70%';
@@ -77,7 +77,7 @@ export function WorkoutSequence({
 
         const distMeters = block.duration.unit === 'km' ? block.duration.value * 1000 : block.duration.value;
         let vamKmh = 15; // default fallback
-        
+
         if (athleteProfile?.vam) {
             const parts = athleteProfile.vam.split(':').map(Number);
             if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
@@ -90,7 +90,7 @@ export function WorkoutSequence({
 
         const speedKmH = vamKmh * intensityFactor;
         const speedMs = speedKmH / 3.6;
-        
+
         if (speedMs > 0) return Math.round(distMeters / speedMs);
         return 0;
     };
@@ -100,7 +100,7 @@ export function WorkoutSequence({
         const minutes = Math.floor(seconds / 60);
         const remSecs = seconds % 60;
         const timeStr = `${minutes}:${remSecs.toString().padStart(2, '0')}`;
-        
+
         if (block.duration.type === 'distance') {
             const val = block.duration.unit === 'km' ? block.duration.value : block.duration.value;
             const unit = block.duration.unit || 'm';
@@ -150,14 +150,6 @@ export function WorkoutSequence({
                 <h3 className="text-2xl font-display font-bold text-[#2b3437] dark:text-[#f8f9fa]">
                     {t('sequenceBuilder')}
                 </h3>
-                <div className="flex items-center gap-2">
-                    <Button variant="secondary" size="sm" className="bg-[#f1f4f6] text-[#4e6073] hover:bg-[#e1e5e8] dark:bg-white/5 dark:text-[#8b9bb4] font-semibold text-[10px] tracking-widest uppercase">
-                        {t('expandAll')}
-                    </Button>
-                    <Button variant="secondary" size="sm" className="bg-[#f1f4f6] text-[#4e6073] hover:bg-[#e1e5e8] dark:bg-white/5 dark:text-[#8b9bb4] font-semibold text-[10px] tracking-widest uppercase">
-                        {t('autoBalance')}
-                    </Button>
-                </div>
             </div>
 
             <p className="text-sm text-[#8b9bb4] font-inter mb-12">
@@ -169,11 +161,11 @@ export function WorkoutSequence({
                 {groupedBlocks.map((item, index) => {
                     // Record start time of this group/block
                     const currentStartTimeStr = formatTimestamp(cumulativeSeconds);
-                    
+
                     if (item.isGroup) {
                         const reps = item.blocks[0]?.group?.reps || 1;
                         const isGroupSelected = selectedGroupId === item.groupId;
-                        
+
                         // Advance cumulative time by this group's total time
                         for (let i = 0; i < reps; i++) {
                             item.blocks.forEach(b => {
@@ -184,7 +176,7 @@ export function WorkoutSequence({
                         if (isGroupSelected) {
                             return (
                                 <div key={item.groupId} className="flex gap-6 relative ml-12">
-                                     <div className="w-12 text-xs font-semibold text-[#8b9bb4] absolute -left-[72px] top-6 text-right">
+                                    <div className="w-12 text-xs font-semibold text-[#8b9bb4] absolute -left-[72px] top-6 text-right">
                                         {currentStartTimeStr}
                                     </div>
                                     <div className="flex-1">
@@ -208,7 +200,7 @@ export function WorkoutSequence({
                                 <div className="w-12 text-xs font-semibold text-[#8b9bb4] absolute -left-[72px] top-6 text-right">
                                     {currentStartTimeStr}
                                 </div>
-                                
+
                                 <div className="flex-1 pl-4 pb-4">
                                     <div className="flex items-center rotate-180" style={{ writingMode: 'vertical-rl', position: 'absolute', left: '-20px', top: '10px', bottom: '10px' }}>
                                         <div className="bg-[#4e6073] text-white text-[10px] font-bold tracking-widest uppercase py-4 px-2 rounded-l w-[32px] flex items-center justify-center">
@@ -307,7 +299,7 @@ export function WorkoutSequence({
                             <div className="w-12 text-xs font-semibold text-[#8b9bb4] absolute -left-[72px] text-right">
                                 {currentStartTimeStr}
                             </div>
-                            
+
                             <button
                                 type="button"
                                 onClick={() => onSelectBlock(block.id)}
@@ -345,51 +337,53 @@ export function WorkoutSequence({
                 })}
 
                 {/* Horizontal Add Block Buttons */}
-                <div className="pt-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 pl-12">
-                    <button
-                        onClick={() => onAddStep('warmup')}
-                        className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#b1f0cc] hover:bg-[#b1f0cc]/10 transition-colors"
-                    >
-                        <span className="text-[10px] uppercase font-bold tracking-widest" style={{ color: BLOCK_COLORS.warmup }}>{t('labels.warmup')}</span>
-                    </button>
-                    <button
-                        onClick={() => onAddStep('interval')}
-                        className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#fb8b8b] hover:bg-[#fb8b8b]/10 transition-colors"
-                    >
-                        <span className="text-[10px] uppercase font-bold tracking-widest" style={{ color: BLOCK_COLORS.interval }}>{t('labels.interval')}</span>
-                    </button>
-                    <button
-                        onClick={() => onAddStep('recovery')}
-                        className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#c5e0fa] hover:bg-[#c5e0fa]/10 transition-colors"
-                    >
-                        <span className="text-[10px] uppercase font-bold tracking-widest" style={{ color: BLOCK_COLORS.recovery }}>{t('labels.recovery')}</span>
-                    </button>
-                    <button
-                        onClick={() => onAddStep('rest')}
-                        className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#e2e8f0] hover:bg-[#e2e8f0]/10 transition-colors"
-                    >
-                        <span className="text-[10px] uppercase font-bold tracking-widest" style={{ color: BLOCK_COLORS.rest }}>{t('labels.rest')}</span>
-                    </button>
-                    <button
-                        onClick={() => onAddStep('cooldown')}
-                        className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#e2e8f0] hover:bg-[#e2e8f0]/10 transition-colors"
-                    >
-                        <span className="text-[10px] uppercase font-bold tracking-widest" style={{ color: BLOCK_COLORS.cooldown }}>{t('labels.cooldown')}</span>
-                    </button>
+                <div className="pt-6 flex flex-col gap-4 pl-12">
                     <button
                         onClick={() => onAddStep('repeat')}
-                        className="flex items-center justify-center py-4 rounded-lg border border-dashed border-[#8b9bb4] hover:bg-[#8b9bb4]/10 transition-colors gap-2"
+                        className="w-full flex items-center justify-center py-4 rounded-lg border border-dashed border-[#8b9bb4] bg-[#8b9bb4]/10 hover:bg-[#8b9bb4]/20 transition-colors gap-2"
                     >
                         <Repeat size={14} className="text-[#8b9bb4]" />
                         <span className="text-[10px] uppercase font-bold tracking-widest text-[#8b9bb4]">{t('labels.repeat') || 'REPETICONES'}</span>
                     </button>
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                        <button
+                            onClick={() => onAddStep('warmup')}
+                            className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#b1f0cc] bg-[#b1f0cc]/10 hover:bg-[#b1f0cc]/20 transition-colors"
+                        >
+                            <span className="text-[10px] uppercase font-bold tracking-widest" style={{ color: BLOCK_COLORS.warmup }}>{t('labels.warmup')}</span>
+                        </button>
+                        <button
+                            onClick={() => onAddStep('interval')}
+                            className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#fb8b8b] bg-[#fb8b8b]/10 hover:bg-[#fb8b8b]/20 transition-colors"
+                        >
+                            <span className="text-[10px] uppercase font-bold tracking-widest" style={{ color: BLOCK_COLORS.interval }}>{t('labels.interval')}</span>
+                        </button>
+                        <button
+                            onClick={() => onAddStep('recovery')}
+                            className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#c5e0fa] bg-[#c5e0fa]/10 hover:bg-[#c5e0fa]/20 transition-colors"
+                        >
+                            <span className="text-[10px] uppercase font-bold tracking-widest" style={{ color: BLOCK_COLORS.recovery }}>{t('labels.recovery')}</span>
+                        </button>
+                        <button
+                            onClick={() => onAddStep('rest')}
+                            className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#e2e8f0] bg-[#e2e8f0]/10 hover:bg-[#e2e8f0]/20 transition-colors"
+                        >
+                            <span className="text-[10px] uppercase font-bold tracking-widest" style={{ color: BLOCK_COLORS.rest }}>{t('labels.rest')}</span>
+                        </button>
+                        <button
+                            onClick={() => onAddStep('cooldown')}
+                            className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#e2e8f0] bg-[#e2e8f0]/10 hover:bg-[#e2e8f0]/20 transition-colors"
+                        >
+                            <span className="text-[10px] uppercase font-bold tracking-widest" style={{ color: BLOCK_COLORS.cooldown }}>{t('labels.cooldown')}</span>
+                        </button>
+                    </div>
                 </div>
             </div>
-            
+
             {/* Click outside to unselect */}
             {selectedBlockId && (
-                <div 
-                    className="absolute inset-0 z-[-1] cursor-default" 
+                <div
+                    className="absolute inset-0 z-[-1] cursor-default"
                     onClick={() => onSelectBlock(null)}
                 />
             )}

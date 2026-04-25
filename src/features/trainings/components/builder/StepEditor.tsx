@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { X, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { calculateTargetPace, VAM_DEFAULT, VAM_ZONES } from '@/features/profiles/constants/vam';
+import { BLOCK_COLORS } from './constants';
 import { useTranslations } from 'next-intl';
 
 interface StepEditorProps {
@@ -128,7 +129,10 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
     };
 
     return (
-        <div className="bg-white dark:bg-[#1a232c] rounded shadow-[0_4px_12px_rgba(43,52,55,0.04)] p-6 relative overflow-visible mt-2 mb-4 border-l-[3px] border-[#abb3b7]">
+        <div 
+            className="bg-white dark:bg-[#1a232c] rounded shadow-[0_4px_12px_rgba(43,52,55,0.04)] p-6 relative overflow-visible mt-2 mb-4 border-l-[3px]"
+            style={{ borderLeftColor: BLOCK_COLORS[step.type as keyof typeof BLOCK_COLORS] || '#abb3b7' }}
+        >
             <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-4">
                     <div className="flex items-center justify-center w-6 h-6 rounded-full bg-[#f1f4f6] dark:bg-white/5 text-[#8b9bb4] font-semibold text-[10px]">

@@ -28,7 +28,7 @@ export async function GET(
         // First, get the activity from database to find the owner and external_id
         const { data: activity, error: activityError } = await supabase
             .from('activities')
-            .select('id, user_id, external_id')
+            .select('id, user_id, external_id, lap_overrides')
             .eq('external_id', id)
             .single();
 
@@ -168,9 +168,99 @@ export async function GET(
             _viewerIsOwner: isOwner,
             _ownerId: activityOwnerId,
             _internalId: activity.id || (activity as any).id, // Pass internal UUID
+            lap_overrides: activity.lap_overrides || {},
         });
     } catch (error: any) {
         console.error('Get activity detail error:', error);
+        return NextResponse.json(
+            { error: 'Internal server error' },
+            { status: 500 }
+        );
+    }
+}
+
+/**
+ * Update Activity Detail (e.g., Lap Overrides)
+ */
+export async function PATCH(
+    request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const { id } = await params;
+        const authResult = await requireAuth();
+
+        if (authResult.response) {
+            return authResult.response;
+        }
+
+        const { supabase, user } = authResult;
+        const body = await request.json();
+        const { lapOverrides } = body;
+
+        // Verify activity and permissions
+        const { data: activity, error: activityError } = await supabase
+            .from('activities')
+            .select('id, user_id, external_id')
+            .eq('external_id', id)
+            .single();
+
+        if (activityError || !activity) {
+            return NextResponse.json(
+                { error: 'Activity not found' },
+                { status: 404 }
+            );
+        }
+
+        const activityOwnerId = activity.user_id;
+
+        // Check if coach
+        let isCoach = false;
+        if (user!.id !== activityOwnerId) {
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', user!.id)
+                .single();
+
+            if (profile?.role === 'COACH') {
+                const { data: athleteProfile } = await supabase
+                    .from('profiles')
+                    .select('coach_id')
+                    .eq('id', activityOwnerId)
+                    .single();
+
+                if (athleteProfile && athleteProfile.coach_id === user!.id) {
+                    isCoach = true;
+                }
+            }
+            
+            if (!isCoach) {
+                return NextResponse.json(
+                    { error: 'Not authorized to modify this activity' },
+                    { status: 403 }
+                );
+            }
+        }
+
+        // Update the lap_overrides in the database using the internal id
+        const { error: updateError } = await supabase
+            .from('activities')
+            .update({ lap_overrides: lapOverrides })
+            .eq('id', activity.id);
+
+        if (updateError) {
+            console.error('Failed to update lap overrides:', updateError);
+            return NextResponse.json(
+                { error: 'Failed to update overrides' },
+                { status: 500 }
+            );
+        }
+
+        return NextResponse.json({ success: true, lapOverrides });
+
+    } catch (error: any) {
+        console.error('Update activity detail error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
             { status: 500 }

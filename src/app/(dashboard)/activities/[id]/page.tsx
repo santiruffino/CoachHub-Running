@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -131,6 +132,7 @@ interface ActivityDetail {
     _viewerIsOwner?: boolean;
     _ownerId?: string;
     _internalId?: string;
+    lap_overrides?: Record<string, string>;
 }
 
 export default function ActivityDetailPage() {
@@ -159,6 +161,8 @@ export default function ActivityDetailPage() {
     const [workoutAssignment, setWorkoutAssignment] = useState<any>(null);
     const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
     const { alertState, showAlert, closeAlert } = useAlertDialog();
+    const [lapFilter, setLapFilter] = useState<'all' | 'warmup' | 'active' | 'recovery' | 'cooldown'>('all');
+    const [lapOverrides, setLapOverrides] = useState<Record<string, string>>({});
 
     useEffect(() => {
         const fetchActivity = async () => {
@@ -166,6 +170,7 @@ export default function ActivityDetailPage() {
                 setLoading(true);
                 const response = await api.get<ActivityDetail>(`/v2/activities/${id}`);
                 setActivity(response.data);
+                setLapOverrides(response.data.lap_overrides || {});
 
                 // Set whether the current viewer is the athlete (owner) or a coach
                 setIsAthlete(response.data._viewerIsOwner || false);
@@ -411,6 +416,21 @@ export default function ActivityDetailPage() {
         return colorClass;
     };
 
+    // Handler for updating a lap's step type manually
+    const handleOverrideStepType = async (lapIndex: number, newStepType: string) => {
+        try {
+            const updatedOverrides = { ...lapOverrides, [lapIndex]: newStepType };
+            // Optimistic UI update
+            setLapOverrides(updatedOverrides);
+            
+            await api.patch(`/v2/activities/${id}`, { lapOverrides: updatedOverrides });
+        } catch (error) {
+            console.error('Failed to update lap override:', error);
+            // Revert on failure
+            setLapOverrides(lapOverrides);
+        }
+    };
+
     if (loading) {
         return (
             <div className="space-y-6 p-8">
@@ -654,9 +674,9 @@ export default function ActivityDetailPage() {
             {/* Splits & Laps - minimalist rewrite */}
             {!isWeightTraining(activity.sport_type) && (activity.laps?.length || activity.splits_metric || activity.splits_standard) && (
                 <div className="bg-card rounded-3xl p-8 shadow-[0_20px_40px_rgba(43,52,55,0.02)] border border-muted">
-                    <div className="flex items-center justify-between mb-8">
-                        <h2 className="text-xl font-display font-medium text-foreground">{t('tabs.analysis')}</h2>
-                        <Tabs defaultValue={activity.laps?.length ? "laps" : "metric"} className="w-auto">
+                    <Tabs defaultValue={activity.laps?.length ? "laps" : "metric"} className="w-full">
+                        <div className="flex items-center justify-between mb-8">
+                            <h2 className="text-xl font-display font-medium text-foreground">{t('tabs.analysis')}</h2>
                             <TabsList className="bg-muted p-1 rounded-xl">
                                 {activity.laps && activity.laps.length > 0 && (
                                     <TabsTrigger value="laps" className="rounded-lg text-xs tracking-widest uppercase font-semibold data-[state=active]:bg-card data-[state=active]:text-foreground">{t('tabs.autoLaps')}</TabsTrigger>
@@ -665,14 +685,48 @@ export default function ActivityDetailPage() {
                                     <TabsTrigger value="metric" className="rounded-lg text-xs tracking-widest uppercase font-semibold data-[state=active]:bg-card data-[state=active]:text-foreground">{t('tabs.kmSplits')}</TabsTrigger>
                                 )}
                             </TabsList>
-                        </Tabs>
-                    </div>
+                        </div>
 
-                    <div>
-                        <Tabs defaultValue={activity.laps?.length ? "laps" : "metric"}>
-                            {/* Laps Tab */}
+                        {/* Laps Tab */}
                             {activity.laps && activity.laps.length > 0 && (
                                 <TabsContent value="laps" className="mt-0 outline-none">
+                                    <div className="flex flex-wrap items-center gap-2 mb-6">
+                                        <Badge
+                                            variant={lapFilter === 'all' ? 'default' : 'outline'}
+                                            className="cursor-pointer"
+                                            onClick={() => setLapFilter('all')}
+                                        >
+                                            Todos
+                                        </Badge>
+                                        <Badge
+                                            variant={lapFilter === 'warmup' ? 'default' : 'outline'}
+                                            className={`cursor-pointer ${lapFilter !== 'warmup' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20 hover:bg-blue-500/20' : ''}`}
+                                            onClick={() => setLapFilter('warmup')}
+                                        >
+                                            Calentamiento
+                                        </Badge>
+                                        <Badge
+                                            variant={lapFilter === 'active' ? 'default' : 'outline'}
+                                            className={`cursor-pointer ${lapFilter !== 'active' ? 'bg-orange-500/10 text-orange-500 border-orange-500/20 hover:bg-orange-500/20' : ''}`}
+                                            onClick={() => setLapFilter('active')}
+                                        >
+                                            Activo
+                                        </Badge>
+                                        <Badge
+                                            variant={lapFilter === 'recovery' ? 'default' : 'outline'}
+                                            className={`cursor-pointer ${lapFilter !== 'recovery' ? 'bg-green-500/10 text-green-500 border-green-500/20 hover:bg-green-500/20' : ''}`}
+                                            onClick={() => setLapFilter('recovery')}
+                                        >
+                                            Recuperación
+                                        </Badge>
+                                        <Badge
+                                            variant={lapFilter === 'cooldown' ? 'default' : 'outline'}
+                                            className={`cursor-pointer ${lapFilter !== 'cooldown' ? 'bg-purple-500/10 text-purple-500 border-purple-500/20 hover:bg-purple-500/20' : ''}`}
+                                            onClick={() => setLapFilter('cooldown')}
+                                        >
+                                            Enfriamiento
+                                        </Badge>
+                                    </div>
                                     <div className="overflow-x-auto">
                                         <Table className="w-full">
                                             <TableHeader>
@@ -687,16 +741,24 @@ export default function ActivityDetailPage() {
                                                     {!!activity.laps[0]?.average_cadence && (
                                                         <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.cadence')}</TableHead>
                                                     )}
-                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4 text-right pr-0">{t('table.elevGain')}</TableHead>
+                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.elevGain')}</TableHead>
+                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4 text-right pr-0"></TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
-                                                {activity.laps.map((lap, idx) => {
+                                                {activity.laps.map((lap, idx) => ({ lap, idx }))
+                                                    .filter(({ idx }) => {
+                                                        if (lapFilter === 'all') return true;
+                                                        const matchedLap = matchedLaps.find(m => m.lapIndex === idx);
+                                                        return matchedLap?.stepType === lapFilter;
+                                                    })
+                                                    .map(({ lap, idx }) => {
                                                     const matchedLap = matchedLaps.find(m => m.lapIndex === idx);
                                                     const stepTypeColors: Record<string, string> = {
                                                         warmup: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
                                                         active: 'bg-orange-500/10 text-orange-500 border-orange-500/20',
                                                         recovery: 'bg-green-500/10 text-green-500 border-green-500/20',
+                                                        rest: 'bg-gray-400/10 text-gray-400 border-gray-400/20',
                                                         cooldown: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
                                                         other: 'bg-gray-500/10 text-gray-500 border-gray-500/20',
                                                     };
@@ -704,10 +766,9 @@ export default function ActivityDetailPage() {
                                                     return (
                                                         <TableRow key={lap.id}>
                                                             <TableCell className="font-medium">{lap.lap_index}</TableCell>
-                                                            <TableCell>{(lap.distance / 1000).toFixed(2)} {t('metrics.units.km')}</TableCell>
                                                             <TableCell>{formatTime(lap.moving_time)}</TableCell>
+                                                            <TableCell>{(lap.distance / 1000).toFixed(2)} {t('metrics.units.km')}</TableCell>
                                                             <TableCell>{formatPace(lap.average_speed)}</TableCell>
-                                                            <TableCell>{lap.total_elevation_gain.toFixed(1)} {t('metrics.units.m')}</TableCell>
                                                             {!!activity.laps![0]?.average_heartrate && (
                                                                 <TableCell>
                                                                     {lap.average_heartrate ? (
@@ -728,17 +789,52 @@ export default function ActivityDetailPage() {
                                                                     )}
                                                                 </TableCell>
                                                             )}
-                                                            <TableCell>
-                                                                {matchedLap ? (
-                                                                    <Badge
-                                                                        variant="outline"
-                                                                        className={`${stepTypeColors[matchedLap.stepType]} border`}
-                                                                    >
-                                                                        {matchedLap.stepLabel}
-                                                                    </Badge>
-                                                                ) : (
-                                                                    <span className="text-xs text-muted-foreground">-</span>
-                                                                )}
+                                                            <TableCell>{lap.total_elevation_gain.toFixed(1)} {t('metrics.units.m')}</TableCell>
+                                                            <TableCell className="text-right pr-0">
+                                                                {(() => {
+                                                                    const overrideType = lapOverrides[lap.lap_index];
+                                                                    const effectiveType = overrideType || matchedLap?.stepType || 'other';
+                                                                    
+                                                                    const overrideLabels: Record<string, string> = {
+                                                                        warmup: 'Warm up',
+                                                                        active: 'Active',
+                                                                        rest: 'Rest',
+                                                                        recovery: 'Recovery',
+                                                                        cooldown: 'Cool Down'
+                                                                    };
+
+                                                                    const displayLabel = overrideType ? overrideLabels[overrideType] : (matchedLap ? matchedLap.stepLabel : 'Unmatched');
+                                                                    const displayColorClass = stepTypeColors[effectiveType] || stepTypeColors.other;
+
+                                                                    const badgeEl = (
+                                                                        <Badge
+                                                                            variant="outline"
+                                                                            className={`${displayColorClass} border transition-opacity`}
+                                                                        >
+                                                                            {displayLabel}
+                                                                        </Badge>
+                                                                    );
+
+                                                                    if (!isAthlete) {
+                                                                        return (
+                                                                            <DropdownMenu>
+                                                                                <DropdownMenuTrigger asChild className="cursor-pointer hover:opacity-80">
+                                                                                    {badgeEl}
+                                                                                </DropdownMenuTrigger>
+                                                                                <DropdownMenuContent align="end" className="w-[150px]">
+                                                                                    {Object.entries(overrideLabels).map(([key, label]) => (
+                                                                                        <DropdownMenuItem key={key} onClick={() => handleOverrideStepType(lap.lap_index, key)}>
+                                                                                            <div className={`w-2 h-2 rounded-full mr-2 ${stepTypeColors[key].split(' ')[0]}`} />
+                                                                                            {label}
+                                                                                        </DropdownMenuItem>
+                                                                                    ))}
+                                                                                </DropdownMenuContent>
+                                                                            </DropdownMenu>
+                                                                        );
+                                                                    }
+
+                                                                    return badgeEl;
+                                                                })()}
                                                             </TableCell>
                                                         </TableRow>
                                                     );
@@ -827,7 +923,6 @@ export default function ActivityDetailPage() {
                                     </div>
                                 </TabsContent>
                             )}
-                        </Tabs>
 
                         {/* HR Zone Legend */}
                         {heartrateZones?.zones && activity.average_heartrate && (
@@ -857,7 +952,7 @@ export default function ActivityDetailPage() {
                                 </div>
                             </div>
                         )}
-                    </div>
+                    </Tabs>
                 </div>
             )}
 

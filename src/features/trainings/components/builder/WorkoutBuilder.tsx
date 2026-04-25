@@ -169,6 +169,7 @@ export function WorkoutBuilder({
                                 blocks={blocks} 
                                 selectedId={selectedBlockId}
                                 onBlockClick={selectBlock}
+                                athleteProfile={athleteProfile}
                             />
                         </div>
 

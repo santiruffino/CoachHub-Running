@@ -434,12 +434,12 @@ function AssignWorkoutContent() {
                             <div className="w-full flex items-center justify-between mx-auto px-8">
                                 <div className="flex flex-col">
                                     <span className="text-lg font-bold font-display">{tAssign('blocksRegistered')}</span>
-                                    <span className="text-xs text-muted-foreground/60">{tAssign('proceedToScheduling')}</span>
+                                    <span className="text-xs text-white/60">{tAssign('proceedToScheduling')}</span>
                                 </div>
                                 <Button 
                                     onClick={() => setStep('assign-details')}
                                     disabled={blocks.length === 0}
-                                    className="bg-white text-foreground hover:bg-background uppercase tracking-wider text-xs font-semibold px-8 py-6 rounded shadow-lg"
+                                    className="bg-white text-[#2b3437] hover:bg-white/90 uppercase tracking-wider text-xs font-semibold px-8 py-6 rounded shadow-lg"
                                 >
                                     {tAssign('continueToScheduling')}
                                 </Button>

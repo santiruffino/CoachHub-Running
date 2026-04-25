@@ -1,111 +1,150 @@
 'use client';
 
-import { WorkoutBlock } from './types';
+import { WorkoutBlock, AthleteProfile } from './types';
 import { useMemo, useRef, useEffect } from 'react';
 import * as echarts from 'echarts';
 import { BLOCK_COLORS } from './constants';
+import { VAM_ZONES } from '@/features/profiles/constants/vam';
 import { useTranslations } from 'next-intl';
 
 interface WorkoutIntensityChartProps {
     blocks: WorkoutBlock[];
     selectedId?: string | null;
     onBlockClick?: (blockId: string) => void;
+    athleteProfile?: AthleteProfile | null;
 }
 
-export function WorkoutIntensityChart({ blocks, selectedId, onBlockClick }: WorkoutIntensityChartProps) {
+export function WorkoutIntensityChart({ blocks, selectedId, onBlockClick, athleteProfile }: WorkoutIntensityChartProps) {
     const chartRef = useRef<HTMLDivElement>(null);
     const chartInstance = useRef<echarts.ECharts | null>(null);
     const t = useTranslations('builder');
 
-    // Determine if we should use distance or time as primary metric
-    const useDistance = useMemo(() => {
-        if (blocks.length === 0) return false;
-        return blocks.every(b => b.duration.type === 'distance');
-    }, [blocks]);
+    // Remove the old useDistance memo, we will always use estimated time
+    const getBlockEstimatedSeconds = (block: WorkoutBlock): number => {
+        if (block.duration.type === 'time') return block.duration.value;
+
+        let intensityFactor = (block.intensity || 50) / 100;
+
+        if (block.target?.type === 'vam_zone') {
+            const zoneNum = Number(block.target.min);
+            const zone = VAM_ZONES.find(z => z.zone === zoneNum);
+            if (zone) intensityFactor = ((zone.min + zone.max) / 2) / 100;
+        } else if (block.target?.type === 'lthr') {
+            const minTarget = Number(block.target.min);
+            const maxTarget = Number(block.target.max);
+            if (!isNaN(minTarget) && !isNaN(maxTarget)) {
+                intensityFactor = ((minTarget + maxTarget) / 2) / 100;
+            }
+        }
+
+        const distMeters = block.duration.unit === 'km' ? block.duration.value * 1000 : block.duration.value;
+        let vamKmh = 15; // default fallback
+        
+        if (athleteProfile?.vam) {
+            const parts = athleteProfile.vam.split(':').map(Number);
+            if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+                const secsPerKm = parts[0] * 60 + parts[1];
+                if (secsPerKm > 0) vamKmh = 3600 / secsPerKm;
+            } else if (!isNaN(Number(athleteProfile.vam))) {
+                vamKmh = Number(athleteProfile.vam);
+            }
+        }
+
+        const speedKmH = vamKmh * intensityFactor;
+        const speedMs = speedKmH / 3.6;
+        
+        if (speedMs > 0) return Math.round(distMeters / speedMs);
+        return 0;
+    };
 
     const chartData = useMemo(() => {
-        const data: any[] = [];
         let totalX = 0;
+        const flatData: { name: string; value: (string | number)[]; item: WorkoutBlock }[] = [];
+        const processedBlocks = new Set<string>();
 
-        // Flatten blocks (expand repeat groups)
-        const flatBlocks: (WorkoutBlock & { xStart: number; width: number })[] = [];
-        
-        let i = 0;
-        while (i < blocks.length) {
-            const block = blocks[i];
-            const multiplier = block.group?.reps || 1;
+        blocks.forEach(block => {
+            if (processedBlocks.has(block.id)) return;
 
             if (block.group) {
                 const groupId = block.group.id;
                 const groupBlocks = blocks.filter(b => b.group?.id === groupId);
-                
+                groupBlocks.forEach(b => processedBlocks.add(b.id));
+                const multiplier = block.group.reps || 1;
+
                 for (let rep = 0; rep < multiplier; rep++) {
                     groupBlocks.forEach(gb => {
-                        let width = 0;
-                        if (useDistance) {
-                            width = gb.duration.type === 'distance' ? gb.duration.value / 1000 : (gb.duration.value / 60) / 5; // Est 5 min/km
-                        } else {
-                            width = gb.duration.type === 'time' ? gb.duration.value / 60 : (gb.duration.value / 1000) * 5; // Est 5 min/km
-                        }
+                        const width = getBlockEstimatedSeconds(gb) / 60; // in minutes
                         
-                        flatBlocks.push({ ...gb, xStart: totalX, width });
+                        flatData.push({
+                            name: gb.stepName || t(`labels.${gb.type}`),
+                            value: [totalX, gb.intensity || 50, width, gb.id, gb.type, gb.duration.value, gb.duration.type],
+                            item: gb
+                        });
                         totalX += width;
                     });
                 }
-                i += groupBlocks.length;
             } else {
-                let width = 0;
-                if (useDistance) {
-                    width = block.duration.type === 'distance' ? block.duration.value / 1000 : (block.duration.value / 60) / 5;
-                } else {
-                    width = block.duration.type === 'time' ? block.duration.value / 60 : (block.duration.value / 1000) * 5;
-                }
+                processedBlocks.add(block.id);
+                const width = getBlockEstimatedSeconds(block) / 60; // in minutes
                 
-                flatBlocks.push({ ...block, xStart: totalX, width });
+                flatData.push({
+                    name: block.stepName || t(`labels.${block.type}`),
+                    value: [totalX, block.intensity || 50, width, block.id, block.type, block.duration.value, block.duration.type],
+                    item: block
+                });
                 totalX += width;
-                i++;
             }
-        }
+        });
 
-        return flatBlocks;
-    }, [blocks, useDistance]);
+        return flatData;
+    }, [blocks, t, athleteProfile]);
 
     useEffect(() => {
         if (!chartRef.current || blocks.length === 0) return;
 
-        if (!chartInstance.current) {
-            chartInstance.current = echarts.init(chartRef.current);
-            chartInstance.current.on('click', (params: any) => {
-                if (params.data && onBlockClick) {
-                    onBlockClick(params.data.id);
-                }
-            });
+        // Clean up previous instance if it exists to avoid stale references
+        if (chartInstance.current) {
+            chartInstance.current.dispose();
         }
+
+        chartInstance.current = echarts.init(chartRef.current);
+        
+        chartInstance.current.on('click', (params: any) => {
+            if (params.data && params.data.value && onBlockClick) {
+                onBlockClick(params.data.value[3]); // index 3 is blockId
+            }
+        });
+
+        const maxX = Math.max(...chartData.map(d => Number(d.value[0]) + Number(d.value[2])), 1);
 
         const option: echarts.EChartsOption = {
             backgroundColor: 'transparent',
             tooltip: {
                 trigger: 'item',
                 formatter: (params: any) => {
-                    const b = params.data;
-                    const durationLabel = t('duration');
-                    const intensityLabel = t('intensity');
-                    return `<strong>${b.stepName || t(`labels.${b.type}`)}</strong><br/>
-                            ${durationLabel}: ${b.duration.value} ${b.duration.type === 'time' ? 'sec' : 'm'}<br/>
-                            ${intensityLabel}: ${b.intensity || 50}%`;
+                    const val = params.data.value;
+                    const durationVal = val[5];
+                    const durationType = val[6];
+                    const intensity = val[1];
+                    const name = params.data.name;
+                    
+                    return `<strong>${name}</strong><br/>
+                            ${t('duration')}: ${durationVal} ${durationType === 'time' ? t('units.min') : t('units.km')}<br/>
+                            ${t('intensity')}: ${intensity}%`;
                 }
             },
             grid: {
-                left: 10,
-                right: 10,
-                top: 20,
-                bottom: 20,
+                left: 0,
+                right: 0,
+                top: 10,
+                bottom: 0,
                 containLabel: false
             },
             xAxis: {
                 type: 'value',
                 show: false,
-                max: Math.max(...chartData.map(d => d.xStart + d.width), 1) // default to min 1 width
+                min: 0,
+                max: maxX
             },
             yAxis: {
                 type: 'value',
@@ -117,34 +156,35 @@ export function WorkoutIntensityChart({ blocks, selectedId, onBlockClick }: Work
                 {
                     type: 'custom',
                     renderItem: (params: any, api: any) => {
-                        const index = params.dataIndex;
-                        const item = chartData[index];
+                        const xStart = api.value(0);
+                        const intensity = api.value(1);
+                        const width = api.value(2);
+                        const blockId = api.value(3);
+                        const type = api.value(4);
                         
-                        const intensity = item.intensity || 50;
-                        const y0 = api.coord([item.xStart, 0])[1]; // base line
-                        const y1 = api.coord([item.xStart, intensity])[1]; // target intensity
-                        const startX = api.coord([item.xStart, 0])[0];
-                        const endX = api.coord([item.xStart + item.width, 0])[0];
-
-                        const isSelected = item.id === selectedId;
+                        const start = api.coord([xStart, 0]);
+                        const end = api.coord([xStart + width, intensity]);
+                        
+                        const isSelected = blockId === selectedId;
 
                         return {
                             type: 'rect',
                             shape: {
-                                x: startX,
-                                y: y1,
-                                width: Math.max(endX - startX - 1, 1), // small gap, min 1px
-                                height: y0 - y1
+                                x: start[0],
+                                y: end[1],
+                                width: Math.max(api.size([width, 0])[0] - 1, 1),
+                                height: start[1] - end[1]
                             },
                             style: {
-                                fill: BLOCK_COLORS[item.type],
+                                fill: BLOCK_COLORS[type as keyof typeof BLOCK_COLORS] || '#e2e8f0',
                                 stroke: isSelected ? '#fff' : 'transparent',
                                 lineWidth: 2,
                                 opacity: isSelected ? 1 : 0.8
                             }
                         };
                     },
-                    data: chartData
+                    data: chartData,
+                    clip: true
                 }
             ]
         };
@@ -153,8 +193,33 @@ export function WorkoutIntensityChart({ blocks, selectedId, onBlockClick }: Work
 
         const handleResize = () => chartInstance.current?.resize();
         window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, [chartData, selectedId, onBlockClick, t]);
+        
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            chartInstance.current?.dispose();
+            chartInstance.current = null;
+        };
+    }, [chartData, selectedId, onBlockClick, t, blocks.length]);
+
+    // Calculate time labels based on max duration
+    const totalMinutes = useMemo(() => {
+        if (chartData.length === 0) return 0;
+        const lastItem = chartData[chartData.length - 1];
+        return Number(lastItem.value[0]) + Number(lastItem.value[2]);
+    }, [chartData]);
+    
+    const timeLabels = useMemo(() => {
+        if (totalMinutes === 0) return ['0:00'];
+        const labels = ['0:00'];
+        const intervals = 4;
+        for (let i = 1; i <= intervals; i++) {
+            const mins = (totalMinutes / intervals) * i;
+            const h = Math.floor(mins / 60);
+            const m = Math.floor(mins % 60);
+            labels.push(h > 0 ? `${h}:${m.toString().padStart(2, '0')}:00` : `${m}:00`);
+        }
+        return labels;
+    }, [totalMinutes]);
 
     if (blocks.length === 0) {
         return (
@@ -175,17 +240,15 @@ export function WorkoutIntensityChart({ blocks, selectedId, onBlockClick }: Work
                     </div>
                     <div className="flex items-center gap-1.5">
                         <div className="w-3 h-3 rounded-full" style={{ backgroundColor: BLOCK_COLORS.recovery }} />
-                        <span className="text-[10px] font-semibold text-[#8b9bb4]">{t('heartRate')}</span>
+                        <span className="text-[10px] font-semibold text-[#8b9bb4]">{t('recovery')}</span>
                     </div>
                 </div>
             </div>
             <div ref={chartRef} className="w-full h-56" />
             <div className="flex justify-between border-t border-[#f1f4f6] dark:border-white/5 pt-2 mt-2 px-1 text-[10px] font-semibold text-[#8b9bb4] tracking-widest">
-                <span>0:00</span>
-                <span>15:00</span>
-                <span>30:00</span>
-                <span>45:00</span>
-                <span>1:00:00</span>
+                {timeLabels.map((label, i) => (
+                    <span key={i}>{label}</span>
+                ))}
             </div>
         </div>
     );

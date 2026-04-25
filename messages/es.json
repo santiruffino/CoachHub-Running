@@ -1096,7 +1096,8 @@
             "success": "Carrera asignada correctamente",
             "error": "Error al asignar la carrera",
             "assigning": "Asignando...",
-            "submit": "Asignar a Atleta"
+            "submit": "Asignar a Atleta",
+            "cancel": "Cancelar"
         },
         "athlete": {
             "upcomingTitle": "Mis Carreras",

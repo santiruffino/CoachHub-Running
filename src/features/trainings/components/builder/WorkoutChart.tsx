@@ -28,32 +28,17 @@ export function WorkoutChart({ blocks, selectedId, onBlockClick }: WorkoutChartP
         const durations: number[] = [];
         const colors: string[] = [];
         const blockIds: string[] = [];
+        const processedBlocks = new Set<string>();
 
         // Process blocks including repeat groups
-        let i = 0;
-        while (i < blocks.length) {
-            const block = blocks[i];
-
-            // Calculate estimated duration in minutes
-            let durationMinutes = 0;
-            if (block.duration.type === 'time') {
-                durationMinutes = block.duration.value / 60;
-            } else {
-                // Estimate: 5 min/km pace
-                durationMinutes = (block.duration.value / 1000) * 5;
-            }
+        blocks.forEach(block => {
+            if (processedBlocks.has(block.id)) return;
 
             if (block.group) {
-                // This block is part of a group - collect all blocks in group
                 const groupId = block.group.id;
-                const groupReps = block.group.reps;
-                const groupBlocks: WorkoutBlock[] = [];
-
-                let j = i;
-                while (j < blocks.length && blocks[j].group?.id === groupId) {
-                    groupBlocks.push(blocks[j]);
-                    j++;
-                }
+                const groupBlocks = blocks.filter(b => b.group?.id === groupId);
+                groupBlocks.forEach(b => processedBlocks.add(b.id));
+                const groupReps = block.group.reps || 1;
 
                 // Add each rep as a separate bar
                 for (let rep = 0; rep < groupReps; rep++) {
@@ -71,17 +56,23 @@ export function WorkoutChart({ blocks, selectedId, onBlockClick }: WorkoutChartP
                         blockIds.push(gb.id);
                     });
                 }
-
-                i = j;
             } else {
-                // Regular non-grouped block
+                processedBlocks.add(block.id);
+                // Calculate estimated duration in minutes
+                let durationMinutes = 0;
+                if (block.duration.type === 'time') {
+                    durationMinutes = block.duration.value / 60;
+                } else {
+                    // Estimate: 5 min/km pace
+                    durationMinutes = (block.duration.value / 1000) * 5;
+                }
+
                 labels.push(block.stepName || t(`labels.${block.type}`));
                 durations.push(durationMinutes);
                 colors.push(BLOCK_COLORS[block.type]);
                 blockIds.push(block.id);
-                i++;
             }
-        }
+        });
 
         return { labels, durations, colors, blockIds };
     }, [blocks, t]);
