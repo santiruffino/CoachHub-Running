@@ -13,25 +13,7 @@ import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
 import { Slider } from '@/components/ui/slider';
 import { useTranslations } from 'next-intl';
 
-interface WorkoutAssignment {
-    id: string;
-    scheduledDate: string;
-    completed: boolean;
-    expectedRpe: number;
-    training: {
-        id: string;
-        title: string;
-        description: string;
-        type: string;
-        blocks: WorkoutBlock[];
-    };
-    athlete: {
-        id: string;
-        name: string;
-        email: string;
-    };
-    canEdit: boolean;
-}
+import { WorkoutAssignment } from '@/interfaces/training';
 
 export default function WorkoutDetailsPage() {
     const params = useParams();

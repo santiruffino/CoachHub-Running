@@ -5,14 +5,16 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { format, startOfWeek, endOfWeek, isWithinInterval, eachDayOfInterval, startOfDay, isToday, subWeeks, addWeeks, differenceInDays, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { User } from '@/features/auth/types';
-import { Training } from '@/features/trainings/types';
+import { User } from '@/interfaces/auth';
+import { Training, TrainingAssignment } from '@/interfaces/training';
+import { Activity } from '@/interfaces/activity';
+import { AthleteDetails } from '@/interfaces/athlete';
+import { AthleteRace } from '@/interfaces/race';
 import api from '@/lib/axios';
 import { Activity as ActivityIcon, Calendar as CalendarIcon, FileText, CheckCircle2, TrendingUp, Plus, Trash, Clock, Zap, ChevronLeft, ChevronRight, MessageSquare, Trophy } from 'lucide-react';
 import { trainingsService } from '@/features/trainings/services/trainings.service';
 import { athletesService } from '@/features/users/services/athletes.service';
 import { racesService } from '@/features/races/services/races.service';
-import { AthleteRace } from '@/features/races/types';
 import { AssignRaceModal } from '@/features/races/components/AssignRaceModal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,47 +29,6 @@ import { useTranslations } from 'next-intl';
 import { AthleteWeeklyCalendar } from '@/components/dashboard/AthleteWeeklyCalendar';
 import { CoachNotes } from '@/components/dashboard/CoachNotes';
 import { normalizeActivityType } from '@/utils/activity-utils';
-
-interface Activity {
-    id: string;
-    external_id: string;
-    title: string;
-    distance: number;
-    duration: number;
-    start_date: string;
-    type: string;
-}
-
-interface TrainingAssignment {
-    id: string;
-    scheduled_date: string;
-    completed: boolean;
-    training: Training;
-    workout_name?: string | null;
-}
-
-interface AthleteDetails extends User {
-    athleteProfile?: {
-        height?: number;
-        weight?: number;
-        injuries?: string;
-        restHR?: number;
-        maxHR?: number;
-        vam?: string;
-        uan?: string;
-        dob?: string;
-        coachNotes?: string;
-        hrZones?: {
-            zones: Array<{ min: number; max: number }>;
-            custom_zones?: boolean;
-        };
-    };
-    athleteGroups?: Array<{
-        group: {
-            name: string;
-        };
-    }>;
-}
 
 export default function AthleteDetailPage() {
     const t = useTranslations();

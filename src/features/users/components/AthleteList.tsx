@@ -17,20 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-interface Athlete {
-    id: string;
-    name: string;
-    email: string;
-    athleteProfile?: {
-        height: number;
-        weight: number;
-    };
-    weeklyStats?: {
-        planned: number;
-        completed: number;
-        completionRate: number;
-    };
-}
+import { Athlete } from '@/interfaces/athlete';
 
 export function AthleteList() {
     const [athletes, setAthletes] = useState<Athlete[]>([]);

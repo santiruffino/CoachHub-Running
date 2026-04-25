@@ -3,30 +3,13 @@
 import { format, addDays, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
-import { Training } from '@/features/trainings/types';
-import { AthleteRace } from '@/features/races/types';
+import { Training, TrainingAssignment } from '@/interfaces/training';
+import { AthleteRace } from '@/interfaces/race';
+import { Activity } from '@/interfaces/activity';
 import { Moon, Trophy } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { normalizeActivityType } from '@/utils/activity-utils';
-
-interface Activity {
-    id: string;
-    external_id: string;
-    title: string;
-    distance: number;
-    duration: number;
-    start_date: string;
-    type: string;
-}
-
-interface TrainingAssignment {
-    id: string;
-    scheduled_date: string;
-    completed: boolean;
-    training: Training;
-    workout_name?: string | null;
-}
 
 interface AthleteWeeklyCalendarProps {
     weekStart: Date;

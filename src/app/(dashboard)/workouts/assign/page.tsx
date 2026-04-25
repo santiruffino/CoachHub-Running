@@ -4,7 +4,9 @@ import { useState, useEffect, Suspense, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { WorkoutBuilder } from '@/features/trainings/components/builder/WorkoutBuilder';
 import { WorkoutBlock } from '@/features/trainings/components/builder/types';
-import { Training, TrainingType } from '@/features/trainings/types';
+import { Training, TrainingType } from '@/interfaces/training';
+import { Athlete } from '@/interfaces/athlete';
+import { Group } from '@/interfaces/group';
 import { Button } from '@/components/ui/button';
 import { trainingsService } from '@/features/trainings/services/trainings.service';
 import api from '@/lib/axios';
@@ -15,18 +17,6 @@ import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
 import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
-
-// Interfaces
-interface Athlete {
-    id: string;
-    name: string;
-    email: string;
-}
-
-interface Group {
-    id: string;
-    name: string;
-}
 
 // Custom Searchable Dropdown for Performance Curator aesthetic
 function SearchableMultiSelect({ 

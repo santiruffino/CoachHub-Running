@@ -1,5 +1,5 @@
-import { User } from '@/features/auth/types';
-import { Race } from '@/features/races/types';
+import { User } from './auth';
+import { Race } from './race';
 
 export interface Group {
     id: string;

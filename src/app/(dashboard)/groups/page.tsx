@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Group } from '@/features/groups/types';
+import { Group } from '@/interfaces/group';
 import { groupsService } from '@/features/groups/services/groups.service';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

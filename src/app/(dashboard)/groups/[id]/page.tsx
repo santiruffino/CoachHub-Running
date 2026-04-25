@@ -2,7 +2,7 @@
 
 import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
-import { GroupDetails } from '@/features/groups/types';
+import { GroupDetails } from '@/interfaces/group';
 import { groupsService } from '@/features/groups/services/groups.service';
 import { useRouter } from 'next/navigation';
 import { AddMemberModal } from '@/features/groups/components/AddMemberModal';
@@ -43,17 +43,7 @@ import {
 import { useTranslations } from 'next-intl';
 import api from '@/lib/axios';
 
-interface GroupAthleteData {
-  id: string;
-  name: string;
-  email: string;
-  sport: string;
-  level: string;
-  totalTrainings: number;
-  plannedTrainings: number;
-  completedTrainings: number;
-  completionPercentage: number;
-}
+import { GroupAthleteData } from '@/interfaces/athlete';
 
 const AVATAR_COLORS = [
   'bg-blue-600',

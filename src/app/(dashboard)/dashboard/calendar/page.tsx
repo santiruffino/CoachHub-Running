@@ -6,19 +6,7 @@ import { StudentFilter } from '@/features/calendar/components/StudentFilter';
 import api from '@/lib/axios';
 import { startOfMonth, endOfMonth } from 'date-fns';
 
-interface TrainingAssignment {
-    id: string;
-    scheduledDate: string;
-    workout_name?: string | null; // Custom workout name
-    training: {
-        title: string;
-        type: string;
-    };
-    user: {
-        id: string;
-        name: string | null;
-    };
-}
+import { TrainingAssignment } from '@/interfaces/training';
 
 interface CalendarEvent {
     id: string;

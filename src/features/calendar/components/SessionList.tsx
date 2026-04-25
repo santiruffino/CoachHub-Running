@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MatchQualityBadge } from '@/features/trainings/components/MatchQualityBadge';
 import { WorkoutMatchModal } from '@/features/trainings/components/WorkoutMatchModal';
-import { WorkoutMatch } from '@/features/trainings/types';
+import { WorkoutMatch } from '@/interfaces/training';
 
 export interface SessionData {
     id: string;

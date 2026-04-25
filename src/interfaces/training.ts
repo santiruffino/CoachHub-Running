@@ -1,3 +1,5 @@
+import { WorkoutBlock } from '@/features/trainings/components/builder/types';
+
 export enum TrainingType {
     RUNNING = 'RUNNING',
     STRENGTH = 'STRENGTH',
@@ -11,7 +13,7 @@ export interface Training {
     title: string;
     description?: string;
     type: TrainingType;
-    blocks: any; // JSON
+    blocks: WorkoutBlock[] | any;
     coachId: string;
     teamId?: string; // Links this template to a B2B Running Team
     coach?: { name: string }; // Useful for UI display badge
@@ -19,7 +21,29 @@ export interface Training {
     expectedRpe?: number; // Global expected RPE (1-10)
 }
 
-// TODO: Define Block structure if time permits
+export interface TrainingAssignment {
+    id: string;
+    scheduledDate: string; // CamelCase version used in some parts
+    scheduled_date?: string; // SnakeCase version used in others
+    completed: boolean;
+    expectedRpe?: number;
+    training: Training;
+    athlete?: {
+        id: string;
+        name: string;
+        email: string;
+    };
+    user?: {
+        id: string;
+        name: string | null;
+    };
+    workout_name?: string | null;
+    canEdit?: boolean;
+}
+
+export interface WorkoutAssignment extends TrainingAssignment {
+    // Inherits everything from TrainingAssignment
+}
 
 export interface CreateTrainingDto {
     title: string;
@@ -38,16 +62,6 @@ export interface AssignTrainingDto {
     scheduledDate: string; // ISO Date
     expectedRpe?: number; // Expected Rate of Perceived Exertion (1-10)
     workoutName?: string; // Custom name for this specific workout assignment
-}
-
-// Workout Matching Types
-export interface WorkoutMatch {
-    matched: boolean;
-    activityId?: string;
-    activityExternalId?: string;
-    matchQuality?: MatchQuality;
-    blockComparison?: BlockComparison[];
-    isManualMatch?: boolean;
 }
 
 export interface MatchQuality {
@@ -79,4 +93,13 @@ export interface BlockComparison {
         avgPace?: string;
     };
     compliance?: number; // 0-100, only if we have actual data
+}
+
+export interface WorkoutMatch {
+    matched: boolean;
+    activityId?: string;
+    activityExternalId?: string;
+    matchQuality?: MatchQuality;
+    blockComparison?: BlockComparison[];
+    isManualMatch?: boolean;
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ProfileDetails } from '@/features/profiles/types';
+import { ProfileDetails } from '@/interfaces/athlete';
 import { profileService } from '@/features/profiles/services/profile.service';
 import { ProfileForm } from '@/features/profiles/components/ProfileForm';
 import { HeartRateZones } from '@/features/profiles/components/HeartRateZones';

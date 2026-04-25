@@ -38,19 +38,7 @@ import { useTranslations } from 'next-intl';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { EditAthleteModal } from './components/EditAthleteModal';
 
-interface AthleteData {
-  id: string;
-  name: string;
-  email: string;
-  sport: string;
-  level: string;
-  coach?: { id: string; name: string } | null;
-  groups: { id: string; name: string }[];
-  totalTrainings: number;
-  plannedTrainings: number;
-  completedTrainings: number;
-  completionPercentage: number;
-}
+import { AthleteData } from '@/interfaces/athlete';
 
 const AVATAR_COLORS = [
   'bg-blue-600',

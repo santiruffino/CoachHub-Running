@@ -19,12 +19,7 @@ import { AlertDialog } from '@/components/ui/AlertDialog';
 import api from '@/lib/axios';
 import { useTranslations } from 'next-intl';
 
-interface CoachData {
-  id: string;
-  name: string;
-  email: string;
-  totalAthletes: number;
-}
+import { CoachData } from '@/interfaces/coach';
 
 const AVATAR_COLORS = [
   'bg-blue-600',

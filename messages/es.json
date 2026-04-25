@@ -959,7 +959,7 @@
             "title1": "Automatiza tu Coaching en",
             "title2": "Tiempo Real.",
             "titleHighlight": "Tu Centro de Comando.",
-            "subtitle": "Sincronización instantánea con Strava y Garmin. Crea sesiones avanzadas ajustadas por VAM y deja que nuestro motor de matching automatice el seguimiento de tus atletas.",
+            "subtitle": "Sincronización instantánea con Strava y próximamente con Garmin. Crea sesiones avanzadas ajustadas por VAM y deja que nuestro motor de matching automatice el seguimiento de tus atletas.",
             "startFreeTrial": "Comenzar Prueba Gratis",
             "viewPricing": "Ver Planes y Precios",
             "analyticsLabel": "ANÁLISIS DE RENDIMIENTO V2.6",
@@ -1010,7 +1010,7 @@
             "item1Status": "DISPONIBLE AHORA",
             "item2Title": "Push a Dispositivos Garmin",
             "item2Desc": "Envía tus entrenamientos directamente al reloj de tus atletas. Integración nativa con Garmin Connect API.",
-            "item2Status": "DISPONIBLE AHORA",
+            "item2Status": "PRÓXIMAMENTE",
             "item3Title": "Predicción de Lesiones por IA",
             "item3Desc": "Modelos predictivos basados en variabilidad de la frecuencia cardíaca (HRV) y carga crónica de entrenamiento.",
             "item3Status": "Q2 2025"

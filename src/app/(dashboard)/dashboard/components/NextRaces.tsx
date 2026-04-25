@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { groupsService } from '@/features/groups/services/groups.service';
-import { Group } from '@/features/groups/types';
-import { AthleteRace } from '@/features/races/types';
+import { Group } from '@/interfaces/group';
+import { AthleteRace } from '@/interfaces/race';
 import { isRaceRelevant } from '@/features/groups/utils/groupUtils';
 import { useTranslations } from 'next-intl';
 import { Trophy, Calendar, MapPin, ChevronRight, CheckCircle2, Clock, Award } from 'lucide-react';

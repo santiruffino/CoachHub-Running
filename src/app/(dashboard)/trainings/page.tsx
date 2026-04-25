@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Calendar, Plus, Users, Clock, MapPin, Trash2 } from 'lucide-react';
-import { Training } from '@/features/trainings/types';
+import { Training } from '@/interfaces/training';
 import { trainingsService } from '@/features/trainings/services/trainings.service';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

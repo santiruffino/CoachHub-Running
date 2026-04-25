@@ -1,6 +1,6 @@
 'use client';
 
-import { HeartRateZones as HeartRateZonesType } from '@/features/profiles/types';
+import { HeartRateZones as HeartRateZonesType } from '@/interfaces/athlete';
 
 interface HeartRateZonesProps {
     zones: HeartRateZonesType | null | undefined;

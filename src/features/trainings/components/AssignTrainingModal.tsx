@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button';
 import { trainingsService } from '@/features/trainings/services/trainings.service';
 import api from '@/lib/axios';
-import { Training, TrainingType } from '@/features/trainings/types';
+import { Training, TrainingType } from '@/interfaces/training';
 import { format } from 'date-fns';
 import { WorkoutBuilder } from './builder/WorkoutBuilder';
 import { WorkoutBlock } from './builder/types';

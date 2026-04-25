@@ -5,16 +5,7 @@ import { Activity } from 'lucide-react';
 import { useState } from 'react';
 import { ActivityDetailModal } from './ActivityDetailModal';
 
-interface StravaActivity {
-    id: string; // our DB ID
-    externalId: string;
-    title: string;
-    type: string;
-    distance: number;
-    duration: number; // moving time
-    startDate: string;
-    elevationGain: number;
-}
+import { StravaActivity } from '@/interfaces/activity';
 
 interface StravaActivitiesListProps {
     activities: StravaActivity[];

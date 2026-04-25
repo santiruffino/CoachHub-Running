@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Training } from '@/features/trainings/types';
+import { Training } from '@/interfaces/training';
 import api from '@/lib/axios';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';

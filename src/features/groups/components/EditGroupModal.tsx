@@ -16,7 +16,7 @@ import { Switch } from '@/components/ui/switch';
 import { Loader2, Trophy } from 'lucide-react';
 import { groupsService } from '../services/groups.service';
 import { racesService } from '@/features/races/services/races.service';
-import { Race } from '@/features/races/types';
+import { Race } from '@/interfaces/race';
 import { Group, CreateGroupDto } from '../types';
 import { useTranslations } from 'next-intl';
 

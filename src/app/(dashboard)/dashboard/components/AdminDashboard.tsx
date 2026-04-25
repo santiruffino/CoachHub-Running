@@ -7,13 +7,7 @@ import { Users, Building2, UserCircle2, Activity } from 'lucide-react';
 import api from '@/lib/axios';
 import { useTranslations } from 'next-intl';
 
-interface Coach {
-  id: string;
-  name: string;
-  email: string;
-  lastActivity: string | null;
-  totalAthletes: number;
-}
+import { Coach } from '@/interfaces/coach';
 
 interface AdminData {
   metrics: {

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { WorkoutBuilder } from '@/features/trainings/components/builder/WorkoutBuilder';
 import { WorkoutBlock } from '@/features/trainings/components/builder/types';
 import { trainingsService } from '@/features/trainings/services/trainings.service';
-import { TrainingType } from '@/features/trainings/types';
+import { TrainingType } from '@/interfaces/training';
 import { ArrowLeft, Save, History, Share2 } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

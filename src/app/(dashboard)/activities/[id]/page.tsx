@@ -39,101 +39,15 @@ import { LinkWorkoutModal } from '@/features/trainings/components/LinkWorkoutMod
 // Dynamic import for ECharts to avoid SSR issues
 const ActivityChart = dynamic(
     () => import('../components/ActivityChart').then(mod => ({ default: mod.ActivityChart })),
-    { ssr: false, loading: () => {
-        const tFallback = useTranslations('activities.detail');
-        return <div className="h-[400px] flex items-center justify-center"><p>{tFallback('loadingChart')}</p></div>;
-    } }
+    {
+        ssr: false, loading: () => {
+            const tFallback = useTranslations('activities.detail');
+            return <div className="h-[400px] flex items-center justify-center"><p>{tFallback('loadingChart')}</p></div>;
+        }
+    }
 );
 
-interface SegmentEffort {
-    id: number;
-    name: string;
-    elapsed_time: number;
-    moving_time: number;
-    distance: number;
-    average_heartrate?: number;
-    max_heartrate?: number;
-    average_cadence?: number;
-    pr_rank?: number | null;
-    kom_rank?: number | null;
-    achievements: Array<{
-        type_id: number;
-        type: string;
-        rank: number;
-    }>;
-    segment: {
-        name: string;
-        distance: number;
-        average_grade: number;
-        city?: string;
-        state?: string;
-        country?: string;
-    };
-}
-
-interface Split {
-    distance: number;
-    elapsed_time: number;
-    elevation_difference: number;
-    moving_time: number;
-    split: number;
-    average_speed: number;
-    average_heartrate?: number;
-    pace_zone?: number;
-}
-
-interface Lap {
-    id: number;
-    name: string;
-    elapsed_time: number;
-    moving_time: number;
-    distance: number;
-    average_speed: number;
-    max_speed: number;
-    average_heartrate?: number;
-    max_heartrate?: number;
-    average_cadence?: number;
-    lap_index: number;
-    total_elevation_gain: number;
-}
-
-interface ActivityDetail {
-    id: number;
-    name: string;
-    distance: number;
-    moving_time: number;
-    elapsed_time: number;
-    total_elevation_gain: number;
-    type: string;
-    sport_type: string;
-    start_date: string;
-    start_date_local: string;
-    timezone: string;
-    achievement_count: number;
-    kudos_count: number;
-    average_speed: number;
-    max_speed: number;
-    average_cadence?: number;
-    average_heartrate?: number;
-    max_heartrate?: number;
-    calories?: number;
-    device_name?: string;
-    map?: {
-        polyline?: string;
-        summary_polyline?: string;
-    };
-    segment_efforts?: SegmentEffort[];
-    splits_metric?: Split[];
-    splits_standard?: Split[];
-    laps?: Lap[];
-    suffer_score?: number;
-    average_watts?: number;
-    max_watts?: number;
-    _viewerIsOwner?: boolean;
-    _ownerId?: string;
-    _internalId?: string;
-    lap_overrides?: Record<string, string>;
-}
+import { SegmentEffort, Split, Lap, ActivityDetail } from '@/interfaces/activity';
 
 export default function ActivityDetailPage() {
     const params = useParams();
@@ -422,7 +336,7 @@ export default function ActivityDetailPage() {
             const updatedOverrides = { ...lapOverrides, [lapIndex]: newStepType };
             // Optimistic UI update
             setLapOverrides(updatedOverrides);
-            
+
             await api.patch(`/v2/activities/${id}`, { lapOverrides: updatedOverrides });
         } catch (error) {
             console.error('Failed to update lap override:', error);
@@ -575,16 +489,6 @@ export default function ActivityDetailPage() {
                         </>
                     )}
                 </div>
-
-                {/* Actions */}
-                <div className="grid grid-cols-2 lg:flex lg:items-center gap-3 w-full lg:w-auto">
-                    <Button variant="outline" className="w-full lg:w-auto bg-card hover:bg-muted border-border/30 text-primary py-6 shadow-sm rounded-xl font-medium">
-                        {t('actions.share')} <span className="hidden sm:inline">&nbsp;{t('actions.analysis')}</span>
-                    </Button>
-                    <Button className="w-full lg:w-auto bg-primary hover:bg-primary/90 text-primary-foreground py-6 shadow-[0_10px_20px_rgba(78,96,115,0.15)] rounded-xl font-medium">
-                        {t('actions.download')} <span className="hidden sm:inline">&nbsp;{t('actions.report')}</span>
-                    </Button>
-                </div>
             </div>
 
             {/* Map/Chart Container (Full Width) */}
@@ -602,17 +506,6 @@ export default function ActivityDetailPage() {
                             <ActivityIcon className="h-12 w-12 text-muted-foreground/60" />
                         </div>
                     )}
-                </div>
-                {/* Footer for map/chart */}
-                <div className="flex px-6 py-4 gap-6">
-                    <div className="flex items-center gap-2 cursor-pointer text-foreground hover:text-primary">
-                        <Mountain className="h-4 w-4" />
-                        <span className="text-xs font-semibold tracking-wide uppercase">{t('charts.terrain')}</span>
-                    </div>
-                    <div className="flex items-center gap-2 cursor-pointer text-muted-foreground hover:text-foreground">
-                        <TrendingUp className="h-4 w-4" />
-                        <span className="text-xs font-semibold tracking-wide uppercase">{t('charts.elevationProfile')}</span>
-                    </div>
                 </div>
             </div>
 
@@ -688,71 +581,71 @@ export default function ActivityDetailPage() {
                         </div>
 
                         {/* Laps Tab */}
-                            {activity.laps && activity.laps.length > 0 && (
-                                <TabsContent value="laps" className="mt-0 outline-none">
-                                    <div className="flex flex-wrap items-center gap-2 mb-6">
-                                        <Badge
-                                            variant={lapFilter === 'all' ? 'default' : 'outline'}
-                                            className="cursor-pointer"
-                                            onClick={() => setLapFilter('all')}
-                                        >
-                                            Todos
-                                        </Badge>
-                                        <Badge
-                                            variant={lapFilter === 'warmup' ? 'default' : 'outline'}
-                                            className={`cursor-pointer ${lapFilter !== 'warmup' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20 hover:bg-blue-500/20' : ''}`}
-                                            onClick={() => setLapFilter('warmup')}
-                                        >
-                                            Calentamiento
-                                        </Badge>
-                                        <Badge
-                                            variant={lapFilter === 'active' ? 'default' : 'outline'}
-                                            className={`cursor-pointer ${lapFilter !== 'active' ? 'bg-orange-500/10 text-orange-500 border-orange-500/20 hover:bg-orange-500/20' : ''}`}
-                                            onClick={() => setLapFilter('active')}
-                                        >
-                                            Activo
-                                        </Badge>
-                                        <Badge
-                                            variant={lapFilter === 'recovery' ? 'default' : 'outline'}
-                                            className={`cursor-pointer ${lapFilter !== 'recovery' ? 'bg-green-500/10 text-green-500 border-green-500/20 hover:bg-green-500/20' : ''}`}
-                                            onClick={() => setLapFilter('recovery')}
-                                        >
-                                            Recuperación
-                                        </Badge>
-                                        <Badge
-                                            variant={lapFilter === 'cooldown' ? 'default' : 'outline'}
-                                            className={`cursor-pointer ${lapFilter !== 'cooldown' ? 'bg-purple-500/10 text-purple-500 border-purple-500/20 hover:bg-purple-500/20' : ''}`}
-                                            onClick={() => setLapFilter('cooldown')}
-                                        >
-                                            Enfriamiento
-                                        </Badge>
-                                    </div>
-                                    <div className="overflow-x-auto">
-                                        <Table className="w-full">
-                                            <TableHeader>
-                                                <TableRow className="border-b border-muted hover:bg-transparent">
-                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4 pl-0">{t('table.lap')}</TableHead>
-                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.time')}</TableHead>
-                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.distance')}</TableHead>
-                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.avgPace')}</TableHead>
-                                                    {!!activity.laps[0]?.average_heartrate && (
-                                                        <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.avgHr')}</TableHead>
-                                                    )}
-                                                    {!!activity.laps[0]?.average_cadence && (
-                                                        <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.cadence')}</TableHead>
-                                                    )}
-                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.elevGain')}</TableHead>
-                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4 text-right pr-0"></TableHead>
-                                                </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                                {activity.laps.map((lap, idx) => ({ lap, idx }))
-                                                    .filter(({ idx }) => {
-                                                        if (lapFilter === 'all') return true;
-                                                        const matchedLap = matchedLaps.find(m => m.lapIndex === idx);
-                                                        return matchedLap?.stepType === lapFilter;
-                                                    })
-                                                    .map(({ lap, idx }) => {
+                        {activity.laps && activity.laps.length > 0 && (
+                            <TabsContent value="laps" className="mt-0 outline-none">
+                                <div className="flex flex-wrap items-center gap-2 mb-6">
+                                    <Badge
+                                        variant={lapFilter === 'all' ? 'default' : 'outline'}
+                                        className="cursor-pointer"
+                                        onClick={() => setLapFilter('all')}
+                                    >
+                                        Todos
+                                    </Badge>
+                                    <Badge
+                                        variant={lapFilter === 'warmup' ? 'default' : 'outline'}
+                                        className={`cursor-pointer ${lapFilter !== 'warmup' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20 hover:bg-blue-500/20' : ''}`}
+                                        onClick={() => setLapFilter('warmup')}
+                                    >
+                                        Calentamiento
+                                    </Badge>
+                                    <Badge
+                                        variant={lapFilter === 'active' ? 'default' : 'outline'}
+                                        className={`cursor-pointer ${lapFilter !== 'active' ? 'bg-orange-500/10 text-orange-500 border-orange-500/20 hover:bg-orange-500/20' : ''}`}
+                                        onClick={() => setLapFilter('active')}
+                                    >
+                                        Activo
+                                    </Badge>
+                                    <Badge
+                                        variant={lapFilter === 'recovery' ? 'default' : 'outline'}
+                                        className={`cursor-pointer ${lapFilter !== 'recovery' ? 'bg-green-500/10 text-green-500 border-green-500/20 hover:bg-green-500/20' : ''}`}
+                                        onClick={() => setLapFilter('recovery')}
+                                    >
+                                        Recuperación
+                                    </Badge>
+                                    <Badge
+                                        variant={lapFilter === 'cooldown' ? 'default' : 'outline'}
+                                        className={`cursor-pointer ${lapFilter !== 'cooldown' ? 'bg-purple-500/10 text-purple-500 border-purple-500/20 hover:bg-purple-500/20' : ''}`}
+                                        onClick={() => setLapFilter('cooldown')}
+                                    >
+                                        Enfriamiento
+                                    </Badge>
+                                </div>
+                                <div className="overflow-x-auto">
+                                    <Table className="w-full">
+                                        <TableHeader>
+                                            <TableRow className="border-b border-muted hover:bg-transparent">
+                                                <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4 pl-0">{t('table.lap')}</TableHead>
+                                                <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.time')}</TableHead>
+                                                <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.distance')}</TableHead>
+                                                <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.avgPace')}</TableHead>
+                                                {!!activity.laps[0]?.average_heartrate && (
+                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.avgHr')}</TableHead>
+                                                )}
+                                                {!!activity.laps[0]?.average_cadence && (
+                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.cadence')}</TableHead>
+                                                )}
+                                                <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.elevGain')}</TableHead>
+                                                <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4 text-right pr-0"></TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {activity.laps.map((lap, idx) => ({ lap, idx }))
+                                                .filter(({ idx }) => {
+                                                    if (lapFilter === 'all') return true;
+                                                    const matchedLap = matchedLaps.find(m => m.lapIndex === idx);
+                                                    return matchedLap?.stepType === lapFilter;
+                                                })
+                                                .map(({ lap, idx }) => {
                                                     const matchedLap = matchedLaps.find(m => m.lapIndex === idx);
                                                     const stepTypeColors: Record<string, string> = {
                                                         warmup: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
@@ -794,7 +687,7 @@ export default function ActivityDetailPage() {
                                                                 {(() => {
                                                                     const overrideType = lapOverrides[lap.lap_index];
                                                                     const effectiveType = overrideType || matchedLap?.stepType || 'other';
-                                                                    
+
                                                                     const overrideLabels: Record<string, string> = {
                                                                         warmup: 'Warm up',
                                                                         active: 'Active',
@@ -839,90 +732,90 @@ export default function ActivityDetailPage() {
                                                         </TableRow>
                                                     );
                                                 })}
-                                            </TableBody>
-                                        </Table>
-                                    </div>
-                                </TabsContent>
-                            )}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            </TabsContent>
+                        )}
 
-                            {/* Metric Splits Tab */}
-                            {activity.splits_metric && (
-                                <TabsContent value="metric" className="mt-0 outline-none">
-                                    <div className="overflow-x-auto">
-                                        <Table className="w-full">
-                                            <TableHeader>
-                                                <TableRow className="border-b border-muted hover:bg-transparent">
-                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4 pl-0">{t('table.split')}</TableHead>
-                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.distance')}</TableHead>
-                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.time')}</TableHead>
-                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.avgPace')}</TableHead>
-                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.elevGain')}</TableHead>
-                                                    {!!activity.splits_metric[0]?.average_heartrate && (
-                                                        <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.avgHr')}</TableHead>
-                                                    )}
-                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4 text-right pr-0">{t('table.zone')}</TableHead>
-                                                </TableRow>
-                                            </TableHeader>
+                        {/* Metric Splits Tab */}
+                        {activity.splits_metric && (
+                            <TabsContent value="metric" className="mt-0 outline-none">
+                                <div className="overflow-x-auto">
+                                    <Table className="w-full">
+                                        <TableHeader>
+                                            <TableRow className="border-b border-muted hover:bg-transparent">
+                                                <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4 pl-0">{t('table.split')}</TableHead>
+                                                <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.distance')}</TableHead>
+                                                <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.time')}</TableHead>
+                                                <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.avgPace')}</TableHead>
+                                                <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.elevGain')}</TableHead>
+                                                {!!activity.splits_metric[0]?.average_heartrate && (
+                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.avgHr')}</TableHead>
+                                                )}
+                                                <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4 text-right pr-0">{t('table.zone')}</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
 
-                                            <TableBody>
-                                                {activity.splits_metric.map((split) => (
-                                                    <TableRow key={split.split}>
-                                                        <TableCell className="font-medium">{split.split}</TableCell>
-                                                        <TableCell>{(split.distance / 1000).toFixed(2)} {t('metrics.units.km')}</TableCell>
-                                                        <TableCell>{formatTime(split.moving_time)}</TableCell>
-                                                        <TableCell>{formatPace(split.average_speed)}</TableCell>
-                                                        <TableCell>{split.elevation_difference > 0 ? '+' : ''}{split.elevation_difference.toFixed(1)} {t('metrics.units.m')}</TableCell>
-                                                        {!!activity.splits_metric![0]?.average_heartrate && (
-                                                            <TableCell>
-                                                                {split.average_heartrate ? (
-                                                                    <span className={`px-2 py-1 rounded font-medium ${getHRZoneColor(split.average_heartrate)}`}>
-                                                                        {split.average_heartrate.toFixed(0)} {t('metrics.units.bpm')}
-                                                                    </span>
-                                                                ) : (
-                                                                    <span className="text-muted-foreground">-</span>
-                                                                )}
-                                                            </TableCell>
-                                                        )}
+                                        <TableBody>
+                                            {activity.splits_metric.map((split) => (
+                                                <TableRow key={split.split}>
+                                                    <TableCell className="font-medium">{split.split}</TableCell>
+                                                    <TableCell>{(split.distance / 1000).toFixed(2)} {t('metrics.units.km')}</TableCell>
+                                                    <TableCell>{formatTime(split.moving_time)}</TableCell>
+                                                    <TableCell>{formatPace(split.average_speed)}</TableCell>
+                                                    <TableCell>{split.elevation_difference > 0 ? '+' : ''}{split.elevation_difference.toFixed(1)} {t('metrics.units.m')}</TableCell>
+                                                    {!!activity.splits_metric![0]?.average_heartrate && (
                                                         <TableCell>
-                                                            <div className={`h-2 w-12 rounded ${getPaceZoneColor(split.pace_zone)}`} />
+                                                            {split.average_heartrate ? (
+                                                                <span className={`px-2 py-1 rounded font-medium ${getHRZoneColor(split.average_heartrate)}`}>
+                                                                    {split.average_heartrate.toFixed(0)} {t('metrics.units.bpm')}
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-muted-foreground">-</span>
+                                                            )}
                                                         </TableCell>
-                                                    </TableRow>
-                                                ))}
-                                            </TableBody>
-                                        </Table>
-                                    </div>
-                                </TabsContent>
-                            )}
-
-                            {/* Standard Splits Tab */}
-                            {activity.splits_standard && (
-                                <TabsContent value="standard" className="mt-0 outline-none">
-                                    <div className="overflow-x-auto">
-                                        <Table className="w-full">
-                                            <TableHeader>
-                                                <TableRow className="border-b border-muted hover:bg-transparent">
-                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4 pl-0">{t('table.split')}</TableHead>
-                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.distance')}</TableHead>
-                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.time')}</TableHead>
-                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.pace')}</TableHead>
-                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4 text-right pr-0">{t('table.elevation')}</TableHead>
+                                                    )}
+                                                    <TableCell>
+                                                        <div className={`h-2 w-12 rounded ${getPaceZoneColor(split.pace_zone)}`} />
+                                                    </TableCell>
                                                 </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                                {activity.splits_standard.map((split) => (
-                                                    <TableRow key={split.split} className="border-b border-muted hover:bg-transparent">
-                                                        <TableCell className="font-medium pl-0">{split.split}</TableCell>
-                                                        <TableCell>{(split.distance / 1609.34).toFixed(2)} mi</TableCell>
-                                                        <TableCell>{formatTime(split.moving_time)}</TableCell>
-                                                        <TableCell>{formatPace(split.average_speed)}</TableCell>
-                                                        <TableCell className="text-right pr-0">{split.elevation_difference > 0 ? '+' : ''}{split.elevation_difference.toFixed(1)} {t('metrics.units.m')}</TableCell>
-                                                    </TableRow>
-                                                ))}
-                                            </TableBody>
-                                        </Table>
-                                    </div>
-                                </TabsContent>
-                            )}
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            </TabsContent>
+                        )}
+
+                        {/* Standard Splits Tab */}
+                        {activity.splits_standard && (
+                            <TabsContent value="standard" className="mt-0 outline-none">
+                                <div className="overflow-x-auto">
+                                    <Table className="w-full">
+                                        <TableHeader>
+                                            <TableRow className="border-b border-muted hover:bg-transparent">
+                                                <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4 pl-0">{t('table.split')}</TableHead>
+                                                <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.distance')}</TableHead>
+                                                <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.time')}</TableHead>
+                                                <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.pace')}</TableHead>
+                                                <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4 text-right pr-0">{t('table.elevation')}</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {activity.splits_standard.map((split) => (
+                                                <TableRow key={split.split} className="border-b border-muted hover:bg-transparent">
+                                                    <TableCell className="font-medium pl-0">{split.split}</TableCell>
+                                                    <TableCell>{(split.distance / 1609.34).toFixed(2)} mi</TableCell>
+                                                    <TableCell>{formatTime(split.moving_time)}</TableCell>
+                                                    <TableCell>{formatPace(split.average_speed)}</TableCell>
+                                                    <TableCell className="text-right pr-0">{split.elevation_difference > 0 ? '+' : ''}{split.elevation_difference.toFixed(1)} {t('metrics.units.m')}</TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            </TabsContent>
+                        )}
 
                         {/* HR Zone Legend */}
                         {heartrateZones?.zones && activity.average_heartrate && (
@@ -953,58 +846,6 @@ export default function ActivityDetailPage() {
                             </div>
                         )}
                     </Tabs>
-                </div>
-            )}
-
-            {/* Segment Efforts */}
-            {!isWeightTraining(activity.sport_type) && activity.segment_efforts && activity.segment_efforts.length > 0 && (
-                <div className="bg-card rounded-3xl p-8 shadow-[0_20px_40px_rgba(43,52,55,0.02)] border border-muted">
-                    <h2 className="text-xl font-display font-medium text-foreground mb-8">{t('segments.title')}</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {activity.segment_efforts.map((effort) => (
-                            <div key={effort.id} className="p-6 bg-background rounded-2xl hover:bg-muted transition-colors">
-                                <h4 className="font-semibold text-foreground mb-4 truncate">{effort.segment.name}</h4>
-                                <div className="grid grid-cols-2 gap-y-4 text-sm mb-4">
-                                    <div>
-                                        <p className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase mb-1">{t('segments.time')}</p>
-                                        <p className="font-display font-medium text-foreground text-xl">{formatTime(effort.elapsed_time)}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase mb-1">{t('segments.pace')}</p>
-                                        <p className="font-display font-medium text-foreground text-xl">{formatPace(effort.distance / (effort.moving_time / 3600))}</p>
-                                    </div>
-                                    <div className="col-span-2">
-                                        <p className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase mb-1">{t('segments.distanceArea')}</p>
-                                        <p className="text-primary font-medium">
-                                            {(effort.distance / 1000).toFixed(2)} {t('metrics.units.km')} {effort.segment.city && `• ${effort.segment.city}`}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div className="flex flex-wrap gap-2 pt-4 border-t border-border/40">
-                                    {effort.pr_rank && (
-                                        <span className="px-2 py-1 rounded-md text-[10px] uppercase font-bold tracking-widest bg-yellow-100 text-yellow-800">
-                                            PR #{effort.pr_rank}
-                                        </span>
-                                    )}
-                                    {effort.kom_rank && (
-                                        <span className="px-2 py-1 rounded-md text-[10px] uppercase font-bold tracking-widest bg-red-100 text-red-800">
-                                            KOM #{effort.kom_rank}
-                                        </span>
-                                    )}
-                                    {effort.achievements.map((achievement, idx) => (
-                                        <span key={idx} className="px-2 py-1 rounded-md text-[10px] uppercase font-bold tracking-widest bg-blue-100 text-blue-800 flex items-center gap-1">
-                                            <Award className="h-3 w-3" />
-                                            {achievement.type}
-                                        </span>
-                                    ))}
-                                    {!effort.pr_rank && !effort.kom_rank && effort.achievements.length === 0 && (
-                                        <span className="text-xs text-muted-foreground/70 font-medium tracking-wide uppercase">{t('segments.generalEffort')}</span>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
                 </div>
             )}
 

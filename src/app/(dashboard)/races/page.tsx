@@ -17,7 +17,7 @@ import { AlertDialog } from '@/components/ui/AlertDialog';
 import { RaceDialog } from '@/features/races/components/RaceDialog';
 import { RecordRaceResultModal } from '@/features/races/components/RecordRaceResultModal';
 import { racesService } from '@/features/races/services/races.service';
-import { Race, AthleteRace } from '@/features/races/types';
+import { Race, AthleteRace } from '@/interfaces/race';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { cn } from '@/lib/utils';
