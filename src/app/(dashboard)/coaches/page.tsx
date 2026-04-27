@@ -88,9 +88,9 @@ export default function CoachesPage() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 lg:pt-0 space-y-4 sm:space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl sm:text-3xl font-bold">{t('coaches.title')}</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">{t('coaches.title')}</h1>
       </div>
 
       <div className="relative max-w-md">

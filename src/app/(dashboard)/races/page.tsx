@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Search, Plus, MapPin, Trophy, MoreHorizontal, Edit, Trash2, Calendar, Timer, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { Search, Plus, MapPin, Trophy, MoreHorizontal, Edit, Trash2, Calendar, Timer, ChevronRight, CheckCircle2, ArrowLeft } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +26,7 @@ import { differenceInDays, isPast, isFuture, startOfDay } from 'date-fns';
 import Link from 'next/link';
 
 export default function RacesPage() {
+  const router = useRouter();
   const t = useTranslations('races');
   const { user } = useAuth();
   const isCoach = user?.role === 'COACH' || user?.role === 'ADMIN';
@@ -115,7 +117,7 @@ export default function RacesPage() {
               {isHistory ? <CheckCircle2 className="h-5 w-5" /> : <Trophy className="h-5 w-5" />}
             </div>
             <div>
-              <h3 className="text-lg font-bold font-manrope leading-tight group-hover:text-primary transition-colors">
+              <h3 className="text-lg font-bold font-display tracking-tight leading-tight group-hover:text-primary transition-colors text-foreground">
                 {raceName}
               </h3>
               <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
@@ -210,10 +212,10 @@ export default function RacesPage() {
   // Coach View
   if (isCoach) {
     return (
-      <div className="p-4 sm:p-6 lg:p-8 lg:pt-0 space-y-8">
+      <div className="p-4 sm:p-6 lg:p-8 space-y-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold font-manrope">{t('library.title')}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">{t('library.title')}</h1>
             <p className="text-muted-foreground mt-1">{t('library.subtitle')}</p>
           </div>
           <Button onClick={() => { setSelectedRace(null); setIsRaceDialogOpen(true); }} className="rounded-xl font-bold shadow-md">
@@ -316,10 +318,18 @@ export default function RacesPage() {
 
   // Athlete View
   return (
-    <div className="p-4 sm:p-6 lg:p-8 lg:pt-0 space-y-12 pb-20">
-      <div className="flex items-center justify-between">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-12 pb-20">
+      <div className="flex items-center gap-4 mb-2">
+        <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.back()}
+            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+        >
+            <ArrowLeft className="h-4 w-4" />
+        </Button>
         <div>
-          <h1 className="text-3xl font-bold font-manrope">{t('athlete.upcomingTitle')}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">{t('athlete.upcomingTitle')}</h1>
           <p className="text-muted-foreground mt-1">{t('athlete.manageSubtitle')}</p>
         </div>
       </div>
@@ -348,7 +358,7 @@ export default function RacesPage() {
       {/* History */}
       {pastRaces.length > 0 && (
         <div className="space-y-6">
-          <h2 className="text-lg font-bold flex items-center gap-2 text-muted-foreground">
+          <h2 className="text-lg font-bold font-display tracking-tight flex items-center gap-2 text-muted-foreground">
             <span className="w-2 h-2 rounded-full bg-muted-foreground/40" />
             {t('library.finishedRaces')}
           </h2>

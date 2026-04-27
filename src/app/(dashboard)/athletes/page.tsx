@@ -162,11 +162,12 @@ export default function AthletesPage() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 lg:pt-0 space-y-4 sm:space-y-6">
+  <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">{t('title')} {isAdmin && ' (Global)'}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">{t('title')} {isAdmin && ' (Global)'}</h1>
         </div>
         <Button onClick={() => setInviteModalOpen(true)} size="sm" className="sm:size-default">
           <UserPlus className="h-4 w-4 sm:mr-2" />

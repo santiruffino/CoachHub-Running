@@ -92,7 +92,7 @@ export default function CreateGroupPage() {
                     <ArrowLeft className="h-5 w-5" />
                 </Button>
                 <div>
-                    <h1 className="text-2xl font-bold font-manrope">{t('createGroup')}</h1>
+                    <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">{t('createGroup')}</h1>
                     <p className="text-sm text-muted-foreground">Configura un nuevo equipo de entrenamiento.</p>
                 </div>
             </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ProfileDetails } from '@/interfaces/athlete';
 import { profileService } from '@/features/profiles/services/profile.service';
 import { ProfileForm } from '@/features/profiles/components/ProfileForm';
@@ -12,8 +13,10 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { SectionLayout, FieldGroup } from '@/components/layout/EditorialLayout';
+import { ArrowLeft } from 'lucide-react';
 
 export default function ProfilePage() {
+    const router = useRouter();
     const { user, loading: authLoading } = useAuth();
     const [profile, setProfile] = useState<ProfileDetails | null>(null);
     const [loading, setLoading] = useState(true);
@@ -65,12 +68,22 @@ export default function ProfilePage() {
             : user?.name ?? user?.email ?? '';
 
     return (
-        <div className="min-h-screen flex flex-col -mx-4 md:-mx-8 -mt-4 md:-mt-8">
+        <div className="flex flex-col">
             {/* ── Scrollable content ── */}
             <div className="flex-1 overflow-y-auto pb-28">
                 <div className="max-w-6xl mx-auto px-6 md:px-10 pt-8">
 
                     {/* ── Page header ── */}
+                    <div className="flex items-center gap-2 mb-2">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => router.back()}
+                            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                        >
+                            <ArrowLeft className="h-4 w-4" />
+                        </Button>
+                    </div>
                     <div className="flex items-center gap-5 mb-8">
                         <Avatar className="h-14 w-14 shrink-0">
                             <AvatarFallback className="text-xl font-bold bg-muted text-foreground">
@@ -81,7 +94,7 @@ export default function ProfilePage() {
                             <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground mb-0.5">
                                 MI PERFIL
                             </p>
-                            <h1 className="text-2xl md:text-3xl font-display font-light text-foreground">
+                            <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">
                                 {displayName}
                             </h1>
                             <p className="text-sm text-muted-foreground">{user?.email}</p>

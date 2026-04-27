@@ -83,9 +83,9 @@ export default function TrainingsPage() {
     };
 
     return (
-        <div className="space-y-6 p-8 pt-0">
+        <div className="space-y-6 p-8">
             <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold">{t('title')}</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">{t('title')}</h1>
                 <Button asChild>
                     <Link href="/trainings/new">
                         <Plus className="h-5 w-5 mr-2" />
@@ -108,7 +108,7 @@ export default function TrainingsPage() {
                                             <div className="flex-shrink-0 bg-primary/10 p-2 rounded-full">
                                                 <Calendar className="h-5 w-5 text-primary" />
                                             </div>
-                                            <h3 className="ml-3 text-lg font-semibold">{training.title}</h3>
+                                            <h3 className="ml-3 text-lg font-bold font-display tracking-tight text-foreground">{training.title}</h3>
                                         </div>
                                         <Badge variant="secondary">{training.type}</Badge>
                                     </div>

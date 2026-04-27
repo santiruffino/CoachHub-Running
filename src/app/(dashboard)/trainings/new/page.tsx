@@ -81,7 +81,7 @@ function CreateTrainingForm() {
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             placeholder="Threshold Development • Cycling"
-                            className="bg-transparent border-none outline-none focus:ring-0 p-0 m-0 w-full placeholder:text-gray-400 font-medium text-[#4e6073] dark:text-[#8b9bb4]"
+                            className="bg-transparent border-none outline-none focus:ring-0 p-0 m-0 w-full placeholder:text-muted-foreground font-medium text-[#4e6073] dark:text-[#8b9bb4]"
                         />
                     </div>
                 </div>

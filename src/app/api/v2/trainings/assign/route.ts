@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
         // Verify training exists and coach owns it
         const { data: training, error: trainingError } = await supabase
             .from('trainings')
-            .select('coach_id')
+            .select('*')
             .eq('id', trainingId)
             .single();
 
@@ -71,6 +71,16 @@ export async function POST(request: NextRequest) {
                 { status: 403 }
             );
         }
+
+        // Create a snapshot of the workout at this point in time
+        const workoutSnapshot = {
+            title: training.title,
+            description: training.description,
+            type: training.type,
+            blocks: training.blocks,
+            version: 1,
+            timestamp: new Date().toISOString()
+        };
 
         const assignmentsToCreate: any[] = [];
 
@@ -121,9 +131,10 @@ export async function POST(request: NextRequest) {
                 training_id: trainingId,
                 scheduled_date: scheduledDate,
                 completed: false,
-                expected_rpe: expectedRpe || null, // Add expected RPE if provided
-                workout_name: workoutName || null, // Add custom workout name if provided
+                expected_rpe: expectedRpe || null,
+                workout_name: workoutName || null,
                 source_group_id: sourceGroupId,
+                workout_snapshot: workoutSnapshot, // Store the historical snapshot
             });
         }
 

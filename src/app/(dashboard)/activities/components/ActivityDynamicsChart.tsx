@@ -156,9 +156,10 @@ export function ActivityDynamicsChart({ activityId, laps, isRunning }: ActivityD
 
             return laps.map((lap) => {
                 const paceMinutes = metersPerSecondToPace(lap.average_speed);
+                const displayIndex = lap.lap_index === 0 || (laps[0]?.lap_index === 0) ? lap.lap_index + 1 : lap.lap_index;
                 return {
-                    xValue: `L${lap.lap_index}`,
-                    xLabel: `Lap ${lap.lap_index}`,
+                    xValue: `L${displayIndex}`,
+                    xLabel: `Lap ${displayIndex}`,
                     pace: paceMinutes > 0 ? 10 - paceMinutes : 0,
                     paceDisplay: formatPaceString(paceMinutes),
                     heartRate: lap.average_heartrate || null,
@@ -194,26 +195,32 @@ export function ActivityDynamicsChart({ activityId, laps, isRunning }: ActivityD
                 // Lap-based: find which lap this point belongs to by time
                 if (laps && laps.length > 0) {
                     let cumulativeTime = 0;
-                    let pointsBeforeLap = 0;
 
                     for (let i = 0; i < laps.length; i++) {
                         const lapEndTime = cumulativeTime + laps[i].elapsed_time;
                         if (time <= lapEndTime) {
-                            lapIndex = laps[i].lap_index;
+                            const rawLapIndex = laps[i].lap_index;
+                            const displayIndex = rawLapIndex === 0 || (laps[0]?.lap_index === 0) ? rawLapIndex + 1 : rawLapIndex;
+                            
                             // Calculate position within this lap
                             const pointsInPreviousLaps = timeData.filter((t, idx) => idx < index && t <= cumulativeTime).length;
                             lapPointIndex = index - pointsInPreviousLaps;
-                            xValue = `L${lapIndex}.${lapPointIndex}`;
-                            xLabel = `Lap ${lapIndex}`;
+                            lapIndex = rawLapIndex;
+                            xValue = `L${displayIndex}.${lapPointIndex}`;
+                            xLabel = `Lap ${displayIndex}`;
                             break;
                         }
                         cumulativeTime = lapEndTime;
                     }
                     // If not found, assign to last lap
-                    if (!lapIndex && laps.length > 0) {
-                        lapIndex = laps[laps.length - 1].lap_index;
-                        xValue = `L${lapIndex}.${index}`;
-                        xLabel = `Lap ${lapIndex}`;
+                    if (lapIndex === undefined && laps.length > 0) {
+                        const lastLap = laps[laps.length - 1];
+                        const rawLapIndex = lastLap.lap_index;
+                        const displayIndex = rawLapIndex === 0 || (laps[0]?.lap_index === 0) ? rawLapIndex + 1 : rawLapIndex;
+                        
+                        lapIndex = rawLapIndex;
+                        xValue = `L${displayIndex}.${index}`;
+                        xLabel = `Lap ${displayIndex}`;
                     }
                 } else {
                     xValue = formatTime(time);
@@ -251,10 +258,10 @@ export function ActivityDynamicsChart({ activityId, laps, isRunning }: ActivityD
                 <div className="bg-gray-900 border border-gray-700 p-3 rounded-lg shadow-lg">
                     <p className="font-semibold text-white mb-2">{data.xLabel}</p>
                     {data.time !== undefined && (
-                        <p className="text-xs text-gray-400">Time: {formatTime(data.time)}</p>
+                        <p className="text-xs text-muted-foreground">Time: {formatTime(data.time)}</p>
                     )}
                     {data.distance !== undefined && (
-                        <p className="text-xs text-gray-400">Distance: {formatDistance(data.distance)}</p>
+                        <p className="text-xs text-muted-foreground">Distance: {formatDistance(data.distance)}</p>
                     )}
                     {visibleMetrics.pace && data.paceDisplay && (
                         <p className="text-sm text-cyan-400">Pace: {data.paceDisplay} min/km</p>
@@ -331,7 +338,7 @@ export function ActivityDynamicsChart({ activityId, laps, isRunning }: ActivityD
                             <div className="flex items-center gap-2">
                                 <span className="text-sm text-muted-foreground">Detail:</span>
                                 <Select value={resolution} onValueChange={(value: Resolution) => setResolution(value)}>
-                                    <SelectTrigger className="w-[120px] h-8">
+                                    <SelectTrigger className="w-30 h-8">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>

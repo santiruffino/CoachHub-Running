@@ -269,7 +269,7 @@ function AssignWorkoutContent() {
     // Step 1: Select source
     if (step === 'select-source') {
         return (
-             <div className="h-[calc(100vh-theme(spacing.16))] w-[calc(100%+2rem)] md:w-[calc(100%+4rem)] overflow-hidden -mx-4 md:-mx-8 -my-4 md:-my-8 bg-background dark:bg-background flex flex-col font-inter">
+             <div className="bg-background dark:bg-background flex flex-col font-inter">
                 <div className="flex-none p-12">
                     <Button variant="ghost" onClick={() => router.back()} className="text-muted-foreground hover:text-foreground transition-colors p-0 hover:bg-transparent tracking-widest uppercase text-xs font-semibold">
                         <ArrowLeft className="w-4 h-4 mr-2" /> {tAssign('navigateBack')}
@@ -340,7 +340,7 @@ function AssignWorkoutContent() {
     // Step 2: Select template
     if (step === 'select-template') {
         return (
-            <div className="h-[calc(100vh-theme(spacing.16))] w-[calc(100%+2rem)] md:w-[calc(100%+4rem)] overflow-hidden -mx-4 md:-mx-8 -my-4 md:-my-8 bg-background dark:bg-background flex flex-col font-inter">
+            <div className="bg-background dark:bg-background flex flex-col font-inter">
                 <div className="p-12 pb-8 border-b border-border dark:border-white/5">
                      <Button variant="ghost" onClick={() => setStep('select-source')} className="text-muted-foreground hover:text-foreground transition-colors p-0 hover:bg-transparent tracking-widest uppercase text-xs font-semibold mb-8">
                         <ArrowLeft className="w-4 h-4 mr-2" /> {tAssign('backToPhase1')}
@@ -380,7 +380,7 @@ function AssignWorkoutContent() {
                             >
                                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-transparent group-hover:bg-primary transition-colors" />
                                 <div>
-                                    <h3 className="text-xl font-bold font-display text-foreground mb-1">
+                                    <h3 className="text-xl font-bold font-display tracking-tight text-foreground mb-1">
                                         {template.title}
                                     </h3>
                                     <p className="text-sm text-muted-foreground max-w-2xl line-clamp-1">
@@ -406,7 +406,7 @@ function AssignWorkoutContent() {
     // Step 3: Build new workout (Inline Full Page Builder)
     if (step === 'build') {
         return (
-            <div className="h-[calc(100vh-theme(spacing.16))] w-[calc(100%+2rem)] md:w-[calc(100%+4rem)] overflow-hidden -mx-4 md:-mx-8 -my-4 md:-my-8 bg-background dark:bg-background flex flex-col">
+            <div className="bg-background dark:bg-background flex flex-col">
                 <div className="p-6 px-12 border-b border-border/40 flex items-center shrink-0">
                     <Button variant="ghost" onClick={() => setStep('select-source')} className="text-muted-foreground hover:text-foreground transition-colors p-0 hover:bg-transparent tracking-widest uppercase text-xs font-semibold">
                         <ArrowLeft className="w-4 h-4 mr-2" /> {tAssign('restart')}
@@ -445,7 +445,7 @@ function AssignWorkoutContent() {
     const isNew = workoutSource === 'new';
 
     return (
-        <div className="h-[calc(100vh-theme(spacing.16))] w-[calc(100%+2rem)] md:w-[calc(100%+4rem)] overflow-hidden -mx-4 md:-mx-8 -my-4 md:-my-8 bg-background dark:bg-background flex font-inter">
+        <div className="bg-background dark:bg-background flex font-inter">
             {/* Left Col: Setting Data */}
             <div className="w-[480px] flex-shrink-0 bg-card dark:bg-muted border-r border-border dark:border-white/5 flex flex-col h-full overflow-y-auto z-10 p-12">
                 <Button variant="ghost" onClick={() => editingTemplate ? setEditingTemplate(false) : (isNew ? setStep('build') : setStep('select-template'))} className="w-min text-muted-foreground hover:text-foreground transition-colors p-0 hover:bg-transparent tracking-widest uppercase text-xs font-semibold mb-12">

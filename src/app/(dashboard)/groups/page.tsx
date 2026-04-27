@@ -183,10 +183,10 @@ export default function GroupsPage() {
     );
 
     return (
-        <div className="p-4 sm:p-6 lg:p-8 lg:pt-0 space-y-8 sm:space-y-10">
+        <div className="p-4 sm:p-6 lg:p-8 space-y-8 sm:space-y-10">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl sm:text-3xl font-bold">
+                    <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">
                         {t('title')}
                     </h1>
                 </div>
@@ -204,7 +204,7 @@ export default function GroupsPage() {
                 <div className="space-y-12">
                     {/* Active Groups Section */}
                     <div className="space-y-4">
-                        <h2 className="text-lg font-semibold flex items-center gap-2">
+                        <h2 className="text-lg font-bold font-display tracking-tight flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-green-500" />
                             {t('activeGroups') || 'Grupos Activos'}
                         </h2>
@@ -216,8 +216,7 @@ export default function GroupsPage() {
                                     <div className="w-12 h-12 bg-muted flex items-center justify-center rounded-full mb-4 text-muted-foreground group-hover:text-primary group-hover:scale-105 transition-all duration-300">
                                         <UserPlus className="h-6 w-6" />
                                     </div>
-                                    <h3 className="text-lg font-semibold text-foreground mb-1">{t('emptyCardTitle')}</h3>
-                                    <p className="text-sm text-muted-foreground max-w-[200px] leading-relaxed">{t('emptyCardDesc')}</p>
+                                    <h3 className="text-lg font-bold font-display tracking-tight text-foreground mb-1">{t('emptyCardTitle')}</h3>                                    <p className="text-sm text-muted-foreground max-w-[200px] leading-relaxed">{t('emptyCardDesc')}</p>
                                 </Card>
                             </Link>
                         </div>

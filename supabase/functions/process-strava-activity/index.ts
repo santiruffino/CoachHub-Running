@@ -1,6 +1,5 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1"
-import { flattenWorkout, matchLapsToWorkout } from "../_shared/workoutMatcher.ts"
+import { flattenWorkout, matchLapsToWorkout, calculateWorkoutTotals } from "../_shared/workoutMatcher.ts"
 
 /**
  * process-strava-activity
@@ -16,7 +15,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -26,10 +25,8 @@ serve(async (req) => {
   const webhookSecret = req.headers.get('x-webhook-secret')
   const expectedSecret = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
   
-  console.log(`[DEBUG] Received request. Secret present: ${!!webhookSecret}, Matches expected: ${webhookSecret === expectedSecret}`);
-
   if (!webhookSecret || webhookSecret !== expectedSecret) {
-    console.error(`Unauthorized: Invalid or missing X-Webhook-Secret. Received: ${webhookSecret?.substring(0, 5)}... Expected: ${expectedSecret?.substring(0, 5)}...`)
+    console.error(`Unauthorized: Invalid or missing X-Webhook-Secret.`)
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 401,
@@ -38,11 +35,9 @@ serve(async (req) => {
 
   try {
     const payload = await req.json()
-    console.log('[DEBUG] Payload received:', JSON.stringify(payload));
     const { object_type, aspect_type, object_id, owner_id, updates } = payload
 
     if (!object_type || !aspect_type || !object_id || !owner_id) {
-      console.error('[ERROR] Incomplete payload fields');
       throw new Error('Incomplete webhook payload')
     }
 
@@ -51,11 +46,11 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    console.log(`Processing Strava event: ${object_type}.${aspect_type} for object ${object_id}`)
+    console.log(`[WEBHOOK] Processing: ${object_type}.${aspect_type} (ID: ${object_id})`)
 
     // CASE 1: ATHLETE DEAUTHORIZATION
     if (object_type === 'athlete' && updates?.authorized === false) {
-      console.log(`User ${owner_id} revoked access. Cleaning up tokens...`)
+      console.log(`[WEBHOOK] User ${owner_id} revoked access.`)
       const { error: deleteError } = await supabase
         .from('strava_connections')
         .delete()
@@ -71,7 +66,7 @@ serve(async (req) => {
 
     // CASE 2: ACTIVITY DELETE
     if (object_type === 'activity' && aspect_type === 'delete') {
-      console.log(`Deleting activity ${object_id} from database...`)
+      console.log(`[WEBHOOK] Deleting activity ${object_id}`)
       const { error: deleteError } = await supabase
         .from('activities')
         .delete()
@@ -87,7 +82,7 @@ serve(async (req) => {
 
     // CASE 3: ACTIVITY CREATE / UPDATE
     if (object_type === 'activity' && (aspect_type === 'create' || aspect_type === 'update')) {
-      // 1. Get Strava connection using owner_id (strava_athlete_id)
+      // 1. Get Strava connection
       const { data: connection, error: connError } = await supabase
         .from('strava_connections')
         .select('*')
@@ -95,7 +90,6 @@ serve(async (req) => {
         .single()
 
       if (connError || !connection) {
-        console.error('Connection error:', connError)
         throw new Error(`Strava connection not found for athlete ${owner_id}`)
       }
 
@@ -106,29 +100,23 @@ serve(async (req) => {
       const now = Math.floor(Date.now() / 1000)
 
       if (expires_at <= now + 60) {
-        console.log('Refreshing Strava token...')
-        const clientId = Deno.env.get('STRAVA_CLIENT_ID')
-        const clientSecret = Deno.env.get('STRAVA_CLIENT_SECRET')
-
+        console.log('[WEBHOOK] Refreshing Strava token...')
         const refreshResponse = await fetch('https://www.strava.com/oauth/token', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            client_id: clientId,
-            client_secret: clientSecret,
+            client_id: Deno.env.get('STRAVA_CLIENT_ID'),
+            client_secret: Deno.env.get('STRAVA_CLIENT_SECRET'),
             refresh_token: refresh_token,
             grant_type: 'refresh_token',
           }),
         })
 
-        if (!refreshResponse.ok) {
-          throw new Error('Failed to refresh Strava token')
-        }
+        if (!refreshResponse.ok) throw new Error('Failed to refresh Strava token')
 
         const tokenData = await refreshResponse.json()
         currentToken = tokenData.access_token
 
-        // Update stored tokens
         await supabase
           .from('strava_connections')
           .update({
@@ -143,27 +131,22 @@ serve(async (req) => {
       // 3. Fetch activity details from Strava
       const activityResponse = await fetch(
         `https://www.strava.com/api/v3/activities/${object_id}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${currentToken}`,
-          },
-        }
+        { headers: { 'Authorization': `Bearer ${currentToken}` } }
       )
 
       if (!activityResponse.ok) {
         if (activityResponse.status === 404) {
-          console.warn(`Activity ${object_id} not found (might have been deleted or private)`)
           return new Response(JSON.stringify({ success: false, error: 'Not found' }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 200,
           })
         }
-        throw new Error(`Failed to fetch activity from Strava: ${activityResponse.statusText}`)
+        throw new Error(`Strava API error: ${activityResponse.statusText}`)
       }
 
       const activity = await activityResponse.json()
 
-      // 5. Persist to activities table (Upsert using external_id)
+      // 4. Persist to activities table
       const { data: upsertData, error: insertError } = await supabase
         .from('activities')
         .upsert({
@@ -183,97 +166,89 @@ serve(async (req) => {
           is_private: activity.private || false,
           metadata: activity,
           updated_at: new Date().toISOString(),
-        }, {
-          onConflict: 'external_id'
-        })
+        }, { onConflict: 'external_id' })
         .select()
         .single()
 
       if (insertError) throw insertError
 
-      console.log(`Successfully synced activity ${object_id} for user ${user_id}`)
+      console.log(`[WEBHOOK] Synced activity ${object_id} for user ${user_id}`)
 
-      // 6. Trigger Matching Engine (SAN-27)
+      // 5. Trigger Matching Engine
       try {
         const matchingThreshold = parseFloat(Deno.env.get('MATCHING_THRESHOLD_PERCENTAGE') || '15');
         const activityDateStr = activity.start_date_local.split('T')[0];
         const activityLaps = activity.laps || [];
+        const activityDistance = activity.distance || 0;
+        const activityDuration = activity.moving_time || activity.elapsed_time || 0;
 
-        console.log(`Running matching engine for activity ${object_id} on date ${activityDateStr}`);
-
-        // Get planned assignments for this athlete on this date
-        const { data: assignments, error: assignmentsError } = await supabase
+        const { data: assignments } = await supabase
           .from('training_assignments')
           .select('*, training:trainings(*)')
           .eq('user_id', user_id)
           .eq('scheduled_date', activityDateStr)
           .eq('compliance_status', 'planned');
 
-        if (assignmentsError) {
-          console.error('Error fetching assignments for matching:', assignmentsError);
-        } else if (assignments && assignments.length > 0) {
-          console.log(`Found ${assignments.length} candidate assignments for matching`);
-
-          let bestMatch = null;
-          let highestConfidence = 0;
-          let bestMatchDetails = null;
+        if (assignments && assignments.length > 0) {
+          const candidates = [];
 
           for (const assignment of assignments) {
             const blocks = assignment.training?.blocks || [];
             if (blocks.length === 0) continue;
 
             const flatSteps = flattenWorkout(blocks);
-            const matchedLaps = matchLapsToWorkout(activityLaps, flatSteps, matchingThreshold);
+            const totals = calculateWorkoutTotals(flatSteps);
             
-            // Calculate aggregate confidence: % of planned steps that were matched
-            const totalPlannedSteps = flatSteps.length;
+            // Simple Match: Compare total distance and duration
+            const distVar = totals.distance > 0 ? Math.abs(activityDistance - totals.distance) / totals.distance : 1;
+            const durVar = totals.duration > 0 ? Math.abs(activityDuration - totals.duration) / totals.duration : 1;
+            
+            const simpleMatches = distVar <= (matchingThreshold / 100) || durVar <= (matchingThreshold / 100);
+
+            // Lap Match: Generate confidence score
+            const matchedLaps = matchLapsToWorkout(activityLaps, flatSteps, matchingThreshold);
             const matchedStepsCount = matchedLaps.filter(ml => ml.matched).length;
-            const confidenceScore = totalPlannedSteps > 0 ? matchedStepsCount / totalPlannedSteps : 0;
+            const lapConfidence = flatSteps.length > 0 ? matchedStepsCount / flatSteps.length : 0;
 
-            console.log(`Assignment ${assignment.id} match confidence: ${confidenceScore.toFixed(2)}`);
-
-            if (confidenceScore > highestConfidence) {
-              highestConfidence = confidenceScore;
-              bestMatch = assignment;
-              bestMatchDetails = matchedLaps;
+            if (simpleMatches || lapConfidence > 0.5) {
+              candidates.push({
+                assignment,
+                confidence: lapConfidence,
+                simpleMatches,
+                details: matchedLaps
+              });
             }
           }
 
-          // If we found a solid match (e.g. > 50% confidence or based on threshold)
-          if (bestMatch && highestConfidence > 0.5) {
-            console.log(`Confirmed match with assignment ${bestMatch.id}. Updating...`);
+          if (candidates.length > 0) {
+            // Sort by lap confidence to find the best match
+            candidates.sort((a, b) => b.confidence - a.confidence);
+            const bestMatch = candidates[0];
 
-            // Persist match log
-            const { error: logError } = await supabase
-              .from('matching_log')
-              .insert({
-                activity_id: upsertData.id,
-                assignment_id: bestMatch.id,
-                score: highestConfidence,
-                match_details: { laps: bestMatchDetails }
-              });
+            await supabase.from('matching_log').insert({
+              activity_id: upsertData.id,
+              assignment_id: bestMatch.assignment.id,
+              score: bestMatch.confidence,
+              match_details: { 
+                laps: bestMatch.details,
+                simple_match: bestMatch.simpleMatches,
+                candidates_count: candidates.length
+              }
+            });
 
-            if (logError) console.error('Error saving matching log:', logError);
-
-            // Update assignment status
-            const status = highestConfidence >= 0.85 ? 'completed' : 'partial';
-            const { error: updateError } = await supabase
-              .from('training_assignments')
-              .update({
-                strava_activity_id: upsertData.id,
-                compliance_status: status
+            const status = bestMatch.confidence >= 0.85 || (bestMatch.simpleMatches && bestMatch.confidence > 0.6) ? 'completed' : 'partial';
+            
+            await supabase.from('training_assignments')
+              .update({ 
+                strava_activity_id: upsertData.id, 
+                compliance_status: status,
+                updated_at: new Date().toISOString()
               })
-              .eq('id', bestMatch.id);
-
-            if (updateError) console.error('Error updating assignment status:', updateError);
-          } else {
-            console.log('No strong match found for this activity.');
+              .eq('id', bestMatch.assignment.id);
           }
-        } else {
-          console.log('No planned assignments found for this date.');
         }
       } catch (matchError) {
-        console.error('Unexpected error in matching engine:', matchError);
+        console.error('[WEBHOOK] Matching engine error:', matchError);
       }
 
       return new Response(JSON.stringify({ success: true, activity_id: upsertData.id }), {
@@ -282,14 +257,13 @@ serve(async (req) => {
       })
     }
 
-    // Default response for unhandled combinations
     return new Response(JSON.stringify({ success: true, message: 'Event ignored' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })
 
   } catch (error) {
-    console.error('Error processing event:', error.message)
+    console.error(`[WEBHOOK] Error: ${error.message}`)
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,

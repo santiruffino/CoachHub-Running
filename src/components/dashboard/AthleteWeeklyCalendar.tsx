@@ -241,13 +241,15 @@ export function AthleteWeeklyCalendar({ weekStart, assignments, activities, race
                     const standaloneActivities = dayActivities.filter((act) => !matchedActivityIds.has(act.id));
 
                     const isEmpty = dayTrainings.length === 0 && standaloneActivities.length === 0 && dayRaces.length === 0;
+                    const hasRace = dayRaces.length > 0;
 
                     return (
                         <div
                             key={day.toISOString()}
                             className={cn(
                                 'flex flex-col gap-3 p-3 rounded-xl transition-colors min-h-[400px]',
-                                isToday ? 'bg-muted/30' : ''
+                                isToday ? 'bg-muted/30' : '',
+                                hasRace ? 'bg-violet-500/[0.03] dark:bg-violet-500/[0.05]' : ''
                             )}
                         >
                             {/* Day header */}

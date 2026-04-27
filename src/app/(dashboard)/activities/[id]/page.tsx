@@ -33,6 +33,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { HeartRateZonesChart } from '../components/HeartRateZonesChart';
 import { PaceZonesChart } from '../components/PaceZonesChart';
+import { IntervalsAnalysisChart } from '../components/IntervalsAnalysisChart';
 import { flattenWorkout, matchLapsToWorkout, MatchedLap } from '@/features/trainings/utils/workoutMatcher';
 import { LinkWorkoutModal } from '@/features/trainings/components/LinkWorkoutModal';
 
@@ -509,13 +510,25 @@ export default function ActivityDetailPage() {
                 </div>
             </div>
 
+            {/* Intervals Analysis Chart */}
+            {!isWeightTraining(activity.sport_type) && activity.laps && activity.laps.length > 0 && (
+                <div className="bg-card rounded-3xl p-8 shadow-[0_20px_40px_rgba(43,52,55,0.02)] border border-muted">
+                    <IntervalsAnalysisChart 
+                        laps={activity.laps} 
+                        isRunning={isRunning(activity.sport_type)} 
+                        lapOverrides={lapOverrides}
+                        matchedLaps={matchedLaps}
+                    />
+                </div>
+            )}
+
             {/* Zone Analysis Charts */}
             {!isWeightTraining(activity.sport_type) && (activity.laps?.length || activity.splits_metric) && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 bg-card rounded-3xl p-8 shadow-[0_20px_40px_rgba(43,52,55,0.02)] border border-muted">
                     {/* Heart Rate Performance Block */}
                     <div className="flex flex-col h-full">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="font-semibold text-foreground">{t('charts.hrPerformance')}</h3>
+                            <h3 className="text-lg font-semibold font-display tracking-tight text-foreground">{t('charts.hrPerformance')}</h3>
                             {activity.average_heartrate && (
                                 <div className="flex items-center gap-2">
                                     <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
@@ -550,7 +563,7 @@ export default function ActivityDetailPage() {
 
                     {/* Intensity Distribution (Pace) Block */}
                     <div className="flex flex-col h-full pl-0 lg:pl-10 lg:border-l border-border/20 pt-8 lg:pt-0">
-                        <h3 className="font-semibold text-foreground mb-8">{t('charts.intensityDistribution')}</h3>
+                        <h3 className="text-lg font-semibold font-display tracking-tight text-foreground mb-8">{t('charts.intensityDistribution')}</h3>
                         <div className="flex-1 -mx-4 -mb-4">
                             {isRunning(activity.sport_type) && (
                                 <PaceZonesChart
@@ -651,14 +664,16 @@ export default function ActivityDetailPage() {
                                                         warmup: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
                                                         active: 'bg-orange-500/10 text-orange-500 border-orange-500/20',
                                                         recovery: 'bg-green-500/10 text-green-500 border-green-500/20',
-                                                        rest: 'bg-gray-400/10 text-gray-400 border-gray-400/20',
+                                                        rest: 'bg-gray-400/10 text-muted-foreground border-gray-400/20',
                                                         cooldown: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
-                                                        other: 'bg-gray-500/10 text-gray-500 border-gray-500/20',
+                                                        other: 'bg-gray-500/10 text-muted-foreground border-gray-500/20',
                                                     };
 
                                                     return (
                                                         <TableRow key={lap.id}>
-                                                            <TableCell className="font-medium">{lap.lap_index}</TableCell>
+                                                            <TableCell className="font-medium">
+                                                                {lap.lap_index === 0 || (activity.laps![0]?.lap_index === 0) ? lap.lap_index + 1 : lap.lap_index}
+                                                            </TableCell>
                                                             <TableCell>{formatTime(lap.moving_time)}</TableCell>
                                                             <TableCell>{(lap.distance / 1000).toFixed(2)} {t('metrics.units.km')}</TableCell>
                                                             <TableCell>{formatPace(lap.average_speed)}</TableCell>

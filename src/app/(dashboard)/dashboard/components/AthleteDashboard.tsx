@@ -131,7 +131,7 @@ export default function AthleteDashboard({ user }: { user: any }) {
                         </div>
                     </div>
                     <div>
-                        <h1 className="text-3xl font-display font-medium text-foreground">
+                        <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">
                             {t('dashboard.messages.hi', { name: user.firstName || user.name?.split(' ')[0] })}
                         </h1>
                         <p className="text-sm text-muted-foreground mt-1">
@@ -189,7 +189,7 @@ export default function AthleteDashboard({ user }: { user: any }) {
                 </div>
                 <div className="lg:col-span-7">
                     <div className="bg-card border border-border/40 p-8 rounded-[2rem] shadow-sm">
-                        <h3 className="text-xl font-display font-medium mb-8">{t('dashboard.performanceTrend.title')}</h3>
+                        <h3 className="text-xl font-bold font-display tracking-tight mb-8 text-foreground">{t('dashboard.performanceTrend.title')}</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <PerformanceTrendChart data={performanceData} />
                             {athleteDetails?.athleteProfile?.hrZones && (

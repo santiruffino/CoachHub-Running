@@ -53,9 +53,9 @@ export default function AdminDashboard({ user }: { user: any }) {
   }
 
   return (
-    <div className="space-y-8 p-8 pt-0">
+    <div className="space-y-8 p-8">
       <div>
-        <h1 className="text-3xl font-bold">{t('dashboard.admin.title')}</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">{t('dashboard.admin.title')}</h1>
         <p className="text-muted-foreground mt-2">{t('dashboard.admin.welcome')}</p>
       </div>
 

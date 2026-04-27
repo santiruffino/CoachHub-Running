@@ -125,12 +125,12 @@ export default function CoachDashboard({ user }: { user: any }) {
   const groupComplianceData = data?.groupCompliance ?? [];
 
   return (
-    <div className="p-4 md:p-8 pt-4 pb-20 max-w-[1400px] mx-auto">
+    <div className="p-4 md:p-8 pb-20 max-w-[1400px] mx-auto">
 
       {/* Header Area */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-display tracking-tight font-light mb-2 text-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground mb-2">
             {t("dashboard.messages.hi", { name: user.firstName || user.name?.split(' ')[0] })}
           </h1>
           <p className="text-sm text-muted-foreground font-medium">
@@ -179,7 +179,7 @@ export default function CoachDashboard({ user }: { user: any }) {
           {/* Group Status Section (Replacing Old Performance Snapshots if data exists) */}
           {groupComplianceData.length > 0 && (
             <div>
-              <h2 className="text-lg font-semibold text-foreground mb-6">{t("dashboard.alerts.groupStatus")}</h2>
+              <h2 className="text-xl font-bold font-display tracking-tight text-foreground mb-6">{t("dashboard.alerts.groupStatus")}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                 {groupComplianceData.map((group) => (
                   <GroupStatusCard
@@ -204,7 +204,7 @@ export default function CoachDashboard({ user }: { user: any }) {
 
           {/* Recent Activity Timeline */}
           <div className="bg-muted p-6 rounded-2xl">
-            <h2 className="text-base font-semibold text-foreground mb-6">{t("dashboard.alerts.recentActivity")}</h2>
+            <h2 className="text-xl font-bold font-display tracking-tight text-foreground mb-6">{t("dashboard.alerts.recentActivity")}</h2>
             <div className="space-y-1">
               {(() => {
                 const filteredTimeline = data?.activityTimeline?.filter(item => {

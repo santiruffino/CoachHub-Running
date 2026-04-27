@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { format, startOfWeek, endOfWeek, isWithinInterval, eachDayOfInterval, startOfDay, isToday, subWeeks, addWeeks, differenceInDays, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -11,7 +11,7 @@ import { Activity } from '@/interfaces/activity';
 import { AthleteDetails } from '@/interfaces/athlete';
 import { AthleteRace } from '@/interfaces/race';
 import api from '@/lib/axios';
-import { Activity as ActivityIcon, Calendar as CalendarIcon, FileText, CheckCircle2, TrendingUp, Plus, Trash, Clock, Zap, ChevronLeft, ChevronRight, MessageSquare, Trophy } from 'lucide-react';
+import { Activity as ActivityIcon, Calendar as CalendarIcon, FileText, CheckCircle2, TrendingUp, Plus, Trash, Clock, Zap, ChevronLeft, ChevronRight, MessageSquare, Trophy, ArrowLeft } from 'lucide-react';
 import { trainingsService } from '@/features/trainings/services/trainings.service';
 import { athletesService } from '@/features/users/services/athletes.service';
 import { racesService } from '@/features/races/services/races.service';
@@ -33,6 +33,7 @@ import { normalizeActivityType } from '@/utils/activity-utils';
 export default function AthleteDetailPage() {
     const t = useTranslations();
     const params = useParams();
+    const router = useRouter();
     const id = params.id as string;
 
     const [athlete, setAthlete] = useState<AthleteDetails | null>(null);
@@ -276,6 +277,16 @@ export default function AthleteDetailPage() {
 
     return (
         <div className="space-y-8 p-4 md:p-8 max-w-[1400px] mx-auto pb-20 bg-background min-h-screen">
+            <div className="flex items-center gap-2 mb-2">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => router.back()}
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                >
+                    <ArrowLeft className="h-4 w-4" />
+                </Button>
+            </div>
             {/* Header - Designer Layout */}
             <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
                 <div className="flex items-center gap-6">
@@ -458,7 +469,7 @@ export default function AthleteDetailPage() {
                 <div className="lg:col-span-4 h-full">
                     <div className="bg-muted dark:bg-muted rounded-3xl p-6 h-full flex flex-col pt-7 pb-6 relative group overflow-hidden">
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white to-transparent opacity-50" />
-                        <h3 className="text-xl font-display font-medium mb-6 text-foreground px-2 flex items-center justify-between">
+                        <h3 className="text-xl font-display font-bold tracking-tight mb-6 text-foreground px-2 flex items-center justify-between">
                             {t("athletes.detail.coachComments")}
                             <MessageSquare className="w-4 h-4 text-muted-foreground/60" />
                         </h3>
@@ -574,7 +585,7 @@ export default function AthleteDetailPage() {
 
             {/* Extra Tools and charts - accessible further down */}
             <div className="mt-20 bg-card dark:border dark:border-white/5 p-8 md:p-12 rounded-[2rem] shadow-[0_20px_40px_rgba(43,52,55,0.02)] border border-muted">
-                <h3 className="text-[22px] font-display font-medium mb-10 text-foreground">Performance & Zones</h3>
+                <h3 className="text-[22px] font-display font-bold tracking-tight mb-10 text-foreground">Performance & Zones</h3>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                     <PerformanceTrendChart data={performanceData} />
                     {athlete.athleteProfile?.hrZones && (

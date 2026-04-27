@@ -13,22 +13,23 @@ import { differenceInDays, format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import { RecordRaceResultModal } from '@/features/races/components/RecordRaceResultModal';
+import { motion } from 'framer-motion';
 
 interface NextRacesProps {
     athleteRaces?: AthleteRace[];
     onSuccess?: () => void;
 }
 
-export function NextRaces({ athleteRaces = [], onSuccess }: NextRacesProps) {
+export function NextRaces({ athleteRaces, onSuccess }: NextRacesProps) {
     const t = useTranslations();
     const [groupRaces, setGroupRaces] = useState<Group[]>([]);
-    const [loading, setLoading] = useState(athleteRaces.length === 0);
+    const [loading, setLoading] = useState(!athleteRaces || athleteRaces.length === 0);
     const [selectedRace, setSelectedRace] = useState<AthleteRace | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
         const fetchGroupRaces = async () => {
-            if (athleteRaces.length > 0) {
+            if (athleteRaces && athleteRaces.length > 0) {
                 setLoading(false);
                 return;
             }
@@ -63,7 +64,8 @@ export function NextRaces({ athleteRaces = [], onSuccess }: NextRacesProps) {
     const now = new Date();
     
     // Process personal races
-    const sortedAthleteRaces = [...athleteRaces].sort((a, b) => 
+    const safeAthleteRaces = athleteRaces || [];
+    const sortedAthleteRaces = [...safeAthleteRaces].sort((a, b) => 
         new Date(a.date).getTime() - new Date(b.date).getTime()
     );
 
@@ -72,7 +74,7 @@ export function NextRaces({ athleteRaces = [], onSuccess }: NextRacesProps) {
     if (!hasRaces) {
         return (
             <div className="bg-muted p-6 rounded-2xl">
-                <h2 className="text-base font-semibold text-foreground mb-6">{t("dashboard.alerts.nextRaces")}</h2>
+                <h2 className="text-xl font-bold font-display tracking-tight text-foreground mb-6">{t("dashboard.alerts.nextRaces")}</h2>
                 <p className="text-sm text-muted-foreground">{t("dashboard.alerts.noNextRaces")}</p>
             </div>
         );
@@ -80,7 +82,7 @@ export function NextRaces({ athleteRaces = [], onSuccess }: NextRacesProps) {
 
     return (
         <div className="bg-muted p-6 rounded-2xl">
-            <h2 className="text-base font-semibold text-foreground mb-6">{t("dashboard.alerts.nextRaces")}</h2>
+            <h2 className="text-xl font-bold font-display tracking-tight text-foreground mb-6">{t("dashboard.alerts.nextRaces")}</h2>
             <div className="space-y-4">
                 {/* Personal Athlete Races */}
                 {sortedAthleteRaces.map((race) => {
@@ -114,10 +116,21 @@ export function NextRaces({ athleteRaces = [], onSuccess }: NextRacesProps) {
                                             {name}
                                         </h3>
                                         {!isPast && race.priority === 'A' && daysRemaining <= 30 && (
-                                            <span className="flex items-center gap-1 text-[10px] font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded animate-pulse">
+                                            <motion.span 
+                                                animate={{ 
+                                                    opacity: [0.6, 1, 0.6],
+                                                    scale: [0.98, 1, 0.98]
+                                                }}
+                                                transition={{ 
+                                                    duration: 2, 
+                                                    repeat: Infinity,
+                                                    ease: "easeInOut"
+                                                }}
+                                                className="flex items-center gap-1 text-[10px] font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded shadow-sm"
+                                            >
                                                 <Clock className="h-3 w-3" />
                                                 {t('races.athlete.countdown', { days: daysRemaining })}
-                                            </span>
+                                            </motion.span>
                                         )}
                                     </div>
                                     <div className="flex flex-wrap gap-x-4 gap-y-1">
@@ -179,7 +192,7 @@ export function NextRaces({ athleteRaces = [], onSuccess }: NextRacesProps) {
                 />
 
                 {/* Group Races (only if no personal races or if needed as extra) */}
-                {athleteRaces.length === 0 && groupRaces.map((race) => {
+                {safeAthleteRaces.length === 0 && groupRaces.map((race) => {
                     const isPast = new Date(race.race_date!) < now;
                     return (
                         <Link key={race.id} href={`/groups/${race.id}`} className="block">

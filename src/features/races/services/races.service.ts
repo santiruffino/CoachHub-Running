@@ -45,6 +45,13 @@ export const racesService = {
   },
 
   /**
+   * Assign a race to all members of a group
+   */
+  assignToGroup: async (raceId: string, groupId: string, data: Partial<AssignRaceDTO>) => {
+    return api.post(`/v2/groups/${groupId}/races/${raceId}`, data);
+  },
+
+  /**
    * Update an assigned race (athlete_race)
    */
   updateAthleteRace: async (userId: string, athleteRaceId: string, data: Partial<AthleteRace>) => {

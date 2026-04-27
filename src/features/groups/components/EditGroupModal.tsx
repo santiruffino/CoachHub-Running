@@ -48,6 +48,7 @@ export function EditGroupModal({ group, isOpen, onClose, onUpdated }: EditGroupM
   const [race_distance, setRaceDistance] = useState(group.race_distance || '');
   const [race_priority, setRacePriority] = useState<'A' | 'B' | 'C'>(group.race_priority || 'A');
   const [race_location, setRaceLocation] = useState(group.race?.location || '');
+  const [syncWithMembers, setSyncWithMembers] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -113,6 +114,13 @@ export function EditGroupModal({ group, isOpen, onClose, onUpdated }: EditGroupM
       }
 
       await groupsService.update(group.id, updateData);
+
+      if (group_type === 'RACE' && syncWithMembers && finalRaceId) {
+        await racesService.assignToGroup(finalRaceId, group.id, {
+          priority: race_priority,
+        });
+      }
+
       onUpdated();
       onClose();
     } catch (error) {
@@ -248,6 +256,22 @@ export function EditGroupModal({ group, isOpen, onClose, onUpdated }: EditGroupM
                   <option value="B">{tGroups('detail.priorityB')}</option>
                   <option value="C">{tGroups('detail.priorityC')}</option>
                 </select>
+              </div>
+
+              <div className="flex items-center space-x-2 pt-2 border-t border-border/40">
+                <Switch 
+                  id="sync-members"
+                  checked={syncWithMembers}
+                  onCheckedChange={setSyncWithMembers}
+                />
+                <div className="grid gap-1.5 leading-none">
+                  <Label htmlFor="sync-members" className="font-semibold cursor-pointer">
+                    Sincronizar con miembros
+                  </Label>
+                  <p className="text-[11px] text-muted-foreground">
+                    Asignar esta carrera automáticamente al calendario de todos los atletas del grupo.
+                  </p>
+                </div>
               </div>
             </div>
           )}

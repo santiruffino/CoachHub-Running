@@ -68,6 +68,7 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
         const fetchStreams = async () => {
             try {
                 setLoading(true);
+                // Call the standard Next.js API route which now proxies to the Edge Function
                 const response = await api.get(`/v2/activities/${activityId}/streams`);
                 setStreams(response.data);
             } catch (error) {
@@ -78,7 +79,7 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
             }
         };
 
-        fetchStreams();
+        if (activityId) fetchStreams();
     }, [activityId]);
 
     // Downsample data based on resolution
@@ -135,7 +136,10 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
 
             // Fallback to laps
             return {
-                xAxisData: laps.map(l => `Lap ${l.lap_index}`),
+                xAxisData: laps.map(l => {
+                    const displayIndex = l.lap_index === 0 || (laps[0]?.lap_index === 0) ? l.lap_index + 1 : l.lap_index;
+                    return `Lap ${displayIndex}`;
+                }),
                 series: {
                     pace: laps.map(l => metersPerSecondToPace(l.average_speed)),
                     heartRate: laps.map(l => l.average_heartrate || null),

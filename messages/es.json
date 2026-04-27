@@ -241,7 +241,8 @@
                 "elevationProfile": "Perfil de Elevación",
                 "hrPerformance": "Rendimiento de Frecuencia Cardíaca",
                 "liveTracking": "Datos en Tiempo Real",
-                "intensityDistribution": "Distribución de Intensidad"
+                "intensityDistribution": "Distribución de Intensidad",
+                "intervalsAnalysis": "Análisis de Intervalos"
             },
             "tabs": {
                 "analysis": "Análisis de Vueltas y Splits",

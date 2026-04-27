@@ -69,8 +69,8 @@ export default function WorkoutLibraryPage() {
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('title')}</h1>
-                    <p className="text-gray-600 dark:text-gray-400 mt-1">{t('subtitle')}</p>
+                    <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">{t('title')}</h1>
+                    <p className="text-muted-foreground mt-1">{t('subtitle')}</p>
                 </div>
                 <Link href="/workouts/builder">
                     <Button className="bg-brand-primary hover:bg-brand-primary-dark text-white">
@@ -83,13 +83,13 @@ export default function WorkoutLibraryPage() {
             {/* Search */}
             <div className="mb-6">
                 <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <input
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder={t('searchPlaceholder')}
-                        className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-primary focus:border-transparent"
+                        className="w-full pl-10 pr-4 py-2 border border-border rounded-md bg-card text-foreground focus:ring-2 focus:ring-brand-primary focus:border-transparent"
                     />
                 </div>
             </div>
@@ -97,11 +97,11 @@ export default function WorkoutLibraryPage() {
             {/* Templates Grid */}
             {loading ? (
                 <div className="text-center py-12">
-                    <p className="text-gray-500 dark:text-gray-400">{t('loadingTemplates')}</p>
+                    <p className="text-muted-foreground">{t('loadingTemplates')}</p>
                 </div>
             ) : filteredTemplates.length === 0 ? (
                 <div className="text-center py-12">
-                    <p className="text-gray-500 dark:text-gray-400 mb-4">
+                    <p className="text-muted-foreground mb-4">
                         {searchQuery ? t('noTemplatesSearch') : t('noTemplatesYet')}
                     </p>
                     {!searchQuery && (
@@ -118,19 +118,19 @@ export default function WorkoutLibraryPage() {
                     {filteredTemplates.map((template) => (
                         <div
                             key={template.id}
-                            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow"
+                            className="bg-card border border-border rounded-lg p-4 hover:shadow-md transition-shadow"
                         >
                             <div className="flex items-start justify-between mb-3">
                                 <div className="flex-1">
-                                    <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+                                    <h3 className="text-lg font-bold font-display tracking-tight text-foreground mb-1">
                                         {template.title}
                                     </h3>
                                     {template.description && (
-                                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                        <p className="text-sm text-muted-foreground mt-1">
                                             {template.description}
                                         </p>
                                     )}
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 flex items-center gap-1.5 font-medium">
+                                    <p className="text-xs text-muted-foreground mt-3 flex items-center gap-1.5 font-medium">
                                         <span className="w-4 h-4 rounded-full bg-brand-primary/10 text-brand-primary flex items-center justify-center text-[8px] font-bold uppercase">
                                             {template.coach?.name?.charAt(0) || 'C'}
                                         </span>
@@ -139,8 +139,8 @@ export default function WorkoutLibraryPage() {
                                 </div>
                             </div>
 
-                            <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
-                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                            <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
+                                <span className="text-xs text-muted-foreground">
                                     {template.blocks?.length || 0} {t('steps')}
                                 </span>
                                 <div className="flex gap-2">

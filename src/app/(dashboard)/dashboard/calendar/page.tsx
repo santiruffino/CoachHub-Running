@@ -1,10 +1,13 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { CalendarView } from '@/features/calendar/components/CalendarView';
 import { StudentFilter } from '@/features/calendar/components/StudentFilter';
 import api from '@/lib/axios';
 import { startOfMonth, endOfMonth } from 'date-fns';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 import { TrainingAssignment } from '@/interfaces/training';
 
@@ -17,6 +20,7 @@ interface CalendarEvent {
 }
 
 export default function CalendarPage() {
+    const router = useRouter();
     const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
     const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
     const [students, setStudents] = useState<{ id: string, name: string }[]>([]);
@@ -112,8 +116,12 @@ export default function CalendarPage() {
         );
     };
 
+    const handleSelectEvent = (event: CalendarEvent) => {
+        router.push(`/workouts/${event.id}`);
+    };
+
     return (
-        <div className="flex h-screen p-6 space-x-6 bg-gray-50 overflow-hidden">
+        <div className="flex h-full p-4 md:p-8 space-x-6 overflow-hidden">
             <StudentFilter
                 students={students}
                 groups={groups}
@@ -125,11 +133,17 @@ export default function CalendarPage() {
                 onDeselectAllStudents={() => setSelectedStudentIds([])}
             />
             <div className="flex-1 overflow-hidden flex flex-col">
-                <h1 className="text-2xl font-bold text-gray-800 mb-6">Training Calendar</h1>
+                <div className="flex items-center gap-4 mb-6">
+                    <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full">
+                        <ArrowLeft className="h-5 w-5" />
+                    </Button>
+                    <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">Training Calendar</h1>
+                </div>
                 <div className="flex-1 min-h-0">
                     <CalendarView
                         events={events}
                         onDateChange={handleDateChange}
+                        onSelectEvent={handleSelectEvent}
                     />
                 </div>
             </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { Calendar, dateFnsLocalizer, View } from 'react-big-calendar';
+import { Calendar, dateFnsLocalizer, View, EventProps } from 'react-big-calendar';
 import { format } from 'date-fns/format';
 import { parse } from 'date-fns/parse';
 import { startOfWeek } from 'date-fns/startOfWeek';
@@ -10,6 +10,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { useState } from 'react';
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
+import { Trophy } from 'lucide-react';
 
 const locales = {
     'en-US': enUS,
@@ -31,7 +32,7 @@ export interface CalendarEvent {
     start: Date;
     end: Date;
     resource?: {
-        type: 'PLANNED' | 'COMPLETED';
+        type: 'PLANNED' | 'COMPLETED' | 'RACE';
         description?: string;
         details?: any;
     };
@@ -43,6 +44,17 @@ interface CalendarViewProps {
     onEventDrop?: (args: any) => void;
     onSelectEvent?: (event: CalendarEvent) => void;
 }
+
+const CustomEvent = ({ event }: EventProps<CalendarEvent>) => {
+    const isRace = event.resource?.type === 'RACE';
+    
+    return (
+        <div className="flex items-center gap-1 overflow-hidden">
+            {isRace && <Trophy className="h-3 w-3 shrink-0" />}
+            <span className="truncate">{event.title}</span>
+        </div>
+    );
+};
 
 export function CalendarView({ events, onDateChange, onEventDrop, onSelectEvent }: CalendarViewProps) {
     const [view, setView] = useState<View>('week');
@@ -60,16 +72,24 @@ export function CalendarView({ events, onDateChange, onEventDrop, onSelectEvent 
     };
 
     const eventStyleGetter = (event: CalendarEvent) => {
-        const isPlanned = event.resource?.type === 'PLANNED';
-        const backgroundColor = isPlanned ? '#3b82f6' : '#f97316'; // Blue for Planned, Orange for Completed
+        const type = event.resource?.type;
+        let backgroundColor = '#3b82f6'; // Default Blue for Planned
+        
+        if (type === 'COMPLETED') {
+            backgroundColor = '#f97316'; // Orange for Completed
+        } else if (type === 'RACE') {
+            backgroundColor = '#8b5cf6'; // Violet for Race
+        }
+
         return {
             style: {
                 backgroundColor,
                 borderRadius: '4px',
-                opacity: 0.8,
+                opacity: 0.9,
                 color: 'white',
                 border: '0px',
-                display: 'block'
+                display: 'block',
+                fontWeight: type === 'RACE' ? '700' : '400'
             }
         };
     };
@@ -92,6 +112,9 @@ export function CalendarView({ events, onDateChange, onEventDrop, onSelectEvent 
                 onSelectEvent={onSelectEvent as any}
                 eventPropGetter={eventStyleGetter as any}
                 resizable={false}
+                components={{
+                    event: CustomEvent
+                }}
             />
         </div>
     );

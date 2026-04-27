@@ -148,7 +148,7 @@ export default function GroupDetailsPage({ params }: { params: Promise<{ id: str
             </Link>
           </Button>
           <div>
-            <h1 className="text-2xl font-bold">{group.name}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">{group.name}</h1>
             {group.group_type === 'RACE' && (
               <div className="flex items-center gap-3 mt-1">
                 <Badge variant="secondary" className="bg-primary/10 text-primary border-none">
