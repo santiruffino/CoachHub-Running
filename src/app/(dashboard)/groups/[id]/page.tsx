@@ -86,7 +86,7 @@ export default function GroupDetailsPage({ params }: { params: Promise<{ id: str
       const groupData = groupRes.data;
       setGroup(groupData);
 
-      const groupMemberIds = new Set(groupData.members.map((m) => m.athlete.id));
+      const groupMemberIds = new Set(groupData.members.map((m: { athlete: any }) => m.athlete.id));
 
       const filteredAthletes: GroupAthleteData[] = athletesRes.data
         .filter((a: any) => groupMemberIds.has(a.id))

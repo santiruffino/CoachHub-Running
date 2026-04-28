@@ -1,4 +1,4 @@
-import { Group } from '../types';
+import { Group } from '@/interfaces/group';
 import { subMonths, isAfter, parseISO } from 'date-fns';
 
 /**

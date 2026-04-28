@@ -17,7 +17,7 @@ import { Loader2, Trophy } from 'lucide-react';
 import { groupsService } from '../services/groups.service';
 import { racesService } from '@/features/races/services/races.service';
 import { Race } from '@/interfaces/race';
-import { Group, CreateGroupDto } from '../types';
+import { Group, CreateGroupDto } from '@/interfaces/group';
 import { useTranslations } from 'next-intl';
 
 interface EditGroupModalProps {

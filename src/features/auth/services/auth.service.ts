@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/client';
-import { User, Profile, Role } from '../types';
+import { User, Profile, Role } from '@/interfaces/auth';
 
 export interface LoginResponse {
     user: User;

@@ -86,7 +86,8 @@ export default function AthleteDetailPage() {
                     const dayStr = format(day, 'yyyy-MM-dd');
 
                     const assignmentCount = calendarRes.data.filter((a: TrainingAssignment) => {
-                        const assignmentDateStr = a.scheduled_date.split('T')[0];
+                        const dateValue = a.scheduled_date || a.scheduledDate;
+                        const assignmentDateStr = dateValue.split('T')[0];
                         return assignmentDateStr === dayStr;
                     }).length;
 
@@ -107,7 +108,8 @@ export default function AthleteDetailPage() {
                 const isAssignmentCompleted = (assignment: TrainingAssignment, activitiesList: Activity[]): boolean => {
                     if (assignment.completed) return true;
 
-                    const assignmentDateStr = assignment.scheduled_date.split('T')[0];
+                    const dateValue = assignment.scheduled_date || assignment.scheduledDate;
+                    const assignmentDateStr = dateValue.split('T')[0];
                     const assignmentType = assignment.training.type;
 
                     return activitiesList.some(activity => {
@@ -127,7 +129,8 @@ export default function AthleteDetailPage() {
                     const weekEndStr = format(weekEnd, 'yyyy-MM-dd');
 
                     const weekAssignments = calendarRes.data.filter((a: TrainingAssignment) => {
-                        const assignmentDateStr = a.scheduled_date.split('T')[0];
+                        const dateValue = a.scheduled_date || a.scheduledDate;
+                        const assignmentDateStr = dateValue.split('T')[0];
                         return assignmentDateStr >= weekStartStr && assignmentDateStr <= weekEndStr;
                     });
 
@@ -231,7 +234,8 @@ export default function AthleteDetailPage() {
     const completedTrainings = assignments.filter(assignment => {
         if (assignment.completed) return true;
 
-        const assignmentDateStr = assignment.scheduled_date.split('T')[0];
+        const dateValue = assignment.scheduled_date || assignment.scheduledDate;
+        const assignmentDateStr = dateValue.split('T')[0];
         const assignmentType = assignment.training.type;
 
         return activities.some(activity => {
@@ -249,7 +253,8 @@ export default function AthleteDetailPage() {
     const weekEndStr = format(weekEnd, 'yyyy-MM-dd');
 
     const thisWeekTrainings = assignments.filter((a) => {
-        const assignmentDateStr = a.scheduled_date.split('T')[0];
+        const dateValue = a.scheduled_date || a.scheduledDate;
+        const assignmentDateStr = dateValue.split('T')[0];
         return assignmentDateStr >= weekStartStr && assignmentDateStr <= weekEndStr;
     }).length;
 

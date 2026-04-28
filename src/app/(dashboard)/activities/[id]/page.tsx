@@ -153,7 +153,8 @@ export default function ActivityDetailPage() {
                     if (a.activity_id) return false;
 
                     // 3. Fallback to date match
-                    const assignmentDate = a.scheduled_date?.split('T')[0];
+                    const dateValue = a.scheduled_date || a.scheduledDate;
+                    const assignmentDate = dateValue?.split('T')[0];
                     return assignmentDate === activityDate;
                 });
 

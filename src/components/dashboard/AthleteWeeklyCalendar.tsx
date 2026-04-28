@@ -209,13 +209,15 @@ export function AthleteWeeklyCalendar({ weekStart, assignments, activities, race
                     const isToday = isSameDay(day, new Date());
                     const dayStr = format(day, 'yyyy-MM-dd');
 
-                    const dayTrainings = assignments.filter(
-                        (a) => a.scheduled_date.split('T')[0] === dayStr
-                    );
+                    const dayTrainings = assignments.filter((a) => {
+                        const dateValue = a.scheduled_date || a.scheduledDate;
+                        return dateValue.split('T')[0] === dayStr;
+                    });
 
-                    const dayRaces = races.filter(
-                        (r) => r.date.split('T')[0] === dayStr
-                    );
+                    const dayRaces = races.filter((r) => {
+                        const dateValue = r.date; // AthleteRace date is required
+                        return dateValue.split('T')[0] === dayStr;
+                    });
 
                     const dayActivities = activities.filter(
                         (act) => format(new Date(act.start_date), 'yyyy-MM-dd') === dayStr
@@ -229,16 +231,16 @@ export function AthleteWeeklyCalendar({ weekStart, assignments, activities, race
                     const enrichedTrainings = dayTrainings.map((assignment) => {
                         const matchingActivity = dayActivities.find(
                             (act) =>
-                                !matchedActivityIds.has(act.id) &&
+                                !matchedActivityIds.has(String(act.id)) &&
                                 normalizeActivityType(act.type) === assignment.training.type
                         );
-                        if (matchingActivity) matchedActivityIds.add(matchingActivity.id);
+                        if (matchingActivity) matchedActivityIds.add(String(matchingActivity.id));
                         const isCompleted = assignment.completed || !!matchingActivity;
                         return { assignment, matchingActivity: matchingActivity ?? null, isCompleted };
                     });
 
                     // Standalone activities (no planned workout that day)
-                    const standaloneActivities = dayActivities.filter((act) => !matchedActivityIds.has(act.id));
+                    const standaloneActivities = dayActivities.filter((act) => !matchedActivityIds.has(String(act.id)));
 
                     const isEmpty = dayTrainings.length === 0 && standaloneActivities.length === 0 && dayRaces.length === 0;
                     const hasRace = dayRaces.length > 0;

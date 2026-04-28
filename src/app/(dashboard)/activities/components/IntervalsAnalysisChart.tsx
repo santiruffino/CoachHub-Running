@@ -55,8 +55,8 @@ export function IntervalsAnalysisChart({
   };
 
   // Conversion helpers
-  const metersPerSecondToPaceDecimal = (mps: number): number | null => {
-    if (mps <= 0.5) return null; // Avoid infinite/meaningless pace at stop or very slow walk
+  const metersPerSecondToPaceDecimal = (mps: number): number => {
+    if (mps <= 0.5) return 0; // Avoid infinite/meaningless pace at stop or very slow walk
     return (1000 / mps) / 60; // min/km as decimal
   };
 
@@ -64,8 +64,8 @@ export function IntervalsAnalysisChart({
     return mps * 3.6;
   };
 
-  const formatPace = (decimalMin: number | null): string => {
-    if (decimalMin === null || decimalMin === 0) return '--:--';
+  const formatPace = (decimalMin: number): string => {
+    if (decimalMin === 0) return '--:--';
     const mins = Math.floor(decimalMin);
     const secs = Math.round((decimalMin - mins) * 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
@@ -143,7 +143,7 @@ export function IntervalsAnalysisChart({
 
               return (
                 <div key={index} className="flex items-center gap-4 justify-between">
-                  <span className="text-sm font-medium" style={{ color: entry.dataKey === 'hr' ? undefined : entry.color }}>
+                  <span className="text-sm font-medium" style={{ color: entry.dataKey === 'hr' ? '' : entry.color }}>
                     {entryLabel}:
                   </span>
                   <span className="text-sm font-bold text-foreground">
@@ -196,39 +196,41 @@ export function IntervalsAnalysisChart({
               dataKey="name" 
               axisLine={false}
               tickLine={false}
-              tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12, fontWeight: 500 }}
+              tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12, fontWeight: '500' }}
               dy={10}
             />
             {/* HR/Cadence Axis - Now visible to explain bar height */}
             <YAxis 
-              yId="left"
+              yAxisId="left"
               axisLine={false}
               tickLine={false}
-              tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10, fontWeight: 500 }}
-              domain={['dataMin - 10', 'auto']}
+              tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: '10px' }}
+              domain={[0, 'auto']}
               width={35}
               label={{ 
                 value: 'bpm', 
                 angle: -90, 
                 position: 'insideLeft', 
-                style: { textAnchor: 'middle', fill: 'hsl(var(--muted-foreground))', fontSize: 10, fontWeight: 600, textTransform: 'uppercase' } 
+                fill: 'hsl(var(--muted-foreground))',
+                style: { textAnchor: 'middle', fontSize: 10, fontWeight: 600 }
               }}
             />
             {/* Pace Axis - Now visible to explain line height */}
             <YAxis 
-              yId="right"
+              yAxisId="right"
               orientation="right"
               axisLine={false}
               tickLine={false}
-              tick={{ fill: '#f97316', fontSize: 10, fontWeight: 500 }}
+              tick={{ fill: '#f97316', fontSize: '10px' }}
               domain={['auto', 'auto']}
               width={45}
-              tickFormatter={(val) => isRunning ? formatPace(val) : `${val.toFixed(0)}`}
+              tickFormatter={(val) => isRunning ? formatPace(val) : `${val}`}
               label={{ 
                 value: isRunning ? 'min/km' : 'km/h', 
                 angle: 90, 
-                position: 'insideRight', 
-                style: { textAnchor: 'middle', fill: '#f97316', fontSize: 10, fontWeight: 600, textTransform: 'uppercase' } 
+                position: 'insideRight',
+                fill: '#f97316',
+                style: { textAnchor: 'middle', fontSize: 10, fontWeight: 600 }
               }}
             />
             
@@ -236,7 +238,7 @@ export function IntervalsAnalysisChart({
             
             {/* Area for Cadence - Subtle background */}
             <Area
-              yId="left"
+              yAxisId="left"
               type="monotone"
               dataKey="cadence"
               name="Cadencia"
@@ -248,7 +250,7 @@ export function IntervalsAnalysisChart({
 
             {/* Bar for Heart Rate */}
             <Bar 
-              yId="left" 
+              yAxisId="left" 
               dataKey="hr" 
               name="Pulso" 
               barSize={32} 
@@ -267,7 +269,7 @@ export function IntervalsAnalysisChart({
 
             {/* Line for Pace */}
             <Line
-              yId="right"
+              yAxisId="right"
               type="monotone"
               dataKey="pace"
               name="Ritmo"

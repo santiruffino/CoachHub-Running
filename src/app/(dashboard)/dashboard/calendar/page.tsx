@@ -82,7 +82,7 @@ export default function CalendarPage() {
 
             const newEvents = response.data.map((assignment: TrainingAssignment) => ({
                 id: assignment.id,
-                title: `${assignment.workout_name || assignment.training.title} - ${assignment.user.name || 'Unknown'}`,
+                title: `${assignment.workout_name || assignment.training.title} - ${assignment.user?.name || 'Unknown'}`,
                 start: new Date(assignment.scheduledDate),
                 end: new Date(new Date(assignment.scheduledDate).getTime() + 60 * 60 * 1000), // Default 1 hour
             }));

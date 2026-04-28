@@ -112,7 +112,7 @@ export default function AdminDashboard({ user }: { user: any }) {
                   </div>
                   <div className="text-right text-sm">
                     <p className="flex items-center gap-2 justify-end">
-                      <Users className="h-3 w-3" /> {t('dashboard.admin.athletesCount', { count: coach.totalAthletes })}
+                      <Users className="h-3 w-3" /> {t('dashboard.admin.athletesCount', { count: coach.totalAthletes || 0 })}
                     </p>
                     <p className="text-muted-foreground flex items-center gap-2 justify-end mt-1">
                       <Activity className="h-3 w-3" /> 

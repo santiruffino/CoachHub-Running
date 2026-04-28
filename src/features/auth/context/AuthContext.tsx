@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { User } from '../types';
+import { User } from '@/interfaces/auth';
 import { authService } from '../services/auth.service';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';

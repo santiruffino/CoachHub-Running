@@ -68,14 +68,16 @@ export default function AthleteDashboard({ user }: { user: any }) {
                 const wEnd = endOfWeek(week, { weekStartsOn: 1 });
                 
                 const weekAssignments = calendarRes.data.filter((a: any) => {
-                    const d = a.scheduled_date.split('T')[0];
+                    const dateValue = a.scheduled_date || a.scheduledDate;
+                    const d = dateValue.split('T')[0];
                     return d >= format(wStart, 'yyyy-MM-dd') && d <= format(wEnd, 'yyyy-MM-dd');
                 });
 
                 const completed = weekAssignments.filter((a: any) => {
                     if (a.completed) return true;
+                    const dateValue = a.scheduled_date || a.scheduledDate;
                     return activitiesRes.data.some((act: any) => 
-                        format(new Date(act.start_date), 'yyyy-MM-dd') === a.scheduled_date.split('T')[0] &&
+                        format(new Date(act.start_date), 'yyyy-MM-dd') === dateValue.split('T')[0] &&
                         normalizeActivityType(act.type) === a.training.type
                     );
                 }).length;

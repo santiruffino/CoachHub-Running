@@ -113,7 +113,7 @@ export function CalendarView({ events, onDateChange, onEventDrop, onSelectEvent 
                 eventPropGetter={eventStyleGetter as any}
                 resizable={false}
                 components={{
-                    event: CustomEvent
+                    event: CustomEvent as any
                 }}
             />
         </div>

@@ -165,7 +165,7 @@ export default function WorkoutDetailsPage() {
                         <div>
                             <div className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-1">{t('targetAthlete')}</div>
                              <div className="text-sm font-bold text-foreground">
-                                {assignment.athlete.name || assignment.athlete.email}
+                                {assignment.athlete?.name || assignment.athlete?.email || 'N/A'}
                             </div>
                         </div>
                     </div>
@@ -239,7 +239,7 @@ export default function WorkoutDetailsPage() {
                 <WorkoutBuilder
                     initialBlocks={editedBlocks}
                     onChange={readOnly ? undefined : handleBlocksChange}
-                    athleteId={assignment.athlete.id}
+                    athleteId={assignment.athlete?.id}
                     readOnly={readOnly}
                     footerContent={footerContent}
                 />

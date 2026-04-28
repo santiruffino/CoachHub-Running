@@ -1,5 +1,5 @@
 import api from '@/lib/axios';
-import { Group, GroupDetails, CreateGroupDto } from '../types';
+import { Group, GroupDetails, CreateGroupDto } from '@/interfaces/group';
 
 export const groupsService = {
     findAll: async () => {
