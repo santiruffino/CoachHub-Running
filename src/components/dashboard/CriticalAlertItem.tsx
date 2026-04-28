@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 interface CriticalAlertItemProps {
     athleteId: string;
     athleteName: string;
-    alertType: 'rpe_mismatch' | 'new_feedback' | 'low_compliance' | 'missing_workout';
+    alertType: 'rpe_mismatch' | 'new_feedback' | 'low_compliance' | 'missing_workout' | 'zone_violation';
     timestamp: string;
     message: string;
     details?: string;
@@ -29,6 +29,8 @@ export function CriticalAlertItem({
         messageColor = "text-red-500/90";
     } else if (alertType === 'missing_workout') {
         messageColor = "text-orange-500/90";
+    } else if (alertType === 'zone_violation') {
+        messageColor = "text-red-500/90 font-bold";
     }
 
     return (

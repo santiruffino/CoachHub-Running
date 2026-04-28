@@ -34,6 +34,8 @@ export async function GET(
                 scheduled_date,
                 completed,
                 expected_rpe,
+                source_group_id,
+                group:groups(id, name),
                 training:trainings!inner(
                     id,
                     title,
@@ -98,6 +100,8 @@ export async function GET(
             scheduledDate: assignment.scheduled_date,
             completed: assignment.completed,
             expectedRpe: assignment.expected_rpe,
+            sourceGroupId: assignment.source_group_id,
+            groupName: (assignment as any).group?.name,
             training: {
                 id: training.id,
                 title: training.title,
@@ -144,20 +148,16 @@ export async function PATCH(
         const { supabase, user } = authResult;
         const assignmentId = id;
         const body = await request.json();
-        const { blocks, expectedRpe } = body;
+        const { blocks, expectedRpe, scheduledDate, applyToGroup } = body;
 
-        if (!blocks || !Array.isArray(blocks)) {
-            return NextResponse.json(
-                { error: 'Invalid blocks data' },
-                { status: 400 }
-            );
-        }
-
-        // Fetch assignment with training to verify ownership
+        // Fetch assignment with training to verify ownership and get group info
         const { data: assignment, error: fetchError } = await supabase
             .from('training_assignments')
             .select(`
                 id,
+                training_id,
+                scheduled_date,
+                source_group_id,
                 training:trainings!inner(
                     id,
                     title,
@@ -192,55 +192,101 @@ export async function PATCH(
             );
         }
 
-        // Create a new non-template training with updated blocks (forking)
-        // We do this to preserve the history of the original training while allowing
-        // the coach to customize this specific assignment.
-        const { data: newTraining, error: createError } = await supabase
-            .from('trainings')
-            .insert({
-                title: training.title,
-                type: training.type,
-                description: training.description || 'Modified workout',
-                blocks: blocks,
-                is_template: false,
-                coach_id: user!.id,
-                // We don't necessarily copy expected_rpe here because the assignment
-                // has its own expected_rpe field which overrides it.
-            })
-            .select()
-            .single();
+        const updatePayload: any = {
+            updated_at: new Date().toISOString()
+        };
 
-        if (createError || !newTraining) {
-            console.error('Create training error:', createError);
-            return NextResponse.json(
-                { error: 'Failed to create updated training' },
-                { status: 500 }
-            );
+        let trainingIdToUse = assignment.training_id;
+
+        // 1. Handle Workout Blocks Update (Forking)
+        if (blocks && Array.isArray(blocks)) {
+            const { data: newTraining, error: createError } = await supabase
+                .from('trainings')
+                .insert({
+                    title: training.title,
+                    type: training.type,
+                    description: training.description || 'Modified workout',
+                    blocks: blocks,
+                    is_template: false,
+                    coach_id: user!.id,
+                })
+                .select()
+                .single();
+
+            if (createError || !newTraining) {
+                console.error('Create training error:', createError);
+                return NextResponse.json(
+                    { error: 'Failed to create updated training' },
+                    { status: 500 }
+                );
+            }
+
+            trainingIdToUse = newTraining.id;
+            updatePayload.training_id = newTraining.id;
+            
+            // Generate snapshot for the new workout
+            updatePayload.workout_snapshot = {
+                title: newTraining.title,
+                description: newTraining.description,
+                type: newTraining.type,
+                blocks: newTraining.blocks,
+                version: 1,
+                timestamp: new Date().toISOString()
+            };
         }
 
-        // Update assignment to reference new training and update RPE if provided
-        const updatePayload: any = { training_id: newTraining.id };
+        // 2. Handle Rescheduling
+        if (scheduledDate) {
+            updatePayload.scheduled_date = scheduledDate;
+        }
+
+        // 3. Handle RPE Update
         if (expectedRpe !== undefined) {
             updatePayload.expected_rpe = expectedRpe;
         }
 
-        const { error: updateError } = await supabase
-            .from('training_assignments')
-            .update(updatePayload)
-            .eq('id', assignmentId);
+        // 4. Perform Update (Single or Group)
+        if (applyToGroup && assignment.source_group_id) {
+            const { count, error: updateError } = await supabase
+                .from('training_assignments')
+                .update(updatePayload)
+                .eq('source_group_id', assignment.source_group_id)
+                .eq('training_id', assignment.training_id)
+                .eq('scheduled_date', assignment.scheduled_date)
+                .select('id');
 
-        if (updateError) {
-            console.error('Update assignment error:', updateError);
-            return NextResponse.json(
-                { error: 'Failed to update assignment' },
-                { status: 500 }
-            );
+            if (updateError) {
+                console.error('Update group assignments error:', updateError);
+                return NextResponse.json(
+                    { error: 'Failed to update group assignments' },
+                    { status: 500 }
+                );
+            }
+
+            return NextResponse.json({
+                message: 'Group workouts updated successfully',
+                updatedCount: count,
+                trainingId: trainingIdToUse,
+            });
+        } else {
+            const { error: updateError } = await supabase
+                .from('training_assignments')
+                .update(updatePayload)
+                .eq('id', assignmentId);
+
+            if (updateError) {
+                console.error('Update assignment error:', updateError);
+                return NextResponse.json(
+                    { error: 'Failed to update assignment' },
+                    { status: 500 }
+                );
+            }
+
+            return NextResponse.json({
+                message: 'Workout updated successfully',
+                trainingId: trainingIdToUse,
+            });
         }
-
-        return NextResponse.json({
-            message: 'Workout updated successfully',
-            trainingId: newTraining.id,
-        });
     } catch (error: any) {
         console.error('Update assignment error:', error);
         return NextResponse.json(
@@ -271,14 +317,26 @@ export async function DELETE(
 
         const { supabase, user } = authResult;
         const assignmentId = id;
+        
+        // Try to parse body for applyToGroup flag
+        let applyToGroup = false;
+        try {
+            const body = await request.json();
+            applyToGroup = body.applyToGroup || false;
+        } catch (e) {
+            // No body provided or not JSON, assume single delete
+        }
 
-        // Fetch assignment with training to verify ownership
+        // Fetch assignment with training to verify ownership and get group info
         const { data: assignment, error: fetchError } = await supabase
             .from('training_assignments')
             .select(`
-        id,
-        training:trainings!inner(coach_id)
-      `)
+                id,
+                training_id,
+                scheduled_date,
+                source_group_id,
+                training:trainings!inner(coach_id)
+            `)
             .eq('id', assignmentId)
             .single();
 
@@ -290,7 +348,6 @@ export async function DELETE(
         }
 
         // Verify coach owns the training
-        // Type assertion needed because Supabase types the nested relation as an array
         const training = assignment.training as unknown as { coach_id: string };
         if (training.coach_id !== user!.id) {
             return NextResponse.json(
@@ -299,23 +356,44 @@ export async function DELETE(
             );
         }
 
-        // Delete assignment
-        const { error: deleteError } = await supabase
-            .from('training_assignments')
-            .delete()
-            .eq('id', assignmentId);
+        if (applyToGroup && assignment.source_group_id) {
+            const { count, error: deleteError } = await supabase
+                .from('training_assignments')
+                .delete()
+                .eq('source_group_id', assignment.source_group_id)
+                .eq('training_id', assignment.training_id)
+                .eq('scheduled_date', assignment.scheduled_date);
 
-        if (deleteError) {
-            console.error('Delete assignment error:', deleteError);
-            return NextResponse.json(
-                { error: 'Failed to delete assignment' },
-                { status: 500 }
-            );
+            if (deleteError) {
+                console.error('Delete group assignments error:', deleteError);
+                return NextResponse.json(
+                    { error: 'Failed to delete group assignments' },
+                    { status: 500 }
+                );
+            }
+
+            return NextResponse.json({
+                message: 'Group assignments deleted successfully',
+                deletedCount: count,
+            });
+        } else {
+            const { error: deleteError } = await supabase
+                .from('training_assignments')
+                .delete()
+                .eq('id', assignmentId);
+
+            if (deleteError) {
+                console.error('Delete assignment error:', deleteError);
+                return NextResponse.json(
+                    { error: 'Failed to delete assignment' },
+                    { status: 500 }
+                );
+            }
+
+            return NextResponse.json({
+                message: 'Assignment deleted successfully',
+            });
         }
-
-        return NextResponse.json({
-            message: 'Assignment deleted successfully',
-        });
     } catch (error: any) {
         console.error('Delete assignment error:', error);
         return NextResponse.json(

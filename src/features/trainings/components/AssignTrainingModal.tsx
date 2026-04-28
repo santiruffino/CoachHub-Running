@@ -18,6 +18,7 @@ interface AssignTrainingModalProps {
     trainingId?: string;
     isOpen: boolean;
     onClose: () => void;
+    onSuccess?: () => void;
 }
 
 interface Athlete {
@@ -31,7 +32,7 @@ interface Group {
     name: string;
 }
 
-export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, onClose }: AssignTrainingModalProps) {
+export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, onClose, onSuccess }: AssignTrainingModalProps) {
     const t = useTranslations('trainings.assign');
 
     const [selectedTrainingId, setSelectedTrainingId] = useState<string>('');
@@ -170,8 +171,9 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                     workoutName: workoutName || undefined,
                 });
 
+                if (onSuccess) onSuccess();
+                else window.location.reload();
                 onClose();
-                window.location.reload();
             } catch (e) {
                 console.error(e);
                 setError(t('errorCreate'));
@@ -213,8 +215,9 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                     workoutName: workoutName || undefined,
                 });
 
+                if (onSuccess) onSuccess();
+                else window.location.reload();
                 onClose();
-                window.location.reload();
             } catch (e) {
                 console.error(e);
                 setError(t('errorAssign'));
@@ -261,8 +264,9 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                 workoutName: workoutName || undefined,
             });
 
+            if (onSuccess) onSuccess();
+            else window.location.reload();
             onClose();
-            window.location.reload();
         } catch (e) {
             console.error(e);
             setError(t('errorAssign'));

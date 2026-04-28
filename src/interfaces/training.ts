@@ -38,6 +38,8 @@ export interface TrainingAssignment {
         name: string | null;
     };
     workout_name?: string | null;
+    source_group_id?: string | null;
+    groupName?: string;
     canEdit?: boolean;
 }
 

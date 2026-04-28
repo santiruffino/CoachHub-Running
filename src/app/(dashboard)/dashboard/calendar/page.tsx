@@ -8,6 +8,7 @@ import api from '@/lib/axios';
 import { startOfMonth, endOfMonth } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
+import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
 
 import { TrainingAssignment } from '@/interfaces/training';
 
@@ -26,6 +27,7 @@ export default function CalendarPage() {
     const [students, setStudents] = useState<{ id: string, name: string }[]>([]);
     const [groups, setGroups] = useState<{ id: string, name: string }[]>([]);
     const [events, setEvents] = useState<CalendarEvent[]>([]);
+    const { alertState, showAlert, closeAlert } = useAlertDialog();
     const [currentRange, setCurrentRange] = useState<{ start: Date; end: Date }>({
         start: startOfMonth(new Date()),
         end: endOfMonth(new Date()),
@@ -76,7 +78,7 @@ export default function CalendarPage() {
                     startDate: currentRange.start.toISOString(),
                     endDate: currentRange.end.toISOString(),
                     studentIds: selectedStudentIds,
-                    groupIds: selectedGroupIds, // Pass groupIds
+                    groupIds: selectedGroupIds,
                 }
             });
 
@@ -85,6 +87,7 @@ export default function CalendarPage() {
                 title: `${assignment.workout_name || assignment.training.title} - ${assignment.user?.name || 'Unknown'}`,
                 start: new Date(assignment.scheduledDate),
                 end: new Date(new Date(assignment.scheduledDate).getTime() + 60 * 60 * 1000), // Default 1 hour
+                resource: assignment,
             }));
             setEvents(newEvents);
         } catch (error) {
@@ -120,6 +123,38 @@ export default function CalendarPage() {
         router.push(`/workouts/${event.id}`);
     };
 
+    const handleEventDrop = async ({ event, start }: any) => {
+        const assignment = event.resource as TrainingAssignment;
+        const newDate = (start as Date).toISOString().split('T')[0];
+
+        const executeReschedule = async (applyToGroup: boolean) => {
+            try {
+                await api.patch(`/v2/trainings/assignments/${assignment.id}`, {
+                    scheduledDate: newDate,
+                    applyToGroup
+                });
+                fetchAssignments();
+            } catch (error) {
+                console.error('Failed to reschedule', error);
+                showAlert('error', 'Error al reprogramar el entrenamiento');
+            }
+        };
+
+        if (assignment.source_group_id) {
+            showAlert(
+                'warning',
+                'Este entrenamiento fue asignado a un grupo. ¿Quieres reprogramarlo para todos los atletas?',
+                'Reprogramar Grupo',
+                'Mover Todos',
+                () => executeReschedule(true),
+                'Solo Este',
+                () => executeReschedule(false)
+            );
+        } else {
+            executeReschedule(false);
+        }
+    };
+
     return (
         <div className="flex h-full p-4 md:p-8 space-x-6 overflow-hidden">
             <StudentFilter
@@ -137,16 +172,29 @@ export default function CalendarPage() {
                     <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full">
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
-                    <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">Training Calendar</h1>
+                    <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">Calendario de Entrenamiento</h1>
                 </div>
                 <div className="flex-1 min-h-0">
                     <CalendarView
                         events={events}
                         onDateChange={handleDateChange}
                         onSelectEvent={handleSelectEvent}
+                        onEventDrop={handleEventDrop}
                     />
                 </div>
             </div>
+
+            <AlertDialog
+                open={alertState.open}
+                onClose={closeAlert}
+                onConfirm={alertState.onConfirm}
+                onCancel={alertState.onCancel}
+                type={alertState.type}
+                title={alertState.title}
+                message={alertState.message}
+                confirmText={alertState.confirmText}
+                cancelText={alertState.cancelText}
+            />
         </div>
     );
 }

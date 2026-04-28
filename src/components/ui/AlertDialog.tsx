@@ -18,6 +18,7 @@ interface AlertDialogProps {
     open: boolean;
     onClose: () => void;
     onConfirm?: () => void;
+    onCancel?: () => void;
     type: AlertType;
     title?: string;
     message: string;
@@ -31,6 +32,7 @@ export function AlertDialog({
     open,
     onClose,
     onConfirm,
+    onCancel,
     type,
     title,
     message,
@@ -87,7 +89,7 @@ export function AlertDialog({
                 <DialogFooter>
                     {onConfirm ? (
                         <>
-                            <Button variant="outline" onClick={onClose} className="w-full sm:w-auto" disabled={loading || disabled}>
+                            <Button variant="outline" onClick={() => { onCancel ? onCancel() : onClose(); }} className="w-full sm:w-auto" disabled={loading || disabled}>
                                 {cancelText}
                             </Button>
                             <Button
@@ -118,6 +120,9 @@ export function useAlertDialog() {
         title?: string;
         message: string;
         confirmText?: string;
+        cancelText?: string;
+        onConfirm?: () => void;
+        onCancel?: () => void;
     }>({
         open: false,
         type: 'error',
@@ -128,7 +133,10 @@ export function useAlertDialog() {
         type: AlertType,
         message: string,
         title?: string,
-        confirmText?: string
+        confirmText?: string,
+        onConfirm?: () => void,
+        cancelText?: string,
+        onCancel?: () => void
     ) => {
         setAlertState({
             open: true,
@@ -136,6 +144,9 @@ export function useAlertDialog() {
             message,
             title,
             confirmText,
+            onConfirm,
+            cancelText,
+            onCancel,
         });
     };
 

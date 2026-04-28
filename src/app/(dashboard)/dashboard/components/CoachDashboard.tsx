@@ -17,6 +17,7 @@ interface DashboardData {
     lowCompliance: LowCompliance[];
     missingWorkouts: MissingWorkout[];
     recentFeedback: any[];
+    zoneViolations: any[];
   };
   groupCompliance: { groupId: string; groupName: string; athleteCount: number; completionRate: number }[];
   activityTimeline: TimelineEvent[];
@@ -75,7 +76,8 @@ export default function CoachDashboard({ user }: { user: any }) {
   const rpeCount = data?.alerts?.rpeMismatches?.length ?? 0;
   const missingCount = data?.alerts?.missingWorkouts?.length ?? 0;
   const lowComplianceCount = data?.alerts?.lowCompliance?.length ?? 0;
-  const pendingActionCount = rpeCount + missingCount + lowComplianceCount;
+  const zoneViolationCount = data?.alerts?.zoneViolations?.length ?? 0;
+  const pendingActionCount = rpeCount + missingCount + lowComplianceCount + zoneViolationCount;
   const groupCount = data?.stats?.totalGroups ?? 0;
 
   const formatPlanSub = (groupName?: string, raceDate?: string) => {
@@ -88,6 +90,14 @@ export default function CoachDashboard({ user }: { user: any }) {
 
   // Real alerts mapped to UI properties
   const allAlerts = [
+    ...(data?.alerts?.zoneViolations?.map((zv: any) => ({
+      id: zv.id,
+      name: zv.name,
+      type: 'zone_violation' as const,
+      time: new Date(zv.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      message: t("dashboard.alertTypes.zone_violation"),
+      details: zv.details,
+    })) || []),
     ...(data?.alerts?.recentFeedback?.map((fb: any) => ({
       id: fb.athleteId,
       name: fb.athleteName,

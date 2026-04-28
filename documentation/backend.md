@@ -7,10 +7,11 @@ Coach Hub Running adopts a **Serverless Full-Stack Approach**, bypassing the nee
 Any logic that requires hiding secrets (like Strava API integration, Webhooks, or Supabase Admin operations) is handled by Next.js Route Handlers.
 
 ### API Structure (`/src/app/api/v2/`)
-- `/api/v2/users/`: Endpoints dealing with user management, role assignments, or bulk profile operations.
-- `/api/v2/groups/`: Coach-specific endpoints to orchestrate complex group assignment logic.
-- `/api/v2/trainings/`: Endpoints handling the creation, duplication, and assignment of structured workouts.
-- `/api/v2/strava/auth/`: OAuth callback receivers for the Strava integration. Resolves authorization codes into tokens and persists them securely.
+- `/api/v2/users/`: Endpoints dealing with user management, role assignments, and coach/athlete profile operations.
+- `/api/v2/groups/`: Coach-specific endpoints to orchestrate group lifecycle and member management.
+- `/api/v2/races/`: Centralized race template library management (CRUD).
+- `/api/v2/trainings/`: Endpoints handling the creation, duplication, and assignment of structured workouts, including **batch group updates**.
+- `/api/v2/strava/auth/`: OAuth callback receivers for the Strava integration. Resolves authorization codes into tokens.
 - `/api/v2/strava/webhook/`: Background listeners that receive real-time updates from Strava when an athlete finishes an activity.
 
 ## Supabase and Server-side Logic
@@ -24,11 +25,12 @@ Supabase serves not just as a database, but as the core logic enforcement layer.
 The absolute core of the backend security model lives in PostgreSQL. By leveraging RLS, the backend does not need extensive authorization API wrappers. If an Athlete queries `SELECT * FROM activities`, PostgreSQL evaluates the `auth.uid()` and restricts the payload to only their rows.
 
 ### 3. Asynchronous Processes & Edge Functions
-Background tasks that shouldn't block the user interface (such as analyzing a newly pushed Strava Activity and trying to match it to a prescribed Workout) are delegated to background jobs, webhooks, or Supabase Edge Functions.
+Background tasks that shouldn't block the user interface are delegated to Supabase Edge Functions:
+- **`process-strava-activity`**: Analyzes a newly pushed Strava Activity and matches it to a planned workout.
+- **`import-strava-history`**: Bulk imports the last 90 days of running activities upon OAuth completion.
 
 ### The Matching Engine (Activity to Workout)
-A specialized backend algorithm lives within the system to map Strava data to planned schedules:
-- When a Strava webhook triggers on new activity creation, the system pulls the activity details.
-- It scans the athlete's `training_assignments` for the given calendar day.
-- It compares duration, distance, and intervals.
-- The outcome (`completed`, `partial`, `skipped`) is recorded against the assignment, enabling automated compliance tracking for coaches.
+An advanced multi-tiered backend algorithm:
+- **Phase 1: Simple Match**: Compares the total distance and duration variance of the activity against the workout snapshot.
+- **Phase 2: Lap Match**: If multiple workouts are scheduled, it breaks ties by correlating Strava laps with workout blocks to generate a confidence score.
+- **Outcome**: Assignments are updated to `completed` (score >= 0.85) or `partial`. Results are audited in the `matching_log` table.

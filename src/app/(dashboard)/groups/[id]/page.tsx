@@ -42,6 +42,15 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useTranslations } from 'next-intl';
 import api from '@/lib/axios';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs';
+import { GroupWeeklyCalendar } from '@/features/groups/components/GroupWeeklyCalendar';
+import { TrainingAssignment } from '@/interfaces/training';
+import { startOfWeek, addDays, format } from 'date-fns';
 
 import { GroupAthleteData } from '@/interfaces/athlete';
 
@@ -63,6 +72,7 @@ export default function GroupDetailsPage({ params }: { params: Promise<{ id: str
 
   const [group, setGroup] = useState<GroupDetails | null>(null);
   const [groupAthletes, setGroupAthletes] = useState<GroupAthleteData[]>([]);
+  const [groupAssignments, setGroupAssignments] = useState<TrainingAssignment[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -78,13 +88,21 @@ export default function GroupDetailsPage({ params }: { params: Promise<{ id: str
   const fetchGroupData = async () => {
     try {
       setLoading(true);
-      const [groupRes, athletesRes] = await Promise.all([
+      const [groupRes, athletesRes, calendarRes] = await Promise.all([
         groupsService.findOne(id),
         api.get('/v2/users/athletes'),
+        api.get('/v2/trainings/calendar', {
+            params: {
+                groupIds: id,
+                startDate: startOfWeek(new Date(), { weekStartsOn: 1 }).toISOString(),
+                endDate: addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 28).toISOString(),
+            }
+        })
       ]);
 
       const groupData = groupRes.data;
       setGroup(groupData);
+      setGroupAssignments(calendarRes.data);
 
       const groupMemberIds = new Set(groupData.members.map((m: { athlete: any }) => m.athlete.id));
 
@@ -177,204 +195,235 @@ export default function GroupDetailsPage({ params }: { params: Promise<{ id: str
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>{t('groups.detail.membersCount', { count: groupAthletes.length })}</CardTitle>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => setIsAssignModalOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                {t('groups.detail.assignWorkout')}
-              </Button>
-              <Button size="sm" onClick={() => setIsAddModalOpen(true)}>
-                <UserPlus className="h-4 w-4 mr-2" />
-                {t('groups.detail.addMember')}
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="p-0 sm:p-6 sm:pt-0">
-          <AssignTrainingModal
-            groupId={group.id}
-            isOpen={isAssignModalOpen}
-            onClose={() => setIsAssignModalOpen(false)}
-          />
-          
-          {/* Mobile Cards View */}
-          <div className="lg:hidden space-y-3 p-4">
-            {groupAthletes.length === 0 ? (
-              <p className="text-muted-foreground text-sm text-center py-4">{t('groups.detail.noMembers')}</p>
-            ) : (
-              groupAthletes.map((athlete, idx) => (
-                <Card key={athlete.id} className="overflow-hidden">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <Avatar className={`h-12 w-12 ${AVATAR_COLORS[idx % AVATAR_COLORS.length]}`}>
-                          <AvatarFallback className="bg-transparent text-white font-semibold">
-                            {athlete.name.charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold truncate">{athlete.name}</p>
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
-                            <Mail className="h-3 w-3 flex-shrink-0" />
-                            <span className="truncate">{athlete.email}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem asChild>
-                            <Link href={`/athletes/${athlete.id}`}>
-                              {tAthletes('viewProfile')}
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-red-600 focus:text-red-600" onClick={() => handleRemoveMember(athlete.id)}>
-                            <Trash2 className="mr-2 h-4 w-4" /> {t('groups.detail.remove')}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button asChild variant="outline" size="sm" className="flex-1">
-                        <Link href={`/athletes/${athlete.id}`}>
-                          {tAthletes('viewProfile')}
-                        </Link>
-                      </Button>
-                      <Button asChild size="sm" className="flex-1">
-                        <Link href={`/workouts/assign?athleteId=${athlete.id}`}>
-                          {tAthletes('assignWorkout')}
-                        </Link>
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </div>
+      <Tabs defaultValue="members" className="w-full">
+        <TabsList className="bg-muted/50 p-1 mb-6">
+          <TabsTrigger value="members" className="px-8 font-bold uppercase tracking-widest text-[10px]">
+            {t('groups.athletes')}
+          </TabsTrigger>
+          <TabsTrigger value="calendar" className="px-8 font-bold uppercase tracking-widest text-[10px]">
+            {t('nav.trainings')}
+          </TabsTrigger>
+        </TabsList>
 
-          {/* Desktop Table View */}
-          <div className="hidden lg:block border rounded-md">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[280px]">{tAthletes('table.athlete')}</TableHead>
-                  <TableHead>{tAthletes('table.sport')}</TableHead>
-                  <TableHead>{tAthletes('table.level')}</TableHead>
-                  <TableHead className="text-center">{tAthletes('table.trainings')}</TableHead>
-                  <TableHead className="text-center">{tAthletes('table.planned')}</TableHead>
-                  <TableHead className="w-[150px]">{tAthletes('table.compliance')}</TableHead>
-                  <TableHead className="text-right w-[180px]">{tAthletes('table.actions')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+        <TabsContent value="members" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle>{t('groups.detail.membersCount', { count: groupAthletes.length })}</CardTitle>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setIsAssignModalOpen(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    {t('groups.detail.assignWorkout')}
+                  </Button>
+                  <Button size="sm" onClick={() => setIsAddModalOpen(true)}>
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    {t('groups.detail.addMember')}
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0 sm:p-6 sm:pt-0">
+              <AssignTrainingModal
+                groupId={group.id}
+                isOpen={isAssignModalOpen}
+                onClose={() => setIsAssignModalOpen(false)}
+                onSuccess={fetchGroupData}
+              />
+              
+              {/* Mobile Cards View */}
+              <div className="lg:hidden space-y-3 p-4">
                 {groupAthletes.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
-                      {t('groups.detail.noMembers')}
-                    </TableCell>
-                  </TableRow>
+                  <p className="text-muted-foreground text-sm text-center py-4">{t('groups.detail.noMembers')}</p>
                 ) : (
                   groupAthletes.map((athlete, idx) => (
-                    <TableRow key={athlete.id}>
-                      <TableCell>
-                        <Link href={`/athletes/${athlete.id}`}>
+                    <Card key={athlete.id} className="overflow-hidden">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-3">
-                            <Avatar className={`h-10 w-10 ${AVATAR_COLORS[idx % AVATAR_COLORS.length]}`}>
+                            <Avatar className={`h-12 w-12 ${AVATAR_COLORS[idx % AVATAR_COLORS.length]}`}>
                               <AvatarFallback className="bg-transparent text-white font-semibold">
                                 {athlete.name.charAt(0).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
-                            <div className="min-w-0">
-                              <p className="font-medium truncate">{athlete.name}</p>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold truncate">{athlete.name}</p>
                               <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
                                 <Mail className="h-3 w-3 flex-shrink-0" />
                                 <span className="truncate">{athlete.email}</span>
                               </div>
                             </div>
                           </div>
-                        </Link>
-                      </TableCell>
-                      <TableCell><Badge variant="outline">{athlete.sport}</Badge></TableCell>
-                      <TableCell><span className="text-sm font-medium">{athlete.level}</span></TableCell>
-                      <TableCell className="text-center"><span className="font-medium">{athlete.totalTrainings}</span></TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-1.5">
-                          <span className="font-medium">{athlete.plannedTrainings}</span>
-                          {athlete.plannedTrainings < 3 && (
-                            <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0" />
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="font-medium text-xs">{athlete.completionPercentage}%</span>
-                          </div>
-                          <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-foreground transition-all rounded-full"
-                              style={{ width: `${athlete.completionPercentage}%` }}
-                            />
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button asChild variant="outline" size="sm">
-                            <Link href={`/athletes/${athlete.id}`}>{tAthletes('viewProfile')}</Link>
-                          </Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                <span className="sr-only">Open menu</span>
-                                <MoreHorizontal className="h-4 w-4" />
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem asChild>
-                                <Link href={`/workouts/assign?athleteId=${athlete.id}`}>
-                                  {tAthletes('assignWorkout')}
+                                <Link href={`/athletes/${athlete.id}`}>
+                                  {tAthletes('viewProfile')}
                                 </Link>
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem className="text-red-600 focus:text-red-600" onClick={() => handleRemoveMember(athlete.id)}>
-                                {t('groups.detail.remove')}
+                                <Trash2 className="mr-2 h-4 w-4" /> {t('groups.detail.remove')}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>
-                      </TableCell>
-                    </TableRow>
+                        <div className="flex gap-2">
+                          <Button asChild variant="outline" size="sm" className="flex-1">
+                            <Link href={`/athletes/${athlete.id}`}>
+                              {tAthletes('viewProfile')}
+                            </Link>
+                          </Button>
+                          <Button asChild size="sm" className="flex-1">
+                            <Link href={`/workouts/assign?athleteId=${athlete.id}`}>
+                              {tAthletes('assignWorkout')}
+                            </Link>
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
                   ))
                 )}
-              </TableBody>
-            </Table>
-          </div>
+              </div>
 
-          <AddMemberModal
-            groupId={group.id}
-            currentMemberIds={groupAthletes.map((a) => a.id)}
-            open={isAddModalOpen}
-            onClose={() => setIsAddModalOpen(false)}
-            onAdded={fetchGroupData}
-          />
+              {/* Desktop Table View */}
+              <div className="hidden lg:block border rounded-md">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[280px]">{tAthletes('table.athlete')}</TableHead>
+                      <TableHead>{tAthletes('table.sport')}</TableHead>
+                      <TableHead>{tAthletes('table.level')}</TableHead>
+                      <TableHead className="text-center">{tAthletes('table.trainings')}</TableHead>
+                      <TableHead className="text-center">{tAthletes('table.planned')}</TableHead>
+                      <TableHead className="w-[150px]">{tAthletes('table.compliance')}</TableHead>
+                      <TableHead className="text-right w-[180px]">{tAthletes('table.actions')}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {groupAthletes.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
+                          {t('groups.detail.noMembers')}
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      groupAthletes.map((athlete, idx) => (
+                        <TableRow key={athlete.id}>
+                          <TableCell>
+                            <Link href={`/athletes/${athlete.id}`}>
+                              <div className="flex items-center gap-3">
+                                <Avatar className={`h-10 w-10 ${AVATAR_COLORS[idx % AVATAR_COLORS.length]}`}>
+                                  <AvatarFallback className="bg-transparent text-white font-semibold">
+                                    {athlete.name.charAt(0).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="min-w-0">
+                                  <p className="font-medium truncate">{athlete.name}</p>
+                                  <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
+                                    <Mail className="h-3 w-3 flex-shrink-0" />
+                                    <span className="truncate">{athlete.email}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </Link>
+                          </TableCell>
+                          <TableCell><Badge variant="outline">{athlete.sport}</Badge></TableCell>
+                          <TableCell><span className="text-sm font-medium">{athlete.level}</span></TableCell>
+                          <TableCell className="text-center"><span className="font-medium">{athlete.totalTrainings}</span></TableCell>
+                          <TableCell className="text-center">
+                            <div className="flex items-center justify-center gap-1.5">
+                              <span className="font-medium">{athlete.plannedTrainings}</span>
+                              {athlete.plannedTrainings < 3 && (
+                                <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0" />
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-1">
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="font-medium text-xs">{athlete.completionPercentage}%</span>
+                              </div>
+                              <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-foreground transition-all rounded-full"
+                                  style={{ width: `${athlete.completionPercentage}%` }}
+                                />
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <Button asChild variant="outline" size="sm">
+                                <Link href={`/athletes/${athlete.id}`}>{tAthletes('viewProfile')}</Link>
+                              </Button>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                    <span className="sr-only">Open menu</span>
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem asChild>
+                                    <Link href={`/workouts/assign?athleteId=${athlete.id}`}>
+                                      {tAthletes('assignWorkout')}
+                                    </Link>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem className="text-red-600 focus:text-red-600" onClick={() => handleRemoveMember(athlete.id)}>
+                                    {t('groups.detail.remove')}
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-          <EditGroupModal
-            group={group}
-            isOpen={isEditModalOpen}
-            onClose={() => setIsEditModalOpen(false)}
-            onUpdated={fetchGroupData}
-          />
-        </CardContent>
-      </Card>
+        <TabsContent value="calendar" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle>Planificación del Grupo</CardTitle>
+                <Button size="sm" onClick={() => setIsAssignModalOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Programar Entrenamiento
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <GroupWeeklyCalendar groupId={group.id} assignments={groupAssignments} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      <AddMemberModal
+        groupId={group.id}
+        currentMemberIds={groupAthletes.map((a) => a.id)}
+        open={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onAdded={fetchGroupData}
+      />
+
+      <EditGroupModal
+        group={group}
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onUpdated={fetchGroupData}
+      />
     </div>
   );
 }

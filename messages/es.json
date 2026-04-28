@@ -76,7 +76,8 @@
             "rpe_mismatch": "Fallo en RPE objetivo",
             "new_feedback": "Nuevo comentario",
             "low_compliance": "Bajo cumplimiento",
-            "missing_workout": "Sin entrenamientos"
+            "missing_workout": "Sin entrenamientos",
+            "zone_violation": "Desviación de zona"
         },
         "groupStatus": {
             "activeAthletes": "{count, plural, =1 {1 Atleta Activo} other {# Atletas Activos}}",
@@ -307,6 +308,16 @@
                     "grade": "Pendiente",
                     "lapBoundaries": "Límites de Vuelta"
                 }
+            },
+            "compliance": {
+                "title": "Cumplimiento de Intensidad",
+                "compliantTitle": "Entrenamiento Cumplido",
+                "violationTitle": "Desviación de Intensidad",
+                "compliantDesc": "El atleta se mantuvo dentro de las zonas de intensidad prescritas por el coach.",
+                "violationDesc": "Se detectó un tiempo significativo por encima de las zonas de intensidad planificadas.",
+                "targetZone": "Zona Objetivo",
+                "targetZones": "Zonas Objetivo",
+                "otherZones": "Otras Zonas"
             },
             "segments": {
                 "title": "Esfuerzos de Segmento",
@@ -599,7 +610,18 @@
             "syncSuccess": "Modificaciones sincronizadas correctamente.",
             "syncFailed": "Sincronización fallida.",
             "loadingError": "Error al inicializar los parámetros del entrenamiento",
-            "backToDashboard": "Volver al Dashboard"
+            "backToDashboard": "Volver al Dashboard",
+            "applyToGroupQuestion": "Este entrenamiento fue asignado a un grupo. ¿Quieres aplicar estos cambios a todos los atletas del grupo?",
+            "groupUpdate": "Actualización de Grupo",
+            "applyToAll": "Sí, a todo el grupo",
+            "onlyThisOne": "No, solo a este atleta",
+            "deleteGroupQuestion": "Este entrenamiento es parte de un evento grupal. ¿Quieres eliminarlo para todos los atletas del grupo?",
+            "deleteWorkout": "Eliminar Entrenamiento",
+            "deleteAll": "Eliminar para todos",
+            "deleteConfirm": "¿Estás seguro de que quieres eliminar este entrenamiento?",
+            "deleteSuccess": "Entrenamiento eliminado correctamente.",
+            "deleteFailed": "No se pudo eliminar el entrenamiento.",
+            "deleteAssignment": "Eliminar Entrenamiento"
         },
         "matchModal": {
             "errorLink": "No se pudo vincular la actividad",

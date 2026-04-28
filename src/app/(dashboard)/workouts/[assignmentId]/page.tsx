@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { format } from 'date-fns';
 import { WorkoutBuilder } from '@/features/trainings/components/builder/WorkoutBuilder';
 import { WorkoutBlock } from '@/features/trainings/components/builder/types';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Save, User, Calendar, Activity, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, User, Calendar, Activity, CheckCircle2, Trash2, Users } from 'lucide-react';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import api from '@/lib/axios';
 import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
@@ -17,14 +17,17 @@ import { WorkoutAssignment } from '@/interfaces/training';
 
 export default function WorkoutDetailsPage() {
     const params = useParams();
+    const searchParams = useSearchParams();
     const router = useRouter();
     const { user } = useAuth();
     const assignmentId = params.assignmentId as string;
+    const fromGroup = searchParams.get('fromGroup') === 'true';
     const t = useTranslations('workouts.detail');
 
     const [assignment, setAssignment] = useState<WorkoutAssignment | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [deleting, setDeleting] = useState(false);
     const [editedBlocks, setEditedBlocks] = useState<WorkoutBlock[]>([]);
     const [editedExpectedRpe, setEditedExpectedRpe] = useState<number>(5);
     const [hasChanges, setHasChanges] = useState(false);
@@ -50,14 +53,14 @@ export default function WorkoutDetailsPage() {
         if (assignmentId) {
             fetchAssignment();
         }
-    }, [assignmentId]);
+    }, [assignmentId, t]);
 
     const handleBlocksChange = (blocks: WorkoutBlock[]) => {
         setEditedBlocks(blocks);
         setHasChanges(true);
     };
 
-    const handleSave = async () => {
+    const handleSave = async (applyToGroup: boolean = false) => {
         if (!assignment || !hasChanges) return;
 
         try {
@@ -66,7 +69,8 @@ export default function WorkoutDetailsPage() {
 
             await api.patch(`/v2/trainings/assignments/${assignmentId}`, {
                 blocks: editedBlocks,
-                expectedRpe: editedExpectedRpe
+                expectedRpe: editedExpectedRpe,
+                applyToGroup
             });
 
             const response = await api.get<WorkoutAssignment>(`/v2/trainings/assignments/${assignmentId}`);
@@ -81,6 +85,70 @@ export default function WorkoutDetailsPage() {
             setError(err.response?.data?.error || t('syncFailed'));
         } finally {
             setSaving(false);
+        }
+    };
+
+    const confirmSave = () => {
+        if (assignment?.source_group_id) {
+            if (fromGroup) {
+                handleSave(true);
+            } else {
+                showAlert(
+                    'warning',
+                    t('applyToGroupQuestion'),
+                    t('groupUpdate'),
+                    t('applyToAll'),
+                    () => handleSave(true),
+                    t('onlyThisOne'),
+                    () => handleSave(false)
+                );
+            }
+        } else {
+            handleSave(false);
+        }
+    };
+
+    const handleDelete = async (applyToGroup: boolean = false) => {
+        if (!assignment) return;
+
+        try {
+            setDeleting(true);
+            await api.delete(`/v2/trainings/assignments/${assignmentId}`, {
+                data: { applyToGroup }
+            });
+            showAlert('success', t('deleteSuccess'));
+            setTimeout(() => router.back(), 1500);
+        } catch (err: any) {
+            console.error('Failed to delete assignment:', err);
+            showAlert('error', t('deleteFailed'));
+        } finally {
+            setDeleting(false);
+        }
+    };
+
+    const confirmDelete = () => {
+        if (assignment?.source_group_id) {
+            if (fromGroup) {
+                handleDelete(true);
+            } else {
+                showAlert(
+                    'warning',
+                    t('deleteGroupQuestion'),
+                    t('deleteWorkout'),
+                    t('deleteAll'),
+                    () => handleDelete(true),
+                    t('onlyThisOne'),
+                    () => handleDelete(false)
+                );
+            }
+        } else {
+            showAlert(
+                'warning',
+                t('deleteConfirm'),
+                t('deleteWorkout'),
+                t('delete'),
+                () => handleDelete(false)
+            );
         }
     };
 
@@ -122,7 +190,7 @@ export default function WorkoutDetailsPage() {
                  <ArrowLeft className="w-4 h-4 mr-2" /> {t('backToDashboard')}
             </Button>
             
-            <div className="mb-4">
+            <div className="mb-4 flex flex-wrap gap-2">
                 {assignment.completed ? (
                     <span className="inline-flex items-center gap-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-3 py-1 rounded text-[10px] font-bold tracking-widest uppercase">
                         <CheckCircle2 className="w-3 h-3" /> {t('executed')}
@@ -130,6 +198,12 @@ export default function WorkoutDetailsPage() {
                 ) : (
                     <span className="inline-flex items-center gap-2 bg-muted dark:bg-white/5 text-muted-foreground px-3 py-1 rounded text-[10px] font-bold tracking-widest uppercase">
                        {t('pendingExecution')}
+                    </span>
+                )}
+
+                {assignment.source_group_id && (
+                    <span className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded text-[10px] font-bold tracking-widest uppercase border border-primary/20">
+                        <Users className="w-3 h-3" /> {assignment.groupName || 'Grupo'}
                     </span>
                 )}
             </div>
@@ -198,6 +272,19 @@ export default function WorkoutDetailsPage() {
                     </div>
                 </div>
 
+                {!readOnly && (
+                    <div className="pt-8 mt-8 border-t border-border dark:border-white/5">
+                        <Button 
+                            variant="ghost" 
+                            onClick={confirmDelete}
+                            disabled={deleting}
+                            className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 uppercase tracking-widest text-[10px] font-bold p-0 h-10 px-4 rounded-lg"
+                        >
+                            <Trash2 className="w-4 h-4 mr-2" /> {t('deleteAssignment')}
+                        </Button>
+                    </div>
+                )}
+
                 {readOnly && (
                     <div className="bg-muted dark:bg-white/5 rounded-lg p-6">
                         <span className="font-semibold text-sm text-foreground mb-1 block">{t('readOnlyMode')}</span>
@@ -221,7 +308,7 @@ export default function WorkoutDetailsPage() {
                 <span className="text-xs text-muted-foreground/60">{t('pushUpdates')}</span>
             </div>
             <Button 
-                onClick={handleSave}
+                onClick={confirmSave}
                 disabled={saving}
                 className="bg-white text-foreground hover:bg-background uppercase tracking-wider text-xs font-bold px-8 py-5 rounded"
             >
@@ -248,10 +335,13 @@ export default function WorkoutDetailsPage() {
             <AlertDialog
                 open={alertState.open}
                 onClose={closeAlert}
+                onConfirm={alertState.onConfirm}
+                onCancel={alertState.onCancel}
                 type={alertState.type}
                 title={alertState.title}
                 message={alertState.message}
                 confirmText={alertState.confirmText}
+                cancelText={alertState.cancelText}
             />
         </div>
     );

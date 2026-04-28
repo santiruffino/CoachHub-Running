@@ -98,6 +98,7 @@ export async function GET() {
             nextWeekAssignmentsRes,
             activitiesRes,
             trainingsCountRes,
+            alertsRes,
         ] = await Promise.all([
             // Current week assignments
             supabase
@@ -115,8 +116,7 @@ export async function GET() {
                 .gte('scheduled_date', nextWeekStart.toISOString())
                 .lte('scheduled_date', nextWeekEnd.toISOString()),
 
-            // Activities window: from 1 day before weekStart to end of weekEnd
-            // (extra day on each side avoids timezone-edge misses)
+            // Activities window
             supabase
                 .from('activities')
                 .select('id, user_id, start_date, title, type')
@@ -127,12 +127,37 @@ export async function GET() {
 
             // Total training templates count
             trainingsQuery,
+
+            // Fetch alerts from the new alerts table
+            supabase
+                .from('alerts')
+                .select(`
+                    id, athlete_id, type, message, created_at, activity_id,
+                    athlete:profiles!alerts_athlete_id_fkey(name),
+                    activity:activities(title, type)
+                `)
+                .eq('coach_id', user.id)
+                .eq('is_read', false)
+                .order('created_at', { ascending: false }),
         ]);
 
         const assignments = assignmentsRes.data || [];
         const nextWeekAssignments = nextWeekAssignmentsRes.data || [];
         const activities = activitiesRes.data || [];
         const totalPlans = trainingsCountRes.count ?? 0;
+        const dbAlerts = alertsRes.data || [];
+
+        const zoneViolations = dbAlerts
+            .filter(a => a.type === 'ZONE_VIOLATION')
+            .map(a => ({
+                id: a.athlete_id,
+                name: (a.athlete as any)?.name || 'Athlete',
+                type: 'zone_violation' as const,
+                time: a.created_at,
+                message: a.message,
+                details: (a.activity as any)?.title || (a.activity as any)?.type || 'Activity',
+                activityId: a.activity_id
+            }));
 
         // --- Completion helper ---
         // An assignment is considered completed if:
@@ -316,15 +341,20 @@ export async function GET() {
             });
         }
 
+        const activeAthletes = activeAthleteIds.size;
+        const completedTodayCount = 0; // Needs specific date check
+        const pendingActionCount = rpeMismatches.length + missingWorkouts.length + lowCompliance.length + zoneViolations.length;
+
         return NextResponse.json({
             stats: {
-                activeAthletes: activeAthleteIds.size,
+                activeAthletes,
                 totalAthletes: athleteIds.length,
                 activePlans: totalPlans,
                 totalPlans,
                 completedSessions: completedThisWeek,
                 thisWeekSessions: totalThisWeek,
-                completedToday: 0,
+                completedToday: completedTodayCount,
+                actionNeeded: pendingActionCount,
                 completionRate,
                 totalGroups: (groups || []).length,
                 athletesWithoutNextWeek: missingWorkouts.filter((m) => m.type === 'athlete').length,
@@ -335,6 +365,7 @@ export async function GET() {
                 lowCompliance,
                 missingWorkouts,
                 recentFeedback,
+                zoneViolations,
             },
             groupCompliance,
             weeklyActivity,

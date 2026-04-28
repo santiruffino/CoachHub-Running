@@ -34,6 +34,7 @@ import { Button } from '@/components/ui/button';
 import { HeartRateZonesChart } from '../components/HeartRateZonesChart';
 import { PaceZonesChart } from '../components/PaceZonesChart';
 import { IntervalsAnalysisChart } from '../components/IntervalsAnalysisChart';
+import { ZoneComplianceCard } from '../components/ZoneComplianceCard';
 import { flattenWorkout, matchLapsToWorkout, MatchedLap } from '@/features/trainings/utils/workoutMatcher';
 import { LinkWorkoutModal } from '@/features/trainings/components/LinkWorkoutModal';
 
@@ -70,6 +71,7 @@ export default function ActivityDetailPage() {
     const [feedbackSaving, setFeedbackSaving] = useState(false);
     const [isAthlete, setIsAthlete] = useState(false);
     const [heartrateZones, setHeartrateZones] = useState<{ zones: Array<{ min: number; max: number }> } | null>(null);
+    const [compliance, setCompliance] = useState<any | null>(null);
 
     // Workout matching state
     const [matchedLaps, setMatchedLaps] = useState<MatchedLap[]>([]);
@@ -99,6 +101,20 @@ export default function ActivityDetailPage() {
 
         if (id) fetchActivity();
     }, [id, t]);
+
+    useEffect(() => {
+        const fetchCompliance = async () => {
+            if (!id) return;
+            try {
+                const response = await api.get(`/v2/activities/${id}/compliance`);
+                setCompliance(response.data);
+            } catch (err) {
+                console.error('Failed to fetch compliance:', err);
+            }
+        };
+
+        fetchCompliance();
+    }, [id]);
 
     // Fetch athlete profile for HR zones using cache
     const cache = useCache();
@@ -423,6 +439,13 @@ export default function ActivityDetailPage() {
                     )}
                 </div>
             </div>
+
+            {/* Compliance Section */}
+            {compliance && (
+                <div className="max-w-4xl">
+                    <ZoneComplianceCard compliance={compliance} />
+                </div>
+            )}
 
             {/* Horizontal Core Metrics Bar */}
             <div className="bg-muted rounded-3xl p-6 lg:p-8 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 shadow-[0_20px_40px_rgba(43,52,55,0.02)] border border-muted/50">

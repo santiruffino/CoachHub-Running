@@ -47,6 +47,29 @@ interface ActivityChartProps {
 type Resolution = 'low' | 'medium' | 'high';
 type XAxisType = 'time' | 'distance';
 
+/**
+ * Moving average filter to smooth "peaky" data
+ */
+const movingAverage = (data: (number | null)[], windowSize: number): (number | null)[] => {
+    if (!data || data.length === 0) return [];
+    const result: (number | null)[] = [];
+    const halfWindow = Math.floor(windowSize / 2);
+
+    for (let i = 0; i < data.length; i++) {
+        let sum = 0;
+        let count = 0;
+        for (let j = Math.max(0, i - halfWindow); j <= Math.min(data.length - 1, i + halfWindow); j++) {
+            const val = data[j];
+            if (val !== null && val !== undefined) {
+                sum += val;
+                count++;
+            }
+        }
+        result.push(count > 0 ? sum / count : null);
+    }
+    return result;
+};
+
 export function ActivityChart({ activityId, laps, hrZones, isRunning }: ActivityChartProps) {
     const t = useTranslations('activities.detail.dynamics');
     const [streams, setStreams] = useState<StreamData | null>(null);
@@ -115,13 +138,13 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
 
     // Convert m/s to min/km for pace (returns decimal minutes)
     const metersPerSecondToPace = (mps: number): number => {
-        if (mps === 0 || mps < 0) return 0;
+        if (mps <= 0.2) return 20; // Cap at 20 min/km for stops to avoid "infinite speed" peaks at the top
         return (1000 / mps) / 60;
     };
 
     // Format pace as mm:ss string
     const formatPace = (paceMinutes: number): string => {
-        if (paceMinutes === 0 || paceMinutes < 0) return '0:00';
+        if (paceMinutes >= 19.9 || paceMinutes < 0) return '0:00';
         if (paceMinutes > 20) return '20:00+';
 
         const mins = Math.floor(paceMinutes);
@@ -151,10 +174,15 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
         }
 
         const timeData = streams.time.data;
+        
+        // Apply robust smoothing to streams (15-point moving average to kill those peaks)
+        const smoothedVelocity = movingAverage(streams.velocity_smooth?.data || [], 15);
+        const smoothedHR = movingAverage(streams.heartrate?.data || [], 10);
+        const smoothedCadence = movingAverage(streams.cadence?.data || [], 10);
 
         // Build full dataset
         const fullData = timeData.map((time, index) => {
-            const velocity = streams.velocity_smooth?.data[index] || 0;
+            const velocity = smoothedVelocity[index] || 0;
             const distance = streams.distance?.data[index] || 0;
 
             const xLabel = xAxisType === 'time' ? formatTime(time) : formatDistance(distance);
@@ -162,8 +190,8 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
             return {
                 xLabel,
                 pace: metersPerSecondToPace(velocity),
-                heartRate: streams.heartrate?.data[index] || null,
-                cadence: streams.cadence?.data[index] || null,
+                heartRate: (smoothedHR[index] as number) || null,
+                cadence: (smoothedCadence[index] as number) || null,
                 elevation: streams.altitude?.data[index] || null,
                 grade: streams.grade_smooth?.data[index] || null,
             };
@@ -226,9 +254,19 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
             yAxisIndex: yAxisIndex,
             data: chartData.series.pace,
             smooth: true,
-            lineStyle: { color: '#06B6D4', width: 2 },
+            lineStyle: { color: '#06B6D4', width: 2.5 },
             itemStyle: { color: '#06B6D4' },
             showSymbol: false,
+            areaStyle: {
+                color: {
+                    type: 'linear',
+                    x: 0, y: 0, x2: 0, y2: 1,
+                    colorStops: [
+                        { offset: 0, color: 'rgba(6, 182, 212, 0.2)' },
+                        { offset: 1, color: 'rgba(6, 182, 212, 0)' }
+                    ]
+                }
+            }
         };
 
         seriesArray.push(paceSeries);
@@ -237,6 +275,7 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
         // Add lap markAreas as a separate invisible series if showLaps is enabled
         if (showLaps && laps && laps.length > 0 && streams?.time && chartData.xAxisData.length > 0) {
             const lapMarkAreas: any[] = [];
+            const lapMarkLines: any[] = [];
             let cumulativeTime = 0;
             const timeData = streams.time.data;
 
@@ -258,19 +297,46 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
                     }
                 }
 
-                if (startIdx >= 0 && startIdx < chartData.xAxisData.length && endIdx > startIdx) {
-                    const color = lapIdx % 2 === 0 ? 'rgba(100, 116, 139, 0.15)' : 'rgba(148, 163, 184, 0.15)';
+                if (startIdx >= 0 && startIdx < chartData.xAxisData.length) {
+                    const displayIndex = lap.lap_index === 0 || (laps[0]?.lap_index === 0) ? lap.lap_index + 1 : lap.lap_index;
+                    
+                    // Shadow bands
+                    if (endIdx > startIdx) {
+                        const color = lapIdx % 2 === 0 ? 'rgba(100, 116, 139, 0.08)' : 'rgba(148, 163, 184, 0.12)';
+                        lapMarkAreas.push([
+                            { 
+                                xAxis: chartData.xAxisData[startIdx], 
+                                itemStyle: { color },
+                                label: {
+                                    show: true,
+                                    position: 'insideTop',
+                                    formatter: `L${displayIndex}`,
+                                    color: '#9CA3AF',
+                                    fontSize: 10,
+                                    fontWeight: 'bold',
+                                    distance: 10
+                                }
+                            },
+                            { xAxis: chartData.xAxisData[Math.min(endIdx, chartData.xAxisData.length - 1)] }
+                        ]);
+                    }
 
-                    lapMarkAreas.push([
-                        { xAxis: chartData.xAxisData[startIdx], itemStyle: { color } },
-                        { xAxis: chartData.xAxisData[Math.min(endIdx, chartData.xAxisData.length - 1)] }
-                    ]);
+                    // Vertical boundary line
+                    lapMarkLines.push({
+                        xAxis: chartData.xAxisData[startIdx],
+                        lineStyle: {
+                            color: 'rgba(156, 163, 175, 0.3)',
+                            type: 'dashed',
+                            width: 1
+                        },
+                        label: { show: false }
+                    });
                 }
 
                 cumulativeTime = lapEndTime;
             });
 
-            if (lapMarkAreas.length > 0) {
+            if (lapMarkAreas.length > 0 || lapMarkLines.length > 0) {
                 seriesArray.push({
                     name: t('metrics.lapBoundaries'),
                     type: 'line',
@@ -285,7 +351,11 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
                     markArea: {
                         silent: true,
                         data: lapMarkAreas,
-                        label: { show: false }
+                    },
+                    markLine: {
+                        silent: true,
+                        symbol: 'none',
+                        data: lapMarkLines
                     }
                 });
             }
