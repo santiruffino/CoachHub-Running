@@ -15,15 +15,18 @@ export async function GET() {
       .eq('id', authResult.user!.id)
       .single();
 
-    if (!profile?.team_id) {
-       return NextResponse.json({ error: 'You are not assigned to a team' }, { status: 403 });
-    }
-
-    const { data: coaches, error: coachesError } = await supabase
+    let coachesQuery = supabase
       .from('profiles')
       .select('id, name, email, created_at')
-      .eq('role', 'COACH')
-      .eq('team_id', profile.team_id);
+      .eq('role', 'COACH');
+
+    if (profile?.team_id) {
+      coachesQuery = coachesQuery.eq('team_id', profile.team_id);
+    } else {
+      coachesQuery = coachesQuery.is('team_id', null);
+    }
+
+    const { data: coaches, error: coachesError } = await coachesQuery;
 
     if (coachesError) throw coachesError;
 

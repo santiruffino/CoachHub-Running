@@ -45,13 +45,13 @@ export async function GET() {
     // or we can check the 'updated_at' of their profile / when they last assigned a training.
     // For simplicity, we just look at the latest training assigned by them.
     const coachesWithActivity = await Promise.all((coachesData || []).map(async (coach) => {
-      const { data: latestTraining } = await supabase
+      const { data: latestTraining, error: latestTrainingError } = await supabase
         .from('trainings')
         .select('created_at')
         .eq('coach_id', coach.id)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
         
       return {
         ...coach,

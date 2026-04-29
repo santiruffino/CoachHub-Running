@@ -223,7 +223,7 @@ function AssignWorkoutContent() {
 
             if (workoutSource === 'new' || editingTemplate) {
                 const newTraining = await trainingsService.create({
-                    title: saveAsTemplate ? (templateTitle || 'Protocolo sin título') : (workoutName || `Entrenamiento ${format(new Date(scheduledDate), 'dd/MM/yyyy')}`),
+                    title: saveAsTemplate ? (templateTitle || 'Protocolo sin título') : (workoutName || `Entrenamiento ${format(new Date(`${scheduledDate}T00:00:00`), 'dd/MM/yyyy')}`),
                     type: TrainingType.RUNNING,
                     description: editingTemplate ? 'Modificado desde la plantilla base.' : 'Entrenamiento diario personalizado.',
                     blocks,
@@ -239,7 +239,7 @@ function AssignWorkoutContent() {
                 trainingId: trainingIdToAssign,
                 athleteIds: selectedAthleteIds.length > 0 ? selectedAthleteIds : undefined,
                 groupIds: selectedGroupIds.length > 0 ? selectedGroupIds : undefined,
-                scheduledDate: new Date(scheduledDate).toISOString(),
+                scheduledDate: new Date(`${scheduledDate}T00:00:00`).toISOString(),
                 expectedRpe,
                 workoutName: workoutName || undefined,
             });
@@ -445,9 +445,76 @@ function AssignWorkoutContent() {
     const isNew = workoutSource === 'new';
 
     return (
-        <div className="bg-background dark:bg-background flex font-inter">
-            {/* Left Col: Setting Data */}
-            <div className="w-[480px] flex-shrink-0 bg-card dark:bg-muted border-r border-border dark:border-white/5 flex flex-col h-full overflow-y-auto z-10 p-12">
+        <div className="bg-background dark:bg-background flex font-inter h-[calc(100vh-64px)] overflow-hidden">
+            {/* Left Col: Payload Execution Summary */}
+            <div className="flex-1 flex flex-col h-full overflow-hidden bg-background dark:bg-background relative border-r border-border dark:border-white/5">
+                {editingTemplate ? (
+                     <div className="flex-1 overflow-y-auto">
+                        <WorkoutBuilder 
+                            initialBlocks={blocks} 
+                            onChange={setBlocks} 
+                            athleteId={athleteId || undefined}
+                        />
+                    </div>
+                ) : (
+                    <div className="flex-1 p-16 flex flex-col items-center justify-center">
+                        <div className="max-w-md text-center">
+                            <Clock className="w-16 h-16 text-accent mx-auto mb-8" />
+                            <h2 className="text-4xl font-display font-extrabold text-foreground mb-4">
+                                {selectedTemplate ? selectedTemplate.title : (workoutName || tAssign('customProtocol'))}
+                            </h2>
+                            <p className="text-lg text-muted-foreground mb-8">
+                                {tAssign('scheduledToExecute')} <strong className="text-primary dark:text-white font-bold">{format(new Date(`${scheduledDate}T00:00:00`), 'EEEE dd/MM/yyyy')}</strong>.{' '}
+                                {tAssign('payloadContains')} <strong className="text-primary dark:text-white font-bold">{blocks.length} {tAssign('structuralComponents')}</strong> {tAssign('estimatedLoad', { minutes: estTimeMinutes })}
+                            </p>
+
+                            {/* Decorative Block Preview */}
+                            <div className="flex flex-wrap justify-center gap-1.5 mb-16 opacity-60">
+                                {blocks.map((b, i) => (
+                                    <div key={i} className={cn(
+                                        "h-8 rounded", 
+                                        b.type === 'warmup' || b.type === 'cooldown' ? 'w-4 bg-emerald-500' :
+                                        b.type === 'interval' ? 'w-12 bg-primary' : 'w-6 bg-border'
+                                    )} />
+                                ))}
+                            </div>
+
+                            {workoutSource === 'template' && (
+                                <Button 
+                                    variant="outline" 
+                                    onClick={() => setEditingTemplate(true)}
+                                    className="border-gray-200 dark:border-white/10 text-foreground dark:text-white hover:bg-muted dark:hover:bg-white/5 uppercase tracking-wider text-xs font-bold"
+                                >
+                                    {tAssign('overruleBlockStructure')}
+                                </Button>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                 {/* Sticky Footer Action */}
+                 <div className="flex-none p-12 bg-background dark:bg-background border-t border-border dark:border-white/5 flex items-center justify-between">
+                    <div className="flex flex-col">
+                        <span className="text-xs uppercase tracking-widest font-bold text-muted-foreground">{tAssign('actionStatus')}</span>
+                        <span className="text-sm font-semibold text-foreground dark:text-white mt-1">
+                            {!scheduledDate ? tAssign('awaitingScheduling') : 
+                             (selectedAthleteIds.length === 0 && selectedGroupIds.length === 0) ? tAssign('awaitingRecipients') :
+                             tAssign('readyToDistribute')}
+                        </span>
+                    </div>
+
+                    <Button
+                        onClick={handleAssign}
+                        disabled={loading || !scheduledDate || (selectedAthleteIds.length === 0 && selectedGroupIds.length === 0)}
+                        className="bg-primary hover:bg-foreground text-white uppercase tracking-wider text-xs font-bold px-12 py-6 rounded shadow-[0_8px_24px_rgba(78,96,115,0.3)] transition-all"
+                    >
+                        {loading ? tAssign('transmittingData') : tAssign('commitAssignment')}
+                    </Button>
+                </div>
+            </div>
+
+            {/* Right Col: Setting Data */}
+            <div className="w-[480px] flex-shrink-0 bg-card dark:bg-muted flex flex-col h-full overflow-y-auto z-10 p-12">
                 <Button variant="ghost" onClick={() => editingTemplate ? setEditingTemplate(false) : (isNew ? setStep('build') : setStep('select-template'))} className="w-min text-muted-foreground hover:text-foreground transition-colors p-0 hover:bg-transparent tracking-widest uppercase text-xs font-semibold mb-12">
                      <ArrowLeft className="w-4 h-4 mr-2" /> {tAssign('modifyBlueprint')}
                 </Button>
@@ -580,73 +647,6 @@ function AssignWorkoutContent() {
                             )}
                         </div>
                     )}
-                </div>
-            </div>
-
-            {/* Right Col: Payload Execution Summary */}
-            <div className="flex-1 flex flex-col h-full overflow-hidden bg-background dark:bg-background relative">
-                {editingTemplate ? (
-                     <div className="flex-1 overflow-y-auto">
-                        <WorkoutBuilder 
-                            initialBlocks={blocks} 
-                            onChange={setBlocks} 
-                            athleteId={athleteId || undefined}
-                        />
-                    </div>
-                ) : (
-                    <div className="flex-1 p-16 flex flex-col items-center justify-center">
-                        <div className="max-w-md text-center">
-                            <Clock className="w-16 h-16 text-accent mx-auto mb-8" />
-                            <h2 className="text-4xl font-display font-extrabold text-foreground mb-4">
-                                {selectedTemplate ? selectedTemplate.title : (workoutName || tAssign('customProtocol'))}
-                            </h2>
-                            <p className="text-lg text-muted-foreground mb-8">
-                                {tAssign('scheduledToExecute')} <strong className="text-primary dark:text-white font-bold">{format(new Date(scheduledDate), 'EEEE dd/MM/yyyy')}</strong>.{' '}
-                                {tAssign('payloadContains')} <strong className="text-primary dark:text-white font-bold">{blocks.length} {tAssign('structuralComponents')}</strong> {tAssign('estimatedLoad', { minutes: estTimeMinutes })}
-                            </p>
-
-                            {/* Decorative Block Preview */}
-                            <div className="flex flex-wrap justify-center gap-1.5 mb-16 opacity-60">
-                                {blocks.map((b, i) => (
-                                    <div key={i} className={cn(
-                                        "h-8 rounded", 
-                                        b.type === 'warmup' || b.type === 'cooldown' ? 'w-4 bg-emerald-500' :
-                                        b.type === 'interval' ? 'w-12 bg-primary' : 'w-6 bg-border'
-                                    )} />
-                                ))}
-                            </div>
-
-                            {workoutSource === 'template' && (
-                                <Button 
-                                    variant="outline" 
-                                    onClick={() => setEditingTemplate(true)}
-                                    className="border-gray-200 dark:border-white/10 text-foreground dark:text-white hover:bg-muted dark:hover:bg-white/5 uppercase tracking-wider text-xs font-bold"
-                                >
-                                    {tAssign('overruleBlockStructure')}
-                                </Button>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                 {/* Sticky Footer Action */}
-                 <div className="flex-none p-12 bg-background dark:bg-background border-t border-border dark:border-white/5 flex items-center justify-between">
-                    <div className="flex flex-col">
-                        <span className="text-xs uppercase tracking-widest font-bold text-muted-foreground">{tAssign('actionStatus')}</span>
-                        <span className="text-sm font-semibold text-foreground dark:text-white mt-1">
-                            {!scheduledDate ? tAssign('awaitingScheduling') : 
-                             (selectedAthleteIds.length === 0 && selectedGroupIds.length === 0) ? tAssign('awaitingRecipients') :
-                             tAssign('readyToDistribute')}
-                        </span>
-                    </div>
-
-                    <Button
-                        onClick={handleAssign}
-                        disabled={loading || !scheduledDate || (selectedAthleteIds.length === 0 && selectedGroupIds.length === 0)}
-                        className="bg-primary hover:bg-foreground text-white uppercase tracking-wider text-xs font-bold px-12 py-6 rounded shadow-[0_8px_24px_rgba(78,96,115,0.3)] transition-all"
-                    >
-                        {loading ? tAssign('transmittingData') : tAssign('commitAssignment')}
-                    </Button>
                 </div>
             </div>
 

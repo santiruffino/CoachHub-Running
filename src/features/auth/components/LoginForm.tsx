@@ -36,9 +36,9 @@ export default function LoginForm() {
     // Redirect if already logged in
     useEffect(() => {
         if (!loading && user) {
-            router.push('/dashboard');
+            window.location.href = '/dashboard';
         }
-    }, [user, loading, router]);
+    }, [user, loading]);
 
     const onSubmit = async (data: FormData) => {
         try {

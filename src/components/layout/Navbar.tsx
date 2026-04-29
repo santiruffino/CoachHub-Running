@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Users, UsersRound, Calendar, Settings, LogOut, User, Trophy } from 'lucide-react';
+import { LayoutDashboard, Users, UsersRound, Calendar, Settings, LogOut, User, Trophy, Dumbbell } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import {
@@ -25,11 +25,13 @@ export function Navbar() {
     if (loading) return null;
 
     const navigation = [
-        { name: t('dashboard'), href: '/dashboard', icon: LayoutDashboard, roles: ['COACH', 'ATHLETE'] },
-        { name: t('athletes'), href: '/athletes', icon: Users, roles: ['COACH'] },
-        { name: t('groups'), href: '/groups', icon: UsersRound, roles: ['COACH'] },
-        { name: t('trainings'), href: '/trainings', icon: Calendar, roles: ['COACH'] },
-        { name: t('races'), href: '/races', icon: Trophy, roles: ['COACH', 'ATHLETE'] },
+        { name: t('dashboard'), href: '/dashboard', icon: LayoutDashboard, roles: ['COACH', 'ATHLETE', 'ADMIN'] },
+        { name: t('athletes'), href: '/athletes', icon: Users, roles: ['COACH', 'ADMIN'] },
+        { name: t('groups'), href: '/groups', icon: UsersRound, roles: ['COACH', 'ADMIN'] },
+        { name: 'Coaches', href: '/coaches', icon: Users, roles: ['ADMIN'] },
+        { name: t('workoutLibrary'), href: '/workouts/library', icon: Dumbbell, roles: ['COACH', 'ADMIN'] },
+        { name: t('trainings'), href: '/trainings', icon: Calendar, roles: ['COACH', 'ADMIN'] },
+        { name: t('races'), href: '/races', icon: Trophy, roles: ['COACH', 'ATHLETE', 'ADMIN'] },
     ];
 
     const userRole = user?.role || '';

@@ -340,41 +340,41 @@ export function WorkoutSequence({
                 <div className="pt-6 flex flex-col gap-4 pl-12">
                     <button
                         onClick={() => onAddStep('repeat')}
-                        className="w-full flex items-center justify-center py-4 rounded-lg border border-dashed border-[#8b9bb4] bg-[#8b9bb4]/10 hover:bg-[#8b9bb4]/20 transition-colors gap-2"
+                        className="w-full flex items-center justify-center py-4 rounded-lg border border-dashed border-[#2b3437]/30 dark:border-white/30 bg-[#8b9bb4]/10 hover:bg-[#8b9bb4]/20 transition-colors gap-2"
                     >
-                        <Repeat size={14} className="text-[#8b9bb4]" />
-                        <span className="text-[10px] uppercase font-bold tracking-widest text-[#8b9bb4]">{t('labels.repeat') || 'REPETICONES'}</span>
+                        <Repeat size={14} className="text-[#2b3437] dark:text-[#f8f9fa]" />
+                        <span className="text-[10px] uppercase font-bold tracking-widest text-[#2b3437] dark:text-[#f8f9fa]">{t('labels.repeat') || 'REPETICONES'}</span>
                     </button>
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                         <button
                             onClick={() => onAddStep('warmup')}
-                            className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#b1f0cc] bg-[#b1f0cc]/10 hover:bg-[#b1f0cc]/20 transition-colors"
+                            className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#2b3437]/20 dark:border-white/20 bg-[#b1f0cc]/30 hover:bg-[#b1f0cc]/50 transition-colors"
                         >
-                            <span className="text-[10px] uppercase font-bold tracking-widest" style={{ color: BLOCK_COLORS.warmup }}>{t('labels.warmup')}</span>
+                            <span className="text-[10px] uppercase font-bold tracking-widest text-[#2b3437] dark:text-[#f8f9fa]">{t('labels.warmup')}</span>
                         </button>
                         <button
                             onClick={() => onAddStep('interval')}
-                            className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#fb8b8b] bg-[#fb8b8b]/10 hover:bg-[#fb8b8b]/20 transition-colors"
+                            className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#2b3437]/20 dark:border-white/20 bg-[#fb8b8b]/30 hover:bg-[#fb8b8b]/50 transition-colors"
                         >
-                            <span className="text-[10px] uppercase font-bold tracking-widest" style={{ color: BLOCK_COLORS.interval }}>{t('labels.interval')}</span>
+                            <span className="text-[10px] uppercase font-bold tracking-widest text-[#2b3437] dark:text-[#f8f9fa]">{t('labels.interval')}</span>
                         </button>
                         <button
                             onClick={() => onAddStep('recovery')}
-                            className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#c5e0fa] bg-[#c5e0fa]/10 hover:bg-[#c5e0fa]/20 transition-colors"
+                            className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#2b3437]/20 dark:border-white/20 bg-[#c5e0fa]/30 hover:bg-[#c5e0fa]/50 transition-colors"
                         >
-                            <span className="text-[10px] uppercase font-bold tracking-widest" style={{ color: BLOCK_COLORS.recovery }}>{t('labels.recovery')}</span>
+                            <span className="text-[10px] uppercase font-bold tracking-widest text-[#2b3437] dark:text-[#f8f9fa]">{t('labels.recovery')}</span>
                         </button>
                         <button
                             onClick={() => onAddStep('rest')}
-                            className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#e2e8f0] bg-[#e2e8f0]/10 hover:bg-[#e2e8f0]/20 transition-colors"
+                            className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#2b3437]/20 dark:border-white/20 bg-[#e2e8f0]/50 hover:bg-[#e2e8f0]/70 transition-colors"
                         >
-                            <span className="text-[10px] uppercase font-bold tracking-widest" style={{ color: BLOCK_COLORS.rest }}>{t('labels.rest')}</span>
+                            <span className="text-[10px] uppercase font-bold tracking-widest text-[#2b3437] dark:text-[#f8f9fa]">{t('labels.rest')}</span>
                         </button>
                         <button
                             onClick={() => onAddStep('cooldown')}
-                            className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#e2e8f0] bg-[#e2e8f0]/10 hover:bg-[#e2e8f0]/20 transition-colors"
+                            className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#2b3437]/20 dark:border-white/20 bg-[#e2e8f0]/50 hover:bg-[#e2e8f0]/70 transition-colors"
                         >
-                            <span className="text-[10px] uppercase font-bold tracking-widest" style={{ color: BLOCK_COLORS.cooldown }}>{t('labels.cooldown')}</span>
+                            <span className="text-[10px] uppercase font-bold tracking-widest text-[#2b3437] dark:text-[#f8f9fa]">{t('labels.cooldown')}</span>
                         </button>
                     </div>
                 </div>

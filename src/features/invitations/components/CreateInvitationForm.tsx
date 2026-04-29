@@ -19,7 +19,7 @@ export function CreateInvitationForm() {
         setError(null);
         try {
             const res = await invitationService.create(data.email);
-            const invitationUrl = `${window.location.origin}/accept-invitation/${res.token}`;
+            const invitationUrl = `${window.location.origin}/accept-invitation?token=${res.token}`;
             setSuccess(`Invitation sent to ${res.email}. Share this link: ${invitationUrl}`);
             reset();
         } catch (err: any) {

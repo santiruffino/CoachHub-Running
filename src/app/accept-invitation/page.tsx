@@ -73,11 +73,11 @@ function AcceptInvitationContent() {
 
     if (validating) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="min-h-screen flex items-center justify-center bg-background">
                 <Card className="w-full max-w-md">
                     <CardContent className="pt-6">
                         <div className="flex flex-col items-center gap-4 py-8">
-                            <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                             <p className="text-muted-foreground">Validando invitación...</p>
                         </div>
                     </CardContent>
@@ -88,10 +88,10 @@ function AcceptInvitationContent() {
 
     if (!token || !invitationValid) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="min-h-screen flex items-center justify-center bg-background">
                 <Card className="w-full max-w-md">
                     <CardHeader>
-                        <div className="flex items-center gap-2 text-red-600">
+                        <div className="flex items-center gap-2 text-destructive">
                             <AlertCircle className="h-5 w-5" />
                             <CardTitle>Invitación Inválida</CardTitle>
                         </div>
@@ -111,10 +111,10 @@ function AcceptInvitationContent() {
 
     if (success) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="min-h-screen flex items-center justify-center bg-background">
                 <Card className="w-full max-w-md">
                     <CardHeader>
-                        <div className="flex items-center gap-2 text-green-600">
+                        <div className="flex items-center gap-2 text-green-600 dark:text-green-500">
                             <CheckCircle className="h-5 w-5" />
                             <CardTitle>¡Cuenta Creada!</CardTitle>
                         </div>
@@ -128,7 +128,7 @@ function AcceptInvitationContent() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
+        <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4">
             <Card className="w-full max-w-md">
                 <CardHeader>
                     <CardTitle>Aceptar Invitación</CardTitle>
@@ -146,7 +146,7 @@ function AcceptInvitationContent() {
                                 type="email"
                                 value={invitationEmail}
                                 disabled
-                                className="bg-gray-50"
+                                className="bg-muted opacity-100"
                             />
                         </div>
 
@@ -166,7 +166,7 @@ function AcceptInvitationContent() {
                                 })}
                             />
                             {errors.name && (
-                                <p className="text-sm text-red-500">{errors.name.message as string}</p>
+                                <p className="text-sm text-destructive">{errors.name.message as string}</p>
                             )}
                         </div>
 
@@ -186,7 +186,7 @@ function AcceptInvitationContent() {
                                 })}
                             />
                             {errors.password && (
-                                <p className="text-sm text-red-500">{errors.password.message as string}</p>
+                                <p className="text-sm text-destructive">{errors.password.message as string}</p>
                             )}
                         </div>
 
@@ -204,15 +204,15 @@ function AcceptInvitationContent() {
                                 })}
                             />
                             {errors.confirmPassword && (
-                                <p className="text-sm text-red-500">
+                                <p className="text-sm text-destructive">
                                     {errors.confirmPassword.message as string}
                                 </p>
                             )}
                         </div>
 
                         {error && (
-                            <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-                                <p className="text-sm text-red-600">{error}</p>
+                            <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+                                <p className="text-sm text-destructive font-medium">{error}</p>
                             </div>
                         )}
 
@@ -236,11 +236,11 @@ function AcceptInvitationContent() {
 export default function AcceptInvitationPage() {
     return (
         <Suspense fallback={
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="min-h-screen flex items-center justify-center bg-background">
                 <Card className="w-full max-w-md">
                     <CardContent className="pt-6">
                         <div className="flex flex-col items-center gap-4 py-8">
-                            <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                             <p className="text-muted-foreground">Cargando...</p>
                         </div>
                     </CardContent>

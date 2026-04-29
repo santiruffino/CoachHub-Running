@@ -62,15 +62,18 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Determine the role, defaulting to ATHLETE if not specified in old invitations
+        const userRole = invitation.role || 'ATHLETE';
+
         // Update profile with name, role, and coach/team relationships
         const { error: profileError } = await supabase
             .from('profiles')
             .update({
                 name: name,
                 must_change_password: false, // User already set their own password
-                role: 'ATHLETE', // Default role for invited users
-                coach_id: invitation.coach_id, // Link athlete to coach (null if invited directly by Super Coach)
-                team_id: invitation.team_id,   // Link athlete directly to the Running Team
+                role: userRole, 
+                coach_id: invitation.coach_id, // Link athlete to coach (null if invited directly by Super Coach or if user is a coach)
+                team_id: invitation.team_id,   // Link user directly to the Running Team
             })
             .eq('id', authData.user.id);
 
@@ -89,15 +92,28 @@ export async function POST(request: NextRequest) {
             console.error('Invitation update error:', updateError);
         }
 
-        // Create athlete profile
-        const { error: athleteProfileError } = await supabase
-            .from('athlete_profiles')
-            .insert({
-                user_id: authData.user.id,
-            });
+        // Create specific profile based on role
+        if (userRole === 'COACH') {
+            const { error: coachProfileError } = await supabase
+                .from('coach_profiles')
+                .insert({
+                    id: authData.user.id,
+                });
 
-        if (athleteProfileError) {
-            console.error('Athlete profile creation error:', athleteProfileError);
+            if (coachProfileError && !coachProfileError.message.includes('duplicate')) {
+                console.error('Coach profile creation error:', coachProfileError);
+            }
+        } else {
+            // Default to creating an athlete profile
+            const { error: athleteProfileError } = await supabase
+                .from('athlete_profiles')
+                .insert({
+                    user_id: authData.user.id,
+                });
+
+            if (athleteProfileError && !athleteProfileError.message.includes('duplicate')) {
+                console.error('Athlete profile creation error:', athleteProfileError);
+            }
         }
 
         return NextResponse.json({

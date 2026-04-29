@@ -21,6 +21,8 @@ import { useTranslations } from 'next-intl';
 
 import { CoachData } from '@/interfaces/coach';
 
+import { InviteCoachModal } from '@/features/invitations/components/InviteCoachModal';
+
 const AVATAR_COLORS = [
   'bg-blue-600',
   'bg-purple-600',
@@ -38,6 +40,7 @@ export default function CoachesPage() {
   
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
   const fetchCoaches = async () => {
     try {
@@ -91,6 +94,9 @@ export default function CoachesPage() {
     <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">{t('coaches.title')}</h1>
+        <Button onClick={() => setIsInviteModalOpen(true)}>
+            Invitar Coach
+        </Button>
       </div>
 
       <div className="relative max-w-md">
@@ -173,6 +179,11 @@ export default function CoachesPage() {
           </div>
         </CardContent>
       </Card>
+
+      <InviteCoachModal 
+        open={isInviteModalOpen}
+        onClose={() => setIsInviteModalOpen(false)}
+      />
     </div>
   );
 }
