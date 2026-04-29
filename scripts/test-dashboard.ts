@@ -14,7 +14,7 @@ async function main() {
   const { data: profile } = await supabase
     .from('profiles')
     .select('role, team_id')
-    .eq('id', admin.id)
+    .eq('id', admin!.id)
     .single();
 
   console.log("Profile:", profile);
