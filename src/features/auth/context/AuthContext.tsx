@@ -84,12 +84,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, [user, loading, router]);
 
     const login = async (email: string, password: string) => {
-        const response = await authService.login(email, password);
+        await authService.login(email, password);
 
-        // Update user state - this will trigger effects/re-renders
-        setUser(response.user);
-
-        // Redirection is handled by useEffects in AuthContext or components
+        // Fetch user manually here so we can await it before redirecting,
+        // rather than relying only on the onAuthStateChange listener
+        // which could cause race conditions with form submission state.
+        const currentUser = await authService.getCurrentUser();
+        if (currentUser) {
+            setUser(currentUser);
+        } else {
+            throw new Error('Failed to fetch user profile');
+        }
     };
 
     const logout = async () => {

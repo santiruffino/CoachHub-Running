@@ -6,7 +6,7 @@ export interface LoginResponse {
 }
 
 export const authService = {
-    login: async (email: string, password: string): Promise<LoginResponse> => {
+    login: async (email: string, password: string): Promise<void> => {
         const supabase = createClient();
 
         // Sign in with Supabase Auth
@@ -22,39 +22,6 @@ export const authService = {
         if (!authData.user) {
             throw new Error('Login failed');
         }
-
-        // Fetch user profile from profiles table
-        const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', authData.user.id)
-            .single();
-
-        if (profileError) {
-            console.error('Profile fetch error:', profileError);
-            throw new Error(`Failed to fetch user profile: ${profileError.message}`);
-        }
-
-        if (!profile) {
-            console.error('Profile is null for user ID:', authData.user.id);
-            throw new Error('Profile not found. Please contact your administrator.');
-        }
-
-        // Map profile to User type
-        const user: User = {
-            id: profile.id,
-            email: profile.email,
-            name: profile.name || undefined,
-            firstName: profile.first_name || undefined,
-            lastName: profile.last_name || undefined,
-            phone: profile.phone || undefined,
-            gender: profile.gender || undefined,
-            isOnboardingCompleted: profile.is_onboarding_completed || false,
-            role: profile.role as Role,
-            mustChangePassword: profile.must_change_password || false,
-        };
-
-        return { user };
     },
 
     logout: async (): Promise<void> => {
