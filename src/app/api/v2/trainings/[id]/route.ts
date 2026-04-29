@@ -22,18 +22,37 @@ export async function GET(
 
         const { supabase, user } = authResult;
 
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('team_id')
+            .eq('id', user!.id)
+            .single();
+
+        if (!profile?.team_id) {
+            return NextResponse.json(
+                { error: 'Coach must belong to a team' },
+                { status: 403 }
+            );
+        }
+
         // Fetch the training
         const { data: training, error } = await supabase
             .from('trainings')
             .select('*')
             .eq('id', id)
-            .eq('coach_id', user!.id)
             .single();
 
         if (error || !training) {
             return NextResponse.json(
                 { error: 'Training not found' },
                 { status: 404 }
+            );
+        }
+
+        if (training.team_id !== profile.team_id) {
+            return NextResponse.json(
+                { error: 'Not authorized to view this training' },
+                { status: 403 }
             );
         }
 
@@ -68,10 +87,23 @@ export async function DELETE(
 
         const { supabase, user } = authResult;
 
-        // Verify the training exists and belongs to this coach
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('team_id')
+            .eq('id', user!.id)
+            .single();
+
+        if (!profile?.team_id) {
+            return NextResponse.json(
+                { error: 'Coach must belong to a team' },
+                { status: 403 }
+            );
+        }
+
+        // Verify the training exists and belongs to this coach or team
         const { data: training, error: fetchError } = await supabase
             .from('trainings')
-            .select('coach_id')
+            .select('team_id')
             .eq('id', id)
             .single();
 
@@ -82,7 +114,7 @@ export async function DELETE(
             );
         }
 
-        if (training.coach_id !== user!.id) {
+        if (training.team_id !== profile.team_id) {
             return NextResponse.json(
                 { error: 'Not authorized to delete this training' },
                 { status: 403 }
@@ -136,12 +168,25 @@ export async function PATCH(
         }
 
         const { supabase, user } = authResult;
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('team_id')
+            .eq('id', user!.id)
+            .single();
+
+        if (!profile?.team_id) {
+            return NextResponse.json(
+                { error: 'Coach must belong to a team' },
+                { status: 403 }
+            );
+        }
+
         const body = await request.json();
 
         // Verify ownership first
         const { data: existing, error: fetchError } = await supabase
             .from('trainings')
-            .select('coach_id')
+            .select('team_id')
             .eq('id', id)
             .single();
 
@@ -149,7 +194,7 @@ export async function PATCH(
             return NextResponse.json({ error: 'Training not found' }, { status: 404 });
         }
 
-        if (existing.coach_id !== user!.id) {
+        if (existing.team_id !== profile.team_id) {
             return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
         }
 

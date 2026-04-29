@@ -6,7 +6,7 @@ import { requireRole } from '@/lib/supabase/api-helpers';
  * GET /v2/races
  * 
  * Returns a list of races available to the user.
- * Coaches see races they created.
+ * Coaches/admins see races in their team.
  * Athletes see races assigned to them.
  */
 export async function GET() {
@@ -42,7 +42,7 @@ export async function GET() {
     if (profile?.role === 'ADMIN') {
       racesQuery = racesQuery.eq('team_id', profile.team_id);
     } else if (profile?.role === 'COACH') {
-      racesQuery = racesQuery.eq('coach_id', user.id);
+      racesQuery = racesQuery.eq('team_id', profile.team_id);
     }
     // Athletes will see races assigned to them via RLS SELECT policy
 
@@ -87,6 +87,13 @@ export async function POST(request: Request) {
       .eq('id', user!.id)
       .single();
 
+    if (!profile?.team_id) {
+      return NextResponse.json(
+        { error: 'User must belong to a team' },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const { 
       name, 
@@ -94,8 +101,7 @@ export async function POST(request: Request) {
       distance, 
       date,
       elevation_gain, 
-      location, 
-      team_id 
+      location
     } = body;
 
     if (!name) {
@@ -114,8 +120,8 @@ export async function POST(request: Request) {
         date,
         elevation_gain,
         location,
-        coach_id: user!.id,
-        team_id: team_id || null,
+        created_by: user!.id,
+        team_id: profile.team_id,
       })
       .select()
       .single();

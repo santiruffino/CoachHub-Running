@@ -51,33 +51,29 @@ export async function GET() {
         sevenDaysAgo.setDate(now.getDate() - 6);
         sevenDaysAgo.setHours(0, 0, 0, 0);
 
-        // --- Step 1: Get athletes for this team/coach ---
+        if (!profile?.team_id) {
+            return NextResponse.json({ error: 'Coach must belong to a team' }, { status: 403 });
+        }
+
+        // --- Step 1: Get athletes for this team ---
         let athletesQuery = supabase
             .from('profiles')
             .select('id, name')
             .eq('role', 'ATHLETE');
 
-        if (profile.role === 'ADMIN') {
-            athletesQuery = athletesQuery.eq('team_id', profile.team_id);
-        } else {
-            athletesQuery = athletesQuery.eq('coach_id', user.id);
-        }
+        athletesQuery = athletesQuery.eq('team_id', profile.team_id);
 
         const { data: athletes } = await athletesQuery;
 
         const athleteIds = (athletes || []).map((a) => a.id);
         const athleteMap = new Map((athletes || []).map((a) => [a.id, a.name]));
 
-        // --- Step 2: Get groups for this team/coach ---
+        // --- Step 2: Get groups for this team ---
         let groupsQuery = supabase
             .from('groups')
             .select('id, name, athlete_groups(count)');
 
-        if (profile.role === 'ADMIN') {
-            groupsQuery = groupsQuery.eq('team_id', profile.team_id);
-        } else {
-            groupsQuery = groupsQuery.eq('coach_id', user.id);
-        }
+        groupsQuery = groupsQuery.eq('team_id', profile.team_id);
 
         const { data: groups } = await groupsQuery;
 
@@ -86,11 +82,7 @@ export async function GET() {
             .from('trainings')
             .select('id', { count: 'exact', head: true });
 
-        if (profile.role === 'ADMIN') {
-            trainingsQuery = trainingsQuery.eq('team_id', profile.team_id);
-        } else {
-            trainingsQuery = trainingsQuery.eq('coach_id', user.id);
-        }
+        trainingsQuery = trainingsQuery.eq('team_id', profile.team_id);
 
         // --- Step 3: Parallel data fetches ---
         const [
@@ -136,7 +128,7 @@ export async function GET() {
                     athlete:profiles!alerts_athlete_id_fkey(name),
                     activity:activities(title, type)
                 `)
-                .eq('coach_id', user.id)
+                .eq('team_id', profile.team_id)
                 .eq('is_read', false)
                 .order('created_at', { ascending: false }),
         ]);

@@ -3,7 +3,7 @@ export type RaceStatus = 'PLANNED' | 'COMPLETED' | 'DNR';
 
 export interface Race {
   id: string;
-  coach_id: string | null;
+  created_by: string | null;
   team_id: string | null;
   name: string;
   description: string | null;
@@ -34,8 +34,6 @@ export interface AthleteRace {
 
 export interface CreateRaceDTO {
   name: string;
-  coach_id: string;
-  team_id?: string;
   description?: string;
   distance?: string;
   date?: string;

@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -11,10 +10,36 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   const supabase = authResult.supabase;
 
   try {
-    // 1. Reassign athletes to the ADMIN running team coach (which is adminId in this case)
+    const { data: adminProfile } = await supabase
+      .from('profiles')
+      .select('team_id')
+      .eq('id', adminId)
+      .single();
+
+    if (!adminProfile?.team_id) {
+      return NextResponse.json({ error: 'Admin must belong to a team' }, { status: 403 });
+    }
+
+    const { data: targetCoach } = await supabase
+      .from('profiles')
+      .select('id, team_id')
+      .eq('id', targetCoachId)
+      .eq('role', 'COACH')
+      .single();
+
+    if (!targetCoach) {
+      return NextResponse.json({ error: 'Coach not found' }, { status: 404 });
+    }
+
+    if (targetCoach.team_id !== adminProfile.team_id) {
+      return NextResponse.json({ error: 'Cannot delete a coach outside your team' }, { status: 403 });
+    }
+
+    // 1. Reassign athletes in the same team to the admin
     const { error: reassignError } = await supabase
       .from('profiles')
       .update({ coach_id: adminId })
+      .eq('team_id', adminProfile.team_id)
       .eq('coach_id', targetCoachId)
       .eq('role', 'ATHLETE');
 
@@ -27,6 +52,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     const { error: deleteError } = await supabase
       .from('profiles')
       .delete()
+      .eq('team_id', adminProfile.team_id)
       .eq('id', targetCoachId)
       .eq('role', 'COACH');
 

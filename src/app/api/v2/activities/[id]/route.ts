@@ -46,19 +46,19 @@ export async function GET(
             // Check if they're a coach viewing an athlete's activity
             const { data: profile } = await supabase
                 .from('profiles')
-                .select('role')
+                .select('role, team_id')
                 .eq('id', user!.id)
                 .single();
 
-            if (profile?.role === 'COACH') {
-                // Verify athlete belongs to this coach via coach_id
+            if (profile?.role === 'COACH' || profile?.role === 'ADMIN') {
+                // Verify athlete belongs to the same team
                 const { data: athleteProfile } = await supabase
                     .from('profiles')
-                    .select('coach_id')
+                    .select('team_id')
                     .eq('id', activityOwnerId)
                     .single();
 
-                if (!athleteProfile || athleteProfile.coach_id !== user!.id) {
+                if (!athleteProfile || !profile.team_id || athleteProfile.team_id !== profile.team_id) {
                     return NextResponse.json(
                         { error: 'Not authorized to view this activity' },
                         { status: 403 }
@@ -215,27 +215,27 @@ export async function PATCH(
         const activityOwnerId = activity.user_id;
 
         // Check if coach
-        let isCoach = false;
+        let isTeamMember = false;
         if (user!.id !== activityOwnerId) {
             const { data: profile } = await supabase
                 .from('profiles')
-                .select('role')
+                .select('role, team_id')
                 .eq('id', user!.id)
                 .single();
 
-            if (profile?.role === 'COACH') {
+            if (profile?.role === 'COACH' || profile?.role === 'ADMIN') {
                 const { data: athleteProfile } = await supabase
                     .from('profiles')
-                    .select('coach_id')
+                    .select('team_id')
                     .eq('id', activityOwnerId)
                     .single();
 
-                if (athleteProfile && athleteProfile.coach_id === user!.id) {
-                    isCoach = true;
+                if (athleteProfile && profile.team_id && athleteProfile.team_id === profile.team_id) {
+                    isTeamMember = true;
                 }
             }
             
-            if (!isCoach) {
+            if (!isTeamMember) {
                 return NextResponse.json(
                     { error: 'Not authorized to modify this activity' },
                     { status: 403 }

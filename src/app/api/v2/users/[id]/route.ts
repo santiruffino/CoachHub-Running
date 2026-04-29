@@ -22,7 +22,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     const { data: targetUser } = await supabase
       .from('profiles')
-      .select('coach_id, team_id')
+      .select('team_id')
       .eq('id', userId)
       .single();
         
@@ -30,20 +30,16 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Admins can only edit athletes within their team
-    if (profile.role === 'ADMIN' && targetUser.team_id !== profile.team_id) {
+    // Both Admins and Coaches can edit athletes within their team
+    if (targetUser.team_id !== profile.team_id) {
       return NextResponse.json({ error: 'Cannot edit an athlete outside your team' }, { status: 403 });
-    }
-
-    // Verify ownership if it's just a COACH
-    if (profile.role === 'COACH' && targetUser.coach_id !== authResult.user.id) {
-      return NextResponse.json({ error: 'Cannot edit an athlete that is not yours' }, { status: 403 });
     }
 
     const body = await request.json();
     const updateData: any = {};
     if (body.name !== undefined) updateData.name = body.name;
-    if (body.coach_id !== undefined && profile.role === 'ADMIN') {
+    // coach_id changes remain allowed only where direct coach responsibility is needed
+    if (body.coach_id !== undefined && (profile.role === 'ADMIN' || profile.role === 'COACH')) {
         updateData.coach_id = body.coach_id === 'none' ? null : body.coach_id;
     }
 
@@ -85,7 +81,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
 
     const { data: targetUser } = await supabase
       .from('profiles')
-      .select('coach_id, team_id')
+      .select('team_id')
       .eq('id', userId)
       .single();
         
@@ -93,14 +89,9 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Admins can only delete athletes within their team
-    if (profile.role === 'ADMIN' && targetUser.team_id !== profile.team_id) {
+    // Both Admins and Coaches can delete athletes within their team
+    if (targetUser.team_id !== profile.team_id) {
       return NextResponse.json({ error: 'Cannot delete an athlete outside your team' }, { status: 403 });
-    }
-
-    // Verify ownership if it's just a COACH
-    if (profile.role === 'COACH' && targetUser.coach_id !== authResult.user.id) {
-      return NextResponse.json({ error: 'Cannot delete an athlete that is not yours' }, { status: 403 });
     }
 
     // Supabase auth.users can only be deleted by the service role.

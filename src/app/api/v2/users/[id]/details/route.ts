@@ -35,11 +35,17 @@ export async function GET(
             );
         }
 
-        // Coaches can only view their athletes
+        // Coaches can only view athletes in their team
         if (user!.role === 'COACH') {
+            const { data: coachProfile } = await supabase
+                .from('profiles')
+                .select('team_id')
+                .eq('id', user!.id)
+                .single();
+
             const { data: athleteProfile, error: athleteError } = await supabase
                 .from('profiles')
-                .select('id, coach_id')
+                .select('id, team_id')
                 .eq('id', athleteId)
                 .eq('role', 'ATHLETE')
                 .single();
@@ -51,8 +57,8 @@ export async function GET(
                 );
             }
 
-            // Check if this athlete belongs to the requesting coach
-            if (athleteProfile.coach_id !== user!.id) {
+            // Check if this athlete belongs to the same team as the coach
+            if (!coachProfile?.team_id || athleteProfile.team_id !== coachProfile.team_id) {
                 return NextResponse.json(
                     { error: 'You do not have permission to view this athlete' },
                     { status: 403 }
@@ -224,19 +230,24 @@ export async function PATCH(
         const athleteId = id;
         const updates = await request.json();
 
-        // Only coaches can update athlete details for now
-        // (Athletes might update their own weight/height in future, but coach notes are restricted)
-        if (user!.role !== 'COACH') {
+        // Only coaches and admins can update athlete details
+        if (user!.role !== 'COACH' && user!.role !== 'ADMIN') {
             return NextResponse.json(
                 { error: 'Only coaches can update athlete details' },
                 { status: 403 }
             );
         }
 
-        // Verify coach has access to this athlete
+        // Verify coach has access to this athlete via team membership
+        const { data: coachProfile } = await supabase
+            .from('profiles')
+            .select('team_id')
+            .eq('id', user!.id)
+            .single();
+
         const { data: athleteProfile, error: athleteError } = await supabase
             .from('profiles')
-            .select('id, coach_id')
+            .select('id, team_id')
             .eq('id', athleteId)
             .eq('role', 'ATHLETE')
             .single();
@@ -248,7 +259,7 @@ export async function PATCH(
             );
         }
 
-        if (athleteProfile.coach_id !== user!.id) {
+        if (!coachProfile?.team_id || athleteProfile.team_id !== coachProfile.team_id) {
             return NextResponse.json(
                 { error: 'You do not have permission to update this athlete' },
                 { status: 403 }

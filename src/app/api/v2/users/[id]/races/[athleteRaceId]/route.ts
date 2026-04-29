@@ -25,25 +25,25 @@ export async function PATCH(
         if (user!.id !== targetUserId) {
             const { data: profile } = await supabase
                 .from('profiles')
-                .select('role')
+                .select('role, team_id')
                 .eq('id', user!.id)
                 .single();
 
-            if (profile?.role === 'COACH') {
-                // Verify athlete belongs to this coach
+            if (profile?.role === 'COACH' || profile?.role === 'ADMIN') {
+                // Verify athlete belongs to the same team
                 const { data: athleteProfile } = await supabase
                     .from('profiles')
-                    .select('coach_id')
+                    .select('team_id')
                     .eq('id', targetUserId)
                     .single();
 
-                if (!athleteProfile || athleteProfile.coach_id !== user!.id) {
+                if (!athleteProfile || !profile.team_id || athleteProfile.team_id !== profile.team_id) {
                     return NextResponse.json(
                         { error: 'Not authorized to update this user\'s races' },
                         { status: 403 }
                     );
                 }
-            } else if (profile?.role !== 'ADMIN') {
+            } else {
                 return NextResponse.json(
                     { error: 'Not authorized to update this user\'s races' },
                     { status: 403 }
@@ -119,29 +119,28 @@ export async function DELETE(
         const { supabase, user } = authResult;
         const targetUserId = id;
 
-        // Deletion is restricted to COACH or ADMIN roles per business logic and RLS
         const { data: profile } = await supabase
             .from('profiles')
-            .select('role')
+            .select('role, team_id')
             .eq('id', user!.id)
             .single();
 
-        if (profile?.role === 'COACH') {
-            // Verify athlete belongs to this coach
+        if (profile?.role === 'COACH' || profile?.role === 'ADMIN') {
+            // Verify athlete belongs to the same team
             const { data: athleteProfile } = await supabase
                 .from('profiles')
-                .select('coach_id')
+                .select('team_id')
                 .eq('id', targetUserId)
                 .single();
 
-            if (!athleteProfile || athleteProfile.coach_id !== user!.id) {
+            if (!athleteProfile || !profile.team_id || athleteProfile.team_id !== profile.team_id) {
                 return NextResponse.json(
                     { error: 'Not authorized to delete this user\'s races' },
                     { status: 403 }
                 );
             }
-        } else if (profile?.role !== 'ADMIN') {
-            // Athletes cannot delete assignments, only update them (per RLS)
+        } else {
+            // Athletes cannot delete assignments
             return NextResponse.json(
                 { error: 'Not authorized to delete race assignments' },
                 { status: 403 }

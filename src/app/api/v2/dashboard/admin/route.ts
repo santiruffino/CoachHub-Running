@@ -1,19 +1,29 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
 
 export async function GET() {
   const authResult = await requireRole('ADMIN');
   if (authResult.response) return authResult.response;
 
-  const supabase = await createClient();
+  const supabase = authResult.supabase;
 
   try {
+    const { data: adminProfile } = await supabase
+      .from('profiles')
+      .select('team_id')
+      .eq('id', authResult.user.id)
+      .single();
+
+    if (!adminProfile?.team_id) {
+      return NextResponse.json({ error: 'Admin must belong to a team' }, { status: 403 });
+    }
+
     // Total Athletes
     const { count: athletesCount, error: athletesError } = await supabase
       .from('profiles')
       .select('*', { count: 'exact', head: true })
-      .eq('role', 'ATHLETE');
+      .eq('role', 'ATHLETE')
+      .eq('team_id', adminProfile.team_id);
 
     if (athletesError) throw athletesError;
 
@@ -21,14 +31,16 @@ export async function GET() {
     const { count: coachesCount, error: coachesError } = await supabase
       .from('profiles')
       .select('*', { count: 'exact', head: true })
-      .eq('role', 'COACH');
+      .eq('role', 'COACH')
+      .eq('team_id', adminProfile.team_id);
 
     if (coachesError) throw coachesError;
 
     // Total Groups
     const { count: groupsCount, error: groupsError } = await supabase
       .from('groups')
-      .select('*', { count: 'exact', head: true });
+      .select('*', { count: 'exact', head: true })
+      .eq('team_id', adminProfile.team_id);
 
     if (groupsError) throw groupsError;
 
@@ -36,7 +48,8 @@ export async function GET() {
     const { data: coachesData, error: coachesDetailsError } = await supabase
       .from('profiles')
       .select('id, name, email')
-      .eq('role', 'COACH');
+      .eq('role', 'COACH')
+      .eq('team_id', adminProfile.team_id);
 
     if (coachesDetailsError) throw coachesDetailsError;
 
@@ -48,7 +61,8 @@ export async function GET() {
       const { data: latestTraining, error: latestTrainingError } = await supabase
         .from('trainings')
         .select('created_at')
-        .eq('coach_id', coach.id)
+        .eq('created_by', coach.id)
+        .eq('team_id', adminProfile.team_id)
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -65,6 +79,7 @@ export async function GET() {
       const { count } = await supabase
         .from('profiles')
         .select('*', { count: 'exact', head: true })
+        .eq('team_id', adminProfile.team_id)
         .eq('coach_id', coach.id);
       coach.totalAthletes = count || 0;
     }

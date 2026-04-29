@@ -40,9 +40,19 @@ export async function updateSession(request: NextRequest) {
     return supabaseResponse;
   }
 
+  const authPages = ['/login', '/forgot-password'];
+  const isAuthPage = authPages.some((page) => request.nextUrl.pathname.startsWith(page));
+
+  // Redirect authenticated users away from auth pages to the dashboard
+  if (user && isAuthPage) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/dashboard';
+    return NextResponse.redirect(url);
+  }
+
   if (
     !user &&
-    !request.nextUrl.pathname.startsWith('/login') &&
+    !isAuthPage &&
     !request.nextUrl.pathname.startsWith('/auth') &&
     !request.nextUrl.pathname.startsWith('/accept-invitation') &&
     !request.nextUrl.pathname.startsWith('/api/auth')

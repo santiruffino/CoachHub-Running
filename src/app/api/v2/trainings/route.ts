@@ -24,16 +24,19 @@ export async function GET(request: NextRequest) {
             .eq('id', user!.id)
             .single();
 
+        if (!profile?.team_id) {
+            return NextResponse.json(
+                { error: 'Coach must belong to a team' },
+                { status: 403 }
+            );
+        }
+
         let query = supabase
             .from('trainings')
             .select('*')
             .order('created_at', { ascending: false });
 
-        if (profile?.team_id) {
-            query = query.eq('team_id', profile.team_id);
-        } else {
-            query = query.eq('coach_id', user!.id);
-        }
+        query = query.eq('team_id', profile.team_id);
 
         const { data: trainings, error } = await query;
 
@@ -46,17 +49,17 @@ export async function GET(request: NextRequest) {
         }
 
         // Attach Coach Names Manually (to bypass PGRST FK missing issues)
-        const coachIds = [...new Set(trainings?.map(t => t.coach_id).filter(Boolean))];
-        if (coachIds.length > 0 && trainings) {
+        const creatorIds = [...new Set(trainings?.map((t: any) => t.created_by).filter(Boolean))];
+        if (creatorIds.length > 0 && trainings) {
             const { data: coachesData } = await supabase
                 .from('profiles')
                 .select('id, name')
-                .in('id', coachIds);
+                .in('id', creatorIds);
                 
             const coachMap = new Map(coachesData?.map(c => [c.id, c.name]));
             trainings.forEach((t: any) => {
-                if (t.coach_id) {
-                    t.coach = { name: coachMap.get(t.coach_id) || 'Unknown Coach' };
+                if (t.created_by) {
+                    t.coach = { name: coachMap.get(t.created_by) || 'Unknown Coach' };
                 }
             });
         }
@@ -121,7 +124,7 @@ export async function POST(request: NextRequest) {
                 type,
                 blocks,
                 is_template: isTemplate,
-                coach_id: user!.id,
+                created_by: user!.id,
                 team_id: profile?.team_id || null, // Lock to Running Team
             })
             .select()

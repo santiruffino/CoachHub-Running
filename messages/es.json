@@ -84,7 +84,8 @@
             "compliance": "CUMPLIMIENTO",
             "high": "ALTO",
             "attentionNeeded": "ATENCIÓN NECESARIA",
-            "optimal": "ÓPTIMO"
+            "optimal": "ÓPTIMO",
+            "critical": "Critico"
         },
         "planSubtitle": "{groupName} - {timeframe}",
         "alertActions": {
@@ -1133,6 +1134,9 @@
             "defaultRaceName": "Carrera",
             "resultTime": "Tiempo Real",
             "countdown": "T - {days} días",
+            "countdownDay": "T - {days} día",
+            "countdownHoursMinutes": "T - {hours}h {minutes}m",
+            "countdownHours": "T - {hours} horas",
             "daysLeft": "{days} DÍAS",
             "status": {
                 "PLANNED": "Planificada",

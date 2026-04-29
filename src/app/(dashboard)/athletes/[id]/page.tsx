@@ -61,17 +61,27 @@ export default function AthleteDetailPage() {
         const fetchData = async () => {
             try {
                 setLoading(true);
-                const [detailsRes, activitiesRes, calendarRes, racesRes] = await Promise.all([
+                const [detailsRes, activitiesRes, calendarRes, racesRes] = await Promise.allSettled([
                     api.get<AthleteDetails>(`/v2/users/${id}/details`),
                     api.get<Activity[]>(`/v2/users/${id}/activities`),
                     api.get<TrainingAssignment[]>(`/v2/trainings/calendar?studentIds=${id}&startDate=${new Date(new Date().setMonth(new Date().getMonth() - 2)).toISOString()}&endDate=${new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString()}`),
                     racesService.findByUser(id)
                 ]);
 
-                setAthlete(detailsRes.data);
-                setActivities(activitiesRes.data);
-                setAssignments(calendarRes.data);
-                setAssignedRaces(racesRes.data);
+                const detailsData = detailsRes.status === 'fulfilled' ? detailsRes.value.data : null;
+                const activitiesData = activitiesRes.status === 'fulfilled' ? activitiesRes.value.data : [];
+                const calendarData = calendarRes.status === 'fulfilled' ? calendarRes.value.data : [];
+                const racesData = racesRes.status === 'fulfilled' ? racesRes.value.data : [];
+
+                if (detailsRes.status === 'rejected') console.error('Failed to fetch athlete details:', detailsRes.reason);
+                if (activitiesRes.status === 'rejected') console.error('Failed to fetch activities:', activitiesRes.reason);
+                if (calendarRes.status === 'rejected') console.error('Failed to fetch calendar assignments:', calendarRes.reason);
+                if (racesRes.status === 'rejected') console.error('Failed to fetch races:', racesRes.reason);
+
+                setAthlete(detailsData);
+                setActivities(activitiesData);
+                setAssignments(calendarData);
+                setAssignedRaces(racesData);
 
                 const now = new Date();
                 const weekStart = startOfWeek(now, { weekStartsOn: 1 });
@@ -85,13 +95,13 @@ export default function AthleteDetailPage() {
 
                     const dayStr = format(day, 'yyyy-MM-dd');
 
-                    const assignmentCount = calendarRes.data.filter((a: TrainingAssignment) => {
+                    const assignmentCount = calendarData.filter((a: TrainingAssignment) => {
                         const dateValue = a.scheduled_date || a.scheduledDate;
                         const assignmentDateStr = dateValue.split('T')[0];
                         return assignmentDateStr === dayStr;
                     }).length;
 
-                    const activityCount = activitiesRes.data.filter((a: Activity) => {
+                    const activityCount = activitiesData.filter((a: Activity) => {
                         const activityDate = new Date(a.start_date);
                         return activityDate >= dayStart && activityDate <= dayEnd;
                     }).length;
@@ -128,14 +138,14 @@ export default function AthleteDetailPage() {
                     const weekStartStr = format(weekStart, 'yyyy-MM-dd');
                     const weekEndStr = format(weekEnd, 'yyyy-MM-dd');
 
-                    const weekAssignments = calendarRes.data.filter((a: TrainingAssignment) => {
+                    const weekAssignments = calendarData.filter((a: TrainingAssignment) => {
                         const dateValue = a.scheduled_date || a.scheduledDate;
                         const assignmentDateStr = dateValue.split('T')[0];
                         return assignmentDateStr >= weekStartStr && assignmentDateStr <= weekEndStr;
                     });
 
                     const weekCompleted = weekAssignments.filter((a: TrainingAssignment) =>
-                        isAssignmentCompleted(a, activitiesRes.data)
+                        isAssignmentCompleted(a, activitiesData)
                     ).length;
                     const weekTotal = weekAssignments.length;
 

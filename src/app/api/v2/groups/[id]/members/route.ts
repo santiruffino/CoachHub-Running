@@ -6,7 +6,7 @@ import { requireRole } from '@/lib/supabase/api-helpers';
  * 
  * Adds an athlete to a group.
  * 
- * Access: COACH only (must own the group)
+ * Access: COACH only (must belong to group's team)
  */
 export async function POST(
     request: NextRequest,
@@ -24,6 +24,19 @@ export async function POST(
         const groupId = id;
         const { athleteId } = await request.json();
 
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('team_id')
+            .eq('id', user!.id)
+            .single();
+
+        if (!profile?.team_id) {
+            return NextResponse.json(
+                { error: 'Coach must belong to a team' },
+                { status: 403 }
+            );
+        }
+
         if (!athleteId) {
             return NextResponse.json(
                 { error: 'athleteId is required' },
@@ -31,10 +44,10 @@ export async function POST(
             );
         }
 
-        // Verify group exists and coach owns it
+        // Verify group exists and belongs to coach team
         const { data: group, error: groupError } = await supabase
             .from('groups')
-            .select('coach_id')
+            .select('team_id')
             .eq('id', groupId)
             .single();
 
@@ -45,7 +58,7 @@ export async function POST(
             );
         }
 
-        if (group.coach_id !== user!.id) {
+        if (group.team_id !== profile.team_id) {
             return NextResponse.json(
                 { error: 'Not authorized to modify this group' },
                 { status: 403 }
@@ -122,7 +135,7 @@ export async function POST(
  * Removes an athlete from a group.
  * Uses athleteId from request body.
  * 
- * Access: COACH only (must own the group)
+ * Access: COACH only (must belong to group's team)
  */
 export async function DELETE(
     request: NextRequest,
@@ -140,6 +153,19 @@ export async function DELETE(
         const groupId = id;
         const { athleteId } = await request.json();
 
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('team_id')
+            .eq('id', user!.id)
+            .single();
+
+        if (!profile?.team_id) {
+            return NextResponse.json(
+                { error: 'Coach must belong to a team' },
+                { status: 403 }
+            );
+        }
+
         if (!athleteId) {
             return NextResponse.json(
                 { error: 'athleteId is required' },
@@ -147,10 +173,10 @@ export async function DELETE(
             );
         }
 
-        // Verify group exists and coach owns it
+        // Verify group exists and belongs to coach team
         const { data: group, error: groupError } = await supabase
             .from('groups')
-            .select('coach_id')
+            .select('team_id')
             .eq('id', groupId)
             .single();
 
@@ -161,7 +187,7 @@ export async function DELETE(
             );
         }
 
-        if (group.coach_id !== user!.id) {
+        if (group.team_id !== profile.team_id) {
             return NextResponse.json(
                 { error: 'Not authorized to modify this group' },
                 { status: 403 }

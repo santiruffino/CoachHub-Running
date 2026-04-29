@@ -47,18 +47,27 @@ export default function AthleteDashboard({ user }: { user: any }) {
                 }
             }
 
-            // Parallel fetching with cache awareness
-            const [detailsRes, activitiesRes, calendarRes, racesRes] = await Promise.all([
+            const [detailsRes, activitiesRes, calendarRes, racesRes] = await Promise.allSettled([
                 api.get(`/v2/users/${user.id}/details`),
                 api.get(`/v2/users/${user.id}/activities`),
-                api.get(`/v2/trainings/calendar?studentIds=${user.id}&startDate=${subWeeks(new Date(), 8).toISOString()}&endDate=${addWeeks(new Date(), 4).toISOString()}`),
+                api.get('/v2/users/assignments'),
                 racesService.findByUser(user.id)
             ]);
 
-            setAthleteDetails(detailsRes.data);
-            setActivities(activitiesRes.data);
-            setAssignments(calendarRes.data);
-            setRaces(racesRes.data);
+            const detailsData = detailsRes.status === 'fulfilled' ? detailsRes.value.data : null;
+            const activitiesData = activitiesRes.status === 'fulfilled' ? activitiesRes.value.data : [];
+            const assignmentsData = calendarRes.status === 'fulfilled' ? calendarRes.value.data : [];
+            const racesData = racesRes.status === 'fulfilled' ? racesRes.value.data : [];
+
+            if (detailsRes.status === 'rejected') console.error('Failed to fetch athlete details:', detailsRes.reason);
+            if (activitiesRes.status === 'rejected') console.error('Failed to fetch activities:', activitiesRes.reason);
+            if (calendarRes.status === 'rejected') console.error('Failed to fetch calendar assignments:', calendarRes.reason);
+            if (racesRes.status === 'rejected') console.error('Failed to fetch races:', racesRes.reason);
+
+            setAthleteDetails(detailsData);
+            setActivities(activitiesData);
+            setAssignments(assignmentsData);
+            setRaces(racesData);
 
             // Calculate Performance Trend (Last 6 weeks)
             const trend = [];
@@ -67,7 +76,7 @@ export default function AthleteDashboard({ user }: { user: any }) {
                 const wStart = startOfWeek(week, { weekStartsOn: 1 });
                 const wEnd = endOfWeek(week, { weekStartsOn: 1 });
                 
-                const weekAssignments = calendarRes.data.filter((a: any) => {
+                const weekAssignments = assignmentsData.filter((a: any) => {
                     const dateValue = a.scheduled_date || a.scheduledDate;
                     const d = dateValue.split('T')[0];
                     return d >= format(wStart, 'yyyy-MM-dd') && d <= format(wEnd, 'yyyy-MM-dd');
@@ -76,7 +85,7 @@ export default function AthleteDashboard({ user }: { user: any }) {
                 const completed = weekAssignments.filter((a: any) => {
                     if (a.completed) return true;
                     const dateValue = a.scheduled_date || a.scheduledDate;
-                    return activitiesRes.data.some((act: any) => 
+                    return activitiesData.some((act: any) => 
                         format(new Date(act.start_date), 'yyyy-MM-dd') === dateValue.split('T')[0] &&
                         normalizeActivityType(act.type) === a.training.type
                     );

@@ -41,10 +41,8 @@ export async function GET() {
       `)
       .order('created_at', { ascending: false });
 
-    if (profile.role === 'ADMIN') {
+    if (profile.role === 'ADMIN' || profile.role === 'COACH') {
       groupsQuery = groupsQuery.eq('team_id', profile.team_id);
-    } else {
-      groupsQuery = groupsQuery.eq('coach_id', user.id);
     }
 
     const { data: groups, error } = await groupsQuery;
@@ -125,7 +123,7 @@ export async function POST(request: Request) {
         race_date: race_date || null,
         race_distance: race_distance || null,
         race_priority: race_priority || null,
-        coach_id: profile.role === 'ADMIN' ? null : user.id,
+        created_by: user.id,
         team_id: profile.team_id,
       })
       .select(`
@@ -149,4 +147,3 @@ export async function POST(request: Request) {
     );
   }
 }
-

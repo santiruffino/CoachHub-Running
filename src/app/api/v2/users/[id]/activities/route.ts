@@ -28,22 +28,22 @@ export async function GET(
         // Check permissions
         if (user!.id !== targetUserId) {
             // User is trying to view someone else's activities
-            // Check if they're a coach viewing an athlete
+            // Check if they're a coach viewing a team athlete
             const { data: profile } = await supabase
                 .from('profiles')
-                .select('role')
+                .select('role, team_id')
                 .eq('id', user!.id)
                 .single();
 
-            if (profile?.role === 'COACH') {
-                // Verify athlete belongs to this coach via coach_id
+            if (profile?.role === 'COACH' || profile?.role === 'ADMIN') {
+                // Verify athlete belongs to the same team
                 const { data: athleteProfile } = await supabase
                     .from('profiles')
-                    .select('coach_id')
+                    .select('team_id')
                     .eq('id', targetUserId)
                     .single();
 
-                if (!athleteProfile || athleteProfile.coach_id !== user!.id) {
+                if (!athleteProfile || !profile.team_id || athleteProfile.team_id !== profile.team_id) {
                     return NextResponse.json(
                         { error: 'Not authorized to view this user\'s activities' },
                         { status: 403 }

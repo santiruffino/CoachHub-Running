@@ -20,13 +20,20 @@ export async function GET() {
         // Check if user is a coach
         const { data: profile } = await supabase
             .from('profiles')
-            .select('role')
+            .select('role, team_id')
             .eq('id', user.id)
             .single();
 
         if (profile?.role !== 'COACH') {
             return NextResponse.json(
                 { error: 'Only coaches can access this endpoint' },
+                { status: 403 }
+            );
+        }
+
+        if (!profile?.team_id) {
+            return NextResponse.json(
+                { error: 'Coach must belong to a team' },
                 { status: 403 }
             );
         }
@@ -43,12 +50,12 @@ export async function GET() {
         weekEnd.setDate(weekStart.getDate() + 6);
         weekEnd.setHours(23, 59, 59, 999);
 
-        // Get all athletes for this coach
+        // Get all athletes for this coach team
         const { data: athletes, error: athletesError } = await supabase
             .from('profiles')
             .select('id, email, name, role, created_at')
             .eq('role', 'ATHLETE')
-            .eq('coach_id', user.id);
+            .eq('team_id', profile.team_id);
 
         if (athletesError) {
             console.error('Failed to fetch athletes:', athletesError);

@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import api from '@/lib/axios';
-import { Check, Copy } from 'lucide-react';
+import { Check, Copy, MessageCircle } from 'lucide-react';
 import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
 
 interface InviteCoachModalProps {
@@ -61,6 +61,13 @@ export function InviteCoachModal({ open, onClose }: InviteCoachModalProps) {
         setInvitationLink(null);
         setCopied(false);
         onClose();
+    };
+
+    const getWhatsAppShareUrl = () => {
+        if (!invitationLink) return '#';
+
+        const message = `Hola! Te invito a unirte como coach en Coach Hub Running. Usa este enlace para aceptar la invitacion: ${invitationLink}`;
+        return `https://wa.me/?text=${encodeURIComponent(message)}`;
     };
 
     return (
@@ -132,6 +139,16 @@ export function InviteCoachModal({ open, onClose }: InviteCoachModalProps) {
                         </div>
 
                         <div className="flex justify-end gap-2 pt-2">
+                            <Button asChild className="bg-green-600 hover:bg-green-700 text-white">
+                                <a
+                                    href={getWhatsAppShareUrl()}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    <MessageCircle className="h-4 w-4 mr-2" />
+                                    Enviar por WhatsApp
+                                </a>
+                            </Button>
                             <Button onClick={handleClose}>Cerrar</Button>
                         </div>
                     </div>

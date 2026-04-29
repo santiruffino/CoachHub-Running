@@ -45,16 +45,21 @@ export async function GET(
         }
 
         if (activity.user_id !== user!.id) {
-            // Check if user is a coach for this athlete
-            if (user!.role === 'COACH') {
-                const { data: isCoach, error: coachError } = await supabase
+            // Check if user is a coach/admin in the same team
+            const { data: myProfile } = await supabase
+                .from('profiles')
+                .select('role, team_id')
+                .eq('id', user!.id)
+                .single();
+
+            if (myProfile?.role === 'COACH' || myProfile?.role === 'ADMIN') {
+                const { data: athleteProfile } = await supabase
                     .from('profiles')
-                    .select('id')
+                    .select('team_id')
                     .eq('id', activity.user_id)
-                    .eq('coach_id', user!.id)
                     .single();
 
-                if (coachError || !isCoach) {
+                if (!athleteProfile || !myProfile.team_id || athleteProfile.team_id !== myProfile.team_id) {
                     return NextResponse.json(
                         { error: 'Not authorized' },
                         { status: 403 }

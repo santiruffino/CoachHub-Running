@@ -55,10 +55,8 @@ export async function GET() {
       `)
       .eq('role', 'ATHLETE');
 
-    // If it's just a COACH, filter by their coach_id. If ADMIN, filter by team_id
-    if (profile.role === 'COACH') {
-      query = query.eq('coach_id', user.id);
-    } else if (profile.role === 'ADMIN') {
+    // Both COACH and ADMIN can see all athletes in their team
+    if (profile.role === 'COACH' || profile.role === 'ADMIN') {
       query = query.eq('team_id', profile.team_id);
     }
 

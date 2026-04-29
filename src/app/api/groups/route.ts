@@ -31,7 +31,14 @@ export async function GET() {
       );
     }
 
-    // Get all groups for this coach or team
+    if (!profile.team_id) {
+      return NextResponse.json(
+        { error: 'Coach must belong to a team' },
+        { status: 403 }
+      );
+    }
+
+    // Get all groups for this team
     let groupsQuery = supabase
       .from('groups')
       .select(`
@@ -40,11 +47,7 @@ export async function GET() {
       `)
       .order('created_at', { ascending: false });
 
-    if (profile.role === 'ADMIN') {
-      groupsQuery = groupsQuery.eq('team_id', profile.team_id);
-    } else {
-      groupsQuery = groupsQuery.eq('coach_id', user.id);
-    }
+    groupsQuery = groupsQuery.eq('team_id', profile.team_id);
 
     const { data: groups, error } = await groupsQuery;
 
@@ -109,7 +112,7 @@ export async function POST(request: Request) {
       .insert({
         name,
         description,
-        coach_id: profile.role === 'ADMIN' ? null : user.id,
+        created_by: user.id,
         team_id: profile.team_id,
       })
       .select()
@@ -130,4 +133,3 @@ export async function POST(request: Request) {
     );
   }
 }
-

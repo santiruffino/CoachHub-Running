@@ -84,33 +84,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, [user, loading, router]);
 
     const login = async (email: string, password: string) => {
-        await authService.login(email, password);
-
-        // Fetch user manually here so we can await it before redirecting,
-        // rather than relying only on the onAuthStateChange listener
-        // which could cause race conditions with form submission state.
-        const currentUser = await authService.getCurrentUser();
-        if (currentUser) {
-            setUser(currentUser);
-        } else {
-            throw new Error('Failed to fetch user profile');
-        }
-    };
+    const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+        throw new Error(data.error || 'Login failed');
+    }
+    setUser(data.user);
+};
 
     const logout = async () => {
-        // 1. Clear state immediately
+    try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (e) {
+        console.error('❌ [AuthContext] Logout failed', e);
+    } finally {
         setUser(null);
-
-        // 2. Redirect immediately
-        router.push('/login');
-
-        // 3. Perform backend cleanup in background
-        try {
-            await authService.logout();
-        } catch (e) {
-            console.error('❌ [AuthContext] Logout background task failed', e);
-        }
-    };
+        window.location.href = '/login';
+    }
+};
 
     return (
         <AuthContext.Provider value={{ user, loading, login, logout }}>

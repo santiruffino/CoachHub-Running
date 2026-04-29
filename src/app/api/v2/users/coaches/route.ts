@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
 
 export async function GET() {
@@ -15,16 +14,15 @@ export async function GET() {
       .eq('id', authResult.user!.id)
       .single();
 
+    if (!profile?.team_id) {
+      return NextResponse.json({ error: 'Admin must belong to a team' }, { status: 403 });
+    }
+
     let coachesQuery = supabase
       .from('profiles')
       .select('id, name, email, created_at')
-      .eq('role', 'COACH');
-
-    if (profile?.team_id) {
-      coachesQuery = coachesQuery.eq('team_id', profile.team_id);
-    } else {
-      coachesQuery = coachesQuery.is('team_id', null);
-    }
+      .eq('role', 'COACH')
+      .eq('team_id', profile.team_id);
 
     const { data: coaches, error: coachesError } = await coachesQuery;
 
@@ -36,6 +34,7 @@ export async function GET() {
         const { count } = await supabase
           .from('profiles')
           .select('*', { count: 'exact', head: true })
+          .eq('team_id', profile.team_id)
           .eq('coach_id', coach.id)
           .eq('role', 'ATHLETE');
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireRole } from '@/lib/supabase/api-helpers';
+import { requireAuth } from '@/lib/supabase/api-helpers';
 
 /**
  * Get Calendar Assignments
@@ -16,13 +16,42 @@ import { requireRole } from '@/lib/supabase/api-helpers';
  */
 export async function GET(request: NextRequest) {
     try {
-        const authResult = await requireRole('COACH');
+        const authResult = await requireAuth();
 
         if (authResult.response) {
             return authResult.response;
         }
 
         const { supabase, user } = authResult;
+
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('role, team_id')
+            .eq('id', user!.id)
+            .single();
+
+        if (profile?.role !== 'COACH' && profile?.role !== 'ADMIN') {
+            console.warn('[TRAININGS_CALENDAR] Forbidden role access attempt', {
+                userId: user!.id,
+                role: profile?.role || null,
+            });
+            return NextResponse.json(
+                { error: 'Only coach or admin users can access calendar assignments' },
+                { status: 403 }
+            );
+        }
+
+        if (!profile?.team_id) {
+            console.warn('[TRAININGS_CALENDAR] Missing team_id for coach/admin', {
+                userId: user!.id,
+                role: profile?.role,
+            });
+            return NextResponse.json(
+                { error: 'Coach must belong to a team' },
+                { status: 403 }
+            );
+        }
+
         const { searchParams } = new URL(request.url);
 
         // Get query params
@@ -53,12 +82,15 @@ export async function GET(request: NextRequest) {
 
         // If groupIds provided, get all athletes in those groups
         if (groupIds && groupIds.length > 0) {
-            // Verify groups belong to coach
-            const { data: groups } = await supabase
+            // Verify groups belong to coach team
+            let groupsQuery = supabase
                 .from('groups')
                 .select('id')
-                .in('id', groupIds)
-                .eq('coach_id', user!.id);
+                .in('id', groupIds);
+
+            groupsQuery = groupsQuery.eq('team_id', profile.team_id);
+
+            const { data: groups } = await groupsQuery;
 
             if (!groups || groups.length === 0) {
                 return NextResponse.json(
@@ -101,7 +133,8 @@ export async function GET(request: NextRequest) {
         user:profiles!training_assignments_user_id_fkey(
           id,
           name,
-          email
+          email,
+          team_id
         ),
         training:trainings(
           id,
@@ -114,15 +147,14 @@ export async function GET(request: NextRequest) {
       `)
             .gte('scheduled_date', startDate)
             .lte('scheduled_date', endDate)
-            .eq('training.coach_id', user!.id)
             .order('scheduled_date', { ascending: true });
+
+        // Filter assignments based on team_id
+        query = query.eq('user.team_id', profile.team_id);
 
         // Filter by athletes if specified
         if (targetAthleteIds && targetAthleteIds.length > 0) {
             query = query.in('user_id', targetAthleteIds);
-        } else {
-            // If no filters, get all assignments for coach's trainings
-            // This is already filtered by coach_id in the training join
         }
 
         const { data: assignments, error } = await query;

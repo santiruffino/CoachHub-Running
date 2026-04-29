@@ -5,7 +5,73 @@ export interface LoginResponse {
     user: User;
 }
 
+export interface SignUpParams {
+    email: string;
+    password: string;
+    name?: string;
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+    gender?: string;
+    role?: Role;
+}
+
 export const authService = {
+    /**
+     * Sign up a new user with Supabase Auth and create a profile.
+     * Best practice: Call this from a server action or API route for security.
+     */
+    signUp: async (params: SignUpParams): Promise<User> => {
+        const supabase = createClient();
+        const { email, password, name, firstName, lastName, phone, gender, role } = params;
+
+        // 1. Create user in Supabase Auth
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+            email,
+            password,
+        });
+        if (signUpError) {
+            throw new Error(signUpError.message);
+        }
+        const user = signUpData.user;
+        if (!user) {
+            throw new Error('Sign up failed');
+        }
+
+        // 2. Insert profile in DB (optional, but recommended)
+        const { error: profileError } = await supabase.from('profiles').insert([
+            {
+                id: user.id,
+                email,
+                name: name || null,
+                first_name: firstName || null,
+                last_name: lastName || null,
+                phone: phone || null,
+                gender: gender || null,
+                role: role || Role.ATHLETE,
+                is_onboarding_completed: false,
+                must_change_password: false,
+            },
+        ]);
+        if (profileError) {
+            throw new Error(profileError.message);
+        }
+
+        // 3. Return user object
+        return {
+            id: user.id,
+            email: user.email!,
+            name: name || undefined,
+            firstName: firstName || undefined,
+            lastName: lastName || undefined,
+            phone: phone || undefined,
+            gender: gender || undefined,
+            isOnboardingCompleted: false,
+            role: role || Role.ATHLETE,
+            mustChangePassword: false,
+        };
+    },
+
     login: async (email: string, password: string): Promise<void> => {
         const supabase = createClient();
 
@@ -27,25 +93,24 @@ export const authService = {
     logout: async (): Promise<void> => {
         const supabase = createClient();
 
-        // 1. Clear local storage immediately
-        if (typeof window !== 'undefined') {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-        }
-
         try {
-            // 2. Attempt Supabase signOut with a timeout to prevent hanging
-            const signOutPromise = supabase.auth.signOut({ scope: 'local' });
-            const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('SignOut timeout')), 2000)
-            );
+            // Attempt Supabase signOut with a timeout to prevent hanging
+            // We remove scope: 'local' to ensure cookies are cleared correctly
+            const { error } = await Promise.race([
+                supabase.auth.signOut(),
+                new Promise<any>((_, reject) =>
+                    setTimeout(() => reject(new Error('SignOut timeout')), 3000)
+                )
+            ]) as { error: any };
 
-            await Promise.race([signOutPromise, timeoutPromise]);
+            if (error) {
+                console.error('❌ [AuthService] signOut failed:', error);
+            }
         } catch (error: any) {
             if (error.message === 'SignOut timeout') {
-                console.warn('⚠️ [AuthService] Background signOut timed out - Local session cleared successfully');
+                console.warn('⚠️ [AuthService] signOut timed out - proceeding with local cleanup');
             } else {
-                console.error('❌ [AuthService] Background signOut failed:', error);
+                console.error('❌ [AuthService] signOut error:', error);
             }
         }
     },

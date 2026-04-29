@@ -51,7 +51,20 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Verify training exists and coach owns it
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('team_id')
+            .eq('id', user!.id)
+            .single();
+
+        if (!profile?.team_id) {
+            return NextResponse.json(
+                { error: 'Coach must belong to a team' },
+                { status: 403 }
+            );
+        }
+
+        // Verify training exists and belongs to coach team
         const { data: training, error: trainingError } = await supabase
             .from('trainings')
             .select('*')
@@ -65,7 +78,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        if (training.coach_id !== user!.id) {
+        if (training.team_id !== profile.team_id) {
             return NextResponse.json(
                 { error: 'Not authorized to assign this training' },
                 { status: 403 }
@@ -94,12 +107,15 @@ export async function POST(request: NextRequest) {
 
         // If groupIds provided, get all athletes in those groups
         if (groupIds && groupIds.length > 0) {
-            // Verify all groups belong to coach
-            const { data: groups } = await supabase
+            // Verify all groups belong to coach team
+            let groupsQuery = supabase
                 .from('groups')
                 .select('id')
-                .in('id', groupIds)
-                .eq('coach_id', user!.id);
+                .in('id', groupIds);
+
+            groupsQuery = groupsQuery.eq('team_id', profile.team_id);
+
+            const { data: groups } = await groupsQuery;
 
             if (!groups || groups.length !== groupIds.length) {
                 return NextResponse.json(

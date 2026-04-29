@@ -39,17 +39,30 @@ export async function POST(
             );
         }
 
-        // Authorization: Athlete owner OR Coach of athlete
+        // Authorization: Athlete owner OR Coach in the same team as athlete
         if (assignment.user_id !== user!.id) {
             if (user!.role === 'COACH') {
-                const { data: isCoach, error: coachError } = await supabase
+                const { data: coachProfile } = await supabase
                     .from('profiles')
-                    .select('id')
-                    .eq('id', assignment.user_id)
-                    .eq('coach_id', user!.id)
+                    .select('team_id')
+                    .eq('id', user!.id)
                     .single();
 
-                if (coachError || !isCoach) {
+                if (!coachProfile?.team_id) {
+                    return NextResponse.json(
+                        { error: 'Not authorized' },
+                        { status: 403 }
+                    );
+                }
+
+                const { data: athleteProfile, error: coachError } = await supabase
+                    .from('profiles')
+                    .select('id, team_id')
+                    .eq('id', assignment.user_id)
+                    .eq('team_id', coachProfile.team_id)
+                    .single();
+
+                if (coachError || !athleteProfile) {
                     return NextResponse.json(
                         { error: 'Not authorized' },
                         { status: 403 }

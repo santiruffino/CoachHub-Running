@@ -72,6 +72,7 @@ export default function ActivityDetailPage() {
     const [isAthlete, setIsAthlete] = useState(false);
     const [heartrateZones, setHeartrateZones] = useState<{ zones: Array<{ min: number; max: number }> } | null>(null);
     const [compliance, setCompliance] = useState<any | null>(null);
+    const [internalId, setInternalId] = useState<string | null>(null);
 
     // Workout matching state
     const [matchedLaps, setMatchedLaps] = useState<MatchedLap[]>([]);
@@ -87,6 +88,7 @@ export default function ActivityDetailPage() {
                 setLoading(true);
                 const response = await api.get<ActivityDetail>(`/v2/activities/${id}`);
                 setActivity(response.data);
+                setInternalId(response.data._internalId || null);
                 setLapOverrides(response.data.lap_overrides || {});
 
                 // Set whether the current viewer is the athlete (owner) or a coach
@@ -104,9 +106,9 @@ export default function ActivityDetailPage() {
 
     useEffect(() => {
         const fetchCompliance = async () => {
-            if (!id) return;
+            if (!internalId) return;
             try {
-                const response = await api.get(`/v2/activities/${id}/compliance`);
+                const response = await api.get(`/v2/activities/${internalId}/compliance`);
                 setCompliance(response.data);
             } catch (err) {
                 console.error('Failed to fetch compliance:', err);
@@ -114,7 +116,7 @@ export default function ActivityDetailPage() {
         };
 
         fetchCompliance();
-    }, [id]);
+    }, [internalId]);
 
     // Fetch athlete profile for HR zones using cache
     const cache = useCache();
@@ -521,7 +523,7 @@ export default function ActivityDetailPage() {
                 <div className="h-[400px] lg:h-[500px] w-full bg-muted rounded-2xl overflow-hidden relative">
                     {!isWeightTraining(activity.sport_type) ? (
                         <ActivityChart
-                            activityId={id}
+                            activityId={internalId || id}
                             laps={activity.laps}
                             hrZones={heartrateZones?.zones}
                             isRunning={isRunning(activity.sport_type)}

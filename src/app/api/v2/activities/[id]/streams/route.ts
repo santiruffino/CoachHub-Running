@@ -11,7 +11,7 @@ export async function GET(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const { id: externalId } = await params;
+        const { id: activityUuid } = await params;
         const supabase = await createClient();
         const { data: { session } } = await supabase.auth.getSession();
 
@@ -30,21 +30,21 @@ export async function GET(
             );
         }
 
-        // 1. Check local cache first (activity_streams table)
-        const { data: cachedStream, error: cacheError } = await supabase
+        // 1. Check local cache first (activity_streams table) using UUID
+        const { data: cachedStream } = await supabase
             .from('activity_streams')
             .select('stream_data')
-            .eq('external_id', externalId)
+            .eq('activity_id', activityUuid)
             .maybeSingle();
 
         if (cachedStream) {
-            console.log(`[STREAMS] Cache hit for activity: ${externalId}`);
+            console.log(`[STREAMS] Cache hit for activity: ${activityUuid}`);
             return NextResponse.json(cachedStream.stream_data);
         }
 
         // 2. Cache miss: Call the Supabase Edge Function
         // This function handles permissions, Strava token refresh, and persistence
-        const functionUrl = `${supabaseUrl}/functions/v1/fetch-strava-streams?id=${encodeURIComponent(externalId)}`;
+        const functionUrl = `${supabaseUrl}/functions/v1/fetch-strava-streams?uuid=${encodeURIComponent(activityUuid)}`;
         
         console.log(`[STREAMS] Cache miss. Calling Edge Function: ${functionUrl}`);
 

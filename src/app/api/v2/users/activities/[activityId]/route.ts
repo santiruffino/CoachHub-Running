@@ -9,7 +9,7 @@ import { requireAuth } from '@/lib/supabase/api-helpers';
  * 
  * Permissions:
  * - Activity owner can view
- * - Coach can view if athlete is in their groups
+ * - Coach/Admin can view if athlete is in their team
  */
 export async function GET(
     request: NextRequest,
@@ -50,28 +50,21 @@ export async function GET(
 
         // Check permissions
         if (activity.user_id !== user!.id) {
-            // Check if user is a coach viewing athlete's activity
+            // Check if user is a coach/admin viewing athlete's activity
             const { data: profile } = await supabase
                 .from('profiles')
-                .select('role')
+                .select('role, team_id')
                 .eq('id', user!.id)
                 .single();
 
-            if (profile?.role === 'COACH') {
-                // Verify athlete is in coach's groups
-                const { data: membership } = await supabase
-                    .from('athlete_groups')
-                    .select(`
-            group:groups!inner(
-              coach_id
-            )
-          `)
-                    .eq('athlete_id', activity.user_id)
-                    .eq('group.coach_id', user!.id)
-                    .limit(1)
+            if (profile?.role === 'COACH' || profile?.role === 'ADMIN') {
+                const { data: athleteProfile } = await supabase
+                    .from('profiles')
+                    .select('team_id')
+                    .eq('id', activity.user_id)
                     .single();
 
-                if (!membership) {
+                if (!athleteProfile || !profile.team_id || athleteProfile.team_id !== profile.team_id) {
                     return NextResponse.json(
                         { error: 'Not authorized to view this activity' },
                         { status: 403 }

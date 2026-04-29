@@ -42,7 +42,7 @@ export async function GET(
                     description,
                     type,
                     blocks,
-                    coach_id
+                    team_id
                 ),
                 user:profiles!training_assignments_user_id_fkey(
                     id,
@@ -67,7 +67,7 @@ export async function GET(
             description: string;
             type: string;
             blocks: any;
-            coach_id: string;
+            team_id: string | null;
         };
         const assignedUser = assignment.user as unknown as {
             id: string;
@@ -78,7 +78,7 @@ export async function GET(
         // Fetch user's profile to get the correct role
         const { data: profile } = await supabase
             .from('profiles')
-            .select('role')
+            .select('role, team_id')
             .eq('id', user!.id)
             .single();
 
@@ -92,8 +92,8 @@ export async function GET(
             );
         }
 
-        // Coaches can view any assignment, but can only edit if they own the training
-        const canEdit = userRole === 'COACH' && training.coach_id === user!.id;
+        // Coaches can view any assignment, but can only edit if they own the training or are on the same team
+        const canEdit = userRole === 'COACH' && !!profile?.team_id && training.team_id === profile.team_id;
 
         return NextResponse.json({
             id: assignment.id,
@@ -146,6 +146,20 @@ export async function PATCH(
         }
 
         const { supabase, user } = authResult;
+        
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('team_id')
+            .eq('id', user!.id)
+            .single();
+
+        if (!profile?.team_id) {
+            return NextResponse.json(
+                { error: 'Coach must belong to a team' },
+                { status: 403 }
+            );
+        }
+            
         const assignmentId = id;
         const body = await request.json();
         const { blocks, expectedRpe, scheduledDate, applyToGroup } = body;
@@ -163,7 +177,8 @@ export async function PATCH(
                     title,
                     type,
                     description,
-                    coach_id
+                    created_by,
+                    team_id
                 )
             `)
             .eq('id', assignmentId)
@@ -181,11 +196,12 @@ export async function PATCH(
             title: string;
             type: string;
             description: string;
-            coach_id: string;
+            created_by: string | null;
+            team_id: string | null;
         };
 
-        // Verify coach owns the training
-        if (training.coach_id !== user!.id) {
+        // Verify training belongs to coach team
+        if (training.team_id !== profile.team_id) {
             return NextResponse.json(
                 { error: 'Not authorized to update this assignment' },
                 { status: 403 }
@@ -208,7 +224,8 @@ export async function PATCH(
                     description: training.description || 'Modified workout',
                     blocks: blocks,
                     is_template: false,
-                    coach_id: user!.id,
+                    created_by: user!.id,
+                    team_id: profile.team_id,
                 })
                 .select()
                 .single();
@@ -316,6 +333,20 @@ export async function DELETE(
         }
 
         const { supabase, user } = authResult;
+        
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('team_id')
+            .eq('id', user!.id)
+            .single();
+
+        if (!profile?.team_id) {
+            return NextResponse.json(
+                { error: 'Coach must belong to a team' },
+                { status: 403 }
+            );
+        }
+            
         const assignmentId = id;
         
         // Try to parse body for applyToGroup flag
@@ -335,7 +366,7 @@ export async function DELETE(
                 training_id,
                 scheduled_date,
                 source_group_id,
-                training:trainings!inner(coach_id)
+                training:trainings!inner(team_id)
             `)
             .eq('id', assignmentId)
             .single();
@@ -347,9 +378,9 @@ export async function DELETE(
             );
         }
 
-        // Verify coach owns the training
-        const training = assignment.training as unknown as { coach_id: string };
-        if (training.coach_id !== user!.id) {
+        // Verify training belongs to coach team
+        const training = assignment.training as unknown as { team_id: string | null };
+        if (training.team_id !== profile.team_id) {
             return NextResponse.json(
                 { error: 'Not authorized to delete this assignment' },
                 { status: 403 }

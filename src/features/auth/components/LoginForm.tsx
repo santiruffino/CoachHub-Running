@@ -36,9 +36,9 @@ export default function LoginForm() {
     // Redirect if already logged in
     useEffect(() => {
         if (!loading && user) {
-            window.location.href = '/dashboard';
+            router.replace('/dashboard');
         }
-    }, [user, loading]);
+    }, [user, loading, router]);
 
     const onSubmit = async (data: FormData) => {
         try {
@@ -49,9 +49,10 @@ export default function LoginForm() {
         }
     };
 
-    // While we're resolving auth, show a skeleton shaped like the login card.
-    // This prevents the form from flashing for already-authenticated users.
-    if (loading) {
+    // While we're resolving auth or a redirect is pending, show a skeleton
+    // shaped like the login card. This prevents the form from flashing for
+    // already-authenticated users.
+    if (loading || user) {
         return (
             <Card className="w-full max-w-md">
                 <CardHeader>

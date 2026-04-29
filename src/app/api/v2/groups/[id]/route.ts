@@ -44,7 +44,6 @@ export async function GET(
         id,
         name,
         description,
-        coach_id,
         team_id,
         created_at,
         updated_at,
@@ -74,10 +73,8 @@ export async function GET(
             );
         }
 
-        // Verify access rights
-        if (profile.role === 'ADMIN' && group.team_id !== profile.team_id) {
-            return NextResponse.json({ error: 'Not authorized to view this group' }, { status: 403 });
-        } else if (profile.role === 'COACH' && group.coach_id !== user!.id) {
+        // Verify access rights (Both ADMIN and COACH can access if in the same team)
+        if ((profile.role === 'ADMIN' || profile.role === 'COACH') && group.team_id !== profile.team_id) {
             return NextResponse.json({ error: 'Not authorized to view this group' }, { status: 403 });
         }
 
@@ -127,7 +124,7 @@ export async function DELETE(
         // Verify group exists and coach owns it
         const { data: group, error: fetchError } = await supabase
             .from('groups')
-            .select('coach_id, team_id')
+            .select('team_id')
             .eq('id', groupId)
             .single();
 
@@ -138,10 +135,8 @@ export async function DELETE(
             );
         }
 
-        // Verify access rights
-        if (profile.role === 'ADMIN' && group.team_id !== profile.team_id) {
-            return NextResponse.json({ error: 'Not authorized to delete this group' }, { status: 403 });
-        } else if (profile.role === 'COACH' && group.coach_id !== user!.id) {
+        // Verify access rights (Both ADMIN and COACH can access if in the same team)
+        if ((profile.role === 'ADMIN' || profile.role === 'COACH') && group.team_id !== profile.team_id) {
             return NextResponse.json({ error: 'Not authorized to delete this group' }, { status: 403 });
         }
 
@@ -205,7 +200,7 @@ export async function PATCH(
         // Verify group exists
         const { data: group, error: fetchError } = await supabase
             .from('groups')
-            .select('coach_id, team_id')
+            .select('team_id')
             .eq('id', groupId)
             .single();
 
@@ -213,10 +208,8 @@ export async function PATCH(
             return NextResponse.json({ error: 'Group not found' }, { status: 404 });
         }
 
-        // Verify access rights
-        if (profile.role === 'ADMIN' && group.team_id !== profile.team_id) {
-            return NextResponse.json({ error: 'Not authorized to edit this group' }, { status: 403 });
-        } else if (profile.role === 'COACH' && group.coach_id !== user!.id) {
+        // Verify access rights (Both ADMIN and COACH can access if in the same team)
+        if ((profile.role === 'ADMIN' || profile.role === 'COACH') && group.team_id !== profile.team_id) {
             return NextResponse.json({ error: 'Not authorized to edit this group' }, { status: 403 });
         }
 

@@ -20,7 +20,7 @@ export async function GET() {
     // Check if user is a coach
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, team_id')
       .eq('id', user.id)
       .single();
 
@@ -31,7 +31,14 @@ export async function GET() {
       );
     }
 
-    // Get all athletes in coach's groups
+    if (!profile?.team_id) {
+      return NextResponse.json(
+        { error: 'Coach must belong to a team' },
+        { status: 403 }
+      );
+    }
+
+    // Get all athletes in coach team
     const { data: athletes, error } = await supabase
       .from('profiles')
       .select(`
@@ -39,15 +46,10 @@ export async function GET() {
         email,
         name,
         role,
-        created_at,
-        athlete_groups!inner(
-          group:groups!inner(
-            coach_id
-          )
-        )
+        created_at
       `)
       .eq('role', 'ATHLETE')
-      .eq('athlete_groups.group.coach_id', user.id);
+      .eq('team_id', profile.team_id);
 
     if (error) {
       return NextResponse.json(
@@ -69,4 +71,3 @@ export async function GET() {
     );
   }
 }
-

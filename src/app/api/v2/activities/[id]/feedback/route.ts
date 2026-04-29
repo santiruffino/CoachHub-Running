@@ -36,20 +36,27 @@ export async function GET(
             );
         }
 
-        // Check if user is the activity owner or their coach
+        // Check if user is the activity owner or coach/admin in the same team
         const isOwner = user!.id === activity.user_id;
-        let isCoach = false;
 
         if (!isOwner) {
-            const { data: profile } = await supabase
+            const { data: myProfile } = await supabase
                 .from('profiles')
-                .select('coach_id')
+                .select('role, team_id')
+                .eq('id', user!.id)
+                .single();
+
+            const { data: athleteProfile } = await supabase
+                .from('profiles')
+                .select('team_id')
                 .eq('id', activity.user_id)
                 .single();
 
-            isCoach = profile?.coach_id === user!.id;
+            const isTeamMember = (myProfile?.role === 'COACH' || myProfile?.role === 'ADMIN')
+                && myProfile.team_id
+                && athleteProfile?.team_id === myProfile.team_id;
 
-            if (!isCoach) {
+            if (!isTeamMember) {
                 return NextResponse.json(
                     { error: 'Not authorized to view this feedback' },
                     { status: 403 }
