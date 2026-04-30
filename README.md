@@ -108,6 +108,7 @@ This creates an `ADMIN` user and assigns/creates a running team.
 
 - Product/architecture docs: `documentation/`
 - Operational/project docs: `docs/`
+- SQL scripts: `supabase/migrations/` (canonical) and `supabase/queries/legacy/` (historical)
 - Security/i18n/unused code audit report: `documentation/platform-analysis-report.md`
 
 ## Current status (high level)

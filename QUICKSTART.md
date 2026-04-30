@@ -22,7 +22,9 @@ NEXT_PUBLIC_APP_URL=http://localhost:3001
 
 ### 3. Set Up Database
 
-Go to Supabase SQL Editor and run `docs/supabase_schema.sql`
+Run the SQL from `supabase/migrations/*.sql` in order (or run them via your Supabase migration workflow).
+
+Historical manual scripts are available under `supabase/queries/legacy/` for reference.
 
 ### 4. Create First Coach
 

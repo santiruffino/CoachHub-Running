@@ -7,6 +7,8 @@ Coach Hub Running uses Supabase PostgreSQL as the source of truth.
 - auth identities are managed by Supabase Auth
 - app profiles and domain data live in public tables
 - data access is enforced with RLS + app-layer role/team checks
+- canonical SQL changes live in `supabase/migrations/*.sql`
+- historical/manual SQL scripts live in `supabase/queries/legacy/*.sql`
 
 ## Multi-tenant model
 

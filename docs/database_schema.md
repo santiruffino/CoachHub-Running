@@ -5,6 +5,8 @@
 - PostgreSQL via Supabase
 - Auth identities from Supabase Auth
 - Domain data in public schema with RLS
+- Canonical SQL migrations in `supabase/migrations/*.sql`
+- Historical/manual SQL scripts in `supabase/queries/legacy/*.sql`
 
 ## Key table families
 
