@@ -1,7 +1,5 @@
 # Design System Strategy: High-End Endurance Coaching (Desktop)
 
-Implementation note: this is a strategic design direction document. Some sections are aspirational and may not be fully implemented in every active screen.
-
 ## 1. Overview & Creative North Star
 **The Creative North Star: "The Performance Curator"**
 

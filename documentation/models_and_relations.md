@@ -1,119 +1,118 @@
-# Models & Relations
+# Models and Relations
 
-The platform's data models revolve around the core `PROFILES` table, which acts as the nexus for identities categorized as either Coaches or Athletes. 
+This document describes the current domain model used by the running platform.
 
-Below is an Entity-Relationship diagram mapping how these domain models interact with one another.
-
-## Entity Relationship Diagram
+## Core entity graph (conceptual)
 
 ```mermaid
 erDiagram
-    %% Core Identity
     PROFILES {
         uuid id PK
         string email
         string name
         enum role
-        uuid coach_id FK
+        uuid team_id
+        uuid coach_id
     }
 
-    %% Grouping
     GROUPS {
         uuid id PK
         string name
-        enum group_type
-        uuid coach_id FK
+        uuid team_id
+        uuid created_by
     }
 
     ATHLETE_GROUPS {
         uuid id PK
-        uuid athlete_id FK
-        uuid group_id FK
+        uuid athlete_id
+        uuid group_id
     }
 
-    %% Workouts & Scheduling
     TRAININGS {
         uuid id PK
         string title
+        string type
         jsonb blocks
-        boolean is_template
-        uuid coach_id FK
+        uuid team_id
+        uuid created_by
     }
 
     TRAINING_ASSIGNMENTS {
         uuid id PK
-        uuid user_id FK
-        uuid training_id FK
-        uuid source_group_id FK
+        uuid user_id
+        uuid training_id
+        uuid source_group_id
+        uuid activity_id
         jsonb workout_snapshot
         date scheduled_date
-        enum compliance_status
-        uuid strava_activity_id FK
+        bool completed
     }
 
-    %% Race Management
+    ACTIVITIES {
+        uuid id PK
+        string external_id
+        uuid user_id
+        string sport_type
+        float distance
+    }
+
+    ACTIVITY_STREAMS {
+        uuid id PK
+        uuid activity_id
+        jsonb stream_data
+    }
+
+    ACTIVITY_FEEDBACK {
+        uuid id PK
+        uuid activity_id
+        uuid user_id
+        int rpe
+    }
+
     RACES {
         uuid id PK
-        string name
-        float distance
-        string location
-        uuid coach_id FK
+        uuid team_id
+        uuid created_by
     }
 
     ATHLETE_RACES {
         uuid id PK
-        uuid athlete_id FK
-        uuid race_id FK
-        date date
-        enum priority
-        string target_time
+        uuid athlete_id
+        uuid race_id
     }
 
-    %% External Data
-    ACTIVITIES {
+    INVITATIONS {
         uuid id PK
-        string external_id
-        uuid user_id FK
-        float distance
-        int duration
+        string email
+        string token
+        uuid team_id
+        uuid coach_id
+        string role
     }
 
-    MATCHING_LOG {
-        uuid id PK
-        uuid activity_id FK
-        uuid assignment_id FK
-        float score
-        jsonb match_details
-    }
-
-    %% Relationships
-    PROFILES ||--o{ PROFILES : "Coach manages Athlete"
-    PROFILES ||--o{ GROUPS : "Coach creates"
-    GROUPS ||--o{ ATHLETE_GROUPS : "includes"
-    
-    PROFILES ||--o{ TRAININGS : "Coach authors"
-    TRAININGS ||--o{ TRAINING_ASSIGNMENTS : "template for"
-    TRAINING_ASSIGNMENTS }o--o| GROUPS : "belongs to group event"
-    
-    PROFILES ||--o{ ACTIVITIES : "Athlete performs"
-    ACTIVITIES ||--o| MATCHING_LOG : "audits match"
-    TRAINING_ASSIGNMENTS ||--o| MATCHING_LOG : "result of match"
-    
-    PROFILES ||--o{ RACES : "Coach creates templates"
-    RACES ||--o{ ATHLETE_RACES : "assigned to athlete"
-    PROFILES ||--o{ ATHLETE_RACES : "Athlete targets"
+    PROFILES ||--o{ GROUPS : creates
+    PROFILES ||--o{ TRAININGS : creates
+    PROFILES ||--o{ ACTIVITIES : performs
+    PROFILES ||--o{ TRAINING_ASSIGNMENTS : receives
+    GROUPS ||--o{ ATHLETE_GROUPS : contains
+    TRAININGS ||--o{ TRAINING_ASSIGNMENTS : assigned_as
+    ACTIVITIES ||--o| ACTIVITY_STREAMS : has
+    ACTIVITIES ||--o| ACTIVITY_FEEDBACK : has
+    RACES ||--o{ ATHLETE_RACES : mapped_to
 ```
 
-## Description of Key Flows
+## Key behavior notes
 
-1. **Invitation Flow**: 
-   A `COACH` (`PROFILES.role = 'COACH'`) creates an `INVITATIONS` record. An athlete uses the token to create their `PROFILES` matching user, establishing the `coach_id`.
+- Team scope is enforced through `team_id` and RLS/app checks.
+- `coach_id` remains relevant for direct coach-athlete assignment paths.
+- `created_by` tracks ownership metadata for trainings/groups/races.
+- Assignment snapshots (`workout_snapshot`) preserve planned context at assignment time.
 
-2. **Workout Scheduling & Snapshots**: 
-   A coach authors `TRAININGS` (templates). When assigned, the system copies the workout blocks into `TRAINING_ASSIGNMENTS.workout_snapshot` (JSONB), creating an immutable historical record.
+## Activity IDs
 
-3. **Race Management**: 
-   Coaches build a library of `RACES`. These are mapped to specific athletes via `ATHLETE_RACES`, which stores custom goals like `target_time` and `priority` (A, B, or C).
+- Use internal UUID for app routes and internal joins.
+- Keep provider external ID for Strava API synchronization.
 
-4. **Strava Synchronization & Matching**: 
-   Real-time webhooks populate `ACTIVITIES`. The Matching Engine calculates compliance by comparing `ACTIVITIES` with `TRAINING_ASSIGNMENTS`. Each match attempt is logged in `MATCHING_LOG` for debugging and transparency.
+## Running-first current state
+
+The schema supports multi-sport records (`sport_type`), but training target semantics and compliance logic are still tuned for running.

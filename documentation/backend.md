@@ -1,36 +1,104 @@
 # Backend Architecture
 
 ## Overview
-Coach Hub Running adopts a **Serverless Full-Stack Approach**, bypassing the need for a separate monolithic backend server. The backend logic is entirely integrated into the Next.js platform and powered by a robust Database-as-a-Service (Supabase).
 
-## Next.js API Routes (Serverless Functions)
-Any logic that requires hiding secrets (like Strava API integration, Webhooks, or Supabase Admin operations) is handled by Next.js Route Handlers.
+Coach Hub Running uses a serverless full-stack architecture:
 
-### API Structure (`/src/app/api/v2/`)
-- `/api/v2/users/`: Endpoints dealing with user management, role assignments, and coach/athlete profile operations.
-- `/api/v2/groups/`: Coach-specific endpoints to orchestrate group lifecycle and member management.
-- `/api/v2/races/`: Centralized race template library management (CRUD).
-- `/api/v2/trainings/`: Endpoints handling the creation, duplication, and assignment of structured workouts, including **batch group updates**.
-- `/api/v2/strava/auth/`: OAuth callback receivers for the Strava integration. Resolves authorization codes into tokens.
-- `/api/v2/strava/webhook/`: Background listeners that receive real-time updates from Strava when an athlete finishes an activity.
+- Next.js route handlers for API logic (`src/app/api/**`)
+- Supabase for auth/database/RLS
+- Supabase Edge Functions for asynchronous Strava and compliance processing
 
-## Supabase and Server-side Logic
-Supabase serves not just as a database, but as the core logic enforcement layer.
+There is no active NestJS runtime in this repository.
 
-### 1. Authentication (`@supabase/auth-helpers`)
-- Secure, HTTP-only cookie-based session management.
-- Handles OAuth loops and password authentication securely.
+## API layers
 
-### 2. Row Level Security (RLS)
-The absolute core of the backend security model lives in PostgreSQL. By leveraging RLS, the backend does not need extensive authorization API wrappers. If an Athlete queries `SELECT * FROM activities`, PostgreSQL evaluates the `auth.uid()` and restricts the payload to only their rows.
+### Primary API (v2)
 
-### 3. Asynchronous Processes & Edge Functions
-Background tasks that shouldn't block the user interface are delegated to Supabase Edge Functions:
-- **`process-strava-activity`**: Analyzes a newly pushed Strava Activity and matches it to a planned workout.
-- **`import-strava-history`**: Bulk imports the last 90 days of running activities upon OAuth completion.
+Most feature routes are under `src/app/api/v2/**`:
 
-### The Matching Engine (Activity to Workout)
-An advanced multi-tiered backend algorithm:
-- **Phase 1: Simple Match**: Compares the total distance and duration variance of the activity against the workout snapshot.
-- **Phase 2: Lap Match**: If multiple workouts are scheduled, it breaks ties by correlating Strava laps with workout blocks to generate a confidence score.
-- **Outcome**: Assignments are updated to `completed` (score >= 0.85) or `partial`. Results are audited in the `matching_log` table.
+- Users, athletes, coaches, assignments, profile
+- Trainings, assignments, matching, calendar
+- Activities (detail, streams, feedback, compliance)
+- Strava auth + webhook
+- Dashboard/admin/coach data
+
+### Compatibility/legacy routes
+
+Some non-v2 routes remain active (mainly invitation/auth compatibility):
+
+- `src/app/api/auth/**`
+- `src/app/api/invitations/**`
+- a few old `src/app/api/users/**` and `src/app/api/groups/**`
+
+## Authentication and authorization
+
+### Auth
+
+- Supabase session cookies via `@supabase/ssr`
+- Helpers:
+  - `requireAuth()`
+  - `requireRole()`
+  - file: `src/lib/supabase/api-helpers.ts`
+
+### Roles
+
+- `ADMIN`
+- `COACH`
+- `ATHLETE`
+
+`ADMIN` is treated as a super-role by `requireRole`.
+
+### Team boundary
+
+Authorization is team-centric (`team_id`).
+
+- app-layer checks inside route handlers
+- RLS-level policies in migrations:
+  - `supabase/migrations/20260429000000_team_based_rls.sql`
+  - `supabase/migrations/20260429000001_created_by_and_team_policies.sql`
+
+## Service role usage
+
+`createServiceRoleClient()` is used only where RLS bypass is required after explicit authorization checks.
+
+- file: `src/lib/supabase/server.ts`
+- env var: `SUPABASE_SECRET_KEY`
+
+## Strava backend pipeline
+
+### OAuth and connection
+
+- Auth URL: `GET /api/v2/strava/auth/url`
+- Exchange code: `POST /api/v2/strava/auth/exchange`
+- Sync status/manual sync/disconnect: `/api/v2/strava/auth/*`
+
+### Webhook + async processing
+
+- Webhook endpoint: `POST /api/v2/strava/webhook`
+- Processing is delegated to Edge Function `process-strava-activity`
+- Streams retrieval/caching delegated to Edge Function `fetch-strava-streams`
+- Compliance calculations delegated to `evaluate-compliance`
+
+### Edge Functions in repo
+
+- `supabase/functions/process-strava-activity/index.ts`
+- `supabase/functions/fetch-strava-streams/index.ts`
+- `supabase/functions/evaluate-compliance/index.ts`
+
+## Activity identity contract
+
+V2 activity routes are UUID-first.
+
+- Path param `[id]` in `/api/v2/activities/[id]` represents internal UUID (`activities.id`)
+- `external_id` is kept for Strava API calls and storage mapping
+
+## Running-first status
+
+Backend and domain logic are currently optimized for running:
+
+- pace/min-km assumptions appear in matching/estimation paths
+- compliance is currently HR-zone-centric
+
+Cycling support is partially scaffolded but not yet domain-complete.
+
+See `documentation/platform-analysis-report.md` for full readiness analysis.
