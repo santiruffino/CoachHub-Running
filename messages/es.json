@@ -338,6 +338,13 @@
                 "coachViewRpe": "Percepción del Esfuerzo (RPE)",
                 "noExertion": "No se registró esfuerzo.",
                 "noNotes": "El atleta no proporcionó notas."
+            },
+            "workout": {
+                "warmup": "Calentamiento",
+                "active": "Activo",
+                "rest": "Descanso",
+                "recovery": "Recuperación",
+                "cooldown": "Enfriamiento"
             }
         }
     },

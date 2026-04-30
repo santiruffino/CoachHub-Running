@@ -76,30 +76,16 @@ export async function POST(
             }
         }
 
-        // Resolve activity ID (handle external ID case)
-        // Try to find activity by ID or external_id
-        let resolvedActivityId = activityId;
-
-        // Check if it's a valid UUID (simple regex check)
+        // Resolve activity ID (internal UUID only)
         const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(activityId);
-
         if (!isUuid) {
-            // Likely an external ID, look it up
-            const { data: activity } = await supabase
-                .from('activities')
-                .select('id')
-                .eq('external_id', activityId)
-                .single();
-
-            if (activity) {
-                resolvedActivityId = activity.id;
-            } else {
-                return NextResponse.json(
-                    { error: 'Activity not found' },
-                    { status: 404 }
-                );
-            }
+            return NextResponse.json(
+                { error: 'Activity ID must be a valid UUID' },
+                { status: 400 }
+            );
         }
+
+        const resolvedActivityId = activityId;
 
         const { error: updateError } = await supabase
             .from('training_assignments')

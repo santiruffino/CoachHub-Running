@@ -45,7 +45,7 @@ function CompletedCard({ assignment, activity }: { assignment: TrainingAssignmen
     const nameText = assignment.workout_name || assignment.training.title;
 
     return (
-        <Link href={`/activities/${activity.external_id}`} className="block group">
+        <Link href={`/activities/${activity.id}`} className="block group">
             <div className="bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-500/30 rounded-xl p-4 flex flex-col gap-2 relative overflow-hidden transition-all group-hover:border-emerald-300 dark:group-hover:border-emerald-400/60 group-hover:-translate-y-0.5 group-hover:shadow-lg group-hover:shadow-emerald-100 dark:group-hover:shadow-emerald-900/20">
                 {/* Left accent */}
                 <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl bg-emerald-500 dark:bg-emerald-400" />
@@ -125,7 +125,7 @@ function StandaloneActivityCard({ activity }: { activity: Activity }) {
     const label = activityTypeLabel[activity.type] || activity.type.toUpperCase();
 
     return (
-        <Link href={`/activities/${activity.external_id}`} className="block group">
+        <Link href={`/activities/${activity.id}`} className="block group">
             <div className="bg-orange-50 dark:bg-orange-950/50 border border-orange-200 dark:border-orange-500/30 rounded-xl p-4 flex flex-col gap-2 relative overflow-hidden transition-all group-hover:border-orange-300 dark:group-hover:border-orange-400/60 group-hover:-translate-y-0.5 group-hover:shadow-lg group-hover:shadow-orange-100 dark:group-hover:shadow-orange-900/20">
                 {/* Left accent */}
                 <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl bg-orange-500 dark:bg-orange-400" />

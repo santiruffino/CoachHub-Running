@@ -6,6 +6,7 @@ import { createServiceRoleClient } from '@/lib/supabase/server';
  * Get Activity Detail
  * 
  * Fetches detailed activity data from Strava API.
+ * Route [id] uses internal activity UUID for fast indexed lookups.
  * 
  * Permissions:
  * - User can view their own activities
@@ -24,12 +25,14 @@ export async function GET(
         }
 
         const { supabase, user } = authResult;
+        const serviceSupabase = createServiceRoleClient();
 
         // First, get the activity from database to find the owner and external_id
-        const { data: activity, error: activityError } = await supabase
+        // Route [id] uses the internal UUID for performance.
+        const { data: activity, error: activityError } = await serviceSupabase
             .from('activities')
             .select('id, user_id, external_id, lap_overrides')
-            .eq('external_id', id)
+            .eq('id', id)
             .single();
 
         if (activityError || !activity) {
@@ -74,8 +77,6 @@ export async function GET(
 
         // Use service role client to bypass RLS when fetching athlete's Strava connection
         // This is safe because we've already verified authorization above
-        const serviceSupabase = createServiceRoleClient();
-
         const { data: connection, error: connError } = await serviceSupabase
             .from('strava_connections')
             .select('*')
@@ -142,7 +143,7 @@ export async function GET(
 
         // Fetch detailed activity from Strava
         const stravaResponse = await fetch(
-            `https://www.strava.com/api/v3/activities/${id}`,
+            `https://www.strava.com/api/v3/activities/${activity.external_id}`,
             {
                 headers: {
                     'Authorization': `Bearer ${accessToken}`,
@@ -195,14 +196,15 @@ export async function PATCH(
         }
 
         const { supabase, user } = authResult;
+        const serviceSupabase = createServiceRoleClient();
         const body = await request.json();
         const { lapOverrides } = body;
 
-        // Verify activity and permissions
-        const { data: activity, error: activityError } = await supabase
+        // Verify activity and permissions (internal UUID)
+        const { data: activity, error: activityError } = await serviceSupabase
             .from('activities')
             .select('id, user_id, external_id')
-            .eq('external_id', id)
+            .eq('id', id)
             .single();
 
         if (activityError || !activity) {
@@ -244,7 +246,7 @@ export async function PATCH(
         }
 
         // Update the lap_overrides in the database using the internal id
-        const { error: updateError } = await supabase
+        const { error: updateError } = await serviceSupabase
             .from('activities')
             .update({ lap_overrides: lapOverrides })
             .eq('id', activity.id);

@@ -81,6 +81,7 @@ export default function ActivityDetailPage() {
     const { alertState, showAlert, closeAlert } = useAlertDialog();
     const [lapFilter, setLapFilter] = useState<'all' | 'warmup' | 'active' | 'recovery' | 'cooldown'>('all');
     const [lapOverrides, setLapOverrides] = useState<Record<string, string>>({});
+    const activityApiId = internalId || id;
 
     useEffect(() => {
         const fetchActivity = async () => {
@@ -161,10 +162,8 @@ export default function ActivityDetailPage() {
 
                 // Find assignment matching this date
                 const matchingAssignment = assignments.find((a: any) => {
-                    // 1. Check for explicit link
-                    // Use _internalId if available (for Strava activities where id is external_id)
-                    // otherwise fallback to id (for manual activities if they use UUID as id)
-                    const currentActivityId = activity._internalId || activity.id;
+                    // 1. Check for explicit link using internal UUID
+                    const currentActivityId = activity._internalId || String(activity.id);
                     if (a.activity_id === currentActivityId) return true;
 
                     // 2. If assignment is linked to ANOTHER activity, ignore it
@@ -204,7 +203,7 @@ export default function ActivityDetailPage() {
         const fetchFeedback = async () => {
             try {
                 setFeedbackLoading(true);
-                const response = await api.get(`/v2/activities/${id}/feedback`);
+                const response = await api.get(`/v2/activities/${activityApiId}/feedback`);
                 if (response.data) {
                     setFeedback({
                         id: response.data.id,
@@ -224,15 +223,15 @@ export default function ActivityDetailPage() {
             }
         };
 
-        if (id && activity) fetchFeedback();
-    }, [id, activity]);
+        if (activityApiId && activity) fetchFeedback();
+    }, [activityApiId, activity]);
 
     const handleSaveFeedback = async () => {
         if (!feedback) return;
 
         try {
             setFeedbackSaving(true);
-            const response = await api.post(`/v2/activities/${id}/feedback`, {
+            const response = await api.post(`/v2/activities/${activityApiId}/feedback`, {
                 rpe: feedback.rpe,
                 comments: feedback.comments,
             });
@@ -357,7 +356,7 @@ export default function ActivityDetailPage() {
             // Optimistic UI update
             setLapOverrides(updatedOverrides);
 
-            await api.patch(`/v2/activities/${id}`, { lapOverrides: updatedOverrides });
+            await api.patch(`/v2/activities/${activityApiId}`, { lapOverrides: updatedOverrides });
         } catch (error) {
             console.error('Failed to update lap override:', error);
             // Revert on failure
@@ -449,78 +448,170 @@ export default function ActivityDetailPage() {
                 </div>
             )}
 
-            {/* Horizontal Core Metrics Bar */}
-            <div className="bg-muted rounded-3xl p-6 lg:p-8 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 shadow-[0_20px_40px_rgba(43,52,55,0.02)] border border-muted/50">
-                <div className="flex flex-wrap items-center gap-8 lg:gap-12 w-full lg:w-auto">
-                    {/* Distance */}
-                    {!isWeightTraining(activity.sport_type) && (
-                        <div>
-                            <p className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase mb-1">
-                                {t('metrics.distance')}
-                            </p>
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-4xl font-display font-medium text-foreground leading-none tracking-tighter">
-                                    {distanceKm}
-                                </span>
-                                <span className="text-lg font-medium text-muted-foreground mb-1">{t('metrics.units.km')}</span>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Pace */}
-                    {!isWeightTraining(activity.sport_type) && (
-                        <div className="hidden sm:block w-px h-12 bg-border/40" />
-                    )}
-                    {!isWeightTraining(activity.sport_type) && (
-                        <div>
-                            <p className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase mb-1">
-                                {t('metrics.avgPace')}
-                            </p>
-                            <div className="flex items-baseline gap-1">
-                                <span className="text-4xl font-display font-medium text-foreground leading-none tracking-tighter">
-                                    {isRunning(activity.sport_type) ? avgPace : formatSpeed(activity.average_speed)}
-                                </span>
-                                <span className="text-lg font-medium text-muted-foreground mb-1">
-                                    {isRunning(activity.sport_type) ? t('metrics.units.perKm') : t('metrics.units.kmh')}
-                                </span>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Duration */}
-                    <div className="hidden sm:block w-px h-12 bg-border/40" />
-                    <div>
-                        <p className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase mb-1">
-                            {t('metrics.duration')}
-                        </p>
-                        <span className="text-4xl font-display font-medium text-foreground leading-none tracking-tighter">
-                            {formatTime(activity.moving_time)}
-                        </span>
-                    </div>
-
-                    {/* Elevation Gain */}
-                    {!isWeightTraining(activity.sport_type) && activity.total_elevation_gain > 0 && (
-                        <>
-                            <div className="hidden sm:block w-px h-12 bg-border/40" />
-                            <div>
+            {/* Summary + Feedback (top section) */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 lg:gap-6 items-stretch">
+                <div className="bg-muted rounded-3xl p-5 lg:p-6 min-h-[320px] h-full flex items-center shadow-[0_20px_40px_rgba(43,52,55,0.02)] border border-muted/50">
+                    <div className="grid w-full h-full grid-cols-2 gap-y-8 content-center">
+                        {/* Distance */}
+                        {!isWeightTraining(activity.sport_type) && (
+                            <div className="min-w-0 pr-4 lg:pr-6 text-center flex flex-col items-center justify-center h-full">
                                 <p className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase mb-1">
-                                    {t('metrics.elevationGain')}
+                                    {t('metrics.distance')}
                                 </p>
-                                <div className="flex items-baseline gap-1">
+                                <div className="flex items-baseline justify-center gap-2">
                                     <span className="text-4xl font-display font-medium text-foreground leading-none tracking-tighter">
-                                        +{activity.total_elevation_gain.toFixed(0)}
+                                        {distanceKm}
                                     </span>
-                                    <span className="text-lg font-medium text-muted-foreground mb-1">{t('metrics.units.m')}</span>
+                                    <span className="text-lg font-medium text-muted-foreground mb-1">{t('metrics.units.km')}</span>
                                 </div>
                             </div>
-                        </>
+                        )}
+
+                        {/* Pace */}
+                        {!isWeightTraining(activity.sport_type) && (
+                            <div className="min-w-0 pl-4 lg:pl-6 border-l border-border/60 text-center flex flex-col items-center justify-center h-full">
+                                <p className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase mb-1">
+                                    {t('metrics.avgPace')}
+                                </p>
+                                <div className="flex items-baseline justify-center gap-1">
+                                    <span className="text-4xl font-display font-medium text-foreground leading-none tracking-tighter">
+                                        {isRunning(activity.sport_type) ? avgPace : formatSpeed(activity.average_speed)}
+                                    </span>
+                                    <span className="text-lg font-medium text-muted-foreground mb-1">
+                                        {isRunning(activity.sport_type) ? t('metrics.units.perKm') : t('metrics.units.kmh')}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Duration */}
+                        <div className="min-w-0 pr-4 lg:pr-6 text-center flex flex-col items-center justify-center h-full">
+                            <p className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase mb-1">
+                                {t('metrics.duration')}
+                            </p>
+                            <span className="text-4xl font-display font-medium text-foreground leading-none tracking-tighter inline-block">
+                                {formatTime(activity.moving_time)}
+                            </span>
+                        </div>
+
+                        {/* Elevation Gain */}
+                        {!isWeightTraining(activity.sport_type) && activity.total_elevation_gain > 0 && (
+                            <>
+                                <div className="min-w-0 pl-4 lg:pl-6 border-l border-border/60 text-center flex flex-col items-center justify-center h-full">
+                                    <p className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase mb-1">
+                                        {t('metrics.elevationGain')}
+                                    </p>
+                                    <div className="flex items-baseline justify-center gap-1">
+                                        <span className="text-4xl font-display font-medium text-foreground leading-none tracking-tighter">
+                                            +{activity.total_elevation_gain.toFixed(0)}
+                                        </span>
+                                        <span className="text-lg font-medium text-muted-foreground mb-1">{t('metrics.units.m')}</span>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+
+                <div className="bg-card rounded-3xl p-5 lg:p-6 min-h-[320px] h-full shadow-[0_20px_40px_rgba(43,52,55,0.02)] border border-muted">
+                    <h2 className="text-xl font-display font-medium text-foreground mb-6">{t('feedback.title')}</h2>
+                    {feedbackLoading && (
+                        <div className="space-y-3">
+                            <Skeleton className="h-6 w-1/3" />
+                            <Skeleton className="h-20 w-full" />
+                            <Skeleton className="h-16 w-full" />
+                        </div>
+                    )}
+
+                    {feedback !== null && !feedbackLoading && (
+                        <div className="flex flex-col space-y-6">
+                            {isAthlete ? (
+                                <>
+                                    <div>
+                                        <Label htmlFor="rpe" className="text-xs tracking-widest uppercase font-semibold text-muted-foreground mb-3 block">{t('feedback.rpeLabel')}</Label>
+                                        <div className="flex items-center gap-4">
+                                            <Slider
+                                                id="rpe"
+                                                min={1}
+                                                max={10}
+                                                step={1}
+                                                value={[feedback.rpe || 5]}
+                                                onValueChange={(value) => setFeedback({ ...feedback, rpe: value[0] })}
+                                                className="flex-1"
+                                            />
+                                            <div className="bg-muted w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 border border-muted">
+                                                <p className="text-2xl font-display font-medium text-foreground">{feedback.rpe || 5}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-3 mt-3">
+                                            <div className={`h-2 flex-1 rounded-full ${getRPEColor(feedback.rpe || 5)} opacity-80`} />
+                                            <p className="text-sm font-medium text-primary min-w-[80px] text-right">
+                                                {getRPELabel(feedback.rpe || 5)}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <Label htmlFor="comments" className="text-xs tracking-widest uppercase font-semibold text-muted-foreground mb-3 block">{t('feedback.notesLabel')}</Label>
+                                        <Textarea
+                                            id="comments"
+                                            placeholder={t('feedback.placeholder')}
+                                            value={feedback.comments}
+                                            onChange={(e) => setFeedback({ ...feedback, comments: e.target.value })}
+                                            rows={3}
+                                            className="bg-muted border-muted rounded-xl focus-visible:ring-1 focus-visible:ring-primary resize-none text-foreground"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <Button
+                                            onClick={handleSaveFeedback}
+                                            disabled={feedbackSaving}
+                                            className="bg-foreground hover:bg-foreground/90 text-background px-6 py-5 rounded-xl font-medium shadow-md transition-all"
+                                        >
+                                            {feedbackSaving ? t('feedback.saving') : feedback.id ? t('feedback.update') : t('feedback.save')}
+                                        </Button>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="grid grid-cols-1 gap-5">
+                                    <div>
+                                        <Label className="text-[10px] tracking-widest uppercase font-semibold text-muted-foreground pb-3 block">{t('feedback.coachViewRpe')}</Label>
+                                        {feedback.rpe ? (
+                                            <div className="flex items-center gap-4 border border-muted rounded-2xl p-4 bg-background">
+                                                <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-muted flex items-center justify-center">
+                                                    <span className="text-2xl font-display font-medium text-foreground">{feedback.rpe}</span>
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="text-sm font-semibold text-foreground">{getRPELabel(feedback.rpe)}</p>
+                                                    <div className={`h-1.5 w-full rounded-full mt-2 ${getRPEColor(feedback.rpe)}`} />
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <p className="text-sm text-muted-foreground italic px-2">{t('feedback.noExertion')}</p>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <Label className="text-[10px] tracking-widest uppercase font-semibold text-muted-foreground pb-3 block">{t('feedback.notesLabel')}</Label>
+                                        {feedback.comments ? (
+                                            <div className="bg-background border border-muted rounded-2xl p-4 h-full min-h-[100px]">
+                                                <p className="text-sm text-primary leading-relaxed whitespace-pre-wrap">{feedback.comments}</p>
+                                            </div>
+                                        ) : (
+                                            <p className="text-sm text-muted-foreground italic px-2">{t('feedback.noNotes')}</p>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     )}
                 </div>
             </div>
 
             {/* Map/Chart Container (Full Width) */}
             <div className="bg-card rounded-3xl p-2 shadow-[0_20px_40px_rgba(43,52,55,0.02)] border border-muted">
-                <div className="h-[400px] lg:h-[500px] w-full bg-muted rounded-2xl overflow-hidden relative">
+                <div className="h-100 lg:h-125 w-full bg-muted rounded-2xl overflow-hidden relative">
                     {!isWeightTraining(activity.sport_type) ? (
                         <ActivityChart
                             activityId={internalId || id}
@@ -890,105 +981,12 @@ export default function ActivityDetailPage() {
                 </div>
             )}
 
-            {/* Activity Feedback */}
-            {feedback !== null && !feedbackLoading && (
-                <div className="bg-card rounded-3xl p-8 shadow-[0_20px_40px_rgba(43,52,55,0.02)] border border-muted max-w-6xl">
-                    <h2 className="text-xl font-display font-medium text-foreground mb-8">{t('feedback.title')}</h2>
-                    <div className="flex flex-col space-y-8">
-                        {isAthlete ? (
-                            <>
-                                {/* RPE Selector */}
-                                <div>
-                                    <Label htmlFor="rpe" className="text-xs tracking-widest uppercase font-semibold text-muted-foreground mb-4 block">{t('feedback.rpeLabel')}</Label>
-                                    <div className="flex items-center gap-6">
-                                        <Slider
-                                            id="rpe"
-                                            min={1}
-                                            max={10}
-                                            step={1}
-                                            value={[feedback.rpe || 5]}
-                                            onValueChange={(value) => setFeedback({ ...feedback, rpe: value[0] })}
-                                            className="flex-1"
-                                        />
-                                        <div className="bg-muted w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 border border-muted">
-                                            <p className="text-3xl font-display font-medium text-foreground">{feedback.rpe || 5}</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-3 mt-4">
-                                        <div className={`h-2 flex-1 rounded-full ${getRPEColor(feedback.rpe || 5)} opacity-80`} />
-                                        <p className="text-sm font-medium text-primary min-w-[80px] text-right">
-                                            {getRPELabel(feedback.rpe || 5)}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {/* Comments */}
-                                <div>
-                                    <Label htmlFor="comments" className="text-xs tracking-widest uppercase font-semibold text-muted-foreground mb-3 block">{t('feedback.notesLabel')}</Label>
-                                    <Textarea
-                                        id="comments"
-                                        placeholder={t('feedback.placeholder')}
-                                        value={feedback.comments}
-                                        onChange={(e) => setFeedback({ ...feedback, comments: e.target.value })}
-                                        rows={4}
-                                        className="bg-muted border-muted rounded-xl focus-visible:ring-1 focus-visible:ring-primary resize-none text-foreground"
-                                    />
-                                </div>
-
-                                {/* Save Button */}
-                                <div>
-                                    <Button
-                                        onClick={handleSaveFeedback}
-                                        disabled={feedbackSaving}
-                                        className="bg-foreground hover:bg-foreground/90 text-background px-8 py-6 rounded-xl font-medium shadow-md transition-all"
-                                    >
-                                        {feedbackSaving ? t('feedback.saving') : feedback.id ? t('feedback.update') : t('feedback.save')}
-                                    </Button>
-                                </div>
-                            </>
-                        ) : (
-                            <>
-                                {/* Coach View - Read Only */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                                    <div>
-                                        <Label className="text-[10px] tracking-widest uppercase font-semibold text-muted-foreground pb-4 block">{t('feedback.coachViewRpe')}</Label>
-                                        {feedback.rpe ? (
-                                            <div className="flex items-center gap-4 border border-muted rounded-2xl p-4 bg-background">
-                                                <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-muted flex items-center justify-center">
-                                                    <span className="text-2xl font-display font-medium text-foreground">{feedback.rpe}</span>
-                                                </div>
-                                                <div className="flex-1">
-                                                    <p className="text-sm font-semibold text-foreground">{getRPELabel(feedback.rpe)}</p>
-                                                    <div className={`h-1.5 w-full rounded-full mt-2 ${getRPEColor(feedback.rpe)}`} />
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <p className="text-sm text-muted-foreground italic px-4">{t('feedback.noExertion')}</p>
-                                        )}
-                                    </div>
-
-                                    <div>
-                                        <Label className="text-[10px] tracking-widest uppercase font-semibold text-muted-foreground pb-4 block">{t('feedback.notesLabel')}</Label>
-                                        {feedback.comments ? (
-                                            <div className="bg-background border border-muted rounded-2xl p-6 h-full min-h-[100px]">
-                                                <p className="text-sm text-primary leading-relaxed whitespace-pre-wrap">{feedback.comments}</p>
-                                            </div>
-                                        ) : (
-                                            <p className="text-sm text-muted-foreground italic px-4">{t('feedback.noNotes')}</p>
-                                        )}
-                                    </div>
-                                </div>
-                            </>
-                        )}
-                    </div>
-                </div>
-            )}
             {/* Link Workout Modal */}
             {activity && (
                 <LinkWorkoutModal
                     isOpen={isLinkModalOpen}
                     onClose={() => setIsLinkModalOpen(false)}
-                    activityId={id}
+                    activityId={internalId || id}
                     activityTitle={activity.name}
                     onLinkSuccess={() => {
                         setIsLinkModalOpen(false);

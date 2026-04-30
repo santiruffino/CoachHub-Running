@@ -27,7 +27,7 @@ export interface SessionData {
     };
     icon?: any;
     color?: string;
-    external_id?: string; // Strava activity ID for linking
+    activity_id?: string; // Internal activity UUID for linking
     match?: WorkoutMatch; // Workout match data if available
     assignmentId?: string; // Training assignment ID for planned workouts
 }
@@ -197,9 +197,9 @@ export function SessionList({ sessions }: SessionListProps) {
                 );
 
                 // Link to activity details for completed sessions
-                if (session.type === 'COMPLETED' && session.external_id) {
+                if (session.type === 'COMPLETED' && session.activity_id) {
                     return (
-                        <Link key={session.id} href={`/activities/${session.external_id}`} className="block">
+                        <Link key={session.id} href={`/activities/${session.activity_id}`} className="block">
                             {CardContent}
                         </Link>
                     );

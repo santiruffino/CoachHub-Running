@@ -100,7 +100,6 @@ export interface BlockComparison {
 export interface WorkoutMatch {
     matched: boolean;
     activityId?: string;
-    activityExternalId?: string;
     matchQuality?: MatchQuality;
     blockComparison?: BlockComparison[];
     isManualMatch?: boolean;

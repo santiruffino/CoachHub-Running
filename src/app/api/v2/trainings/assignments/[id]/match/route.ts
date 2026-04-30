@@ -155,7 +155,6 @@ export async function GET(
             scheduledDate: assignment.scheduled_date,
             activity: {
                 id: matchedActivity.id,
-                externalId: matchedActivity.external_id,
                 title: matchedActivity.title,
                 distance: matchedActivity.distance,
                 duration: matchedActivity.duration,

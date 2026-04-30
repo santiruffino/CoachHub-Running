@@ -4,7 +4,6 @@ import React from 'react';
 import {
   ComposedChart,
   Line,
-  Area,
   Bar,
   XAxis,
   YAxis,
@@ -42,17 +41,10 @@ export function IntervalsAnalysisChart({
   matchedLaps = [] 
 }: IntervalsAnalysisChartProps) {
   const t = useTranslations('activities.detail');
+  const [activeLapIndex, setActiveLapIndex] = React.useState<number | null>(null);
 
   if (!laps || laps.length === 0) return null;
 
-  // Helper to get color for a lap
-  const getLapColor = (index: number) => {
-    const overrideType = lapOverrides[index.toString()];
-    const matchedLap = matchedLaps.find(m => m.lapIndex === index);
-    const effectiveType = overrideType || matchedLap?.stepType || 'other';
-    
-    return BLOCK_COLORS[effectiveType as keyof typeof BLOCK_COLORS] || BLOCK_COLORS.other;
-  };
 
   // Conversion helpers
   const metersPerSecondToPaceDecimal = (mps: number): number => {
@@ -75,18 +67,19 @@ export function IntervalsAnalysisChart({
     // If lap_index starts at 0, we display as 1-based
     const displayIndex = lap.lap_index === 0 || (laps[0]?.lap_index === 0) ? lap.lap_index + 1 : lap.lap_index;
     
-    const overrideType = lapOverrides[lap.lap_index];
+    const overrideType = lapOverrides[lap.lap_index.toString()];
     const matchedLap = matchedLaps.find(m => m.lapIndex === index);
-    const effectiveType = overrideType || matchedLap?.stepType || 'other';
+    const effectiveType = (overrideType || matchedLap?.stepType || 'other') as keyof typeof BLOCK_COLORS;
     
     const overrideLabels: Record<string, string> = {
-        warmup: 'Warm up',
-        active: 'Active',
-        rest: 'Rest',
-        recovery: 'Recovery',
-        cooldown: 'Cool Down'
+      warmup: t('workout.warmup') || 'Warm up',
+      active: t('workout.active') || 'Active',
+      rest: t('workout.rest') || 'Rest',
+      recovery: t('workout.recovery') || 'Recovery',
+      cooldown: t('workout.cooldown') || 'Cool Down',
+      other: `${t('table.lap') || 'Lap'} ${displayIndex}`
     };
-    const label = overrideType ? overrideLabels[overrideType] : (matchedLap ? matchedLap.stepLabel : `Lap ${displayIndex}`);
+    const label = overrideType ? overrideLabels[overrideType] : (matchedLap ? matchedLap.stepLabel : overrideLabels.other);
 
     return {
       name: `L${displayIndex}`,
@@ -167,23 +160,30 @@ export function IntervalsAnalysisChart({
         </h3>
         <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-tighter text-muted-foreground">
            <div className="flex items-center gap-1.5">
+             <div className="w-2 h-2 rounded-sm bg-slate-400" />
               <span>{t('table.avgHr') || 'HR'}</span>
            </div>
            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-sm bg-orange-500" />
-              <span>{t('table.avgPace') || 'Pace'}</span>
-           </div>
-           <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-sm bg-blue-400" />
-              <span>{t('table.cadence') || 'Cadence'}</span>
-           </div>
-        </div>
+               <div className="w-2 h-2 rounded-sm bg-red-500" />
+               <span>{t('table.avgPace') || 'Pace'}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+               <div className="w-2 h-2 rounded-sm bg-cyan-400" />
+               <span>{t('table.cadence') || 'Cadence'}</span>
+            </div>
+         </div>
       </div>
       
-      <div className="h-[400px] w-full">
+      <div className="h-100 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart
             data={chartData}
+            onMouseMove={(state: any) => {
+              if (state?.isTooltipActive && typeof state.activeTooltipIndex === 'number') {
+                setActiveLapIndex(state.activeTooltipIndex);
+              }
+            }}
+            onMouseLeave={() => setActiveLapIndex(null)}
             margin={{
               top: 20,
               right: 20,
@@ -199,7 +199,7 @@ export function IntervalsAnalysisChart({
               tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12, fontWeight: '500' }}
               dy={10}
             />
-            {/* HR/Cadence Axis - Now visible to explain bar height */}
+            {/* Heart rate axis */}
             <YAxis 
               yAxisId="left"
               axisLine={false}
@@ -215,13 +215,24 @@ export function IntervalsAnalysisChart({
                 style: { textAnchor: 'middle', fontSize: 10, fontWeight: 600 }
               }}
             />
-            {/* Pace Axis - Now visible to explain line height */}
+
+            {/* Cadence axis */}
+            <YAxis
+              yAxisId="cadence"
+              hide
+              domain={[
+                (dataMin: number) => Math.max(0, Math.floor((dataMin || 0) - 5)),
+                (dataMax: number) => Math.ceil((dataMax || 0) + 5),
+              ]}
+            />
+
+            {/* Pace axis */}
             <YAxis 
               yAxisId="right"
               orientation="right"
               axisLine={false}
               tickLine={false}
-              tick={{ fill: '#f97316', fontSize: '10px' }}
+              tick={{ fill: 'rgb(239 68 68)', fontSize: '10px' }}
               domain={['auto', 'auto']}
               width={45}
               tickFormatter={(val) => isRunning ? formatPace(val) : `${val}`}
@@ -229,34 +240,38 @@ export function IntervalsAnalysisChart({
                 value: isRunning ? 'min/km' : 'km/h', 
                 angle: 90, 
                 position: 'insideRight',
-                fill: '#f97316',
+                fill: 'rgb(239 68 68)',
                 style: { textAnchor: 'middle', fontSize: 10, fontWeight: 600 }
               }}
             />
             
             <Tooltip content={<CustomTooltip />} />
-            
-            {/* Area for Cadence - Subtle background */}
-            <Area
-              yAxisId="left"
-              type="monotone"
-              dataKey="cadence"
-              name="Cadencia"
-              fill="hsl(var(--primary) / 0.05)"
-              stroke="hsl(var(--primary) / 0.2)"
-              strokeWidth={1}
-              connectNulls
-            />
 
-            {/* Bar for Heart Rate */}
+            {/* Main bar: heart rate */}
             <Bar 
               yAxisId="left" 
               dataKey="hr" 
-              name="Pulso" 
-              barSize={32} 
+              name={t('table.avgHr') || 'Pulso'} 
+              barSize={34} 
               radius={[6, 6, 0, 0]}
-              fillOpacity={0.6}
+              fillOpacity={0.55}
               fill={BLOCK_COLORS.other}
+              label={(props: any) => {
+                const { x, y, width, index, value } = props;
+                if (index !== activeLapIndex || !value) return null;
+                return (
+                  <text
+                    x={x + width / 2}
+                    y={y - 18}
+                    fill="#94a3b8"
+                    textAnchor="middle"
+                    fontSize={10}
+                    fontWeight={700}
+                  >
+                    {Math.round(value)} bpm
+                  </text>
+                );
+              }}
             >
                 {chartData.map((entry, index) => (
                     <Cell 
@@ -267,17 +282,61 @@ export function IntervalsAnalysisChart({
                 ))}
             </Bar>
 
-            {/* Line for Pace */}
+            {/* Overlay bar: cadence (same lap, separate axis) */}
+            <Bar
+              yAxisId="cadence"
+              dataKey="cadence"
+              name={t('table.cadence') || 'Cadencia'}
+              barSize={10}
+              radius={[4, 4, 0, 0]}
+              fill="#22d3ee"
+              fillOpacity={0.95}
+              label={(props: any) => {
+                const { x, y, width, index, value } = props;
+                if (index !== activeLapIndex || !value) return null;
+                return (
+                  <text
+                    x={x + width / 2}
+                    y={y - 6}
+                    fill="#22d3ee"
+                    textAnchor="middle"
+                    fontSize={10}
+                    fontWeight={700}
+                  >
+                    {Math.round(value)} spm
+                  </text>
+                );
+              }}
+            />
+
+            {/* Pace line */}
             <Line
               yAxisId="right"
               type="monotone"
               dataKey="pace"
-              name="Ritmo"
-              stroke="#f97316" // orange-500
+              name={t('table.avgPace') || 'Ritmo'}
+              stroke="rgb(239 68 68)" // orange-500
               strokeWidth={4}
-              dot={{ r: 5, fill: '#f97316', strokeWidth: 2, stroke: '#fff' }}
+              dot={{ r: 5, fill: 'rgb(239 68 68)', strokeWidth: 2, stroke: '#fff' }}
               activeDot={{ r: 7, strokeWidth: 0 }}
               connectNulls
+              label={(props: any) => {
+                const { x, y, index, value } = props;
+                if (index !== activeLapIndex || !value) return null;
+                const paceLabel = isRunning ? `${formatPace(value)} /km` : `${Number(value).toFixed(1)} km/h`;
+                return (
+                  <text
+                    x={x}
+                    y={y - 12}
+                    fill="rgb(239 68 68)"
+                    textAnchor="middle"
+                    fontSize={10}
+                    fontWeight={700}
+                  >
+                    {paceLabel}
+                  </text>
+                );
+              }}
             />
           </ComposedChart>
         </ResponsiveContainer>

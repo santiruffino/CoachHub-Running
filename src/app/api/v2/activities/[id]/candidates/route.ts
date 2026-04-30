@@ -17,25 +17,12 @@ export async function GET(
 
         const { supabase, user } = authResult;
 
-        // Fetch activity to get user_id and start_date. The ID in URL is likely the external Strava ID
-        // Try finding by external_id first, then fallback to id if not found (just in case)
-        let { data: activity, error: activityError } = await supabase
+        // Fetch activity to get user_id and start_date (internal UUID)
+        const { data: activity, error: activityError } = await supabase
             .from('activities')
             .select('user_id, start_date')
-            .eq('external_id', activityId)
+            .eq('id', activityId)
             .single();
-
-        if (!activity) {
-            // Fallback trial by UUID
-            const { data: activityById, error: errorById } = await supabase
-                .from('activities')
-                .select('user_id, start_date')
-                .eq('id', activityId)
-                .single();
-
-            activity = activityById;
-            activityError = errorById;
-        }
 
         if (activityError || !activity) {
             return NextResponse.json(

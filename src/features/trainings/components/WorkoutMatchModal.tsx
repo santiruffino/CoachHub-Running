@@ -289,10 +289,10 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
                         </div>
 
                         {/* Activity Link */}
-                        {match.activityExternalId && (
+                        {match.activityId && (
                             <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                                 <Link
-                                    href={`/activities/${match.activityExternalId}`}
+                                    href={`/activities/${match.activityId}`}
                                     className="text-orange-600 dark:text-orange-400 hover:underline font-medium flex items-center gap-2"
                                 >
                                     <TrendingUp className="w-4 h-4" />

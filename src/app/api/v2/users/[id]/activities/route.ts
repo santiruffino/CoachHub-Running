@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/api-helpers';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 
 /**
  * Get User Activities
@@ -57,8 +58,9 @@ export async function GET(
             }
         }
 
-        // Fetch activities
-        const { data: activities, error } = await supabase
+        // Fetch activities with service role to avoid RLS filtering after auth check above
+        const serviceSupabase = createServiceRoleClient();
+        const { data: activities, error } = await serviceSupabase
             .from('activities')
             .select(`
         id,

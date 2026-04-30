@@ -21,12 +21,13 @@ export async function GET(
         }
 
         const { supabase, user } = authResult;
+        const serviceSupabase = createServiceRoleClient();
 
         // Get the activity to find the owner
-        const { data: activity, error: activityError } = await supabase
+        const { data: activity, error: activityError } = await serviceSupabase
             .from('activities')
-            .select('user_id, external_id')
-            .eq('external_id', id)
+            .select('id, user_id')
+            .eq('id', id)
             .single();
 
         if (activityError || !activity) {
@@ -65,16 +66,11 @@ export async function GET(
         }
 
         // Get feedback using service role to handle RLS
-        const serviceSupabase = createServiceRoleClient();
         const { data: feedback, error: feedbackError } = await serviceSupabase
             .from('activity_feedback')
             .select('*')
             .eq('user_id', activity.user_id)
-            .eq('activity_id', (await supabase
-                .from('activities')
-                .select('id')
-                .eq('external_id', id)
-                .single()).data?.id!)
+            .eq('activity_id', activity.id)
             .maybeSingle();
 
         if (feedbackError) {
@@ -113,6 +109,7 @@ export async function POST(
         }
 
         const { supabase, user } = authResult;
+        const serviceSupabase = createServiceRoleClient();
         const body = await request.json();
 
         const { rpe, comments, training_assignment_id } = body;
@@ -126,10 +123,10 @@ export async function POST(
         }
 
         // Get the activity and verify ownership
-        const { data: activity, error: activityError } = await supabase
+        const { data: activity, error: activityError } = await serviceSupabase
             .from('activities')
-            .select('id, user_id, external_id')
-            .eq('external_id', id)
+            .select('id, user_id')
+            .eq('id', id)
             .single();
 
         if (activityError || !activity) {
@@ -148,7 +145,7 @@ export async function POST(
         }
 
         // Upsert feedback
-        const { data: feedback, error: feedbackError } = await supabase
+        const { data: feedback, error: feedbackError } = await serviceSupabase
             .from('activity_feedback')
             .upsert({
                 activity_id: activity.id,
