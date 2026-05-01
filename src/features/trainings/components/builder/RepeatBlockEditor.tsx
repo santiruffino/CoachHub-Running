@@ -13,6 +13,7 @@ interface RepeatBlockEditorProps {
     groupId: string;
     blocks: WorkoutBlock[];
     onUpdate: (blockId: string, updates: Partial<WorkoutBlock>) => void;
+    onUpdateReps?: (groupId: string, reps: number) => void;
     onRemove: (blockId: string) => void;
     athleteProfile?: AthleteProfile | null;
     onAddStep: () => void;
@@ -22,6 +23,7 @@ export function RepeatBlockEditor({
     groupId,
     blocks,
     onUpdate,
+    onUpdateReps,
     onRemove,
     athleteProfile,
     onAddStep
@@ -32,6 +34,11 @@ export function RepeatBlockEditor({
     const reps = blocks[0]?.group?.reps || 1;
 
     const updateReps = (newReps: number) => {
+        if (onUpdateReps) {
+            onUpdateReps(groupId, newReps);
+            return;
+        }
+
         blocks.forEach(block => {
             if (block.group?.id === groupId) {
                 onUpdate(block.id, {

@@ -165,6 +165,8 @@ function AssignWorkoutContent() {
     const [loading, setLoading] = useState(false);
     const { alertState, showAlert, closeAlert } = useAlertDialog();
 
+    const builderAthleteId = athleteId || (selectedAthleteIds.length === 1 ? selectedAthleteIds[0] : undefined);
+
     useEffect(() => {
         loadData();
 
@@ -419,7 +421,7 @@ function AssignWorkoutContent() {
                     <WorkoutBuilder 
                         initialBlocks={blocks} 
                         onChange={setBlocks}
-                        athleteId={athleteId || undefined} 
+                        athleteId={builderAthleteId} 
                         footerContent={
                             <div className="w-full flex items-center justify-between mx-auto px-8">
                                 <div className="flex flex-col">
@@ -453,7 +455,7 @@ function AssignWorkoutContent() {
                         <WorkoutBuilder 
                             initialBlocks={blocks} 
                             onChange={setBlocks} 
-                            athleteId={athleteId || undefined}
+                            athleteId={builderAthleteId}
                         />
                     </div>
                 ) : (

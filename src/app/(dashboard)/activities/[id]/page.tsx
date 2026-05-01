@@ -878,14 +878,14 @@ export default function ActivityDetailPage() {
                                         <TableHeader>
                                             <TableRow className="border-b border-muted hover:bg-transparent">
                                                 <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4 pl-0">{t('table.split')}</TableHead>
-                                                <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.distance')}</TableHead>
                                                 <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.time')}</TableHead>
+                                                <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.distance')}</TableHead>
                                                 <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.avgPace')}</TableHead>
-                                                <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.elevGain')}</TableHead>
                                                 {!!activity.splits_metric[0]?.average_heartrate && (
                                                     <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.avgHr')}</TableHead>
                                                 )}
-                                                <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4 text-right pr-0">{t('table.zone')}</TableHead>
+                                                <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.elevGain')}</TableHead>
+                                                <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4 text-right pr-0"></TableHead>
                                             </TableRow>
                                         </TableHeader>
 
@@ -893,10 +893,9 @@ export default function ActivityDetailPage() {
                                             {activity.splits_metric.map((split) => (
                                                 <TableRow key={split.split}>
                                                     <TableCell className="font-medium">{split.split}</TableCell>
-                                                    <TableCell>{(split.distance / 1000).toFixed(2)} {t('metrics.units.km')}</TableCell>
                                                     <TableCell>{formatTime(split.moving_time)}</TableCell>
+                                                    <TableCell>{(split.distance / 1000).toFixed(2)} {t('metrics.units.km')}</TableCell>
                                                     <TableCell>{formatPace(split.average_speed)}</TableCell>
-                                                    <TableCell>{split.elevation_difference > 0 ? '+' : ''}{split.elevation_difference.toFixed(1)} {t('metrics.units.m')}</TableCell>
                                                     {!!activity.splits_metric![0]?.average_heartrate && (
                                                         <TableCell>
                                                             {split.average_heartrate ? (
@@ -908,8 +907,11 @@ export default function ActivityDetailPage() {
                                                             )}
                                                         </TableCell>
                                                     )}
-                                                    <TableCell>
-                                                        <div className={`h-2 w-12 rounded ${getPaceZoneColor(split.pace_zone)}`} />
+                                                    <TableCell>{split.elevation_difference > 0 ? '+' : ''}{split.elevation_difference.toFixed(1)} {t('metrics.units.m')}</TableCell>
+                                                    <TableCell className="text-right pr-0">
+                                                        <div className="inline-block h-2 w-12 rounded overflow-hidden bg-muted">
+                                                            <div className={`h-full ${getPaceZoneColor(split.pace_zone)}`} />
+                                                        </div>
                                                     </TableCell>
                                                 </TableRow>
                                             ))}

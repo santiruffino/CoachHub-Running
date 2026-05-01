@@ -125,6 +125,25 @@ export function WorkoutBuilder({
         ));
     }, []);
 
+    const updateGroupReps = useCallback((groupId: string, reps: number) => {
+        const safeReps = Number.isFinite(reps) ? Math.floor(reps) : 1;
+        const normalizedReps = Math.max(1, safeReps);
+
+        setBlocks(prev => prev.map(block => {
+            if (block.group?.id !== groupId) {
+                return block;
+            }
+
+            return {
+                ...block,
+                group: {
+                    ...block.group,
+                    reps: normalizedReps
+                }
+            };
+        }));
+    }, []);
+
     const removeBlock = useCallback((id: string) => {
         setBlocks(prev => prev.filter(block => block.id !== id));
         if (selectedBlockId === id) {
@@ -180,6 +199,7 @@ export function WorkoutBuilder({
                                 selectedBlockId={selectedBlockId}
                                 onSelectBlock={selectBlock}
                                 onUpdateBlock={updateBlock}
+                                onUpdateGroupReps={updateGroupReps}
                                 onRemoveBlock={removeBlock}
                                 athleteProfile={athleteProfile}
                                 onAddStep={(type) => {

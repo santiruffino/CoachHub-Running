@@ -124,6 +124,7 @@ export async function POST(request: NextRequest) {
                 type,
                 blocks,
                 is_template: isTemplate,
+                coach_id: user!.id,
                 created_by: user!.id,
                 team_id: profile?.team_id || null, // Lock to Running Team
             })

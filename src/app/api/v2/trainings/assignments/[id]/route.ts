@@ -224,6 +224,7 @@ export async function PATCH(
                     description: training.description || 'Modified workout',
                     blocks: blocks,
                     is_template: false,
+                    coach_id: user!.id,
                     created_by: user!.id,
                     team_id: profile.team_id,
                 })

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireRole, requireAuth } from '@/lib/supabase/api-helpers';
+import { requireAuth } from '@/lib/supabase/api-helpers';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 
 /**
  * Get Athlete Details
@@ -25,25 +26,33 @@ export async function GET(
         }
 
         const { supabase, user } = authResult;
+        const serviceSupabase = createServiceRoleClient();
         const athleteId = id;
 
+        const { data: requesterProfile, error: requesterProfileError } = await supabase
+            .from('profiles')
+            .select('id, role, team_id')
+            .eq('id', user!.id)
+            .single();
+
+        if (requesterProfileError || !requesterProfile) {
+            return NextResponse.json(
+                { error: 'Unable to resolve requester profile' },
+                { status: 403 }
+            );
+        }
+
         // Athletes can only view their own data
-        if (user!.role === 'ATHLETE' && user!.id !== athleteId) {
+        if (requesterProfile.role === 'ATHLETE' && requesterProfile.id !== athleteId) {
             return NextResponse.json(
                 { error: 'You can only view your own data' },
                 { status: 403 }
             );
         }
 
-        // Coaches can only view athletes in their team
-        if (user!.role === 'COACH') {
-            const { data: coachProfile } = await supabase
-                .from('profiles')
-                .select('team_id')
-                .eq('id', user!.id)
-                .single();
-
-            const { data: athleteProfile, error: athleteError } = await supabase
+        // Team staff can only view athletes in their own team
+        if (requesterProfile.role === 'COACH' || requesterProfile.role === 'ADMIN') {
+            const { data: athleteProfile, error: athleteError } = await serviceSupabase
                 .from('profiles')
                 .select('id, team_id')
                 .eq('id', athleteId)
@@ -58,7 +67,7 @@ export async function GET(
             }
 
             // Check if this athlete belongs to the same team as the coach
-            if (!coachProfile?.team_id || athleteProfile.team_id !== coachProfile.team_id) {
+            if (!requesterProfile.team_id || athleteProfile.team_id !== requesterProfile.team_id) {
                 return NextResponse.json(
                     { error: 'You do not have permission to view this athlete' },
                     { status: 403 }
@@ -67,7 +76,7 @@ export async function GET(
         }
 
         // Fetch athlete profile
-        const { data: profile, error: profileError } = await supabase
+        const { data: profile, error: profileError } = await serviceSupabase
             .from('profiles')
             .select('id, email, name, role, created_at')
             .eq('id', athleteId)
@@ -92,14 +101,14 @@ export async function GET(
 
 
         // Fetch athlete_profiles separately (maybeSingle allows null if profile doesn't exist yet)
-        const { data: athleteProfileData, error: athleteProfileError } = await supabase
+        const { data: athleteProfileData } = await serviceSupabase
             .from('athlete_profiles')
             .select('*')
             .eq('user_id', athleteId)
             .maybeSingle();
 
         // Fetch athlete's groups
-        const { data: groups } = await supabase
+        const { data: groups } = await serviceSupabase
             .from('athlete_groups')
             .select(`
         joined_at,
@@ -112,7 +121,7 @@ export async function GET(
             .eq('athlete_id', athleteId);
 
         // Fetch recent activities (last 10)
-        const { data: recentActivities } = await supabase
+        const { data: recentActivities } = await serviceSupabase
             .from('activities')
             .select(`
         id,
@@ -130,12 +139,17 @@ export async function GET(
             .limit(10);
 
         // Fetch athlete metrics history
-        const { data: metricsHistory } = await supabase
-            .from('athlete_metrics')
-            .select('*')
-            .eq('athlete_profile.user_id', athleteId)
-            .order('date', { ascending: false })
-            .limit(20);
+        let metricsHistory: any[] = [];
+        if (athleteProfileData?.id) {
+            const { data: metricsData } = await serviceSupabase
+                .from('athlete_metrics')
+                .select('*')
+                .eq('athlete_profile_id', athleteProfileData.id)
+                .order('date', { ascending: false })
+                .limit(20);
+
+            metricsHistory = metricsData || [];
+        }
 
         // Fetch recent assignments (last 30 days + next 7 days)
         const today = new Date();
@@ -144,7 +158,7 @@ export async function GET(
         const sevenDaysFromNow = new Date(today);
         sevenDaysFromNow.setDate(today.getDate() + 7);
 
-        const { data: assignments } = await supabase
+        const { data: assignments } = await serviceSupabase
             .from('training_assignments')
             .select(`
                 id,
@@ -176,6 +190,7 @@ export async function GET(
                 injuries: athleteProfileData.injuries,
                 restHR: athleteProfileData.rest_hr,
                 maxHR: athleteProfileData.max_hr,
+                lthr: athleteProfileData.lthr,
                 vam: athleteProfileData.vam,
                 uan: athleteProfileData.uan,
                 hrZones: athleteProfileData.hr_zones,

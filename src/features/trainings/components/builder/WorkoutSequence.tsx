@@ -15,6 +15,7 @@ interface WorkoutSequenceProps {
     selectedBlockId: string | null;
     onSelectBlock: (blockId: string | null) => void;
     onUpdateBlock: (id: string, updates: Partial<WorkoutBlock>) => void;
+    onUpdateGroupReps?: (groupId: string, reps: number) => void;
     onRemoveBlock: (id: string) => void;
     athleteProfile?: AthleteProfile | null;
     onAddStep: (type: 'warmup' | 'interval' | 'recovery' | 'rest' | 'cooldown' | 'repeat') => void;
@@ -25,6 +26,7 @@ export function WorkoutSequence({
     selectedBlockId,
     onSelectBlock,
     onUpdateBlock,
+    onUpdateGroupReps,
     onRemoveBlock,
     athleteProfile,
     onAddStep
@@ -184,6 +186,7 @@ export function WorkoutSequence({
                                             groupId={item.groupId!}
                                             blocks={item.blocks}
                                             onUpdate={onUpdateBlock}
+                                            onUpdateReps={onUpdateGroupReps}
                                             onRemove={onRemoveBlock}
                                             athleteProfile={athleteProfile}
                                             onAddStep={() => {
