@@ -5,7 +5,7 @@ import { format, startOfWeek, endOfWeek, subWeeks, addWeeks, eachDayOfInterval, 
 import { es } from 'date-fns/locale';
 import api from '@/lib/axios';
 import { useTranslations } from 'next-intl';
-import { Zap, ChevronLeft, ChevronRight, MessageSquare, TrendingUp } from 'lucide-react';
+import { Zap, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 
 import { AthleteWeeklyCalendar } from '@/components/dashboard/AthleteWeeklyCalendar';
 import { MetricCard } from '@/components/dashboard/MetricCard';
@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 
 import { stravaService } from '@/features/strava/services/strava.service';
 import { racesService } from '@/features/races/services/races.service';
+import { AssignRaceModal } from '@/features/races/components/AssignRaceModal';
 import { cacheService } from '@/lib/cache.service';
 import { normalizeActivityType } from '@/utils/activity-utils';
 import { NextRaces } from './NextRaces';
@@ -30,6 +31,7 @@ export default function AthleteDashboard({ user }: { user: any }) {
     const [athleteDetails, setAthleteDetails] = useState<any>(null);
     const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
     const [performanceData, setPerformanceData] = useState<any[]>([]);
+    const [isAssignRaceModalOpen, setIsAssignRaceModalOpen] = useState(false);
 
     const fetchData = async () => {
         if (!user) return;
@@ -111,21 +113,51 @@ export default function AthleteDashboard({ user }: { user: any }) {
 
     const weeklyStats = useMemo(() => {
         const wEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
+        const weekStartStr = format(currentWeekStart, 'yyyy-MM-dd');
+        const weekEndStr = format(wEnd, 'yyyy-MM-dd');
+
         const weekActs = activities.filter(act => {
             const d = format(new Date(act.start_date), 'yyyy-MM-dd');
-            return d >= format(currentWeekStart, 'yyyy-MM-dd') && d <= format(wEnd, 'yyyy-MM-dd');
+            return d >= weekStartStr && d <= weekEndStr;
         });
+
+        const weekAssignments = assignments.filter((assignment: any) => {
+            const dateValue = assignment.scheduled_date || assignment.scheduledDate;
+            if (!dateValue) return false;
+            const d = dateValue.split('T')[0];
+            return d >= weekStartStr && d <= weekEndStr;
+        });
+
+        const completedAssignments = weekAssignments.filter((assignment: any) => {
+            if (assignment.completed) return true;
+
+            const dateValue = assignment.scheduled_date || assignment.scheduledDate;
+            if (!dateValue) return false;
+            const assignmentDate = dateValue.split('T')[0];
+
+            return weekActs.some((act: any) => {
+                const activityDate = format(new Date(act.start_date), 'yyyy-MM-dd');
+                return activityDate === assignmentDate && normalizeActivityType(act.type) === assignment.training?.type;
+            });
+        }).length;
 
         const distance = weekActs.reduce((acc, act) => acc + (act.distance / 1000), 0);
         const duration = weekActs.reduce((acc, act) => acc + act.duration, 0);
+        const elevation = weekActs.reduce((acc, act) => acc + (act.elevation_gain || 0), 0);
+        const compliance = weekAssignments.length > 0
+            ? Math.round((completedAssignments / weekAssignments.length) * 100)
+            : 0;
+
         const hrs = Math.floor(duration / 3600);
         const mins = Math.floor((duration % 3600) / 60);
 
         return {
             distance: distance.toFixed(1),
-            time: `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`
+            time: `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`,
+            elevation: `${Math.round(elevation)} m`,
+            compliance: `${compliance}%`
         };
-    }, [activities, currentWeekStart]);
+    }, [activities, assignments, currentWeekStart]);
 
     if (loading) return <div className="p-8"><Skeleton className="h-64 w-full rounded-3xl" /></div>;
 
@@ -151,9 +183,11 @@ export default function AthleteDashboard({ user }: { user: any }) {
                     </div>
                 </div>
 
-                <div className="flex gap-4">
+                <div className="flex flex-wrap gap-4">
                     <MetricCard title={t('athletes.detail.weeklyVolume')} value={weeklyStats.distance} />
                     <MetricCard title={t('athletes.detail.weeklyTime')} value={weeklyStats.time} />
+                    <MetricCard title={t('activities.detail.metrics.elevationGain')} value={weeklyStats.elevation} />
+                    <MetricCard title={t('athletes.detail.complianceRate')} value={weeklyStats.compliance} />
                 </div>
             </div>
 
@@ -169,27 +203,28 @@ export default function AthleteDashboard({ user }: { user: any }) {
                         <ChevronRight className="h-4 w-4" />
                     </Button>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }))}>
-                    {t('common.today')}
-                </Button>
+                <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={() => setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }))}>
+                        {t('common.today')}
+                    </Button>
+                    <Button size="sm" onClick={() => setIsAssignRaceModalOpen(true)} className="gap-2">
+                        <Plus className="h-4 w-4" />
+                        {t('races.athlete.addRace')}
+                    </Button>
+                </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                <div className="lg:col-span-9">
-                    <AthleteWeeklyCalendar 
-                        weekStart={currentWeekStart}
-                        assignments={assignments}
-                        activities={activities}
-                        races={races}
-                    />
-                </div>
-                <div className="lg:col-span-3">
-                    <NextRaces athleteRaces={races} />
-                </div>
+            <div className="w-full">
+                <AthleteWeeklyCalendar 
+                    weekStart={currentWeekStart}
+                    assignments={assignments}
+                    activities={activities}
+                    races={races}
+                />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-12">
-                <div className="lg:col-span-5">
+                <div className="lg:col-span-7">
                     <div className="bg-muted/50 rounded-3xl p-6 h-full">
                         <CoachNotes 
                             athleteId={user.id} 
@@ -198,18 +233,35 @@ export default function AthleteDashboard({ user }: { user: any }) {
                         />
                     </div>
                 </div>
-                <div className="lg:col-span-7">
-                    <div className="bg-card border border-border/40 p-8 rounded-[2rem] shadow-sm">
-                        <h3 className="text-xl font-bold font-display tracking-tight mb-8 text-foreground">{t('dashboard.performanceTrend.title')}</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <PerformanceTrendChart data={performanceData} />
-                            {athleteDetails?.athleteProfile?.hrZones && (
-                                <HeartRateZones zones={athleteDetails.athleteProfile.hrZones} />
-                            )}
-                        </div>
+
+                <div className="lg:col-span-5">
+                    <NextRaces athleteRaces={races} />
+                </div>
+            </div>
+
+            <div className="mt-16 bg-card border border-border/40 p-8 md:p-10 rounded-[2rem] shadow-sm">
+                <h3 className="text-[22px] font-display font-bold tracking-tight mb-8 text-foreground">Performance & Zones</h3>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
+                    <PerformanceTrendChart data={performanceData} className="bg-background/50 border-border/40" />
+                    <div className="rounded-2xl border border-border/40 bg-muted/20 p-5 sm:p-6">
+                        <h4 className="mb-6 text-lg font-semibold text-foreground">Heart Rate Zones</h4>
+                        {athleteDetails?.athleteProfile?.hrZones ? (
+                            <HeartRateZones zones={athleteDetails.athleteProfile.hrZones} />
+                        ) : (
+                            <p className="text-sm text-muted-foreground">
+                                No hay zonas de FC configuradas.
+                            </p>
+                        )}
                     </div>
                 </div>
             </div>
+
+            <AssignRaceModal
+                open={isAssignRaceModalOpen}
+                onOpenChange={setIsAssignRaceModalOpen}
+                athleteId={user.id}
+                onSuccess={fetchData}
+            />
         </div>
     );
 }

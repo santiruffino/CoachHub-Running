@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { Search } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,9 +28,12 @@ interface AssignRaceModalProps {
 export function AssignRaceModal({ open, onOpenChange, athleteId, onSuccess }: AssignRaceModalProps) {
   const t = useTranslations('races.assign');
   const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState<'template' | 'custom'>('template');
+  const [searchTerm, setSearchTerm] = useState('');
   const [templates, setTemplates] = useState<Race[]>([]);
   const [formData, setFormData] = useState<Partial<AssignRaceDTO>>({
     race_id: '',
+    name_override: '',
     date: '',
     priority: 'C' as RacePriority,
     target_time: '',
@@ -39,16 +43,48 @@ export function AssignRaceModal({ open, onOpenChange, athleteId, onSuccess }: As
   useEffect(() => {
     if (open) {
       racesService.findAll().then(res => setTemplates(res.data));
+    } else {
+      setMode('template');
+      setSearchTerm('');
+      setFormData({
+        race_id: '',
+        name_override: '',
+        date: '',
+        priority: 'C' as RacePriority,
+        target_time: '',
+        notes: '',
+      });
     }
   }, [open]);
 
+  const filteredTemplates = templates.filter((template) => {
+    const q = searchTerm.trim().toLowerCase();
+    if (!q) return true;
+
+    const haystack = `${template.name} ${template.location || ''} ${template.distance || ''}`.toLowerCase();
+    return haystack.includes(q);
+  });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.race_id || !formData.date) return;
+    if (!formData.date) return;
+    if (mode === 'template' && !formData.race_id) return;
+    if (mode === 'custom' && !formData.name_override?.trim()) return;
 
     setLoading(true);
     try {
-      await racesService.assignToUser(athleteId, formData as AssignRaceDTO);
+      const payload: AssignRaceDTO = {
+        athlete_id: athleteId,
+        date: formData.date,
+        priority: (formData.priority || 'C') as RacePriority,
+        target_time: formData.target_time || undefined,
+        notes: formData.notes || undefined,
+        ...(mode === 'template'
+          ? { race_id: formData.race_id }
+          : { name_override: formData.name_override?.trim() }),
+      };
+
+      await racesService.assignToUser(athleteId, payload);
       onSuccess();
       onOpenChange(false);
     } catch (error) {
@@ -65,25 +101,70 @@ export function AssignRaceModal({ open, onOpenChange, athleteId, onSuccess }: As
           <DialogTitle className="font-manrope text-2xl font-bold">{t('title')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6 py-4">
+          <div className="grid grid-cols-2 gap-2 rounded-lg bg-muted p-1">
+            <Button
+              type="button"
+              variant={mode === 'template' ? 'default' : 'ghost'}
+              className="h-9"
+              onClick={() => setMode('template')}
+            >
+              {t('useExisting')}
+            </Button>
+            <Button
+              type="button"
+              variant={mode === 'custom' ? 'default' : 'ghost'}
+              className="h-9"
+              onClick={() => setMode('custom')}
+            >
+              {t('createNew')}
+            </Button>
+          </div>
+
           <div className="space-y-2">
             <Label className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-70">
-              {t('selectTemplate')}
+              {mode === 'template' ? t('selectTemplate') : t('raceNameLabel')}
             </Label>
-            <Select 
-              value={formData.race_id} 
-              onValueChange={(value) => setFormData({ ...formData, race_id: value })}
-            >
-              <SelectTrigger className="bg-surface-container-low dark:bg-[#131b23] border-none h-12 focus:ring-1 focus:ring-primary/20">
-                <SelectValue placeholder={t('selectTemplatePlaceholder')} />
-              </SelectTrigger>
-              <SelectContent>
-                {templates.map((template) => (
-                  <SelectItem key={template.id} value={template.id}>
-                    {template.name} {template.distance ? `(${template.distance})` : ''}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {mode === 'template' ? (
+              <>
+                <div className="relative">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder={t('searchPlaceholder')}
+                    className="bg-surface-container-low dark:bg-[#131b23] border-none h-11 pl-10 focus:ring-1 focus:ring-primary/20"
+                  />
+                </div>
+
+                <Select
+                  value={formData.race_id}
+                  onValueChange={(value) => setFormData({ ...formData, race_id: value })}
+                >
+                  <SelectTrigger className="bg-surface-container-low dark:bg-[#131b23] border-none h-12 focus:ring-1 focus:ring-primary/20">
+                    <SelectValue placeholder={t('selectTemplatePlaceholder')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filteredTemplates.length === 0 ? (
+                      <div className="px-3 py-2 text-sm text-muted-foreground">{t('noResults')}</div>
+                    ) : (
+                      filteredTemplates.map((template) => (
+                        <SelectItem key={template.id} value={template.id}>
+                          {template.name} {template.distance ? `(${template.distance})` : ''}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </>
+            ) : (
+              <Input
+                value={formData.name_override}
+                onChange={(e) => setFormData({ ...formData, name_override: e.target.value })}
+                placeholder={t('raceNamePlaceholder')}
+                className="bg-surface-container-low dark:bg-[#131b23] border-none h-12 focus:ring-1 focus:ring-primary/20"
+                required
+              />
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -148,7 +229,16 @@ export function AssignRaceModal({ open, onOpenChange, athleteId, onSuccess }: As
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} className="font-semibold text-xs uppercase tracking-wider">
               {t('cancel')}
             </Button>
-            <Button type="submit" disabled={loading || !formData.race_id || !formData.date} className="px-8 font-bold text-xs uppercase tracking-wider">
+            <Button
+              type="submit"
+              disabled={
+                loading ||
+                !formData.date ||
+                (mode === 'template' && !formData.race_id) ||
+                (mode === 'custom' && !formData.name_override?.trim())
+              }
+              className="px-8 font-bold text-xs uppercase tracking-wider"
+            >
               {loading ? t('assigning') : t('submit')}
             </Button>
           </DialogFooter>

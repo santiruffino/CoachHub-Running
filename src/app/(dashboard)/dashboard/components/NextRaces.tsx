@@ -22,14 +22,16 @@ interface NextRacesProps {
 
 export function NextRaces({ athleteRaces, onSuccess }: NextRacesProps) {
     const t = useTranslations();
+    const isAthleteMode = athleteRaces !== undefined;
     const [groupRaces, setGroupRaces] = useState<Group[]>([]);
-    const [loading, setLoading] = useState(!athleteRaces || athleteRaces.length === 0);
+    const [loading, setLoading] = useState(!isAthleteMode);
     const [selectedRace, setSelectedRace] = useState<AthleteRace | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
         const fetchGroupRaces = async () => {
-            if (athleteRaces && athleteRaces.length > 0) {
+            if (isAthleteMode) {
+                setGroupRaces([]);
                 setLoading(false);
                 return;
             }
@@ -47,7 +49,7 @@ export function NextRaces({ athleteRaces, onSuccess }: NextRacesProps) {
         };
 
         fetchGroupRaces();
-    }, [athleteRaces]);
+    }, [isAthleteMode]);
 
     if (loading) {
         return (

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth, requireRole } from '@/lib/supabase/api-helpers';
+import { requireAuth } from '@/lib/supabase/api-helpers';
 
 /**
  * GET /v2/users/[id]/races
@@ -89,8 +89,8 @@ export async function GET(
  * Assigns a race to a user.
  * 
  * Permissions:
- * - Coaches can manage races for their athletes
- * - Admins can manage races for any athlete
+ * - Athletes can manage their own races
+ * - Coaches and admins can manage races for athletes in their team
  */
 export async function POST(
     request: Request,
@@ -98,7 +98,7 @@ export async function POST(
 ) {
     try {
         const { id } = await params;
-        const authResult = await requireRole(['COACH', 'ADMIN']);
+        const authResult = await requireAuth();
         if (authResult.response) {
             return authResult.response;
         }
@@ -106,14 +106,20 @@ export async function POST(
         const { supabase, user } = authResult;
         const targetUserId = id;
 
-        // Verify coach/admin belongs to the same team as the athlete
-        const { data: userProfile } = await supabase
-            .from('profiles')
-            .select('role, team_id')
-            .eq('id', user!.id)
-            .single();
+        if (user!.id !== targetUserId) {
+            const { data: userProfile } = await supabase
+                .from('profiles')
+                .select('role, team_id')
+                .eq('id', user!.id)
+                .single();
 
-        if (userProfile?.role === 'COACH' || userProfile?.role === 'ADMIN') {
+            if (userProfile?.role !== 'COACH' && userProfile?.role !== 'ADMIN') {
+                return NextResponse.json(
+                    { error: 'Not authorized to assign races to this athlete' },
+                    { status: 403 }
+                );
+            }
+
             const { data: athleteProfile } = await supabase
                 .from('profiles')
                 .select('team_id')
