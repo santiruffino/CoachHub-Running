@@ -8,7 +8,7 @@ interface GroupStatusCardProps {
     completionRate: number;
 }
 
-function getStatusConfig(rate: number, t: (key: string, values?: any) => string) {
+function getStatusConfig(rate: number, t: (key: string, values?: Record<string, string | number>) => string) {
     if (rate >= 80) {
         return {
             label: t('dashboard.groupStatus.high'),
@@ -34,6 +34,7 @@ function getStatusConfig(rate: number, t: (key: string, values?: any) => string)
 }
 
 export function GroupStatusCard({ groupId, groupName, athleteCount, completionRate }: GroupStatusCardProps) {
+    void groupId;
     const t = useTranslations();
     const status = getStatusConfig(completionRate, t);
 

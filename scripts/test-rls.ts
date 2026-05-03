@@ -8,7 +8,7 @@ const supabase = createClient(
 );
 
 async function main() {
-  const { data, error } = await supabase.rpc('get_policies_dummy_or_query_pg_policies');
+  await supabase.rpc('get_policies_dummy_or_query_pg_policies');
   // Actually, we can just run a raw query? No, Supabase JS doesn't support raw SQL queries.
   // Let's use the REST API? No, REST doesn't expose pg_policies.
 }

@@ -13,6 +13,13 @@ import { AssignTrainingModal } from '@/features/trainings/components/AssignTrain
 import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
 import { useTranslations } from 'next-intl';
 
+type TrainingBlock = {
+    duration?: {
+        type?: 'distance' | 'time';
+        value?: number;
+    };
+};
+
 export default function TrainingsPage() {
     const t = useTranslations('trainings');
     const [trainings, setTrainings] = useState<Training[]>([]);
@@ -38,7 +45,7 @@ export default function TrainingsPage() {
         fetchTrainings();
     }, []);
 
-    const calculateStats = (blocks: any[]) => {
+    const calculateStats = (blocks: TrainingBlock[]) => {
         if (!Array.isArray(blocks)) return { dist: 0, time: 0, blockCount: 0 };
         const stats = blocks.reduce((acc, block) => {
             if (block.duration?.type === 'distance') {

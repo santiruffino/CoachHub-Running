@@ -2,12 +2,16 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Activity, Clock, MapPin, TrendingUp, Target, Heart, Zap } from 'lucide-react';
+import { Activity, Clock, MapPin, TrendingUp, Heart, Zap } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MatchQualityBadge } from '@/features/trainings/components/MatchQualityBadge';
 import { WorkoutMatchModal } from '@/features/trainings/components/WorkoutMatchModal';
 import { WorkoutMatch } from '@/interfaces/training';
+
+interface SessionIcon {
+    name: string;
+}
 
 export interface SessionData {
     id: string;
@@ -25,7 +29,7 @@ export interface SessionData {
         average_heartrate?: number;
         effort_score?: number;
     };
-    icon?: any;
+    icon?: SessionIcon;
     color?: string;
     activity_id?: string; // Internal activity UUID for linking
     match?: WorkoutMatch; // Workout match data if available

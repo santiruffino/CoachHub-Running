@@ -1,6 +1,15 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
+interface AthleteGroup {
+  id: string;
+  name: string;
+}
+
+interface AthleteGroupMembership {
+  group: AthleteGroup | AthleteGroup[] | null;
+}
+
 export async function GET() {
   try {
     const supabase = await createClient();
@@ -141,7 +150,9 @@ export async function GET() {
         name: athlete.name,
         role: athlete.role,
         created_at: athlete.created_at,
-        groups: athlete.athlete_groups?.map((ag: any) => ag.group).filter(Boolean) || [],
+        groups: ((athlete.athlete_groups || []) as AthleteGroupMembership[])
+          .map((membership) => (Array.isArray(membership.group) ? membership.group[0] : membership.group))
+          .filter((group): group is AthleteGroup => Boolean(group)),
         hasGroups: (athlete.athlete_groups?.length || 0) > 0,
         coach: athlete.coach || null,
         stats: {
@@ -154,11 +165,10 @@ export async function GET() {
     });
 
     return NextResponse.json(athletesWithData);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: error instanceof Error ? error.message : 'Internal server error' },
       { status: 500 }
     );
   }
 }
-

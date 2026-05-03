@@ -12,7 +12,7 @@ import { createServiceRoleClient } from '@/lib/supabase/server';
  * - Coach can view athlete's activities (if in their groups)
  */
 export async function GET(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
@@ -89,7 +89,7 @@ export async function GET(
         }
 
         return NextResponse.json(activities || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Get activities error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

@@ -3,21 +3,19 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { format, startOfWeek, endOfWeek, isWithinInterval, eachDayOfInterval, startOfDay, isToday, subWeeks, addWeeks, differenceInDays, parseISO } from 'date-fns';
+import { format, startOfWeek, endOfWeek, eachDayOfInterval, startOfDay, subWeeks, addWeeks, differenceInDays, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { User } from '@/interfaces/auth';
-import { Training, TrainingAssignment } from '@/interfaces/training';
+import { TrainingAssignment } from '@/interfaces/training';
 import { Activity } from '@/interfaces/activity';
 import { AthleteDetails } from '@/interfaces/athlete';
 import { AthleteRace } from '@/interfaces/race';
 import api from '@/lib/axios';
-import { Activity as ActivityIcon, Calendar as CalendarIcon, FileText, CheckCircle2, TrendingUp, Plus, Trash, Clock, Zap, ChevronLeft, ChevronRight, MessageSquare, Trophy, ArrowLeft } from 'lucide-react';
+import { Plus, Zap, ChevronLeft, ChevronRight, MessageSquare, Trophy, ArrowLeft } from 'lucide-react';
 import { trainingsService } from '@/features/trainings/services/trainings.service';
 import { athletesService } from '@/features/users/services/athletes.service';
 import { racesService } from '@/features/races/services/races.service';
 import { AssignRaceModal } from '@/features/races/components/AssignRaceModal';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PerformanceTrendChart } from '@/components/dashboard/PerformanceTrendChart';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -43,7 +41,6 @@ export default function AthleteDetailPage() {
     const [isAssignRaceModalOpen, setIsAssignRaceModalOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
-    const [weeklyData, setWeeklyData] = useState<{ day: string; value: number }[]>([]);
     const [performanceData, setPerformanceData] = useState<{ week: string; value: number }[]>([]);
     const [pendingDeleteAssignment, setPendingDeleteAssignment] = useState<string | null>(null);
     const { alertState, showAlert, closeAlert } = useAlertDialog();
@@ -88,7 +85,7 @@ export default function AthleteDetailPage() {
                 const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
 
                 const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
-                const weeklyWorkouts = weekDays.map(day => {
+                weekDays.map(day => {
                     const dayStart = startOfDay(day);
                     const dayEnd = new Date(dayStart);
                     dayEnd.setHours(23, 59, 59, 999);
@@ -111,8 +108,6 @@ export default function AthleteDetailPage() {
                         value: assignmentCount + activityCount,
                     };
                 });
-                setWeeklyData(weeklyWorkouts);
-
                 const performanceWeeks = [];
 
                 const isAssignmentCompleted = (assignment: TrainingAssignment, activitiesList: Activity[]): boolean => {
@@ -183,10 +178,6 @@ export default function AthleteDetailPage() {
         }
     };
 
-    const handleDeleteAssignment = (assignmentId: string) => {
-        setPendingDeleteAssignment(assignmentId);
-    };
-
     const doDeleteAssignment = async () => {
         if (!pendingDeleteAssignment) return;
         try {
@@ -253,19 +244,6 @@ export default function AthleteDetailPage() {
             const activityType = normalizeActivityType(activity.type);
             return activityDateStr === assignmentDateStr && activityType === assignmentType;
         });
-    }).length;
-
-    const now = new Date();
-    const weekStart = startOfWeek(now, { weekStartsOn: 1 });
-    const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
-
-    const weekStartStr = format(weekStart, 'yyyy-MM-dd');
-    const weekEndStr = format(weekEnd, 'yyyy-MM-dd');
-
-    const thisWeekTrainings = assignments.filter((a) => {
-        const dateValue = a.scheduled_date || a.scheduledDate;
-        const assignmentDateStr = dateValue.split('T')[0];
-        return assignmentDateStr >= weekStartStr && assignmentDateStr <= weekEndStr;
     }).length;
 
     const completionRate = totalTrainings > 0
@@ -628,29 +606,3 @@ export default function AthleteDetailPage() {
         </div>
     );
 }
-
-// Helper to calculate duration from blocks
-const calculateDuration = (blocks: any): string => {
-    if (!blocks || !Array.isArray(blocks)) return '- min';
-
-    let totalSeconds = 0;
-
-    blocks.forEach(block => {
-        if (block.duration?.type === 'time' && block.duration.value) {
-            totalSeconds += block.duration.value;
-        }
-        else if (block.type === 'repeat' && block.steps && Array.isArray(block.steps)) {
-            let repeatDuration = 0;
-            block.steps.forEach((step: any) => {
-                if (step.duration?.type === 'time' && step.duration.value) {
-                    repeatDuration += step.duration.value;
-                }
-            });
-            totalSeconds += repeatDuration * (block.reps || 1);
-        }
-    });
-
-    if (totalSeconds === 0) return 'Distancia';
-
-    return `${Math.round(totalSeconds / 60)} min`;
-};

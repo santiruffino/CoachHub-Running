@@ -11,7 +11,7 @@ import { requireAuth } from '@/lib/supabase/api-helpers';
  * - Coach can view their athletes' races
  */
 export async function GET(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
@@ -74,7 +74,7 @@ export async function GET(
         }
 
         return NextResponse.json(athleteRaces || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('GET /v2/users/[id]/races error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
@@ -179,7 +179,7 @@ export async function POST(
         }
 
         return NextResponse.json(athleteRace, { status: 201 });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('POST /v2/users/[id]/races error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

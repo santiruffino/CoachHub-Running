@@ -1,5 +1,9 @@
 import { createClient } from '@/lib/supabase/client';
-import { User, Profile, Role } from '@/interfaces/auth';
+import { User, Role } from '@/interfaces/auth';
+
+interface SignOutResult {
+    error: Error | null;
+}
 
 export interface LoginResponse {
     user: User;
@@ -98,16 +102,16 @@ export const authService = {
             // We remove scope: 'local' to ensure cookies are cleared correctly
             const { error } = await Promise.race([
                 supabase.auth.signOut(),
-                new Promise<any>((_, reject) =>
+                new Promise<SignOutResult>((_, reject) =>
                     setTimeout(() => reject(new Error('SignOut timeout')), 3000)
                 )
-            ]) as { error: any };
+            ]) as SignOutResult;
 
             if (error) {
                 console.error('❌ [AuthService] signOut failed:', error);
             }
-        } catch (error: any) {
-            if (error.message === 'SignOut timeout') {
+        } catch (error: unknown) {
+            if (error instanceof Error && error.message === 'SignOut timeout') {
                 console.warn('⚠️ [AuthService] signOut timed out - proceeding with local cleanup');
             } else {
                 console.error('❌ [AuthService] signOut error:', error);

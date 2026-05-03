@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { format, addDays, startOfWeek, isSameDay } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -17,18 +17,12 @@ interface WeekCalendarProps {
 }
 
 export function WeekCalendar({ date, onDateSelect, events }: WeekCalendarProps) {
-    const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
-
-    // Sync internal state if external date changes
-    useEffect(() => {
-        const weekStart = startOfWeek(date, { weekStartsOn: 1 });
-        setCurrentWeekStart(weekStart);
-    }, [date]);
+    const currentWeekStart = useMemo(() => startOfWeek(date, { weekStartsOn: 1 }), [date]);
 
     const weekDays = Array.from({ length: 7 }).map((_, i) => addDays(currentWeekStart, i));
 
-    const handlePrevWeek = () => setCurrentWeekStart(prev => addDays(prev, -7));
-    const handleNextWeek = () => setCurrentWeekStart(prev => addDays(prev, 7));
+    const handlePrevWeek = () => onDateSelect(addDays(date, -7));
+    const handleNextWeek = () => onDateSelect(addDays(date, 7));
 
     return (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-3 sm:p-4 border border-gray-100 dark:border-gray-700">

@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/button';
 import { trainingsService } from '@/features/trainings/services/trainings.service';
 import api from '@/lib/axios';
 import { ArrowLeft, Search, Check, Sparkles, LayoutTemplate, Clock, X } from 'lucide-react';
-import Link from 'next/link';
 import { format } from 'date-fns';
 import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
 import { Slider } from '@/components/ui/slider';

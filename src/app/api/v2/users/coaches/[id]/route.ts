@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
 
-export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const authResult = await requireRole('ADMIN');
   if (authResult.response) return authResult.response;
 
@@ -62,8 +62,8 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     }
 
     return NextResponse.json({ message: 'Coach deleted and athletes reassigned successfully' });
-  } catch (error: any) {
-    console.error('DELETE coach process error:', error.message);
+  } catch (error: unknown) {
+    console.error('DELETE coach process error:', error instanceof Error ? error.message : error);
     return NextResponse.json({ error: 'Failed to delete coach and reassign athletes' }, { status: 500 });
   }
 }

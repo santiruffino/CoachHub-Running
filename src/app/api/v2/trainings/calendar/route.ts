@@ -1,6 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/api-helpers';
 
+interface AssignmentWithGroup {
+    user_id: string;
+    scheduled_date: string;
+    source_group_id: string | null;
+    group?: {
+        id: string;
+        group_type: string | null;
+        race_priority: string | null;
+    };
+    [key: string]: unknown;
+}
+
 /**
  * Get Calendar Assignments
  * 
@@ -83,12 +95,11 @@ export async function GET(request: NextRequest) {
         // If groupIds provided, get all athletes in those groups
         if (groupIds && groupIds.length > 0) {
             // Verify groups belong to coach team
-            let groupsQuery = supabase
+            const groupsQuery = supabase
                 .from('groups')
                 .select('id')
-                .in('id', groupIds);
-
-            groupsQuery = groupsQuery.eq('team_id', profile.team_id);
+                .in('id', groupIds)
+                .eq('team_id', profile.team_id);
 
             const { data: groups } = await groupsQuery;
 
@@ -167,28 +178,36 @@ export async function GET(request: NextRequest) {
             );
         }
 
+        const mutableAssignments = (assignments || []) as AssignmentWithGroup[];
+
         // Manual fetch for groups to resolve missing foreign key relationship
-        const sgIds = [...new Set(assignments?.map(a => a.source_group_id).filter(Boolean))];
-        if (sgIds.length > 0 && assignments) {
+        const sgIds = [
+            ...new Set(
+                mutableAssignments
+                    .map((assignment) => assignment.source_group_id)
+                    .filter((value): value is string => typeof value === 'string' && value.length > 0)
+            )
+        ];
+        if (sgIds.length > 0) {
             const { data: groupsData } = await supabase
                 .from('groups')
                 .select('id, group_type, race_priority')
                 .in('id', sgIds);
-                
-            const groupMap = new Map(groupsData?.map(g => [g.id, g]));
-            assignments.forEach((a: any) => {
-                if (a.source_group_id) {
-                    a.group = groupMap.get(a.source_group_id);
+
+            const groupMap = new Map((groupsData || []).map(g => [g.id, g]));
+            mutableAssignments.forEach((assignment) => {
+                if (assignment.source_group_id) {
+                    assignment.group = groupMap.get(assignment.source_group_id);
                 }
             });
         }
 
         // Apply Priority Engine Conflict Resolution
         const { resolveAssignmentConflicts } = await import('@/lib/training/priority-engine');
-        const resolvedAssignments = resolveAssignmentConflicts(assignments || []);
+        const resolvedAssignments = resolveAssignmentConflicts(mutableAssignments);
 
         return NextResponse.json(resolvedAssignments);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Get calendar assignments error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

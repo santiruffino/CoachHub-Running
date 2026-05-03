@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -89,7 +89,18 @@ export function AlertDialog({
                 <DialogFooter>
                     {onConfirm ? (
                         <>
-                            <Button variant="outline" onClick={() => { onCancel ? onCancel() : onClose(); }} className="w-full sm:w-auto" disabled={loading || disabled}>
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                    if (onCancel) {
+                                        onCancel();
+                                    } else {
+                                        onClose();
+                                    }
+                                }}
+                                className="w-full sm:w-auto"
+                                disabled={loading || disabled}
+                            >
                                 {cancelText}
                             </Button>
                             <Button

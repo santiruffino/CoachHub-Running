@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Search, Plus, MapPin, Trophy, MoreHorizontal, Edit, Trash2, Calendar, Timer, ChevronRight, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Search, Plus, MapPin, Trophy, MoreHorizontal, Edit, Trash2, ArrowLeft } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,15 +15,14 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { AlertDialog } from '@/components/ui/AlertDialog';
+import { AthleteRaceCard } from '@/features/races/components/AthleteRaceCard';
 import { RaceDialog } from '@/features/races/components/RaceDialog';
 import { RecordRaceResultModal } from '@/features/races/components/RecordRaceResultModal';
 import { racesService } from '@/features/races/services/races.service';
 import { Race, AthleteRace } from '@/interfaces/race';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/features/auth/hooks/useAuth';
-import { cn } from '@/lib/utils';
-import { differenceInDays, isPast, isFuture, startOfDay } from 'date-fns';
-import Link from 'next/link';
+import { isPast } from 'date-fns';
 
 export default function RacesPage() {
   const router = useRouter();
@@ -47,7 +46,7 @@ export default function RacesPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!user) return;
     try {
       setLoading(true);
@@ -63,11 +62,11 @@ export default function RacesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [isCoach, user]);
 
   useEffect(() => {
     fetchData();
-  }, [user, isCoach]);
+  }, [fetchData]);
 
   const handleDelete = async () => {
     if (!deleteId) return;
@@ -90,109 +89,16 @@ export default function RacesPage() {
 
   const { activeRaces, pastRaces } = useMemo(() => {
     const sorted = [...athleteRaces].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    const today = startOfDay(new Date());
-    
+
     return {
       activeRaces: sorted.filter(r => !isPast(new Date(r.date)) || r.status === 'PLANNED'),
       pastRaces: sorted.filter(r => isPast(new Date(r.date)) && r.status !== 'PLANNED').reverse()
     };
   }, [athleteRaces]);
 
-  const renderAthleteRaceCard = (race: AthleteRace, isHistory: boolean = false) => {
-    const raceDate = new Date(race.date);
-    const daysLeft = differenceInDays(raceDate, startOfDay(new Date()));
-    const raceName = race.name_override || race.race?.name || t('athlete.defaultRaceName');
-    
-    return (
-      <div key={race.id} className={cn(
-        "group relative bg-card border border-border/40 rounded-3xl p-5 transition-all duration-300 hover:shadow-lg hover:border-primary/20",
-        isHistory && "opacity-75 grayscale-[0.2]"
-      )}>
-        <div className="flex items-start justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <div className={cn(
-              "p-3 rounded-2xl transition-colors",
-              isHistory ? "bg-muted text-muted-foreground" : "bg-primary/10 text-primary"
-            )}>
-              {isHistory ? <CheckCircle2 className="h-5 w-5" /> : <Trophy className="h-5 w-5" />}
-            </div>
-            <div>
-              <h3 className="text-lg font-bold font-display tracking-tight leading-tight group-hover:text-primary transition-colors text-foreground">
-                {raceName}
-              </h3>
-              <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-                <Calendar className="h-3.5 w-3.5" />
-                <span>{new Date(race.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-              </div>
-            </div>
-          </div>
-          
-          {!isHistory && race.priority === 'A' && daysLeft >= 0 && daysLeft <= 30 && (
-            <div className="bg-primary/10 text-primary text-[10px] font-bold px-2 py-1 rounded-lg animate-pulse">
-              T - {t('athlete.daysLeft', { days: daysLeft })}
-            </div>
-          )}
-        </div>
-
-        <div className="space-y-3 mb-6">
-          <div className="flex justify-between items-center text-sm">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <MapPin className="h-4 w-4" />
-              <span>{t('library.locationLabel')}</span>
-            </div>
-            <span className="font-medium text-foreground truncate max-w-[150px]">
-              {race.race?.location || '-'}
-            </span>
-          </div>
-
-          <div className="flex justify-between items-center text-sm">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Timer className="h-4 w-4" />
-              <span>{isHistory ? t('athlete.resultTime') : t('assign.targetTimeLabel')}</span>
-            </div>
-            <span className="font-mono font-medium text-primary bg-primary/5 px-2 py-0.5 rounded">
-              {isHistory ? (race.result_time || '-') : (race.target_time || '-')}
-            </span>
-          </div>
-
-          <div className="flex justify-between items-center text-sm">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Trophy className="h-4 w-4" />
-              <span>{t('assign.priorityLabel')}</span>
-            </div>
-            <span className={cn(
-              "text-[10px] font-bold px-2 py-0.5 rounded-full",
-              race.priority === 'A' ? "bg-red-500/10 text-red-500" :
-              race.priority === 'B' ? "bg-orange-500/10 text-orange-500" :
-              "bg-blue-500/10 text-blue-500"
-            )}>
-              {t('athlete.priorityLabel', { priority: race.priority })}
-            </span>
-          </div>
-        </div>
-
-        <div className="pt-4 border-t border-border/40 flex gap-2">
-          {isHistory && race.status === 'PLANNED' ? (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="w-full rounded-xl text-xs font-bold uppercase tracking-wider"
-              onClick={() => {
-                setSelectedAthleteRace(race);
-                setIsResultModalOpen(true);
-              }}
-            >
-              {t('recordResult')}
-            </Button>
-          ) : (
-            <Button variant="ghost" size="sm" className="w-full group/btn rounded-xl text-xs font-bold text-primary hover:bg-primary/5 uppercase tracking-wider">
-              <span>{t('library.viewDetails')}</span>
-              <ChevronRight className="h-3.5 w-3.5 ml-1 transition-transform group-hover/btn:translate-x-1" />
-            </Button>
-          )}
-        </div>
-      </div>
-    );
+  const handleRecordResult = (race: AthleteRace) => {
+    setSelectedAthleteRace(race);
+    setIsResultModalOpen(true);
   };
 
   if (loading) {
@@ -336,10 +242,10 @@ export default function RacesPage() {
 
       {/* Active Races */}
       <div className="space-y-6">
-        <h2 className="text-lg font-bold flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-          {t('library.activeRaces') || 'Carreras Próximas'}
-        </h2>
+            <h2 className="text-lg font-bold flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+              {t('athlete.activeRaces')}
+            </h2>
         
         {activeRaces.length === 0 ? (
           <Card className="border-dashed bg-muted/10 border-2 rounded-[2rem] py-12">
@@ -350,7 +256,15 @@ export default function RacesPage() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {activeRaces.map(race => renderAthleteRaceCard(race))}
+            {activeRaces.map(race => (
+              <AthleteRaceCard
+                key={race.id}
+                race={race}
+                isHistory={false}
+                t={t}
+                onRecordResult={handleRecordResult}
+              />
+            ))}
           </div>
         )}
       </div>
@@ -363,7 +277,15 @@ export default function RacesPage() {
             {t('library.finishedRaces')}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {pastRaces.map(race => renderAthleteRaceCard(race, true))}
+            {pastRaces.map(race => (
+              <AthleteRaceCard
+                key={race.id}
+                race={race}
+                isHistory
+                t={t}
+                onRecordResult={handleRecordResult}
+              />
+            ))}
           </div>
         </div>
       )}

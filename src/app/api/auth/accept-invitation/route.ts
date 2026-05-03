@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
             message: 'Account created successfully',
             email: invitation.email,
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Accept invitation error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

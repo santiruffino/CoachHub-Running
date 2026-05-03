@@ -250,7 +250,7 @@ export function EditGroupModal({ group, isOpen, onClose, onUpdated }: EditGroupM
                 <select
                   className="flex h-11 w-full rounded-xl border-none bg-muted/30 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/20 appearance-none cursor-pointer"
                   value={race_priority}
-                  onChange={(e) => setRacePriority(e.target.value as any)}
+                  onChange={(e) => setRacePriority(e.target.value as 'A' | 'B' | 'C')}
                 >
                   <option value="A">{tGroups('detail.priorityA')}</option>
                   <option value="B">{tGroups('detail.priorityB')}</option>

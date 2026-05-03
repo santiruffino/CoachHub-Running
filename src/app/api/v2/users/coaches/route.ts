@@ -18,7 +18,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Admin must belong to a team' }, { status: 403 });
     }
 
-    let coachesQuery = supabase
+    const coachesQuery = supabase
       .from('profiles')
       .select('id, name, email, created_at')
       .eq('role', 'COACH')
@@ -46,8 +46,8 @@ export async function GET() {
     );
 
     return NextResponse.json(enhancedCoaches);
-  } catch (error: any) {
-    console.error('Failed to fetch coaches:', error.message);
+  } catch (error: unknown) {
+    console.error('Failed to fetch coaches:', error instanceof Error ? error.message : error);
     return NextResponse.json({ error: 'Failed to fetch coaches' }, { status: 500 });
   }
 }

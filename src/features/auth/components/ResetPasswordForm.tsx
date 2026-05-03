@@ -5,7 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { authService } from '../services/auth.service';
 import { useState, useEffect } from 'react';
-import { useAuth } from '../hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { createClient } from '@/lib/supabase/client';
+import { isAxiosError } from 'axios';
 
 const schema = z.object({
     newPassword: z.string().min(6, 'Password must be at least 6 characters'),
@@ -29,7 +29,6 @@ export default function ResetPasswordForm() {
     const [success, setSuccess] = useState(false);
     const [hasSession, setHasSession] = useState(false);
     const [checkingSession, setCheckingSession] = useState(true);
-    const { user } = useAuth();
     const router = useRouter();
     const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
         resolver: zodResolver(schema),
@@ -86,9 +85,9 @@ export default function ResetPasswordForm() {
             setTimeout(() => {
                 router.push('/dashboard');
             }, 1500);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('❌ [ResetPasswordForm] Update failed:', err);
-            setError(err?.message || 'Failed to update password');
+            setError(isAxiosError(err) ? err.message : 'Failed to update password');
         }
     };
 

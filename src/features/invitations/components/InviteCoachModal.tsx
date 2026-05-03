@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import {
     Dialog,
     DialogContent,
@@ -15,20 +16,31 @@ import { Label } from '@/components/ui/label';
 import api from '@/lib/axios';
 import { Check, Copy, MessageCircle } from 'lucide-react';
 import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
+import { AxiosError } from 'axios';
 
 interface InviteCoachModalProps {
     open: boolean;
     onClose: () => void;
 }
 
+interface InviteFormData {
+    email: string;
+}
+
+interface InvitationApiError {
+    error?: string;
+}
+
 export function InviteCoachModal({ open, onClose }: InviteCoachModalProps) {
-    const { register, handleSubmit, reset, formState: { errors } } = useForm();
+    const tCoach = useTranslations('invitations.modals.coach');
+    const tCommon = useTranslations('invitations.modals.common');
+    const { register, handleSubmit, reset, formState: { errors } } = useForm<InviteFormData>();
     const [creating, setCreating] = useState(false);
     const [invitationLink, setInvitationLink] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
     const { alertState, showAlert, closeAlert } = useAlertDialog();
 
-    const onSubmit = async (data: any) => {
+    const onSubmit = async (data: InviteFormData) => {
         setCreating(true);
         try {
             const response = await api.post('/invitations', {
@@ -39,9 +51,9 @@ export function InviteCoachModal({ open, onClose }: InviteCoachModalProps) {
             // Generate invitation link
             const link = `${window.location.origin}/accept-invitation?token=${response.data.token}`;
             setInvitationLink(link);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Failed to create invitation:', error);
-            const errorMessage = error.response?.data?.error || 'Failed to create invitation. Please try again.';
+            const errorMessage = (error as AxiosError<InvitationApiError>)?.response?.data?.error || tCommon('createError');
             showAlert('error', errorMessage);
         } finally {
             setCreating(false);
@@ -74,28 +86,28 @@ export function InviteCoachModal({ open, onClose }: InviteCoachModalProps) {
         <Dialog open={open} onOpenChange={handleClose}>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle>Invitar Coach</DialogTitle>
+                    <DialogTitle>{tCoach('title')}</DialogTitle>
                     <DialogDescription>
                         {invitationLink
-                            ? 'Invitación creada! Comparte el enlace con el coach.'
-                            : 'Ingresa el email del coach para enviar una invitación.'}
+                            ? tCoach('descriptionCreated')
+                            : tCoach('descriptionCreate')}
                     </DialogDescription>
                 </DialogHeader>
 
                 {!invitationLink ? (
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-4">
                         <div className="space-y-2">
-                            <Label htmlFor="email">Email</Label>
+                            <Label htmlFor="email">{tCommon('email')}</Label>
                             <div className="flex gap-2">
                                 <Input
                                     id="email"
                                     type="email"
-                                    placeholder="coach@ejemplo.com"
+                                    placeholder={tCoach('emailPlaceholder')}
                                     {...register('email', {
-                                        required: 'Email es requerido',
+                                        required: tCommon('emailRequired'),
                                         pattern: {
                                             value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                            message: 'Email inválido',
+                                            message: tCommon('emailInvalid'),
                                         },
                                     })}
                                 />
@@ -107,17 +119,17 @@ export function InviteCoachModal({ open, onClose }: InviteCoachModalProps) {
 
                         <div className="flex justify-end gap-2 pt-2">
                             <Button type="button" variant="outline" onClick={handleClose}>
-                                Cancelar
+                                {tCommon('cancel')}
                             </Button>
                             <Button type="submit" disabled={creating}>
-                                {creating ? 'Creando...' : 'Crear Invitación'}
+                                {creating ? tCommon('creating') : tCoach('create')}
                             </Button>
                         </div>
                     </form>
                 ) : (
                     <div className="space-y-4 pt-4">
                         <div className="space-y-2">
-                            <Label>Enlace de Invitación</Label>
+                            <Label>{tCommon('linkLabel')}</Label>
                             <div className="flex gap-2">
                                 <Input value={invitationLink} readOnly className="font-mono text-xs" />
                                 <Button
@@ -134,7 +146,7 @@ export function InviteCoachModal({ open, onClose }: InviteCoachModalProps) {
                                 </Button>
                             </div>
                             <p className="text-xs text-muted-foreground">
-                                Este enlace expira en 7 días.
+                                {tCommon('linkExpires')}
                             </p>
                         </div>
 
@@ -146,10 +158,10 @@ export function InviteCoachModal({ open, onClose }: InviteCoachModalProps) {
                                     rel="noopener noreferrer"
                                 >
                                     <MessageCircle className="h-4 w-4 mr-2" />
-                                    Enviar por WhatsApp
+                                    {tCommon('sendWhatsapp')}
                                 </a>
                             </Button>
-                            <Button onClick={handleClose}>Cerrar</Button>
+                            <Button onClick={handleClose}>{tCommon('close')}</Button>
                         </div>
                     </div>
                 )}

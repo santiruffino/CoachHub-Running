@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -19,11 +19,11 @@ import {
     getMatchScoreBgColor,
     getMatchCategory,
 } from '../utils/matchingUtils';
-import { MatchQualityBadge } from './MatchQualityBadge';
 import { Card } from '@/components/ui/card';
-import { Target, Clock, MapPin, TrendingUp, CheckCircle2 } from 'lucide-react';
+import { Clock, MapPin, TrendingUp, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import { MatchCandidateActivity } from '../types';
 
 interface WorkoutMatchModalProps {
     isOpen: boolean;
@@ -40,14 +40,28 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
 
     // Manual match state
     const [showCandidates, setShowCandidates] = useState(false);
-    const [candidates, setCandidates] = useState<any[]>([]);
+    const [candidates, setCandidates] = useState<MatchCandidateActivity[]>([]);
     const [loadingCandidates, setLoadingCandidates] = useState(false);
+
+    const fetchMatch = useCallback(async (activityId?: string) => {
+        try {
+            setLoading(true);
+            setError(null);
+            const data = await matchingService.getMatch(assignmentId, activityId);
+            setMatch(data);
+        } catch (err: unknown) {
+            console.error('Failed to fetch match:', err);
+            setError(t('errorLoad'));
+        } finally {
+            setLoading(false);
+        }
+    }, [assignmentId, t]);
 
     useEffect(() => {
         if (isOpen && assignmentId) {
             fetchMatch();
         }
-    }, [isOpen, assignmentId]);
+    }, [isOpen, assignmentId, fetchMatch]);
 
     const handleFetchCandidates = async () => {
         try {
@@ -84,20 +98,6 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
         } catch (err) {
             console.error('Failed to unlink activity:', err);
             setError(t('errorUnlink'));
-            setLoading(false);
-        }
-    };
-
-    const fetchMatch = async (activityId?: string) => {
-        try {
-            setLoading(true);
-            setError(null);
-            const data = await matchingService.getMatch(assignmentId, activityId);
-            setMatch(data);
-        } catch (err: any) {
-            console.error('Failed to fetch match:', err);
-            setError(t('errorLoad'));
-        } finally {
             setLoading(false);
         }
     };

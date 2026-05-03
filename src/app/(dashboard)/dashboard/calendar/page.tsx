@@ -11,13 +11,25 @@ import { ArrowLeft } from 'lucide-react';
 import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
 
 import { TrainingAssignment } from '@/interfaces/training';
+import { CalendarEvent } from '@/features/calendar/components/CalendarView';
 
-interface CalendarEvent {
+interface GroupMemberResponse {
+    athlete?: {
+        id: string;
+        name?: string;
+        email?: string;
+    };
+}
+
+interface GroupResponse {
     id: string;
-    title: string;
-    start: Date;
-    end: Date;
-    resource?: any;
+    name: string;
+    members?: GroupMemberResponse[];
+}
+
+interface EventDropArgs {
+    event: CalendarEvent;
+    start: Date | string;
 }
 
 export default function CalendarPage() {
@@ -40,15 +52,18 @@ export default function CalendarPage() {
                 const response = await api.get('/v2/groups');
 
                 // Set Groups
-                const groupsData = response.data.map((g: any) => ({ id: g.id, name: g.name }));
+                const groupsData = (response.data as GroupResponse[]).map((group) => ({ id: group.id, name: group.name }));
                 setGroups(groupsData);
 
                 // Set Students from Groups
                 const allStudentsMap = new Map<string, string>();
-                response.data.forEach((group: any) => {
-                    group.members?.forEach((member: any) => {
+                (response.data as GroupResponse[]).forEach((group) => {
+                    group.members?.forEach((member) => {
                         if (member.athlete) {
-                            allStudentsMap.set(member.athlete.id, member.athlete.name || member.athlete.email);
+                            allStudentsMap.set(
+                                member.athlete.id,
+                                member.athlete.name || member.athlete.email || 'Unknown'
+                            );
                         }
                     });
                 });
@@ -58,7 +73,7 @@ export default function CalendarPage() {
 
                 // Select all by default
                 setSelectedStudentIds(studentList.map(s => s.id));
-                setSelectedGroupIds(groupsData.map((g: any) => g.id));
+                setSelectedGroupIds(groupsData.map((group) => group.id));
             } catch (error) {
                 console.error('Failed to fetch data', error);
             }
@@ -87,7 +102,11 @@ export default function CalendarPage() {
                 title: `${assignment.workout_name || assignment.training.title} - ${assignment.user?.name || 'Unknown'}`,
                 start: new Date(assignment.scheduledDate),
                 end: new Date(new Date(assignment.scheduledDate).getTime() + 60 * 60 * 1000), // Default 1 hour
-                resource: assignment,
+                resource: {
+                    type: assignment.completed ? 'COMPLETED' : 'PLANNED',
+                    details: assignment,
+                    description: assignment.training.description,
+                },
             }));
             setEvents(newEvents);
         } catch (error) {
@@ -96,7 +115,11 @@ export default function CalendarPage() {
     }, [currentRange, selectedStudentIds, selectedGroupIds]);
 
     useEffect(() => {
-        fetchAssignments();
+        const timer = window.setTimeout(() => {
+            void fetchAssignments();
+        }, 0);
+
+        return () => window.clearTimeout(timer);
     }, [fetchAssignments]);
 
     const handleDateChange = (range: { start: Date; end: Date }) => {
@@ -123,9 +146,11 @@ export default function CalendarPage() {
         router.push(`/workouts/${event.id}`);
     };
 
-    const handleEventDrop = async ({ event, start }: any) => {
-        const assignment = event.resource as TrainingAssignment;
-        const newDate = (start as Date).toISOString().split('T')[0];
+    const handleEventDrop = async ({ event, start }: EventDropArgs) => {
+        const assignment = event.resource?.details as TrainingAssignment | undefined;
+        if (!assignment) return;
+        const dropDate = start instanceof Date ? start : new Date(start);
+        const newDate = dropDate.toISOString().split('T')[0];
 
         const executeReschedule = async (applyToGroup: boolean) => {
             try {

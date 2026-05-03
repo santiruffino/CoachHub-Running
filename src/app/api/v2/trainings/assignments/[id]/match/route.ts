@@ -1,6 +1,62 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/supabase/api-helpers';
+import { getRequesterProfile, requireAuth } from '@/lib/supabase/api-helpers';
 import { format } from 'date-fns';
+
+type DurationType = 'distance' | 'time';
+
+interface TrainingBlock {
+    id?: string;
+    type?: string;
+    stepName?: string;
+    duration?: {
+        type?: DurationType;
+        value?: number;
+    };
+    target?: {
+        type?: string;
+        min?: string;
+        max?: string;
+    };
+    group?: {
+        id?: string;
+        reps?: number;
+    };
+}
+
+interface MatchedActivity {
+    id: string;
+    title: string;
+    distance: number;
+    duration: number;
+    start_date: string;
+}
+
+interface MatchQualityResult {
+    overallScore: number;
+    objectiveType: 'distance' | 'time';
+    objectiveMatch: number;
+    distanceMatch: number;
+    durationMatch: number;
+    plannedDistance: number;
+    plannedDuration: number;
+    actualDistance: number;
+    actualDuration: number;
+}
+
+interface BlockComparisonResult {
+    blockId: string;
+    blockName: string;
+    blockType: string;
+    planned: {
+        duration: number;
+        distance: number;
+        targetPace?: {
+            min?: string;
+            max?: string;
+        };
+        targetType?: string;
+    };
+}
 
 /**
  * Get Workout Match for Training Assignment
@@ -56,34 +112,60 @@ export async function GET(
             );
         }
 
+        const { profile: requesterProfile, error: requesterError } = await getRequesterProfile(user!.id);
+        if (requesterError || !requesterProfile) {
+            return NextResponse.json(
+                { error: 'Not authorized' },
+                { status: 403 }
+            );
+        }
+
         const training = assignment.training as unknown as {
             id: string;
-            blocks: any;
+            blocks: TrainingBlock[];
         };
 
         // Authorization check
-        if (user!.role === 'ATHLETE' && assignment.user_id !== user!.id) {
+        if (requesterProfile.role === 'ATHLETE' && assignment.user_id !== requesterProfile.id) {
             return NextResponse.json(
                 { error: 'Not authorized to view this assignment' },
                 { status: 403 }
             );
         }
 
-        // If coach, verify they can access this athlete's data
+        if ((requesterProfile.role === 'COACH' || requesterProfile.role === 'ADMIN') && assignment.user_id !== requesterProfile.id) {
+            const { data: athleteProfile, error: athleteError } = await supabase
+                .from('profiles')
+                .select('team_id')
+                .eq('id', assignment.user_id)
+                .single();
+
+            if (
+                athleteError ||
+                !athleteProfile ||
+                !requesterProfile.team_id ||
+                athleteProfile.team_id !== requesterProfile.team_id
+            ) {
+                return NextResponse.json(
+                    { error: 'Not authorized to view this assignment' },
+                    { status: 403 }
+                );
+            }
+        }
 
         // Find matching activity
-        let matchedActivity = null;
+        let matchedActivity: MatchedActivity | null = null;
 
         if (manualActivityId) {
             // Manual match from request: use specified activity
-            const { data: activity } = await supabase
-                .from('activities')
-                .select('*')
-                .eq('id', manualActivityId)
-                .eq('user_id', assignment.user_id)
-                .single();
+                const { data: activity } = await supabase
+                    .from('activities')
+                    .select('*')
+                    .eq('id', manualActivityId)
+                    .eq('user_id', assignment.user_id)
+                    .single();
 
-            matchedActivity = activity;
+            matchedActivity = activity as MatchedActivity | null;
         } else if (assignment.activity_id) {
             // Persisted match: use linked activity
             const { data: activity } = await supabase
@@ -92,7 +174,7 @@ export async function GET(
                 .eq('id', assignment.activity_id)
                 .single();
 
-            matchedActivity = activity;
+            matchedActivity = activity as MatchedActivity | null;
         } else {
             // Auto-match: find activities on the same date
             const scheduledDate = new Date(assignment.scheduled_date);
@@ -106,17 +188,19 @@ export async function GET(
                 .lte('start_date', `${dateStr}T23:59:59`)
                 .order('start_date', { ascending: true });
 
-            if (activities && activities.length > 0) {
+            const typedActivities = (activities || []) as MatchedActivity[];
+
+            if (typedActivities.length > 0) {
                 // If multiple activities on same day, pick the best match
                 // based on distance/duration similarity to the planned workout
-                if (activities.length === 1) {
-                    matchedActivity = activities[0];
+                if (typedActivities.length === 1) {
+                    matchedActivity = typedActivities[0];
                 } else {
                     // Calculate planned distance and duration
                     const { plannedDistance, plannedDuration } = calculatePlannedMetrics(training.blocks);
 
                     // Find activity with most similar distance OR duration
-                    matchedActivity = activities.reduce((best, curr) => {
+                    matchedActivity = typedActivities.reduce((best, curr) => {
                         const bestDiffDist = Math.abs((best.distance || 0) - plannedDistance);
                         const currDiffDist = Math.abs((curr.distance || 0) - plannedDistance);
                         const bestDiffTime = Math.abs((best.duration || 0) - plannedDuration);
@@ -145,7 +229,7 @@ export async function GET(
         const matchQuality = calculateMatchQuality(training.blocks, matchedActivity);
 
         // Calculate block-by-block comparison (optional detailed view)
-        const blockComparison = calculateBlockComparison(training.blocks, matchedActivity);
+        const blockComparison = calculateBlockComparison(training.blocks);
 
         const isManualMatch = !!(manualActivityId || assignment.activity_id);
 
@@ -164,10 +248,10 @@ export async function GET(
             blockComparison,
             isManualMatch,
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Get workout match error:', error);
         return NextResponse.json(
-            { error: 'Internal server error', details: error.message },
+            { error: 'Internal server error' },
             { status: 500 }
         );
     }
@@ -176,7 +260,7 @@ export async function GET(
 /**
  * Calculate planned distance and duration from workout blocks
  */
-function calculatePlannedMetrics(blocks: any[]): { plannedDistance: number; plannedDuration: number } {
+function calculatePlannedMetrics(blocks: TrainingBlock[]): { plannedDistance: number; plannedDuration: number } {
     if (!blocks || blocks.length === 0) {
         return { plannedDistance: 0, plannedDuration: 0 };
     }
@@ -185,7 +269,7 @@ function calculatePlannedMetrics(blocks: any[]): { plannedDistance: number; plan
     let totalDuration = 0;
     const processedGroupIds = new Set<string>();
 
-    blocks.forEach((block: any) => {
+    blocks.forEach((block: TrainingBlock) => {
         // Skip if this block's group has already been processed
         if (block.group?.id && processedGroupIds.has(block.group.id)) {
             return;
@@ -193,10 +277,10 @@ function calculatePlannedMetrics(blocks: any[]): { plannedDistance: number; plan
 
         if (block.group?.id) {
             processedGroupIds.add(block.group.id);
-            const groupBlocks = blocks.filter((b: any) => b.group?.id === block.group?.id);
+            const groupBlocks = blocks.filter((b: TrainingBlock) => b.group?.id === block.group?.id);
             const reps = block.group.reps || 1;
 
-            groupBlocks.forEach((b: any) => {
+            groupBlocks.forEach((b: TrainingBlock) => {
                 const { distance, duration } = getBlockMetrics(b);
                 totalDistance += distance * reps;
                 totalDuration += duration * reps;
@@ -214,7 +298,7 @@ function calculatePlannedMetrics(blocks: any[]): { plannedDistance: number; plan
 /**
  * Get distance and duration for a single block
  */
-function getBlockMetrics(block: any): { distance: number; duration: number } {
+function getBlockMetrics(block: TrainingBlock): { distance: number; duration: number } {
     let distance = 0;
     let duration = 0;
 
@@ -252,7 +336,7 @@ function parsePace(paceStr: string): number {
 /**
  * Calculate match quality metrics based on workout objective
  */
-function calculateMatchQuality(blocks: any[], activity: any): any {
+function calculateMatchQuality(blocks: TrainingBlock[], activity: MatchedActivity): MatchQualityResult {
     const { plannedDistance, plannedDuration } = calculatePlannedMetrics(blocks);
 
     // Determine primary objective: distance or time
@@ -302,7 +386,7 @@ function calculateMatchQuality(blocks: any[], activity: any): any {
 /**
  * Calculate block-by-block comparison
  */
-function calculateBlockComparison(blocks: any[], activity: any): any[] {
+function calculateBlockComparison(blocks: TrainingBlock[]): BlockComparisonResult[] {
     // For now, return simplified block info
     // This could be enhanced with detailed split analysis if lap data is available
     return blocks.map((block, index) => {
@@ -310,8 +394,8 @@ function calculateBlockComparison(blocks: any[], activity: any): any[] {
 
         return {
             blockId: block.id || `block-${index}`,
-            blockName: block.stepName || block.type,
-            blockType: block.type,
+            blockName: block.stepName || block.type || 'block',
+            blockType: block.type || 'block',
             planned: {
                 duration: Math.round(duration),
                 distance: Math.round(distance),

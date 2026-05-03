@@ -10,10 +10,14 @@ import {
     AreaChart,
     Area
 } from 'recharts';
-import { format } from 'date-fns';
+
+interface ActivityPoint {
+    index: number;
+    value: number;
+}
 
 interface ActivityChartProps {
-    data: any[];
+    data: ActivityPoint[];
     type: 'heart_rate' | 'pace' | 'elevation';
     color: string;
 }
@@ -61,7 +65,7 @@ export const ActivityChart: React.FC<ActivityChartProps> = ({ data, type, color 
                     />
                     <Tooltip
                         contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
-                        formatter={(value: any) => [formatValue(Number(value) || 0), type]}
+                        formatter={(value) => [formatValue(Number(value ?? 0) || 0), type]}
                         labelFormatter={() => ''}
                     />
                     <DataComponent

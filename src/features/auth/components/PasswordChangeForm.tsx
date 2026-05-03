@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { isAxiosError } from 'axios';
 
 const schema = z.object({
     currentPassword: z.string().min(6, 'Password must be at least 6 characters'),
@@ -27,7 +28,7 @@ type FormData = z.infer<typeof schema>;
 export default function PasswordChangeForm() {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
-    const { user } = useAuth();
+    useAuth();
     const router = useRouter();
     const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
         resolver: zodResolver(schema),
@@ -43,14 +44,10 @@ export default function PasswordChangeForm() {
 
             // Redirect to dashboard after successful password change
             setTimeout(() => {
-                if (user?.role === 'COACH') {
-                    router.push('/dashboard');
-                } else {
-                    router.push('/dashboard');
-                }
+                router.push('/dashboard');
             }, 1500);
-        } catch (err: any) {
-            setError(err?.message || 'Failed to change password');
+        } catch (err: unknown) {
+            setError(isAxiosError(err) ? err.message : 'Failed to change password');
         }
     };
 

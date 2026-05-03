@@ -64,6 +64,7 @@ function GroupWorkoutCard({
 }
 
 export function GroupWeeklyCalendar({ groupId, assignments }: GroupWeeklyCalendarProps) {
+    void groupId;
     const t = useTranslations();
     const [weekStart, setWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
     

@@ -95,9 +95,16 @@ export function WorkoutProfileChart({ blocks }: WorkoutProfileChartProps) {
                 axisPointer: {
                     type: 'shadow'
                 },
-                formatter: (params: any) => {
-                    const data = params[0];
-                    return `${t('intensity').replace(' (%)', '')}: ${data.value}%`;
+                formatter: (params) => {
+                    const firstParam = Array.isArray(params) ? params[0] : params;
+                    if (typeof firstParam !== 'object' || firstParam === null || !('value' in firstParam)) {
+                        return `${t('intensity').replace(' (%)', '')}: 0%`;
+                    }
+
+                    const rawValue = (firstParam as { value?: unknown }).value;
+                    const value = typeof rawValue === 'number' ? rawValue : Number(rawValue ?? 0);
+
+                    return `${t('intensity').replace(' (%)', '')}: ${value}%`;
                 }
             }
         };

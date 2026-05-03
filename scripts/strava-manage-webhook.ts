@@ -12,9 +12,9 @@ const {
   NEXT_PUBLIC_APP_URL,
 } = process.env;
 
-const BASE_URL = 'https://www.strava.com/api/v3/push_subscriptions';
+type ApiResponse = Record<string, unknown>;
 
-function makeRequest(options: https.RequestOptions, postData?: string): Promise<any> {
+function makeRequest(options: https.RequestOptions, postData?: string): Promise<ApiResponse> {
   return new Promise((resolve, reject) => {
     const req = https.request(options, (res) => {
       let data = '';
@@ -28,7 +28,7 @@ function makeRequest(options: https.RequestOptions, postData?: string): Promise<
           } else {
             resolve({ statusCode: res.statusCode });
           }
-        } catch (e) {
+        } catch {
           reject(new Error(`Failed to parse response (Status ${res.statusCode}): ${data}`));
         }
       });

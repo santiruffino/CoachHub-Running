@@ -2,6 +2,25 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
 import { requireAuth } from '@/lib/supabase/api-helpers';
 
+interface TrainingForResponse {
+    id: string;
+    title: string;
+    description: string;
+    type: string;
+    blocks: unknown;
+    team_id: string | null;
+}
+
+interface AssignedUser {
+    id: string;
+    name: string;
+    email: string;
+}
+
+interface AssignmentGroup {
+    name: string;
+}
+
 /**
  * Get Training Assignment Details
  * 
@@ -15,6 +34,7 @@ export async function GET(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        void request;
         const { id } = await params;
         const authResult = await requireAuth();
 
@@ -66,14 +86,10 @@ export async function GET(
             title: string;
             description: string;
             type: string;
-            blocks: any;
+            blocks: unknown;
             team_id: string | null;
         };
-        const assignedUser = assignment.user as unknown as {
-            id: string;
-            name: string;
-            email: string;
-        };
+        const assignedUser = assignment.user as unknown as AssignedUser;
 
         // Fetch user's profile to get the correct role
         const { data: profile } = await supabase
@@ -94,6 +110,8 @@ export async function GET(
 
         // Coaches can view any assignment, but can only edit if they own the training or are on the same team
         const canEdit = userRole === 'COACH' && !!profile?.team_id && training.team_id === profile.team_id;
+        const groupRelation = (assignment as unknown as { group?: AssignmentGroup | AssignmentGroup[] | null }).group;
+        const groupName = Array.isArray(groupRelation) ? groupRelation[0]?.name : groupRelation?.name;
 
         return NextResponse.json({
             id: assignment.id,
@@ -101,7 +119,7 @@ export async function GET(
             completed: assignment.completed,
             expectedRpe: assignment.expected_rpe,
             sourceGroupId: assignment.source_group_id,
-            groupName: (assignment as any).group?.name,
+            groupName,
             training: {
                 id: training.id,
                 title: training.title,
@@ -116,7 +134,7 @@ export async function GET(
             },
             canEdit,
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Get assignment error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
@@ -191,14 +209,7 @@ export async function PATCH(
             );
         }
 
-        const training = assignment.training as unknown as {
-            id: string;
-            title: string;
-            type: string;
-            description: string;
-            created_by: string | null;
-            team_id: string | null;
-        };
+        const training = assignment.training as unknown as TrainingForResponse;
 
         // Verify training belongs to coach team
         if (training.team_id !== profile.team_id) {
@@ -208,7 +219,7 @@ export async function PATCH(
             );
         }
 
-        const updatePayload: any = {
+        const updatePayload: Record<string, unknown> = {
             updated_at: new Date().toISOString()
         };
 
@@ -305,7 +316,7 @@ export async function PATCH(
                 trainingId: trainingIdToUse,
             });
         }
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Update assignment error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
@@ -355,7 +366,7 @@ export async function DELETE(
         try {
             const body = await request.json();
             applyToGroup = body.applyToGroup || false;
-        } catch (e) {
+        } catch {
             // No body provided or not JSON, assume single delete
         }
 
@@ -426,7 +437,7 @@ export async function DELETE(
                 message: 'Assignment deleted successfully',
             });
         }
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Delete assignment error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

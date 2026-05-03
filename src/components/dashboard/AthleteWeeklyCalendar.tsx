@@ -3,7 +3,7 @@
 import { format, addDays, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
-import { Training, TrainingAssignment } from '@/interfaces/training';
+import { TrainingAssignment } from '@/interfaces/training';
 import { AthleteRace } from '@/interfaces/race';
 import { Activity } from '@/interfaces/activity';
 import { Moon, Trophy } from 'lucide-react';

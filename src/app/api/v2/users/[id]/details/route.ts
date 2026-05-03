@@ -2,6 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/api-helpers';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 
+type AssignmentWithTraining = {
+    id: string;
+    scheduled_date: string;
+    completed: boolean;
+    activity_id: string | null;
+    expected_rpe: number | null;
+    training: unknown;
+};
+
 /**
  * Get Athlete Details
  * 
@@ -139,7 +148,7 @@ export async function GET(
             .limit(10);
 
         // Fetch athlete metrics history
-        let metricsHistory: any[] = [];
+        let metricsHistory: unknown[] = [];
         if (athleteProfileData?.id) {
             const { data: metricsData } = await serviceSupabase
                 .from('athlete_metrics')
@@ -201,7 +210,7 @@ export async function GET(
             athleteGroups: groups?.map(g => ({ group: g.group })) || [],
             recentActivities: recentActivities || [],
             metricsHistory: metricsHistory || [],
-            assignments: (assignments || []).map((a: any) => ({
+            assignments: ((assignments || []) as AssignmentWithTraining[]).map((a) => ({
                 id: a.id,
                 scheduled_date: a.scheduled_date,
                 completed: a.completed,
@@ -212,7 +221,7 @@ export async function GET(
         };
 
         return NextResponse.json(athleteDetails);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Get athlete details error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
@@ -243,7 +252,15 @@ export async function PATCH(
 
         const { supabase, user } = authResult;
         const athleteId = id;
-        const updates = await request.json();
+        const updates = (await request.json()) as {
+            vam?: number;
+            uan?: number;
+            restHR?: number;
+            maxHR?: number;
+            weight?: number;
+            height?: number;
+            coachNotes?: string;
+        };
 
         // Only coaches and admins can update athlete details
         if (user!.role !== 'COACH' && user!.role !== 'ADMIN') {
@@ -283,7 +300,7 @@ export async function PATCH(
 
         // Prepare update object for athlete_profiles table
         // Map frontend camelCase to DB snake_case
-        const dbUpdates: any = {
+        const dbUpdates: Record<string, string | number> = {
             updated_at: new Date().toISOString(),
         };
 
@@ -310,7 +327,7 @@ export async function PATCH(
         }
 
         return NextResponse.json({ success: true });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Update athlete details error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

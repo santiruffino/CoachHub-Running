@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ComposedChart, Bar, Line, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { ComposedChart, Bar, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTranslations } from 'next-intl';
@@ -37,11 +37,46 @@ interface StreamData {
 interface ActivityDynamicsChartProps {
     activityId: string;
     laps?: Lap[];
-    isRunning: boolean;
 }
 
 type Resolution = 'low' | 'medium' | 'high';
 type XAxisType = 'time' | 'distance' | 'lap';
+
+interface ChartDataPoint {
+    index?: number;
+    xValue: string;
+    xLabel: string;
+    lapIndex?: number;
+    lapPointIndex?: number;
+    time?: number;
+    distance?: number;
+    pace: number;
+    paceDisplay: string;
+    heartRate: number | null;
+    cadence: number | null;
+    elevation: number | null;
+    grade: number | null;
+}
+
+interface LapTickPayload {
+    value?: string;
+}
+
+interface LapTickProps {
+    x?: number;
+    y?: number;
+    payload?: LapTickPayload;
+    t: (key: string) => string;
+}
+
+interface TooltipEntry {
+    payload?: ChartDataPoint;
+}
+
+interface TooltipProps {
+    active?: boolean;
+    payload?: TooltipEntry[];
+}
 
 /**
  * Moving average filter to smooth "peaky" data
@@ -70,7 +105,7 @@ const movingAverage = (data: number[], windowSize: number): number[] => {
  * Largest-Triangle-Three-Buckets (LTTB) algorithm
  * Downsamples data while preserving visual shape/peaks
  */
-const lttbDownsample = <T extends Record<string, any>>(data: T[], threshold: number, yKey: keyof T): T[] => {
+const lttbDownsample = <T extends Record<string, unknown>>(data: T[], threshold: number, yKey: keyof T): T[] => {
     const dataLength = data.length;
     if (threshold >= dataLength || threshold <= 0) return data;
 
@@ -107,7 +142,7 @@ const lttbDownsample = <T extends Record<string, any>>(data: T[], threshold: num
 
         // Get the range for this bucket
         let rangeOffs = Math.floor(i * bucketSize) + 1;
-        let rangeTo = Math.floor((i + 1) * bucketSize) + 1;
+        const rangeTo = Math.floor((i + 1) * bucketSize) + 1;
 
         const pointAx = a;
         const pointAy = (Number(data[a][yKey]) || 0);
@@ -137,11 +172,15 @@ const lttbDownsample = <T extends Record<string, any>>(data: T[], threshold: num
 };
 
 // Custom X-axis tick for lap view
-const CustomLapTick = (props: any) => {
+const CustomLapTick = (props: LapTickProps) => {
     const { x, y, payload, t } = props;
 
+    if (typeof x !== 'number' || typeof y !== 'number' || !payload?.value) {
+        return null;
+    }
+
     // Extract lap number from xValue (format: "L1.5" -> "L1")
-    const match = payload.value?.match(/^L(\d+)/);
+    const match = payload.value.match(/^L(\d+)/);
     if (!match) return null;
 
     const lapNum = match[1];
@@ -166,7 +205,7 @@ const CustomLapTick = (props: any) => {
     );
 };
 
-export function ActivityDynamicsChart({ activityId, laps, isRunning }: ActivityDynamicsChartProps) {
+export function ActivityDynamicsChart({ activityId, laps }: ActivityDynamicsChartProps) {
     const t = useTranslations('activities.detail.dynamics');
     const tDetail = useTranslations('activities.detail');
     const [streams, setStreams] = useState<StreamData | null>(null);
@@ -343,9 +382,10 @@ export function ActivityDynamicsChart({ activityId, laps, isRunning }: ActivityD
     }, [streams, resolution, xAxisType, laps, t]);
 
     // Custom tooltip
-    const CustomTooltip = ({ active, payload }: any) => {
+    const CustomTooltip = ({ active, payload }: TooltipProps) => {
         if (active && payload && payload.length) {
             const data = payload[0].payload;
+            if (!data) return null;
             return (
                 <div className="bg-gray-900 border border-gray-700 p-3 rounded-lg shadow-lg backdrop-blur-sm bg-opacity-90">
                     <p className="font-semibold text-white mb-2">{data.xLabel}</p>

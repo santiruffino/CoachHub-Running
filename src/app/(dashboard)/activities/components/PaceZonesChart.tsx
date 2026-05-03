@@ -35,6 +35,8 @@ interface PaceZonesChartProps {
     isRunning: boolean;
 }
 
+type PaceDataItem = Pick<Lap, 'average_speed' | 'moving_time' | 'elapsed_time'>;
+
 // Standard pace zones for running (min/km)
 const PACE_ZONES = [
     { key: 'z1', min: 360, max: 420 }, // 6:00-7:00 min/km
@@ -68,9 +70,9 @@ export function PaceZonesChart({ laps, splits, isRunning }: PaceZonesChartProps)
         const zoneDistribution = new Array(PACE_ZONES.length).fill(0);
         let totalTime = 0;
 
-        const dataSource = laps || splits || [];
+        const dataSource: PaceDataItem[] = laps ?? splits ?? [];
 
-        dataSource.forEach((item: any) => {
+        dataSource.forEach((item) => {
             const pace = metersPerSecondToPace(item.average_speed);
             const time = item.moving_time || item.elapsed_time;
 
@@ -115,7 +117,9 @@ export function PaceZonesChart({ laps, splits, isRunning }: PaceZonesChartProps)
     ];
 
     const reversedZones = [...PACE_ZONES].reverse();
-    const reversedNames = [...PACE_ZONES].map(z => t(`names.${z.key}` as any)).reverse();
+    const reversedNames = [...PACE_ZONES]
+        .map((zone) => t(`names.${zone.key}`))
+        .reverse();
 
     return (
         <Card>

@@ -1,6 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
 
+interface ExchangeRequestBody {
+    code?: string;
+    state?: string;
+}
+
+interface StravaTokenResponse {
+    athlete: {
+        id: number;
+        username?: string;
+        firstname?: string;
+    };
+    access_token: string;
+    refresh_token: string;
+    expires_at: number;
+    scope?: string;
+}
+
 /**
  * Exchange Strava OAuth Code for Tokens
  * 
@@ -18,11 +35,19 @@ export async function POST(request: NextRequest) {
         }
 
         const { supabase, user } = authResult;
-        const { code } = await request.json();
+        const { code, state } = (await request.json()) as ExchangeRequestBody;
 
         if (!code) {
             return NextResponse.json(
                 { error: 'Authorization code is required' },
+                { status: 400 }
+            );
+        }
+
+        const expectedState = request.cookies.get('strava_oauth_state')?.value;
+        if (!state || !expectedState || state !== expectedState) {
+            return NextResponse.json(
+                { error: 'Invalid OAuth state' },
                 { status: 400 }
             );
         }
@@ -60,7 +85,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const tokenData = await tokenResponse.json();
+        const tokenData = (await tokenResponse.json()) as StravaTokenResponse;
 
         // Store connection in database
         const { error: upsertError } = await supabase
@@ -101,14 +126,26 @@ export async function POST(request: NextRequest) {
             // Don't fail the connection if zones sync fails
         }
 
-        return NextResponse.json({
+        const response = NextResponse.json({
             success: true,
             athleteName: tokenData.athlete.username || tokenData.athlete.firstname,
             message: 'Successfully connected to Strava',
             shouldSync: true, // Indicate that frontend can trigger initial sync
             zonesSynced: zonesResult.success,
         });
-    } catch (error: any) {
+
+        response.cookies.set({
+            name: 'strava_oauth_state',
+            value: '',
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 0,
+            path: '/',
+        });
+
+        return response;
+    } catch (error: unknown) {
         console.error('Exchange Strava code error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

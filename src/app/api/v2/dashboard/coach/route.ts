@@ -1,6 +1,43 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
+interface AlertAthleteRelation {
+    name?: string;
+}
+
+interface AlertActivityRelation {
+    title?: string;
+    type?: string;
+}
+
+interface DashboardAlert {
+    athlete_id: string;
+    type: string;
+    message: string;
+    created_at: string;
+    activity_id: string | null;
+    athlete?: AlertAthleteRelation | AlertAthleteRelation[] | null;
+    activity?: AlertActivityRelation | AlertActivityRelation[] | null;
+}
+
+interface GroupCountRelation {
+    count?: number;
+}
+
+interface DashboardGroup {
+    id: string;
+    name: string;
+    athlete_groups?: GroupCountRelation[] | null;
+}
+
+function getSingleRelation<T>(relation: T | T[] | null | undefined): T | undefined {
+    if (Array.isArray(relation)) {
+        return relation[0];
+    }
+
+    return relation || undefined;
+}
+
 export async function GET() {
     try {
         const supabase = await createClient();
@@ -139,17 +176,22 @@ export async function GET() {
         const totalPlans = trainingsCountRes.count ?? 0;
         const dbAlerts = alertsRes.data || [];
 
-        const zoneViolations = dbAlerts
-            .filter(a => a.type === 'ZONE_VIOLATION')
-            .map(a => ({
-                id: a.athlete_id,
-                name: (a.athlete as any)?.name || 'Athlete',
-                type: 'zone_violation' as const,
-                time: a.created_at,
-                message: a.message,
-                details: (a.activity as any)?.title || (a.activity as any)?.type || 'Activity',
-                activityId: a.activity_id
-            }));
+        const zoneViolations = (dbAlerts as DashboardAlert[])
+            .filter((alert) => alert.type === 'ZONE_VIOLATION')
+            .map((alert) => {
+                const athleteRelation = getSingleRelation(alert.athlete);
+                const activityRelation = getSingleRelation(alert.activity);
+
+                return {
+                    id: alert.athlete_id,
+                    name: athleteRelation?.name || 'Athlete',
+                    type: 'zone_violation' as const,
+                    time: alert.created_at,
+                    message: alert.message,
+                    details: activityRelation?.title || activityRelation?.type || 'Activity',
+                    activityId: alert.activity_id
+                };
+            });
 
         // --- Completion helper ---
         // An assignment is considered completed if:
@@ -195,7 +237,7 @@ export async function GET() {
         const athletesWithNextWeek = new Set(nextWeekAssignments.map((a) => a.user_id));
 
         // Groups: check if any member of the group has a next-week assignment
-        const groupMissingPromises = (groups || []).map(async (group) => {
+        const groupMissingPromises = ((groups || []) as DashboardGroup[]).map(async (group) => {
             const { data: members } = await supabase
                 .from('athlete_groups')
                 .select('athlete_id')
@@ -203,7 +245,7 @@ export async function GET() {
 
             const memberIds = (members || []).map((m) => m.athlete_id);
             const hasAssignment = memberIds.some((id) => athletesWithNextWeek.has(id));
-            const countArr = group.athlete_groups as any;
+            const countArr = group.athlete_groups;
             const memberCount =
                 Array.isArray(countArr) && countArr[0]?.count != null
                     ? Number(countArr[0].count)
@@ -243,12 +285,12 @@ export async function GET() {
         // --- RPE mismatches ---
         // NOTE: activities.rpe doesn't exist — RPE is stored in a separate activity_feedback table.
         // Skipping for now; needs a dedicated join query.
-        const rpeMismatches: any[] = [];
+        const rpeMismatches: Array<{ id: string; message: string }> = [];
 
         // --- Recent feedback & Timeline ---
         // NOTE: activities.feedback doesn't exist — feedback is stored in a separate table.
         // Using all recent activities for the timeline instead.
-        const recentFeedback: any[] = [];
+        const recentFeedback: Array<{ id: string; message: string }> = [];
 
         const activityTimeline = activities
             .slice(0, 8)
@@ -262,7 +304,7 @@ export async function GET() {
 
         // --- Group compliance ---
         const groupCompliance = await Promise.all(
-            (groups || []).map(async (group) => {
+            ((groups || []) as DashboardGroup[]).map(async (group) => {
                 const { data: members } = await supabase
                     .from('athlete_groups')
                     .select('athlete_id')
@@ -272,7 +314,7 @@ export async function GET() {
                 const groupAssignments = pastAssignments.filter((a) => memberIds.includes(a.user_id));
                 const groupCompleted = groupAssignments.filter((a) => isAssignmentCompleted(a, activities)).length;
                 const groupTotal = groupAssignments.length;
-                const countArr = group.athlete_groups as any;
+                const countArr = group.athlete_groups;
                 const athleteCount =
                     Array.isArray(countArr) && countArr[0]?.count != null
                         ? Number(countArr[0].count)
@@ -364,10 +406,10 @@ export async function GET() {
             performanceTrend,
             activityTimeline,
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Error in /api/v2/dashboard/coach:', error);
         return NextResponse.json(
-            { error: error.message || 'Internal server error' },
+            { error: error instanceof Error ? error.message : 'Internal server error' },
             { status: 500 }
         );
     }

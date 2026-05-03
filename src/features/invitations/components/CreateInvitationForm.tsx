@@ -8,8 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useTranslations } from 'next-intl';
 
 export function CreateInvitationForm() {
+    const t = useTranslations('invitations.createForm');
     const { register, handleSubmit, reset, formState: { errors } } = useForm<{ email: string }>();
     const [success, setSuccess] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -20,27 +22,32 @@ export function CreateInvitationForm() {
         try {
             const res = await invitationService.create(data.email);
             const invitationUrl = `${window.location.origin}/accept-invitation?token=${res.token}`;
-            setSuccess(`Invitation sent to ${res.email}. Share this link: ${invitationUrl}`);
+            setSuccess(t('success', { email: res.email, link: invitationUrl }));
             reset();
-        } catch (err: any) {
-            setError(err.message || 'Failed to send invitation');
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                setError(err.message || t('error'));
+                return;
+            }
+
+            setError(t('error'));
         }
     };
 
     return (
         <Card className="max-w-md">
             <CardHeader>
-                <CardTitle>Invite Athlete</CardTitle>
+                <CardTitle>{t('title')}</CardTitle>
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="email">Email address</Label>
+                        <Label htmlFor="email">{t('email')}</Label>
                         <Input
-                            {...register('email', { required: 'Email is required' })}
+                            {...register('email', { required: t('emailRequired') })}
                             type="email"
                             id="email"
-                            placeholder="athlete@example.com"
+                            placeholder={t('emailPlaceholder')}
                         />
                         {errors.email && (
                             <p className="text-sm text-destructive">{errors.email.message}</p>
@@ -48,7 +55,7 @@ export function CreateInvitationForm() {
                     </div>
 
                     <Button type="submit" className="w-full">
-                        Send Invitation
+                        {t('send')}
                     </Button>
 
                     {success && (

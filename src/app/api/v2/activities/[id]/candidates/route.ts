@@ -2,11 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/api-helpers';
 import { addDays, subDays } from 'date-fns';
 
+interface AssignmentCandidateRow {
+    id: string;
+    scheduled_date: string;
+    completed: boolean;
+    activity_id: string | null;
+    training: { title?: string; type?: string } | Array<{ title?: string; type?: string }> | null;
+}
+
 export async function GET(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        void request;
         const { id } = await params;
         const activityId = id;
         const authResult = await requireAuth();
@@ -92,18 +101,24 @@ export async function GET(
         // Returning all seems safer so user sees what's available.
 
         // Transform for UI
-        const candidates = (assignments || []).map((a: any) => ({
-            id: a.id,
-            scheduledDate: a.scheduled_date,
-            title: a.training?.title || 'Untitled Workout',
-            type: a.training?.type,
-            isLinked: !!a.activity_id,
-            isLinkedToThis: a.activity_id === activityId
-        }));
+        const candidates = ((assignments || []) as AssignmentCandidateRow[]).map((assignment) => {
+            const training = Array.isArray(assignment.training)
+                ? assignment.training[0]
+                : assignment.training;
+
+            return {
+                id: assignment.id,
+                scheduledDate: assignment.scheduled_date,
+                title: training?.title || 'Untitled Workout',
+                type: training?.type,
+                isLinked: !!assignment.activity_id,
+                isLinkedToThis: assignment.activity_id === activityId
+            };
+        });
 
         return NextResponse.json(candidates);
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Get candidate assignments error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

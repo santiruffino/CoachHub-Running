@@ -5,6 +5,7 @@ export async function GET(
     req: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    void req;
     const { id } = await params;
     
     // Use requireRole to ensure authorized access (Athletes or Coaches)
@@ -21,7 +22,7 @@ export async function GET(
         if (error) throw error;
 
         return NextResponse.json(data);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Get activity compliance error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

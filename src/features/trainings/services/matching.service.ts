@@ -1,5 +1,5 @@
 import api from '@/lib/axios';
-import { WorkoutMatch } from '../types';
+import { MatchCandidateActivity, MatchCandidateAssignment, WorkoutMatch } from '../types';
 
 /**
  * Matching Service
@@ -17,9 +17,9 @@ class MatchingService {
             const url = `/v2/trainings/assignments/${assignmentId}/match${activityId ? `?activityId=${activityId}` : ''
                 }`;
 
-            const response = await api.get(url);
+            const response = await api.get<WorkoutMatch>(url);
             return response.data;
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Failed to fetch workout match:', error);
             throw error;
         }
@@ -28,21 +28,21 @@ class MatchingService {
     /**
      * Get candidate activities for matching
      */
-    async getCandidateActivities(assignmentId: string): Promise<any[]> {
+    async getCandidateActivities(assignmentId: string): Promise<MatchCandidateActivity[]> {
         try {
-            const response = await api.get(`/v2/trainings/assignments/${assignmentId}/candidates`);
+            const response = await api.get<MatchCandidateActivity[]>(`/v2/trainings/assignments/${assignmentId}/candidates`);
             return response.data;
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Failed to fetch candidate activities:', error);
             return [];
         }
     }
 
-    async getCandidateAssignments(activityId: string): Promise<any[]> {
+    async getCandidateAssignments(activityId: string): Promise<MatchCandidateAssignment[]> {
         try {
-            const response = await api.get(`/v2/activities/${activityId}/candidates`);
+            const response = await api.get<MatchCandidateAssignment[]>(`/v2/activities/${activityId}/candidates`);
             return response.data;
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Failed to fetch candidate assignments:', error);
             return [];
         }
@@ -51,7 +51,7 @@ class MatchingService {
     async linkActivity(assignmentId: string, activityId: string): Promise<void> {
         try {
             await api.post(`/v2/trainings/assignments/${assignmentId}/link`, { activityId });
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Failed to link activity:', error);
             throw error;
         }
@@ -60,7 +60,7 @@ class MatchingService {
     async unlinkActivity(assignmentId: string): Promise<void> {
         try {
             await api.delete(`/v2/trainings/assignments/${assignmentId}/link`);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Failed to unlink activity:', error);
             throw error;
         }

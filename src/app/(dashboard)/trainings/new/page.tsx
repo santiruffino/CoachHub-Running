@@ -6,27 +6,20 @@ import { WorkoutBuilder } from '@/features/trainings/components/builder/WorkoutB
 import { WorkoutBlock } from '@/features/trainings/components/builder/types';
 import { trainingsService } from '@/features/trainings/services/trainings.service';
 import { TrainingType } from '@/interfaces/training';
-import { ArrowLeft, Save, History, Share2 } from 'lucide-react';
-import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { Save, History, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
 import { useTranslations } from 'next-intl';
 
 function CreateTrainingForm() {
     const t = useTranslations('trainings.new');
-    const tCommon = useTranslations('common');
     const router = useRouter();
     const searchParams = useSearchParams();
     const athleteId = searchParams.get('athleteId');
 
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const [type, setType] = useState<TrainingType>(TrainingType.RUNNING);
+    const [type] = useState<TrainingType>(TrainingType.RUNNING);
     const [blocks, setBlocks] = useState<WorkoutBlock[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');

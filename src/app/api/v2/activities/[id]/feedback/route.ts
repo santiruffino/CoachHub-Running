@@ -9,7 +9,7 @@ import { createServiceRoleClient } from '@/lib/supabase/server';
  * Athletes can view their own feedback, coaches can view their athletes' feedback.
  */
 export async function GET(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
@@ -82,7 +82,7 @@ export async function GET(
         }
 
         return NextResponse.json(feedback || null);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Get activity feedback error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
@@ -108,9 +108,13 @@ export async function POST(
             return authResult.response;
         }
 
-        const { supabase, user } = authResult;
+        const { user } = authResult;
         const serviceSupabase = createServiceRoleClient();
-        const body = await request.json();
+        const body = (await request.json()) as {
+            rpe?: number;
+            comments?: string;
+            training_assignment_id?: string;
+        };
 
         const { rpe, comments, training_assignment_id } = body;
 
@@ -168,7 +172,7 @@ export async function POST(
         }
 
         return NextResponse.json(feedback);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Submit activity feedback error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

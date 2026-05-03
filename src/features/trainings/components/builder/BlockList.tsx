@@ -75,7 +75,8 @@ export function BlockList({
             return `RPE ${block.target.min}-${block.target.max}`;
         }
         if (block.target.type === 'vam_zone' && block.target.min) {
-            const zoneName = t(`vamZoneFullNames.${block.target.min}` as any) || `Z${block.target.min}`;
+            const zoneKey = `vamZoneFullNames.${String(block.target.min)}`;
+            const zoneName = t(zoneKey) || `Z${block.target.min}`;
 
             // If athleteVAM is available, calculate and show pace
             if (athleteVAM) {
@@ -119,7 +120,7 @@ export function BlockList({
     };
 
     // Render a single block item
-    const renderBlockItem = (block: WorkoutBlock, index: number) => (
+    const renderBlockItem = (block: WorkoutBlock) => (
         <div
             key={block.id}
             onClick={() => onSelect(block.id)}
@@ -267,7 +268,7 @@ export function BlockList({
 
                         {isExpanded && (
                             <div className="p-3 pt-2 bg-white dark:bg-gray-900">
-                                {groupBlocks.map(({ block, index }) => renderBlockItem(block, index))}
+                                {groupBlocks.map(({ block }) => renderBlockItem(block))}
 
                                 {/* Add Step to Block button */}
                                 {onAddStepToGroup && (
@@ -289,7 +290,7 @@ export function BlockList({
 
                 i = j; // Skip past the grouped blocks
             } else {
-                renderedItems.push(renderBlockItem(block, i));
+                renderedItems.push(renderBlockItem(block));
                 i++;
             }
         }

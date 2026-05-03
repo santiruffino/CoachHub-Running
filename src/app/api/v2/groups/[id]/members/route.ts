@@ -22,7 +22,7 @@ export async function POST(
 
         const { supabase, user } = authResult;
         const groupId = id;
-        const { athleteId } = await request.json();
+        const { athleteId } = (await request.json()) as { athleteId?: string };
 
         const { data: profile } = await supabase
             .from('profiles')
@@ -120,7 +120,7 @@ export async function POST(
         }
 
         return NextResponse.json(membership, { status: 201 });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Add member error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
@@ -151,7 +151,7 @@ export async function DELETE(
 
         const { supabase, user } = authResult;
         const groupId = id;
-        const { athleteId } = await request.json();
+        const { athleteId } = (await request.json()) as { athleteId?: string };
 
         const { data: profile } = await supabase
             .from('profiles')
@@ -212,7 +212,7 @@ export async function DELETE(
         return NextResponse.json({
             message: 'Member removed successfully',
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Remove member error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

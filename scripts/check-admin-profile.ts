@@ -8,7 +8,7 @@ const supabase = createClient(
 );
 
 async function main() {
-  const { data, error } = await supabase.from('profiles').select('*').eq('email', 'admin@example.com').single();
+  const { data } = await supabase.from('profiles').select('*').eq('email', 'admin@example.com').single();
   console.log(data);
 }
 main();

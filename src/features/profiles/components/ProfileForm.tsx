@@ -5,13 +5,17 @@ import { UpdateProfileDto, ProfileDetails } from '../types';
 import { profileService } from '../services/profile.service';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useState } from 'react';
-import { useForm as useHookForm } from 'react-hook-form';
+import {
+    useForm as useHookForm,
+    UseFormRegister,
+    UseFormSetValue,
+    UseFormWatch,
+} from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { VAM_LEVELS, parsePaceToSeconds, formatSecondsToPace } from '../constants/vam';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { parsePaceToSeconds, formatSecondsToPace } from '../constants/vam';
 import {
     SectionLayout,
     FieldGroup,
@@ -23,8 +27,26 @@ import {
 } from '@/components/layout/EditorialLayout';
 import { useTranslations } from 'next-intl';
 
+type LegacyAthleteProfile = NonNullable<ProfileDetails['athleteProfile']> & {
+    rest_hr?: number;
+    max_hr?: number;
+};
+
+type TestSpeedInputProps = {
+    formKey: 'vam' | 'uan';
+    register: UseFormRegister<UpdateProfileDto>;
+    setValue: UseFormSetValue<UpdateProfileDto>;
+    watch: UseFormWatch<UpdateProfileDto>;
+};
+
+type ChangePasswordFormData = {
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+};
+
 // ── Test Speed Input Component ───────────────────────────────────────────────
-function TestSpeedInput({ formKey, register, setValue, watch }: { formKey: string, register: any, setValue: any, watch: any }) {
+function TestSpeedInput({ formKey, register, setValue, watch }: TestSpeedInputProps) {
     const t = useTranslations('profile');
     const [dist, setDist] = useState('');
     const [timeStr, setTimeStr] = useState('');
@@ -92,11 +114,11 @@ function TestSpeedInput({ formKey, register, setValue, watch }: { formKey: strin
 // ── Change Password sub-form ─────────────────────────────────────────────────
 function ChangePasswordSection() {
     const t = useTranslations('profile.changePassword');
-    const { register, handleSubmit, reset, formState: { errors } } = useHookForm();
+    const { register, handleSubmit, reset, formState: { errors } } = useHookForm<ChangePasswordFormData>();
     const [msg, setMsg] = useState('');
     const [err, setErr] = useState('');
 
-    const onSubmit = async (data: any) => {
+    const onSubmit = async (data: ChangePasswordFormData) => {
         setMsg('');
         setErr('');
         if (data.newPassword !== data.confirmPassword) {
@@ -163,27 +185,28 @@ function ChangePasswordSection() {
 export function ProfileForm({ profile }: { profile: ProfileDetails }) {
     const { user } = useAuth();
     const [message, setMessage] = useState('');
-    const [selectedGender, setSelectedGender] = useState<string>((user as any)?.gender || '');
+    const [selectedGender, setSelectedGender] = useState<string>(user?.gender || '');
     const t = useTranslations('profile');
     const tOnboarding = useTranslations('onboarding');
+    const athleteProfile = profile.athleteProfile as LegacyAthleteProfile | undefined;
 
     const { register, handleSubmit, setValue, watch } = useForm<UpdateProfileDto>({
         defaultValues: {
-            firstName: (user as any)?.firstName,
-            lastName: (user as any)?.lastName,
-            phone: (user as any)?.phone,
-            gender: (user as any)?.gender,
+            firstName: user?.firstName,
+            lastName: user?.lastName,
+            phone: user?.phone,
+            gender: user?.gender,
             bio: profile.coachProfile?.bio,
             specialty: profile.coachProfile?.specialty,
             experience: profile.coachProfile?.experience,
             height: profile.athleteProfile?.height,
             weight: profile.athleteProfile?.weight,
             injuries: profile.athleteProfile?.injuries,
-            restHR: (profile.athleteProfile as any)?.restHR || (profile.athleteProfile as any)?.rest_hr,
-            maxHR: (profile.athleteProfile as any)?.maxHR || (profile.athleteProfile as any)?.max_hr,
-            vam: (profile.athleteProfile as any)?.vam,
-            uan: (profile.athleteProfile as any)?.uan,
-            dob: (profile.athleteProfile as any)?.dob,
+            restHR: athleteProfile?.restHR ?? athleteProfile?.rest_hr,
+            maxHR: athleteProfile?.maxHR ?? athleteProfile?.max_hr,
+            vam: athleteProfile?.vam,
+            uan: athleteProfile?.uan,
+            dob: athleteProfile?.dob,
         }
     });
 
@@ -201,7 +224,7 @@ export function ProfileForm({ profile }: { profile: ProfileDetails }) {
 
             await profileService.updateProfile(data);
             setMessage('success');
-        } catch (e: any) {
+        } catch (e: unknown) {
             console.error(e);
             setMessage('error');
         }

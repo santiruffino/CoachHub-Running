@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import {
     Dialog,
     DialogContent,
@@ -21,14 +22,20 @@ interface InviteAthleteModalProps {
     onClose: () => void;
 }
 
+interface InviteFormData {
+    email: string;
+}
+
 export function InviteAthleteModal({ open, onClose }: InviteAthleteModalProps) {
-    const { register, handleSubmit, reset, formState: { errors } } = useForm();
+    const tAthlete = useTranslations('invitations.modals.athlete');
+    const tCommon = useTranslations('invitations.modals.common');
+    const { register, handleSubmit, reset, formState: { errors } } = useForm<InviteFormData>();
     const [creating, setCreating] = useState(false);
     const [invitationLink, setInvitationLink] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
     const { alertState, showAlert, closeAlert } = useAlertDialog();
 
-    const onSubmit = async (data: any) => {
+    const onSubmit = async (data: InviteFormData) => {
         setCreating(true);
         try {
             const response = await api.post('/invitations', {
@@ -38,9 +45,9 @@ export function InviteAthleteModal({ open, onClose }: InviteAthleteModalProps) {
             // Generate invitation link
             const link = `${window.location.origin}/accept-invitation?token=${response.data.token}`;
             setInvitationLink(link);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Failed to create invitation:', error);
-            showAlert('error', 'Failed to create invitation. Please try again.');
+            showAlert('error', tCommon('createError'));
         } finally {
             setCreating(false);
         }
@@ -72,28 +79,28 @@ export function InviteAthleteModal({ open, onClose }: InviteAthleteModalProps) {
         <Dialog open={open} onOpenChange={handleClose}>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle>Invitar Atleta</DialogTitle>
+                    <DialogTitle>{tAthlete('title')}</DialogTitle>
                     <DialogDescription>
                         {invitationLink
-                            ? 'Invitación creada! Comparte el enlace con el atleta.'
-                            : 'Ingresa el email del atleta para enviar una invitación.'}
+                            ? tAthlete('descriptionCreated')
+                            : tAthlete('descriptionCreate')}
                     </DialogDescription>
                 </DialogHeader>
 
                 {!invitationLink ? (
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-4">
                         <div className="space-y-2">
-                            <Label htmlFor="email">Email</Label>
+                            <Label htmlFor="email">{tCommon('email')}</Label>
                             <div className="flex gap-2">
                                 <Input
                                     id="email"
                                     type="email"
-                                    placeholder="atleta@ejemplo.com"
+                                    placeholder={tAthlete('emailPlaceholder')}
                                     {...register('email', {
-                                        required: 'Email es requerido',
+                                        required: tCommon('emailRequired'),
                                         pattern: {
                                             value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                            message: 'Email inválido',
+                                            message: tCommon('emailInvalid'),
                                         },
                                     })}
                                 />
@@ -105,17 +112,17 @@ export function InviteAthleteModal({ open, onClose }: InviteAthleteModalProps) {
 
                         <div className="flex justify-end gap-2 pt-2">
                             <Button type="button" variant="outline" onClick={handleClose}>
-                                Cancelar
+                                {tCommon('cancel')}
                             </Button>
                             <Button type="submit" disabled={creating}>
-                                {creating ? 'Creando...' : 'Crear Invitación'}
+                                {creating ? tCommon('creating') : tAthlete('create')}
                             </Button>
                         </div>
                     </form>
                 ) : (
                     <div className="space-y-4 pt-4">
                         <div className="space-y-2">
-                            <Label>Enlace de Invitación</Label>
+                            <Label>{tCommon('linkLabel')}</Label>
                             <div className="flex gap-2">
                                 <Input value={invitationLink} readOnly className="font-mono text-xs" />
                                 <Button
@@ -132,7 +139,7 @@ export function InviteAthleteModal({ open, onClose }: InviteAthleteModalProps) {
                                 </Button>
                             </div>
                             <p className="text-xs text-muted-foreground">
-                                Este enlace expira en 7 días.
+                                {tCommon('linkExpires')}
                             </p>
                         </div>
 
@@ -144,10 +151,10 @@ export function InviteAthleteModal({ open, onClose }: InviteAthleteModalProps) {
                                     rel="noopener noreferrer"
                                 >
                                     <MessageCircle className="h-4 w-4 mr-2" />
-                                    Enviar por WhatsApp
+                                    {tCommon('sendWhatsapp')}
                                 </a>
                             </Button>
-                            <Button onClick={handleClose}>Cerrar</Button>
+                            <Button onClick={handleClose}>{tCommon('close')}</Button>
                         </div>
                     </div>
                 )}

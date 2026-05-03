@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     const next = searchParams.get('next') ?? '/dashboard';
 
     if (code) {
-        const cookieStore = new Map<string, { name: string, value: string, options: any }>();
+        const cookieStore: Array<{ name: string; value: string; options?: unknown }> = [];
 
         const supabase = createServerClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
                     },
                     setAll(cookiesToSet) {
                         cookiesToSet.forEach(({ name, value, options }) => {
-                            cookieStore.set(name, { name, value, options });
+                            cookieStore.push({ name, value, options });
                         });
                     },
                 },
@@ -45,8 +45,17 @@ export async function GET(request: NextRequest) {
             }
 
             // Apply the cookies from the exchange
-            Array.from(cookieStore.values()).forEach(({ name, value, options }) => {
-                response.cookies.set(name, value, options);
+            cookieStore.forEach(({ name, value, options }) => {
+                if (options && typeof options === 'object') {
+                    response.cookies.set(
+                        name,
+                        value,
+                        options as Parameters<typeof response.cookies.set>[2]
+                    );
+                    return;
+                }
+
+                response.cookies.set(name, value);
             });
 
             return response;

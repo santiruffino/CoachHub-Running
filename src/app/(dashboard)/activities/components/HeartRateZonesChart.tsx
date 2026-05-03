@@ -41,6 +41,8 @@ interface HeartRateZonesChartProps {
     zoneNames?: string[];
 }
 
+type HeartRateDataItem = Pick<Lap, 'average_heartrate' | 'moving_time' | 'elapsed_time'>;
+
 export function HeartRateZonesChart({ laps, splits, zones, zoneNames }: HeartRateZonesChartProps) {
     const t = useTranslations('activities.detail.zones');
     
@@ -59,9 +61,9 @@ export function HeartRateZonesChart({ laps, splits, zones, zoneNames }: HeartRat
         const zoneDistribution = new Array(zones.length).fill(0);
         let totalTime = 0;
 
-        const dataSource = laps || splits || [];
+        const dataSource: HeartRateDataItem[] = laps ?? splits ?? [];
 
-        dataSource.forEach((item: any) => {
+        dataSource.forEach((item) => {
             const hr = item.average_heartrate;
             const time = item.moving_time || item.elapsed_time;
 

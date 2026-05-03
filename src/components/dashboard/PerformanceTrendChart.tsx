@@ -48,7 +48,7 @@ export function PerformanceTrendChart({ data, showTitle = false, className }: Pe
               width={34}
             />
             <Tooltip
-              formatter={(value: number) => [`${value}%`, t('title')]}
+              formatter={(value) => [`${Number(value ?? 0)}%`, t('title')]}
               contentStyle={{
                 backgroundColor: 'hsl(var(--popover))',
                 border: '1px solid hsl(var(--border))',

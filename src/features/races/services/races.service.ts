@@ -1,6 +1,17 @@
 import api from '@/lib/axios';
 import { Race, AthleteRace, CreateRaceDTO, AssignRaceDTO } from '../types';
 
+interface DeleteResponse {
+  message?: string;
+}
+
+interface GroupRaceAssignResponse {
+  success: boolean;
+  raceId: string;
+  groupId: string;
+  assignedCount: number;
+}
+
 export const racesService = {
   /**
    * Get all races available to the user
@@ -27,7 +38,7 @@ export const racesService = {
    * Delete a race template
    */
   delete: async (raceId: string) => {
-    return api.delete(`/v2/races/${raceId}`);
+    return api.delete<DeleteResponse>(`/v2/races/${raceId}`);
   },
 
   /**
@@ -48,7 +59,7 @@ export const racesService = {
    * Assign a race to all members of a group
    */
   assignToGroup: async (raceId: string, groupId: string, data: Partial<AssignRaceDTO>) => {
-    return api.post(`/v2/groups/${groupId}/races/${raceId}`, data);
+    return api.post<GroupRaceAssignResponse>(`/v2/groups/${groupId}/races/${raceId}`, data);
   },
 
   /**
@@ -65,6 +76,6 @@ export const racesService = {
    * Remove a race assignment
    */
   deleteAthleteRace: async (userId: string, athleteRaceId: string) => {
-    return api.delete(`/v2/users/${userId}/races/${athleteRaceId}`);
+    return api.delete<DeleteResponse>(`/v2/users/${userId}/races/${athleteRaceId}`);
   }
 };

@@ -1,6 +1,20 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
+interface ProfileRequestBody {
+  name?: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  gender?: string;
+  isOnboardingCompleted?: boolean;
+  [key: string]: unknown;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
 export async function GET() {
   try {
     const supabase = await createClient();
@@ -37,33 +51,38 @@ export async function GET() {
 
     // Transform snake_case to camelCase for frontend
     // Note: Supabase returns related data as arrays
-    const coachProfileData = Array.isArray(profile.coach_profile)
-      ? profile.coach_profile[0]
-      : profile.coach_profile;
+    const profileRecord = profile as Record<string, unknown>;
+    const coachProfileRaw = profileRecord.coach_profile;
+    const athleteProfileRaw = profileRecord.athlete_profile;
 
-    const athleteProfileData = Array.isArray(profile.athlete_profile)
-      ? profile.athlete_profile[0]
-      : profile.athlete_profile;
+    const coachProfileData = Array.isArray(coachProfileRaw)
+      ? coachProfileRaw[0]
+      : coachProfileRaw;
+
+    const athleteProfileData = Array.isArray(athleteProfileRaw)
+      ? athleteProfileRaw[0]
+      : athleteProfileRaw;
+
+    const athleteProfileRecord = isRecord(athleteProfileData) ? athleteProfileData : null;
+    const { coach_profile: unusedCoachProfileSnake, athlete_profile: unusedAthleteProfileSnake, ...profileWithoutSnake } = profileRecord;
+    void unusedCoachProfileSnake;
+    void unusedAthleteProfileSnake;
 
     const transformedProfile = {
-      ...profile,
+      ...profileWithoutSnake,
       coachProfile: coachProfileData || null,
-      athleteProfile: athleteProfileData ? {
-        ...athleteProfileData,
-        restHR: athleteProfileData.rest_hr,
-        maxHR: athleteProfileData.max_hr,
-        hrZones: athleteProfileData.hr_zones,
+      athleteProfile: athleteProfileRecord ? {
+        ...athleteProfileRecord,
+        restHR: athleteProfileRecord.rest_hr,
+        maxHR: athleteProfileRecord.max_hr,
+        hrZones: athleteProfileRecord.hr_zones,
       } : null,
     };
 
-    // Remove snake_case versions
-    delete (transformedProfile as any).coach_profile;
-    delete (transformedProfile as any).athlete_profile;
-
     return NextResponse.json(transformedProfile);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: error instanceof Error ? error.message : 'Internal server error' },
       { status: 500 }
     );
   }
@@ -85,11 +104,11 @@ export async function PATCH(request: Request) {
       );
     }
 
-    const body = await request.json();
+    const body = (await request.json()) as ProfileRequestBody;
     const { name, firstName, lastName, phone, gender, isOnboardingCompleted, ...profileData } = body;
 
     // Update profile
-    const updates: any = {};
+    const updates: Record<string, string | boolean> = {};
     if (name !== undefined) updates.name = name;
     if (firstName !== undefined) updates.first_name = firstName;
     if (lastName !== undefined) updates.last_name = lastName;
@@ -115,7 +134,7 @@ export async function PATCH(request: Request) {
       const profileTable = isCoach ? 'coach_profiles' : 'athlete_profiles';
 
       // Filter fields based on role
-      let filteredData: any = {};
+      const filteredData: Record<string, unknown> = {};
 
       if (isCoach) {
         // Only allow coach-specific fields
@@ -174,11 +193,10 @@ export async function PATCH(request: Request) {
       .single();
 
     return NextResponse.json(updatedProfile);
-  } catch (error: any) {
+    } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: error instanceof Error ? error.message : 'Internal server error' },
       { status: 500 }
     );
   }
 }
-

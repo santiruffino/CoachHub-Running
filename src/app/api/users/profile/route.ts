@@ -36,9 +36,9 @@ export async function GET() {
     }
 
     return NextResponse.json(profile);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: error instanceof Error ? error.message : 'Internal server error' },
       { status: 500 }
     );
   }
@@ -64,7 +64,7 @@ export async function PATCH(request: Request) {
     const { name, ...profileData } = body;
 
     // Update profile
-    const updates: any = {};
+    const updates: Record<string, unknown> = {};
     if (name !== undefined) updates.name = name;
 
     const { error: updateError } = await supabase
@@ -113,11 +113,10 @@ export async function PATCH(request: Request) {
       .single();
 
     return NextResponse.json(updatedProfile);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: error instanceof Error ? error.message : 'Internal server error' },
       { status: 500 }
     );
   }
 }
-

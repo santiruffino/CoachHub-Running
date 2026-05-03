@@ -24,7 +24,7 @@ const localizer = dateFnsLocalizer({
     locales,
 });
 
-const DragAndDropCalendar = withDragAndDrop(Calendar);
+const DragAndDropCalendar = withDragAndDrop<CalendarEvent, object>(Calendar);
 
 export interface CalendarEvent {
     id: string;
@@ -34,14 +34,19 @@ export interface CalendarEvent {
     resource?: {
         type: 'PLANNED' | 'COMPLETED' | 'RACE';
         description?: string;
-        details?: any;
+        details?: unknown;
     };
+}
+
+interface CalendarDropArgs {
+    event: CalendarEvent;
+    start: Date | string;
 }
 
 interface CalendarViewProps {
     events: CalendarEvent[];
     onDateChange: (range: { start: Date; end: Date }) => void;
-    onEventDrop?: (args: any) => void;
+    onEventDrop?: (args: CalendarDropArgs) => void;
     onSelectEvent?: (event: CalendarEvent) => void;
 }
 
@@ -99,8 +104,8 @@ export function CalendarView({ events, onDateChange, onEventDrop, onSelectEvent 
             <DragAndDropCalendar
                 localizer={localizer}
                 events={events}
-                startAccessor={(event: any) => event.start}
-                endAccessor={(event: any) => event.end}
+                startAccessor="start"
+                endAccessor="end"
                 style={{ height: '100%' }}
                 view={view}
                 date={date}
@@ -109,11 +114,11 @@ export function CalendarView({ events, onDateChange, onEventDrop, onSelectEvent 
                 views={['month', 'week', 'day']}
                 selectable
                 onEventDrop={onEventDrop}
-                onSelectEvent={onSelectEvent as any}
-                eventPropGetter={eventStyleGetter as any}
+                onSelectEvent={onSelectEvent}
+                eventPropGetter={eventStyleGetter}
                 resizable={false}
                 components={{
-                    event: CustomEvent as any
+                    event: CustomEvent
                 }}
             />
         </div>

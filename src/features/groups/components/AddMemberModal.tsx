@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Loader2, UserPlus } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import api from '@/lib/axios';
 import { useTranslations } from 'next-intl';
 
@@ -13,8 +13,14 @@ interface AddMemberModalProps {
     onAdded: () => void;
 }
 
+interface AthleteOption {
+    id: string;
+    name?: string;
+    email: string;
+}
+
 export function AddMemberModal({ groupId, currentMemberIds, open, onClose, onAdded }: AddMemberModalProps) {
-    const [athletes, setAthletes] = useState<any[]>([]);
+    const [athletes, setAthletes] = useState<AthleteOption[]>([]);
     const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [selectedId, setSelectedId] = useState<string>('');
@@ -25,7 +31,7 @@ export function AddMemberModal({ groupId, currentMemberIds, open, onClose, onAdd
             setLoading(true);
             api.get('/v2/users/athletes')
                 .then(res => {
-                    const available = res.data.filter((a: any) => !currentMemberIds.includes(a.id));
+                    const available = (res.data as AthleteOption[]).filter((athlete) => !currentMemberIds.includes(athlete.id));
                     setAthletes(available);
                 })
                 .catch(console.error)

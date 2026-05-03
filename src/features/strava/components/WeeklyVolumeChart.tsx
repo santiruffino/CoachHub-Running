@@ -9,12 +9,22 @@ import {
     Legend,
     ResponsiveContainer
 } from 'recharts';
-import { startOfWeek, format, addWeeks, subWeeks, isSameWeek } from 'date-fns';
+import { startOfWeek, format, subWeeks, isSameWeek } from 'date-fns';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
+interface WeeklyActivity {
+    startDate: string;
+    distance: number;
+}
+
+interface WeeklyAssignment {
+    scheduledDate: string;
+    training?: unknown;
+}
+
 interface WeeklyVolumeChartProps {
-    activities: any[];
-    assignments: any[];
+    activities: WeeklyActivity[];
+    assignments: WeeklyAssignment[];
 }
 
 export function WeeklyVolumeChart({ activities, assignments }: WeeklyVolumeChartProps) {

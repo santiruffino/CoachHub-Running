@@ -10,6 +10,8 @@ interface CacheItem<T> {
     expiry: number;
 }
 
+type CacheParams = Record<string, unknown>;
+
 class CacheService {
     private readonly prefix = 'coachhub_cache_';
 
@@ -103,7 +105,7 @@ class CacheService {
     /**
      * Helper to generate a consistent key for API calls
      */
-    generateApiKey(endpoint: string, params?: Record<string, any>): string {
+    generateApiKey(endpoint: string, params?: CacheParams): string {
         const paramStr = params ? JSON.stringify(params) : '';
         return `api_${endpoint}_${paramStr}`;
     }

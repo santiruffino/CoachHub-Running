@@ -1,8 +1,7 @@
 'use client';
 
 import { WorkoutBlock, AthleteProfile } from './types';
-import { Button } from '@/components/ui/button';
-import { GripVertical, Repeat, Plus } from 'lucide-react';
+import { GripVertical, Repeat } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { VAM_ZONES } from '@/features/profiles/constants/vam';
 import { BLOCK_COLORS } from './constants';

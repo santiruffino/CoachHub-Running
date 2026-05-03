@@ -1,6 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
 
+interface AssignmentToCreate {
+    user_id: string;
+    training_id: string;
+    scheduled_date: string;
+    completed: boolean;
+    expected_rpe: number | null;
+    workout_name: string | null;
+    source_group_id: string | null;
+    workout_snapshot: {
+        title: string;
+        description: string | null;
+        type: string;
+        blocks: unknown;
+        version: number;
+        timestamp: string;
+    };
+}
+
 /**
  * Assign Training
  * 
@@ -26,7 +44,14 @@ export async function POST(request: NextRequest) {
         }
 
         const { supabase, user } = authResult;
-        const body = await request.json();
+        const body = (await request.json()) as {
+            trainingId?: string;
+            scheduledDate?: string;
+            athleteIds?: string[];
+            groupIds?: string[];
+            expectedRpe?: number;
+            workoutName?: string;
+        };
         const { trainingId, scheduledDate, athleteIds, groupIds, expectedRpe, workoutName } = body;
 
         // Validation
@@ -95,7 +120,7 @@ export async function POST(request: NextRequest) {
             timestamp: new Date().toISOString()
         };
 
-        const assignmentsToCreate: any[] = [];
+        const assignmentsToCreate: AssignmentToCreate[] = [];
 
         // Collect athlete IDs from direct selection and map them to their source_group_id
         const athleteSourceMap = new Map<string, string | null>();
@@ -108,12 +133,11 @@ export async function POST(request: NextRequest) {
         // If groupIds provided, get all athletes in those groups
         if (groupIds && groupIds.length > 0) {
             // Verify all groups belong to coach team
-            let groupsQuery = supabase
+            const groupsQuery = supabase
                 .from('groups')
                 .select('id')
-                .in('id', groupIds);
-
-            groupsQuery = groupsQuery.eq('team_id', profile.team_id);
+                .in('id', groupIds)
+                .eq('team_id', profile.team_id);
 
             const { data: groups } = await groupsQuery;
 
@@ -184,10 +208,13 @@ export async function POST(request: NextRequest) {
             message: `Training assigned to ${assignments?.length || 0} athlete(s)`,
             assignments: assignments || [],
         }, { status: 201 });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Assign training error:', error);
         return NextResponse.json(
-            { error: 'Internal server error', details: error.message },
+            {
+                error: 'Internal server error',
+                details: error instanceof Error ? error.message : 'Unknown error'
+            },
             { status: 500 }
         );
     }

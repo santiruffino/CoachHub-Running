@@ -90,7 +90,7 @@ export async function PATCH(
         }
 
         return NextResponse.json(athleteRace);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('PATCH /v2/users/[id]/races/[athleteRaceId] error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
@@ -105,7 +105,7 @@ export async function PATCH(
  * Removes a race assignment.
  */
 export async function DELETE(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ id: string; athleteRaceId: string }> }
 ) {
     try {
@@ -162,7 +162,7 @@ export async function DELETE(
         }
 
         return new Response(null, { status: 204 });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('DELETE /v2/users/[id]/races/[athleteRaceId] error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

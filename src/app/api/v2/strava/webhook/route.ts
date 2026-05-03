@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 
+interface StravaWebhookPayload {
+  subscription_id?: number | string;
+  object_type?: string;
+  object_id?: number;
+  aspect_type?: string;
+  owner_id?: number;
+  updates?: Record<string, unknown>;
+}
+
 /**
  * Strava Webhook Handler (SAN-26)
  * - GET: Handshake validation with hub.verify_token
@@ -15,27 +24,29 @@ export async function GET(req: NextRequest) {
 
   const verifyToken = process.env.STRAVA_WEBHOOK_VERIFY_TOKEN;
 
-  console.log(`Webhook Handshake: mode=${mode}, token=${token}, expected=${verifyToken}`);
-
-  if (mode === 'subscribe' && token === verifyToken) {
-    console.log('Handshake successful, echoing challenge');
+  if (mode === 'subscribe' && token === verifyToken && challenge) {
     return NextResponse.json({ 'hub.challenge': challenge });
   }
 
-  console.warn(`Handshake failed: Invalid mode or token. Expected: ${verifyToken}, Received: ${token}`);
-  return new NextResponse(`Forbidden: Invalid verify token. Expected: ${verifyToken}`, { status: 403 });
+  console.warn('Strava webhook handshake rejected');
+  return new NextResponse('Forbidden', { status: 403 });
 }
 
 export async function POST(req: NextRequest) {
   const start = Date.now();
   
   try {
-    const payload = await req.json();
+    const payload = (await req.json()) as StravaWebhookPayload;
+
+    if (!payload || typeof payload !== 'object') {
+      return NextResponse.json({ error: 'Invalid webhook payload' }, { status: 400 });
+    }
     
     // 1. Validate subscription_id if configured
     const expectedSubId = process.env.STRAVA_SUBSCRIPTION_ID;
-    if (expectedSubId && payload.subscription_id && payload.subscription_id.toString() !== expectedSubId) {
-      console.warn(`Incoming webhook has unexpected subscription_id: ${payload.subscription_id}`);
+    const incomingSubId = payload.subscription_id?.toString();
+    if (expectedSubId && incomingSubId !== expectedSubId) {
+      console.warn('Incoming webhook rejected due to unexpected subscription_id');
       return NextResponse.json({ error: 'Invalid subscription ID' }, { status: 401 });
     }
 
@@ -51,7 +62,7 @@ export async function POST(req: NextRequest) {
     // We AWAIT this call to ensure the connection is established and the function is triggered
     // in serverless environments. Fire-and-forget can lead to ECONNRESET if the runtime
     // terminates before the TLS handshake completes.
-    console.log('Triggering process-strava-activity...');
+    console.log('Triggering process-strava-activity');
     
     try {
       const { data: funcData, error: funcError } = await supabase.functions.invoke('process-strava-activity', {
@@ -61,16 +72,16 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      if (funcError) {
-        console.error('Edge Function invocation error:', funcError);
-      } else {
-        console.log('Edge Function triggered successfully:', funcData);
-      }
+        if (funcError) {
+          console.error('Edge Function invocation error:', funcError);
+        } else {
+          console.log('Edge Function triggered successfully', { ok: !!funcData });
+        }
     } catch (fetchErr) {
       console.error('Network error triggering Edge Function:', fetchErr);
     }
 
-    console.log(`Strava webhook event logged and processing triggered in ${Date.now() - start}ms`);
+    console.log(`Strava webhook event processed in ${Date.now() - start}ms`);
     return NextResponse.json({ status: 'ok' }, { status: 200 });
   } catch (error) {
     console.error('Strava webhook error:', error);

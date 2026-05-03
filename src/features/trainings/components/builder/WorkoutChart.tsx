@@ -11,6 +11,15 @@ interface WorkoutChartProps {
     onBlockClick?: (blockId: string) => void;
 }
 
+interface TooltipParam {
+    name: string;
+    value: number;
+}
+
+interface ChartClickEvent {
+    dataIndex: number;
+}
+
 // Color coding based on block type
 const BLOCK_COLORS: Record<BlockType, string> = {
     warmup: '#22C55E',    // Green
@@ -89,7 +98,7 @@ export function WorkoutChart({ blocks, selectedId, onBlockClick }: WorkoutChartP
                 axisPointer: {
                     type: 'shadow'
                 },
-                formatter: (params: any) => {
+                formatter: (params: TooltipParam[]) => {
                     const param = params[0];
                     return `<strong>${param.name}</strong><br/>${t('duration')}: ${param.value.toFixed(1)} ${t('units.min')}`;
                 }
@@ -159,7 +168,7 @@ export function WorkoutChart({ blocks, selectedId, onBlockClick }: WorkoutChartP
     }, [chartData, selectedId, t]);
 
     const onChartEvents = {
-        click: (params: any) => {
+        click: (params: ChartClickEvent) => {
             const blockId = chartData.blockIds[params.dataIndex];
             if (blockId && onBlockClick) {
                 onBlockClick(blockId);

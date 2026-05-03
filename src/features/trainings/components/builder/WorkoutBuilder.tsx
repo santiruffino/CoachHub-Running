@@ -3,18 +3,13 @@
 import { useState, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { WorkoutBlock, BlockType, AthleteProfile } from './types';
-import { StepEditor } from './StepEditor';
-import { RepeatBlockEditor } from './RepeatBlockEditor';
 import { WorkoutSequence } from './WorkoutSequence';
 import { EstimatedTotals } from './EstimatedTotals';
 import { WorkoutIntensityChart } from './WorkoutIntensityChart';
 import { SessionSummary } from './SessionSummary';
 import { CoachNotes } from './CoachNotes';
 import { LinkedDrills } from './LinkedDrills';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { BLOCK_COLORS } from './constants';
 import api from '@/lib/axios';
 
 interface WorkoutBuilderProps {
@@ -32,10 +27,18 @@ export function WorkoutBuilder({
     readOnly = false,
     footerContent
 }: WorkoutBuilderProps) {
-    const [blocks, setBlocks] = useState<WorkoutBlock[]>(initialBlocks);
+    const [localBlocks, setLocalBlocks] = useState<WorkoutBlock[] | null>(null);
+    const blocks = localBlocks ?? initialBlocks;
     const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
     const [athleteProfile, setAthleteProfile] = useState<AthleteProfile | null>(null);
     const t = useTranslations('builder');
+
+    const updateBlocks = useCallback((updater: (prev: WorkoutBlock[]) => WorkoutBlock[]) => {
+        setLocalBlocks((prev) => {
+            const base = prev ?? initialBlocks;
+            return updater(base);
+        });
+    }, [initialBlocks]);
 
     // Fetch athlete profile when athleteId is provided
     useEffect(() => {
@@ -62,13 +65,6 @@ export function WorkoutBuilder({
         }
     }, [blocks, onChange]);
 
-    // Update when initialBlocks change
-    useEffect(() => {
-        if (initialBlocks && initialBlocks.length > 0) {
-            setBlocks(initialBlocks);
-        }
-    }, [initialBlocks]);
-
     const addBlock = useCallback((type: BlockType = 'interval', groupId?: string) => {
         const newBlock: WorkoutBlock = {
             id: uuidv4(),
@@ -87,9 +83,9 @@ export function WorkoutBuilder({
             ...(groupId && { group: { id: groupId, reps: 4 } })
         };
 
-        setBlocks(prev => [...prev, newBlock]);
+        updateBlocks((prev) => [...prev, newBlock]);
         setSelectedBlockId(newBlock.id);
-    }, [t]);
+    }, [t, updateBlocks]);
 
     const addRepeatBlock = useCallback(() => {
         const groupId = uuidv4();
@@ -115,21 +111,21 @@ export function WorkoutBuilder({
             group: { id: groupId, reps: 4 }
         };
 
-        setBlocks(prev => [...prev, hardBlock, easyBlock]);
+        updateBlocks((prev) => [...prev, hardBlock, easyBlock]);
         setSelectedBlockId(hardBlock.id);
-    }, [t]);
+    }, [t, updateBlocks]);
 
     const updateBlock = useCallback((id: string, updates: Partial<WorkoutBlock>) => {
-        setBlocks(prev => prev.map(block =>
+        updateBlocks((prev) => prev.map(block =>
             block.id === id ? { ...block, ...updates } : block
         ));
-    }, []);
+    }, [updateBlocks]);
 
     const updateGroupReps = useCallback((groupId: string, reps: number) => {
         const safeReps = Number.isFinite(reps) ? Math.floor(reps) : 1;
         const normalizedReps = Math.max(1, safeReps);
 
-        setBlocks(prev => prev.map(block => {
+        updateBlocks((prev) => prev.map(block => {
             if (block.group?.id !== groupId) {
                 return block;
             }
@@ -142,25 +138,18 @@ export function WorkoutBuilder({
                 }
             };
         }));
-    }, []);
+    }, [updateBlocks]);
 
     const removeBlock = useCallback((id: string) => {
-        setBlocks(prev => prev.filter(block => block.id !== id));
+        updateBlocks((prev) => prev.filter(block => block.id !== id));
         if (selectedBlockId === id) {
             setSelectedBlockId(null);
         }
-    }, [selectedBlockId]);
+    }, [selectedBlockId, updateBlocks]);
 
     const selectBlock = useCallback((id: string | null) => {
         setSelectedBlockId(id);
     }, []);
-
-    // Get selected block or group
-    const selectedBlock = blocks.find(b => b.id === selectedBlockId);
-    const selectedGroupId = selectedBlock?.group?.id;
-    const selectedGroupBlocks = selectedGroupId
-        ? blocks.filter(b => b.group?.id === selectedGroupId)
-        : [];
 
     if (readOnly) {
         return (
@@ -204,7 +193,7 @@ export function WorkoutBuilder({
                                 athleteProfile={athleteProfile}
                                 onAddStep={(type) => {
                                     if (type === 'repeat') addRepeatBlock();
-                                    else addBlock(type as any);
+                                    else addBlock(type);
                                 }}
                             />
                         </div>

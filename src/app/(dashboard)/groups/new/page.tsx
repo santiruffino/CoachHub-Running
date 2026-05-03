@@ -10,7 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { groupsService } from '@/features/groups/services/groups.service';
 import { racesService } from '@/features/races/services/races.service';
 import { Race } from '@/interfaces/race';
-import { Loader2, ArrowLeft, Trophy, Search } from 'lucide-react';
+import { Loader2, ArrowLeft, Trophy } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 export default function CreateGroupPage() {
@@ -33,7 +33,6 @@ export default function CreateGroupPage() {
     const [race_name, setRaceName] = useState('');
     const [race_date, setRaceDate] = useState('');
     const [race_distance, setRaceDistance] = useState('');
-    const [race_priority, setRacePriority] = useState<'A' | 'B' | 'C'>('A');
     const [race_location, setRaceLocation] = useState('');
 
     useEffect(() => {

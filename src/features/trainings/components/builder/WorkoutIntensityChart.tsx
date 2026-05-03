@@ -1,7 +1,7 @@
 'use client';
 
 import { WorkoutBlock, AthleteProfile } from './types';
-import { useMemo, useRef, useEffect } from 'react';
+import { useMemo, useRef, useEffect, useCallback } from 'react';
 import * as echarts from 'echarts';
 import { BLOCK_COLORS } from './constants';
 import { VAM_ZONES } from '@/features/profiles/constants/vam';
@@ -14,13 +14,19 @@ interface WorkoutIntensityChartProps {
     athleteProfile?: AthleteProfile | null;
 }
 
+interface IntensityChartItem {
+    name: string;
+    value: [number, number, number, string, WorkoutBlock['type'], number, WorkoutBlock['duration']['type']];
+    item: WorkoutBlock;
+}
+
 export function WorkoutIntensityChart({ blocks, selectedId, onBlockClick, athleteProfile }: WorkoutIntensityChartProps) {
     const chartRef = useRef<HTMLDivElement>(null);
     const chartInstance = useRef<echarts.ECharts | null>(null);
     const t = useTranslations('builder');
 
     // Remove the old useDistance memo, we will always use estimated time
-    const getBlockEstimatedSeconds = (block: WorkoutBlock): number => {
+    const getBlockEstimatedSeconds = useCallback((block: WorkoutBlock): number => {
         if (block.duration.type === 'time') return block.duration.value;
 
         let intensityFactor = (block.intensity || 50) / 100;
@@ -55,11 +61,11 @@ export function WorkoutIntensityChart({ blocks, selectedId, onBlockClick, athlet
         
         if (speedMs > 0) return Math.round(distMeters / speedMs);
         return 0;
-    };
+    }, [athleteProfile]);
 
-    const chartData = useMemo(() => {
+    const chartData = useMemo<IntensityChartItem[]>(() => {
         let totalX = 0;
-        const flatData: { name: string; value: (string | number)[]; item: WorkoutBlock }[] = [];
+        const flatData: IntensityChartItem[] = [];
         const processedBlocks = new Set<string>();
 
         blocks.forEach(block => {
@@ -97,7 +103,7 @@ export function WorkoutIntensityChart({ blocks, selectedId, onBlockClick, athlet
         });
 
         return flatData;
-    }, [blocks, t, athleteProfile]);
+    }, [blocks, t, getBlockEstimatedSeconds]);
 
     useEffect(() => {
         if (!chartRef.current || blocks.length === 0) return;
@@ -109,9 +115,14 @@ export function WorkoutIntensityChart({ blocks, selectedId, onBlockClick, athlet
 
         chartInstance.current = echarts.init(chartRef.current);
         
-        chartInstance.current.on('click', (params: any) => {
-            if (params.data && params.data.value && onBlockClick) {
-                onBlockClick(params.data.value[3]); // index 3 is blockId
+        chartInstance.current.on('click', (params) => {
+            if (!onBlockClick || typeof params.data !== 'object' || params.data === null || !('value' in params.data)) {
+                return;
+            }
+
+            const value = (params.data as { value?: unknown }).value;
+            if (Array.isArray(value) && typeof value[3] === 'string') {
+                onBlockClick(value[3]);
             }
         });
 
@@ -121,12 +132,21 @@ export function WorkoutIntensityChart({ blocks, selectedId, onBlockClick, athlet
             backgroundColor: 'transparent',
             tooltip: {
                 trigger: 'item',
-                formatter: (params: any) => {
-                    const val = params.data.value;
+                formatter: (params) => {
+                    if (typeof params !== 'object' || params === null || !('data' in params)) {
+                        return '';
+                    }
+
+                    const data = (params as { data?: { value?: unknown; name?: unknown } }).data;
+                    if (!data || !Array.isArray(data.value) || data.value.length < 7 || typeof data.name !== 'string') {
+                        return '';
+                    }
+
+                    const val = data.value as [number, number, number, string, WorkoutBlock['type'], number, WorkoutBlock['duration']['type']];
                     const durationVal = val[5];
                     const durationType = val[6];
                     const intensity = val[1];
-                    const name = params.data.name;
+                    const name = data.name;
                     
                     return `<strong>${name}</strong><br/>
                             ${t('duration')}: ${durationVal} ${durationType === 'time' ? t('units.min') : t('units.km')}<br/>
@@ -155,15 +175,17 @@ export function WorkoutIntensityChart({ blocks, selectedId, onBlockClick, athlet
             series: [
                 {
                     type: 'custom',
-                    renderItem: (params: any, api: any) => {
-                        const xStart = api.value(0);
-                        const intensity = api.value(1);
-                        const width = api.value(2);
-                        const blockId = api.value(3);
-                        const type = api.value(4);
+                    renderItem: (params, api) => {
+                        const xStart = Number(api.value(0));
+                        const intensity = Number(api.value(1));
+                        const width = Number(api.value(2));
+                        const blockId = String(api.value(3));
+                        const type = String(api.value(4));
                         
                         const start = api.coord([xStart, 0]);
                         const end = api.coord([xStart + width, intensity]);
+                        const sizeResult = api.size ? api.size([width, 0]) : width;
+                        const sizedWidth = Array.isArray(sizeResult) ? Number(sizeResult[0]) : Number(sizeResult);
                         
                         const isSelected = blockId === selectedId;
 
@@ -172,7 +194,7 @@ export function WorkoutIntensityChart({ blocks, selectedId, onBlockClick, athlet
                             shape: {
                                 x: start[0],
                                 y: end[1],
-                                width: Math.max(api.size([width, 0])[0] - 1, 1),
+                                width: Math.max(sizedWidth - 1, 1),
                                 height: start[1] - end[1]
                             },
                             style: {

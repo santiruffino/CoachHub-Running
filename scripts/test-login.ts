@@ -34,8 +34,9 @@ async function main() {
     }
     
     console.log("Profile:", profile);
-  } catch (e: any) {
-    console.log("Login error:", e.message);
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : 'Unknown error';
+    console.log("Login error:", message);
   }
 }
 main();

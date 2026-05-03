@@ -1,6 +1,17 @@
 import api from '@/lib/axios';
 import { Group, GroupDetails, CreateGroupDto } from '@/interfaces/group';
 
+interface DeleteResponse {
+    message?: string;
+}
+
+interface GroupMembership {
+    id: string;
+    group_id: string;
+    athlete_id: string;
+    joined_at?: string;
+}
+
 export const groupsService = {
     findAll: async () => {
         return api.get<Group[]>('/v2/groups');
@@ -19,14 +30,14 @@ export const groupsService = {
     },
 
     delete: async (id: string) => {
-        return api.delete(`/v2/groups/${id}`);
+        return api.delete<DeleteResponse>(`/v2/groups/${id}`);
     },
 
     addMember: async (groupId: string, athleteId: string) => {
-        return api.post(`/v2/groups/${groupId}/members`, { athleteId });
+        return api.post<GroupMembership>(`/v2/groups/${groupId}/members`, { athleteId });
     },
 
     removeMember: async (groupId: string, athleteId: string) => {
-        return api.delete(`/v2/groups/${groupId}/members`, { data: { athleteId } });
+        return api.delete<DeleteResponse>(`/v2/groups/${groupId}/members`, { data: { athleteId } });
     }
 };

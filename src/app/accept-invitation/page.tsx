@@ -3,19 +3,32 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import api from '@/lib/axios';
 import { CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { AxiosError } from 'axios';
+
+interface AcceptFormData {
+    name: string;
+    password: string;
+    confirmPassword: string;
+}
+
+interface ApiErrorResponse {
+    error?: string;
+}
 
 function AcceptInvitationContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const token = searchParams.get('token');
 
-    const { register, handleSubmit, watch, formState: { errors } } = useForm();
+    const t = useTranslations('invitations.accept');
+    const { register, handleSubmit, watch, formState: { errors } } = useForm<AcceptFormData>();
     const [validating, setValidating] = useState(true);
     const [invitationValid, setInvitationValid] = useState(false);
     const [invitationEmail, setInvitationEmail] = useState('');
@@ -36,7 +49,7 @@ function AcceptInvitationContent() {
                 const response = await api.get(`/invitations/validate/${token}`);
                 setInvitationValid(true);
                 setInvitationEmail(response.data.email);
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.error('Invalid token:', error);
                 setInvitationValid(false);
             } finally {
@@ -47,7 +60,7 @@ function AcceptInvitationContent() {
         validateToken();
     }, [token]);
 
-    const onSubmit = async (data: any) => {
+    const onSubmit = async (data: AcceptFormData) => {
         setSubmitting(true);
         setError('');
 
@@ -64,9 +77,10 @@ function AcceptInvitationContent() {
             setTimeout(() => {
                 router.push('/login?message=account_created');
             }, 2000);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error accepting invitation:', error);
-            setError(error.response?.data?.error || 'Failed to create account. Please try again.');
+            const message = (error as AxiosError<ApiErrorResponse>)?.response?.data?.error;
+            setError(message || t('loadError'));
             setSubmitting(false);
         }
     };
@@ -78,7 +92,7 @@ function AcceptInvitationContent() {
                     <CardContent className="pt-6">
                         <div className="flex flex-col items-center gap-4 py-8">
                             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                            <p className="text-muted-foreground">Validando invitación...</p>
+                            <p className="text-muted-foreground">{t('loading')}</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -93,15 +107,15 @@ function AcceptInvitationContent() {
                     <CardHeader>
                         <div className="flex items-center gap-2 text-destructive">
                             <AlertCircle className="h-5 w-5" />
-                            <CardTitle>Invitación Inválida</CardTitle>
+                            <CardTitle>{t('invalidTitle')}</CardTitle>
                         </div>
                         <CardDescription>
-                            Este enlace de invitación es inválido o ha expirado.
+                            {t('invalidDescription')}
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Button onClick={() => router.push('/login')} className="w-full">
-                            Ir al Login
+                            {t('goToLogin')}
                         </Button>
                     </CardContent>
                 </Card>
@@ -116,10 +130,10 @@ function AcceptInvitationContent() {
                     <CardHeader>
                         <div className="flex items-center gap-2 text-green-600 dark:text-green-500">
                             <CheckCircle className="h-5 w-5" />
-                            <CardTitle>¡Cuenta Creada!</CardTitle>
+                            <CardTitle>{t('successTitle')}</CardTitle>
                         </div>
                         <CardDescription>
-                            Tu cuenta ha sido creada exitosamente. Redirigiendo al login...
+                            {t('successDescription')}
                         </CardDescription>
                     </CardHeader>
                 </Card>
@@ -131,9 +145,9 @@ function AcceptInvitationContent() {
         <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4">
             <Card className="w-full max-w-md">
                 <CardHeader>
-                    <CardTitle>Aceptar Invitación</CardTitle>
+                    <CardTitle>{t('title')}</CardTitle>
                     <CardDescription>
-                        Crea tu cuenta para comenzar a entrenar
+                        {t('subtitle')}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -152,16 +166,16 @@ function AcceptInvitationContent() {
 
                         {/* Name */}
                         <div className="space-y-2">
-                            <Label htmlFor="name">Nombre Completo</Label>
+                            <Label htmlFor="name">{t('fullName')}</Label>
                             <Input
                                 id="name"
                                 type="text"
-                                placeholder="Juan Pérez"
+                                placeholder={t('fullNamePlaceholder')}
                                 {...register('name', {
-                                    required: 'El nombre es requerido',
+                                    required: t('nameRequired'),
                                     minLength: {
                                         value: 2,
-                                        message: 'El nombre debe tener al menos 2 caracteres',
+                                        message: t('nameMin'),
                                     },
                                 })}
                             />
@@ -172,16 +186,16 @@ function AcceptInvitationContent() {
 
                         {/* Password */}
                         <div className="space-y-2">
-                            <Label htmlFor="password">Contraseña</Label>
+                            <Label htmlFor="password">{t('password')}</Label>
                             <Input
                                 id="password"
                                 type="password"
-                                placeholder="Mínimo 6 caracteres"
+                                placeholder={t('passwordPlaceholder')}
                                 {...register('password', {
-                                    required: 'La contraseña es requerida',
+                                    required: t('passwordRequired'),
                                     minLength: {
                                         value: 6,
-                                        message: 'La contraseña debe tener al menos 6 caracteres',
+                                        message: t('passwordMin'),
                                     },
                                 })}
                             />
@@ -192,15 +206,15 @@ function AcceptInvitationContent() {
 
                         {/* Confirm Password */}
                         <div className="space-y-2">
-                            <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
+                            <Label htmlFor="confirmPassword">{t('confirmPassword')}</Label>
                             <Input
                                 id="confirmPassword"
                                 type="password"
-                                placeholder="Repite tu contraseña"
+                                placeholder={t('confirmPasswordPlaceholder')}
                                 {...register('confirmPassword', {
-                                    required: 'Por favor confirma tu contraseña',
+                                    required: t('confirmPasswordRequired'),
                                     validate: (value) =>
-                                        value === password || 'Las contraseñas no coinciden',
+                                        value === password || t('passwordMismatch'),
                                 })}
                             />
                             {errors.confirmPassword && (
@@ -220,10 +234,10 @@ function AcceptInvitationContent() {
                             {submitting ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Creando cuenta...
+                                    {t('creatingAccount')}
                                 </>
                             ) : (
-                                'Crear Cuenta'
+                                t('createAccount')
                             )}
                         </Button>
                     </form>
@@ -234,6 +248,8 @@ function AcceptInvitationContent() {
 }
 
 export default function AcceptInvitationPage() {
+    const t = useTranslations('invitations.accept');
+
     return (
         <Suspense fallback={
             <div className="min-h-screen flex items-center justify-center bg-background">
@@ -241,7 +257,7 @@ export default function AcceptInvitationPage() {
                     <CardContent className="pt-6">
                         <div className="flex flex-col items-center gap-4 py-8">
                             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                            <p className="text-muted-foreground">Cargando...</p>
+                            <p className="text-muted-foreground">{t('suspenseLoading')}</p>
                         </div>
                     </CardContent>
                 </Card>

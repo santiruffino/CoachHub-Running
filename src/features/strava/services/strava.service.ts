@@ -7,6 +7,38 @@ export interface StravaConnectionStatus {
     lastSync?: string;
 }
 
+export interface StravaExchangeResponse {
+    success: boolean;
+    athleteName?: string;
+    message: string;
+    shouldSync: boolean;
+    zonesSynced: boolean;
+}
+
+export interface StravaSyncResponse {
+    success: boolean;
+    message: string;
+    synced: number;
+    skipped: number;
+    total: number;
+    zonesSynced: boolean;
+}
+
+export interface StravaActivityDetailResponse {
+    id: string;
+    title: string;
+    type: string;
+    distance: number;
+    duration: number;
+    startDate: string;
+    avgHr?: number;
+    elevationGain?: number;
+    streams?: Array<{
+        type: string;
+        data: number[];
+    }>;
+}
+
 export const stravaService = {
     getAuthUrl: async () => {
         const response = await api.get<{ url: string }>('/v2/strava/auth/url');
@@ -14,7 +46,10 @@ export const stravaService = {
     },
 
     exchangeCode: async (code: string) => {
-        const response = await api.post('/v2/strava/auth/exchange', { code });
+        const state = typeof window !== 'undefined'
+            ? new URLSearchParams(window.location.search).get('state')
+            : null;
+        const response = await api.post<StravaExchangeResponse>('/v2/strava/auth/exchange', { code, state });
         return response.data;
     },
 
@@ -29,13 +64,13 @@ export const stravaService = {
     },
 
     sync: async () => {
-        const response = await api.post('/v2/strava/auth/sync');
+        const response = await api.post<StravaSyncResponse>('/v2/strava/auth/sync');
         return response.data;
     },
 
     getActivityDetails: async (activityId: string) => {
         // Use v2 users endpoint
-        const response = await api.get(`/v2/users/activities/${activityId}`);
+        const response = await api.get<StravaActivityDetailResponse>(`/v2/users/activities/${activityId}`);
         return response.data;
     }
 };

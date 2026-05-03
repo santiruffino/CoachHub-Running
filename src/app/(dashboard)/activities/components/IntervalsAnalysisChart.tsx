@@ -9,7 +9,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
   Cell,
 } from 'recharts';
@@ -32,6 +31,127 @@ interface IntervalsAnalysisChartProps {
   isRunning: boolean;
   lapOverrides?: Record<string, string>;
   matchedLaps?: MatchedLap[];
+}
+
+interface ChartDataPoint {
+  name: string;
+  hr: number;
+  pace: number;
+  cadence: number;
+  type: keyof typeof BLOCK_COLORS;
+  label: string;
+  rawLap: Lap;
+}
+
+interface TooltipEntry {
+  value?: number | string;
+  name?: string;
+  dataKey?: string | number;
+  color?: string;
+  payload?: ChartDataPoint;
+}
+
+interface TooltipContentProps {
+  active?: boolean;
+  payload?: TooltipEntry[];
+  label?: string;
+}
+
+interface IntervalsTooltipLabels {
+  avgPace: string;
+  avgSpeed: string;
+  avgHr: string;
+  cadence: string;
+}
+
+interface IntervalsTooltipProps extends TooltipContentProps {
+  isRunning: boolean;
+  labels: IntervalsTooltipLabels;
+  formatPace: (decimalMin: number) => string;
+}
+
+const toFiniteNumber = (value: unknown): number | null => {
+  const numericValue = typeof value === 'number' || typeof value === 'string'
+    ? Number(value)
+    : Number.NaN;
+  return Number.isFinite(numericValue) ? numericValue : null;
+};
+
+function IntervalsTooltip({
+  active,
+  payload,
+  label,
+  isRunning,
+  labels,
+  formatPace,
+}: IntervalsTooltipProps) {
+  if (!active || !payload || payload.length === 0) {
+    return null;
+  }
+
+  const point = payload[0]?.payload;
+  if (!point) {
+    return null;
+  }
+
+  const color = BLOCK_COLORS[point.type] || BLOCK_COLORS.other;
+
+  return (
+    <div className="bg-card border border-border p-4 rounded-xl shadow-xl">
+      <div className="flex items-center justify-between gap-4 mb-2">
+        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{label}</p>
+        <Badge
+          variant="outline"
+          className="text-[10px] h-5 px-1.5 font-bold uppercase tracking-tight"
+          style={{
+            backgroundColor: `${color}20`,
+            color,
+            borderColor: `${color}40`,
+          }}
+        >
+          {point.label}
+        </Badge>
+      </div>
+      <div className="space-y-1">
+        {payload.map((entry, index) => {
+          const numericValue = toFiniteNumber(entry.value);
+          let renderedValue: string | number = numericValue ?? 0;
+          let unit = '';
+          let entryLabel = entry.name || '';
+
+          if (entry.dataKey === 'pace') {
+            if (isRunning) {
+              renderedValue = formatPace(numericValue ?? 0);
+              unit = '/km';
+              entryLabel = labels.avgPace;
+            } else {
+              renderedValue = (numericValue ?? 0).toFixed(1);
+              unit = ' km/h';
+              entryLabel = labels.avgSpeed;
+            }
+          } else if (entry.dataKey === 'hr') {
+            unit = ' bpm';
+            entryLabel = labels.avgHr;
+          } else if (entry.dataKey === 'cadence') {
+            unit = ' spm';
+            entryLabel = labels.cadence;
+          }
+
+          return (
+            <div key={index} className="flex items-center gap-4 justify-between">
+              <span className="text-sm font-medium" style={{ color: entry.dataKey === 'hr' ? '' : entry.color }}>
+                {entryLabel}:
+              </span>
+              <span className="text-sm font-bold text-foreground">
+                {renderedValue}
+                {unit}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 export function IntervalsAnalysisChart({ 
@@ -63,7 +183,14 @@ export function IntervalsAnalysisChart({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const chartData = laps.map((lap, index) => {
+  const tooltipLabels: IntervalsTooltipLabels = {
+    avgPace: t('metrics.avgPace') || 'Ritmo',
+    avgSpeed: t('metrics.avgSpeed') || 'Velocidad',
+    avgHr: t('table.avgHr') || 'Pulso',
+    cadence: t('table.cadence') || 'Cadencia',
+  };
+
+  const chartData: ChartDataPoint[] = laps.map((lap, index) => {
     // If lap_index starts at 0, we display as 1-based
     const displayIndex = lap.lap_index === 0 || (laps[0]?.lap_index === 0) ? lap.lap_index + 1 : lap.lap_index;
     
@@ -92,66 +219,6 @@ export function IntervalsAnalysisChart({
     };
   });
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      const type = data.type as keyof typeof BLOCK_COLORS;
-      const color = BLOCK_COLORS[type] || BLOCK_COLORS.other;
-
-      return (
-        <div className="bg-card border border-border p-4 rounded-xl shadow-xl">
-          <div className="flex items-center justify-between gap-4 mb-2">
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{label}</p>
-            <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-bold uppercase tracking-tight" style={{ 
-              backgroundColor: `${color}20`,
-              color: color,
-              borderColor: `${color}40`
-            }}>
-              {data.label}
-            </Badge>
-          </div>
-          <div className="space-y-1">
-            {payload.map((entry: any, index: number) => {
-              let value = entry.value;
-              let unit = '';
-              let entryLabel = entry.name;
-
-              if (entry.dataKey === 'pace') {
-                if (isRunning) {
-                  value = formatPace(entry.value);
-                  unit = '/km';
-                  entryLabel = t('metrics.avgPace') || 'Ritmo';
-                } else {
-                  value = entry.value ? entry.value.toFixed(1) : '0.0';
-                  unit = ' km/h';
-                  entryLabel = t('metrics.avgSpeed') || 'Velocidad';
-                }
-              } else if (entry.dataKey === 'hr') {
-                unit = ' bpm';
-                entryLabel = t('table.avgHr') || 'Pulso';
-              } else if (entry.dataKey === 'cadence') {
-                unit = ' spm';
-                entryLabel = t('table.cadence') || 'Cadencia';
-              }
-
-              return (
-                <div key={index} className="flex items-center gap-4 justify-between">
-                  <span className="text-sm font-medium" style={{ color: entry.dataKey === 'hr' ? '' : entry.color }}>
-                    {entryLabel}:
-                  </span>
-                  <span className="text-sm font-bold text-foreground">
-                    {value}{unit}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
-
   return (
     <div className="w-full space-y-6">
       <div className="flex items-center justify-between px-2">
@@ -178,7 +245,7 @@ export function IntervalsAnalysisChart({
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart
             data={chartData}
-            onMouseMove={(state: any) => {
+            onMouseMove={(state) => {
               if (state?.isTooltipActive && typeof state.activeTooltipIndex === 'number') {
                 setActiveLapIndex(state.activeTooltipIndex);
               }
@@ -245,7 +312,15 @@ export function IntervalsAnalysisChart({
               }}
             />
             
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip
+              content={
+                <IntervalsTooltip
+                  isRunning={isRunning}
+                  labels={tooltipLabels}
+                  formatPace={formatPace}
+                />
+              }
+            />
 
             {/* Main bar: heart rate */}
             <Bar 
@@ -256,9 +331,20 @@ export function IntervalsAnalysisChart({
               radius={[6, 6, 0, 0]}
               fillOpacity={0.55}
               fill={BLOCK_COLORS.other}
-              label={(props: any) => {
+              label={(props) => {
                 const { x, y, width, index, value } = props;
-                if (index !== activeLapIndex || !value) return null;
+                const numericValue = toFiniteNumber(value);
+                if (
+                  index !== activeLapIndex ||
+                  numericValue === null ||
+                  numericValue === 0 ||
+                  typeof x !== 'number' ||
+                  typeof y !== 'number' ||
+                  typeof width !== 'number'
+                ) {
+                  return null;
+                }
+
                 return (
                   <text
                     x={x + width / 2}
@@ -268,7 +354,7 @@ export function IntervalsAnalysisChart({
                     fontSize={10}
                     fontWeight={700}
                   >
-                    {Math.round(value)} bpm
+                    {Math.round(numericValue)} bpm
                   </text>
                 );
               }}
@@ -291,9 +377,20 @@ export function IntervalsAnalysisChart({
               radius={[4, 4, 0, 0]}
               fill="#22d3ee"
               fillOpacity={0.95}
-              label={(props: any) => {
+              label={(props) => {
                 const { x, y, width, index, value } = props;
-                if (index !== activeLapIndex || !value) return null;
+                const numericValue = toFiniteNumber(value);
+                if (
+                  index !== activeLapIndex ||
+                  numericValue === null ||
+                  numericValue === 0 ||
+                  typeof x !== 'number' ||
+                  typeof y !== 'number' ||
+                  typeof width !== 'number'
+                ) {
+                  return null;
+                }
+
                 return (
                   <text
                     x={x + width / 2}
@@ -303,7 +400,7 @@ export function IntervalsAnalysisChart({
                     fontSize={10}
                     fontWeight={700}
                   >
-                    {Math.round(value)} spm
+                    {Math.round(numericValue)} spm
                   </text>
                 );
               }}
@@ -320,10 +417,20 @@ export function IntervalsAnalysisChart({
               dot={{ r: 5, fill: 'rgb(239 68 68)', strokeWidth: 2, stroke: '#fff' }}
               activeDot={{ r: 7, strokeWidth: 0 }}
               connectNulls
-              label={(props: any) => {
+              label={(props) => {
                 const { x, y, index, value } = props;
-                if (index !== activeLapIndex || !value) return null;
-                const paceLabel = isRunning ? `${formatPace(value)} /km` : `${Number(value).toFixed(1)} km/h`;
+                const numericValue = toFiniteNumber(value);
+                if (
+                  index !== activeLapIndex ||
+                  numericValue === null ||
+                  numericValue === 0 ||
+                  typeof x !== 'number' ||
+                  typeof y !== 'number'
+                ) {
+                  return null;
+                }
+
+                const paceLabel = isRunning ? `${formatPace(numericValue)} /km` : `${numericValue.toFixed(1)} km/h`;
                 return (
                   <text
                     x={x}

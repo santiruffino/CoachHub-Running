@@ -9,6 +9,36 @@ import { Skeleton } from '@/components/ui/skeleton';
 import api from '@/lib/axios';
 import { DashboardStats, LowCompliance, MissingWorkout, RPEMismatch, TimelineEvent } from '../types';
 import { useTranslations } from 'next-intl';
+import { User } from '@/interfaces/auth';
+
+interface DashboardAlertItem {
+  id: string;
+  name: string;
+  type: 'zone_violation' | 'new_feedback' | 'rpe_mismatch' | 'low_compliance' | 'missing_workout';
+  time: string;
+  message: string;
+  details: string;
+}
+
+interface ZoneViolation {
+  id: string;
+  name: string;
+  time: string;
+  details: string;
+}
+
+interface RecentFeedbackItem {
+  athleteId: string;
+  athleteName: string;
+  activityName: string;
+  timestamp?: string;
+}
+
+interface RecentTimelineItemProps {
+  time: string;
+  content: React.ReactNode;
+  isSystem?: boolean;
+}
 
 interface DashboardData {
   stats: DashboardStats;
@@ -16,14 +46,14 @@ interface DashboardData {
     rpeMismatches: RPEMismatch[];
     lowCompliance: LowCompliance[];
     missingWorkouts: MissingWorkout[];
-    recentFeedback: any[];
-    zoneViolations: any[];
+    recentFeedback: RecentFeedbackItem[];
+    zoneViolations: ZoneViolation[];
   };
   groupCompliance: { groupId: string; groupName: string; athleteCount: number; completionRate: number }[];
   activityTimeline: TimelineEvent[];
 }
 
-function TimelineItem({ time, content, isSystem = false }: any) {
+function TimelineItem({ time, content, isSystem = false }: RecentTimelineItemProps) {
   return (
     <div className="relative pl-6 pb-7 last:pb-0">
       <div className={`absolute left-0 top-1.5 w-2 h-2 rounded-full ${isSystem ? 'bg-primary' : 'bg-red-500'}`} />
@@ -36,10 +66,11 @@ function TimelineItem({ time, content, isSystem = false }: any) {
   );
 }
 
-export default function CoachDashboard({ user }: { user: any }) {
+export default function CoachDashboard({ user }: { user: User }) {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const t = useTranslations();
+  const userDisplayName = user.firstName || user.name?.split(' ')[0] || user.email.split('@')[0];
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -89,22 +120,22 @@ export default function CoachDashboard({ user }: { user: any }) {
   };
 
   // Real alerts mapped to UI properties
-  const allAlerts = [
-    ...(data?.alerts?.zoneViolations?.map((zv: any) => ({
-      id: zv.id,
-      name: zv.name,
+  const allAlerts: DashboardAlertItem[] = [
+    ...(data?.alerts?.zoneViolations?.map((zoneViolation) => ({
+      id: zoneViolation.id,
+      name: zoneViolation.name,
       type: 'zone_violation' as const,
-      time: new Date(zv.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      time: new Date(zoneViolation.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       message: t("dashboard.alertTypes.zone_violation"),
-      details: zv.details,
+      details: zoneViolation.details,
     })) || []),
-    ...(data?.alerts?.recentFeedback?.map((fb: any) => ({
-      id: fb.athleteId,
-      name: fb.athleteName,
+    ...(data?.alerts?.recentFeedback?.map((feedback) => ({
+      id: feedback.athleteId,
+      name: feedback.athleteName,
       type: 'new_feedback' as const,
-      time: fb.timestamp || t("dashboard.alerts.new"),
+      time: feedback.timestamp || t("dashboard.alerts.new"),
       message: t("dashboard.alertTypes.new_feedback"),
-      details: fb.activityName,
+      details: feedback.activityName,
     })) || []),
     ...(data?.alerts?.rpeMismatches?.map((m: RPEMismatch) => ({
       id: m.athleteId,
@@ -141,7 +172,7 @@ export default function CoachDashboard({ user }: { user: any }) {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground mb-2">
-            {t("dashboard.messages.hi", { name: user.firstName || user.name?.split(' ')[0] })}
+            {t("dashboard.messages.hi", { name: userDisplayName })}
           </h1>
           <p className="text-sm text-muted-foreground font-medium">
             {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).replace(/^\w/, c => c.toUpperCase())}

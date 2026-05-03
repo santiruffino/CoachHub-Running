@@ -4,6 +4,7 @@ export interface Activity {
     title: string;
     distance: number;
     duration: number;
+    elevation_gain?: number;
     start_date: string;
     type: string;
 }

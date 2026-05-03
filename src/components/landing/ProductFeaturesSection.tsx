@@ -13,7 +13,11 @@ const lineChartData = Array.from({ length: 20 }, (_, i) => ({
 export function ProductFeaturesSection() {
   const [mounted, setMounted] = useState(false);
   const t = useTranslations('landing.productFeatures');
-  useEffect(() => setMounted(true), []);
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(frame);
+  }, []);
 
   const productFeatures = [
     {
@@ -113,7 +117,7 @@ export function ProductFeaturesSection() {
                   </h3>
                 </div>
 
-                {/* Line chart — only render on client to avoid Recharts -1 dimension error */}
+                {/* Line chart */}
                 <div className="h-44">
                   {mounted && (
                     <ResponsiveContainer width="100%" height="100%">

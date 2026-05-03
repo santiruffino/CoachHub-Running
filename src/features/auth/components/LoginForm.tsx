@@ -3,7 +3,6 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { authService } from '../services/auth.service';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useRouter } from 'next/navigation';
@@ -15,6 +14,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import { isAxiosError } from 'axios';
 
 export default function LoginForm() {
     const [error, setError] = useState('');
@@ -44,8 +44,8 @@ export default function LoginForm() {
         try {
             setError('');
             await login(data.email, data.password);
-        } catch (err: any) {
-            setError(err?.message || t('invalidCredentials'));
+        } catch (err: unknown) {
+            setError(isAxiosError(err) ? err.message : t('invalidCredentials'));
         }
     };
 

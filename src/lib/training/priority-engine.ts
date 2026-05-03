@@ -1,8 +1,18 @@
-export function resolveAssignmentConflicts(assignments: any[]) {
+interface PriorityAssignment {
+    user_id: string;
+    scheduled_date: string;
+    source_group_id?: string | null;
+    group?: {
+        group_type?: string | null;
+        race_priority?: 'A' | 'B' | 'C' | string | null;
+    } | null;
+}
+
+export function resolveAssignmentConflicts(assignments: PriorityAssignment[]) {
     if (!assignments || assignments.length === 0) return [];
 
     // Group assignments by user_id AND by scheduled_date
-    const grouped = new Map<string, any[]>();
+    const grouped = new Map<string, PriorityAssignment[]>();
     
     assignments.forEach(assignment => {
         const key = `${assignment.user_id}_${assignment.scheduled_date}`;
@@ -12,7 +22,7 @@ export function resolveAssignmentConflicts(assignments: any[]) {
         grouped.get(key)!.push(assignment);
     });
 
-    const resolved: any[] = [];
+    const resolved: PriorityAssignment[] = [];
 
     // Priority ranker helper
     // 0: Personalized
@@ -20,7 +30,7 @@ export function resolveAssignmentConflicts(assignments: any[]) {
     // 2: Race B
     // 3: Race C
     // 4: Regular (Default)
-    const getPriorityScore = (assignment: any): number => {
+    const getPriorityScore = (assignment: PriorityAssignment): number => {
         if (!assignment.source_group_id || !assignment.group) {
             return 0; // Personalized is top priority
         }

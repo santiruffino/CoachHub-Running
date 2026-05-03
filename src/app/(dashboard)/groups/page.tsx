@@ -22,19 +22,6 @@ export default function GroupsPage() {
     const fetchGroups = async () => {
         try {
             const res = await groupsService.findAll();
-            const active = res.data.filter(isGroupActive);
-            const finished = res.data.filter(g => g.group_type === 'RACE' && g.race_date && !isGroupActive(g));
-            
-            // Wait, actually the logic requested is: "the group should remain active for a month after the race day".
-            // So finishedGroups should be those that were active but are now truly expired (> 1 month).
-            // Let's refine: 
-            // - Active: REGULAR + RACE (future or < 1 month past)
-            // - Finished: RACE (> 1 month past)
-
-            const now = new Date();
-            const oneMonthAgo = new Date();
-            oneMonthAgo.setMonth(now.getMonth() - 1);
-
             const activeList = res.data.filter(isGroupActive);
             const archivedList = res.data.filter(g => g.group_type === 'RACE' && g.race_date && !isGroupActive(g));
 
@@ -96,8 +83,14 @@ export default function GroupsPage() {
                                     className="h-8 py-0"
                                     autoFocus
                                     onKeyDown={(e) => {
-                                        if (e.key === 'Enter') handleSaveName(e as any, group.id);
-                                        if (e.key === 'Escape') handleCancelEdit(e as any);
+                                        if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            void handleSaveName(e as unknown as React.MouseEvent, group.id);
+                                        }
+                                        if (e.key === 'Escape') {
+                                            handleCancelEdit(e);
+                                        }
                                     }}
                                 />
                                 <Button

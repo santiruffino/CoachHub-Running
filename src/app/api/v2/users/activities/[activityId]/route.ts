@@ -12,7 +12,7 @@ import { requireAuth } from '@/lib/supabase/api-helpers';
  * - Coach/Admin can view if athlete is in their team
  */
 export async function GET(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ activityId: string }> }
 ) {
     try {
@@ -79,7 +79,7 @@ export async function GET(
         }
 
         return NextResponse.json(activity);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Get activity details error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

@@ -180,7 +180,7 @@ export function WorkoutSummary({ blocks, workoutRPE, onClose }: WorkoutSummaryPr
                         onClick={onClose}
                         className="w-full py-2.5 bg-brand-primary hover:bg-brand-primary-dark text-white font-medium rounded-lg transition-colors"
                     >
-                        {t('common.close' as any)}
+                        {t('common.close')}
                     </button>
                 </div>
             </div>

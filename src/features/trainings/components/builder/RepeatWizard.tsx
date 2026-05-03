@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { WorkoutBlock, BlockType, DurationType, TargetType } from './types';
+import { WorkoutBlock, DurationType, TargetType } from './types';
 import { X, Repeat } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
@@ -209,7 +209,7 @@ export function RepeatWizard({ onAdd, onClose }: RepeatWizardProps) {
                         onClick={onClose}
                         className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
                     >
-                        {t('common.cancel' as any)}
+                        {t('common.cancel')}
                     </button>
                     <button
                         onClick={handleGenerate}

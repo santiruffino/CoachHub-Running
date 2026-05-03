@@ -24,10 +24,31 @@ export interface MatchedLap {
     matched: boolean;
 }
 
+export interface RawBlock {
+    type: string;
+    stepName?: string;
+    duration: {
+        type: 'distance' | 'time';
+        value: number;
+    };
+    rpe?: number;
+    intensity?: number;
+    group?: {
+        id: string;
+        reps: number;
+    };
+}
+
+export interface RawLap {
+    distance?: number;
+    elapsed_time?: number;
+    moving_time?: number;
+}
+
 /**
  * Flatten a workout structure into a sequential list of steps
  */
-export function flattenWorkout(blocks: any[]): FlatStep[] {
+export function flattenWorkout(blocks: RawBlock[]): FlatStep[] {
     const flatSteps: FlatStep[] = [];
     let stepIndex = 0;
     // Process all blocks
@@ -53,7 +74,7 @@ export function flattenWorkout(blocks: any[]): FlatStep[] {
 
             // Find all blocks in this group
             // Assuming they are contiguous in the array
-            const groupBlocks = [];
+            const groupBlocks: RawBlock[] = [];
             let j = i;
             while (j < blocks.length && blocks[j].group?.id === groupId) {
                 groupBlocks.push(blocks[j]);
@@ -186,7 +207,7 @@ function generateStepLabel(step: FlatStep): string {
  * Match activity laps to workout steps
  */
 export function matchLapsToWorkout(
-    laps: any[],
+    laps: RawLap[],
     flatSteps: FlatStep[]
 ): MatchedLap[] {
     console.log('=== WORKOUT MATCHER DEBUG ===');

@@ -58,7 +58,7 @@ export async function GET() {
     // or we can check the 'updated_at' of their profile / when they last assigned a training.
     // For simplicity, we just look at the latest training assigned by them.
     const coachesWithActivity = await Promise.all((coachesData || []).map(async (coach) => {
-      const { data: latestTraining, error: latestTrainingError } = await supabase
+      const { data: latestTraining } = await supabase
         .from('trainings')
         .select('created_at')
         .eq('created_by', coach.id)
@@ -92,8 +92,8 @@ export async function GET() {
       },
       coaches: coachesWithActivity
     });
-  } catch (error: any) {
-    console.error('Admin Dashboard Error:', error.message);
+  } catch (error: unknown) {
+    console.error('Admin Dashboard Error:', error instanceof Error ? error.message : error);
     return NextResponse.json(
       { error: 'Failed to fetch admin dashboard data' },
       { status: 500 }

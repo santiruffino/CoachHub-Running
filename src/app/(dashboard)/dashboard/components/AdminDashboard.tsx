@@ -8,6 +8,7 @@ import api from '@/lib/axios';
 import { useTranslations } from 'next-intl';
 
 import { Coach } from '@/interfaces/coach';
+import { User } from '@/interfaces/auth';
 
 interface AdminData {
   metrics: {
@@ -18,7 +19,8 @@ interface AdminData {
   coaches: Coach[];
 }
 
-export default function AdminDashboard({ user }: { user: any }) {
+export default function AdminDashboard({ user }: { user: User }) {
+  void user;
   const [data, setData] = useState<AdminData | null>(null);
   const [loading, setLoading] = useState(true);
   const t = useTranslations();

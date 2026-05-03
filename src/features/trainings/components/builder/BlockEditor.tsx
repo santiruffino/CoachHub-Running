@@ -2,7 +2,7 @@
 
 import { WorkoutBlock, DurationType, TargetType, BlockType } from './types';
 import { Trash2 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { calculateTargetPace, VAM_DEFAULT, VAM_ZONES } from '@/features/profiles/constants/vam';
 import { BLOCK_COLORS } from './constants';
 import { useTranslations } from 'next-intl';
@@ -39,10 +39,20 @@ const hmsToSeconds = (str: string) => {
 
 export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = false }: BlockEditorProps) {
     const t = useTranslations('builder');
-    const [timeString, setTimeString] = useState(
-        block.duration.type === 'time' ? secondsToHms(block.duration.value) : ''
-    );
+    const [timeString, setTimeString] = useState('');
     const [athleteVAM, setAthleteVAM] = useState<string | null>(null);
+
+    const displayedTimeString = useMemo(() => {
+        if (block.duration.type !== 'time') {
+            return '';
+        }
+
+        if (timeString.trim().length > 0) {
+            return timeString;
+        }
+
+        return secondsToHms(block.duration.value);
+    }, [block.duration.type, block.duration.value, timeString]);
 
     // Fetch athlete VAM when athleteId is provided
     useEffect(() => {
@@ -64,12 +74,6 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
         };
         fetchAthleteVAM();
     }, [athleteId]);
-
-    useEffect(() => {
-        if (block.duration.type === 'time') {
-            setTimeString(secondsToHms(block.duration.value));
-        }
-    }, [block.duration.value, block.duration.type]);
 
     const handleTypeChange = (value: BlockType) => {
         onUpdate(block.id, { type: value });
@@ -96,7 +100,11 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
         onUpdate(block.id, {
             duration: { type: value, value: defaultValue, unit: value === 'distance' ? 'm' : undefined }
         });
-        if (value === 'time') setTimeString(secondsToHms(300));
+        if (value === 'time') {
+            setTimeString(secondsToHms(300));
+        } else {
+            setTimeString('');
+        }
     };
 
     const toggleDistanceUnit = (unit: 'm' | 'km') => {
@@ -188,7 +196,7 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
                     <div className="grid grid-cols-2 gap-3">
                         <input
                             type="text"
-                            value={block.duration.type === 'time' ? timeString : getDistanceDisplayValue()}
+                            value={block.duration.type === 'time' ? displayedTimeString : getDistanceDisplayValue()}
                             onChange={(e) => handleDurationChange(e.target.value)}
                             placeholder={block.duration.type === 'time' ? "min:sec" : "0"}
                             className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-gray-900 dark:text-white dark:bg-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500"

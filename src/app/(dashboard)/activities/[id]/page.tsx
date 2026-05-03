@@ -7,26 +7,15 @@ import { format } from 'date-fns';
 import { useTranslations } from 'next-intl';
 import api from '@/lib/axios';
 import { useCache } from '@/lib/context/CacheContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
 import {
     Activity as ActivityIcon,
-    Calendar,
-    Clock,
-    TrendingUp,
-    Heart,
-    Footprints,
-    Mountain,
-    Zap,
-    Award,
     ArrowLeft,
     Link as LinkIcon
 } from 'lucide-react';
@@ -35,21 +24,76 @@ import { HeartRateZonesChart } from '../components/HeartRateZonesChart';
 import { PaceZonesChart } from '../components/PaceZonesChart';
 import { IntervalsAnalysisChart } from '../components/IntervalsAnalysisChart';
 import { ZoneComplianceCard } from '../components/ZoneComplianceCard';
-import { flattenWorkout, matchLapsToWorkout, MatchedLap } from '@/features/trainings/utils/workoutMatcher';
+import { LapFilterBadges } from '../components/LapFilterBadges';
+import { LapsTable } from '../components/LapsTable';
+import { flattenWorkout, matchLapsToWorkout, MatchedLap, RawBlock } from '@/features/trainings/utils/workoutMatcher';
 import { LinkWorkoutModal } from '@/features/trainings/components/LinkWorkoutModal';
+
+interface ComplianceData {
+    compliance_score: number;
+    is_violation: boolean;
+    violation_details: {
+        targets: number[];
+        distribution: Array<{
+            min: number;
+            max: number;
+            time: number;
+        }>;
+    };
+}
+
+interface WorkoutAssignment {
+    activity_id?: string | null;
+    scheduled_date?: string;
+    scheduledDate?: string;
+    workout?: {
+        blocks?: RawBlock[];
+    };
+}
+
+type ApiErrorShape = {
+    response?: {
+        data?: {
+            error?: string;
+        };
+    };
+};
+
+const getApiErrorMessage = (error: unknown, fallback: string): string => {
+    if (typeof error === 'object' && error !== null) {
+        const apiError = error as ApiErrorShape;
+        const responseError = apiError.response?.data?.error;
+        if (typeof responseError === 'string' && responseError.length > 0) {
+            return responseError;
+        }
+    }
+
+    if (error instanceof Error && error.message) {
+        return error.message;
+    }
+
+    return fallback;
+};
+
+function ActivityChartLoading() {
+    const t = useTranslations('activities.detail');
+
+    return (
+        <div className="h-[400px] flex items-center justify-center">
+            <p>{t('loadingChart')}</p>
+        </div>
+    );
+}
 
 // Dynamic import for ECharts to avoid SSR issues
 const ActivityChart = dynamic(
     () => import('../components/ActivityChart').then(mod => ({ default: mod.ActivityChart })),
     {
-        ssr: false, loading: () => {
-            const tFallback = useTranslations('activities.detail');
-            return <div className="h-[400px] flex items-center justify-center"><p>{tFallback('loadingChart')}</p></div>;
-        }
+        ssr: false,
+        loading: () => <ActivityChartLoading />,
     }
 );
-
-import { SegmentEffort, Split, Lap, ActivityDetail } from '@/interfaces/activity';
+import { ActivityDetail } from '@/interfaces/activity';
 
 export default function ActivityDetailPage() {
     const params = useParams();
@@ -71,12 +115,12 @@ export default function ActivityDetailPage() {
     const [feedbackSaving, setFeedbackSaving] = useState(false);
     const [isAthlete, setIsAthlete] = useState(false);
     const [heartrateZones, setHeartrateZones] = useState<{ zones: Array<{ min: number; max: number }> } | null>(null);
-    const [compliance, setCompliance] = useState<any | null>(null);
+    const [compliance, setCompliance] = useState<ComplianceData | null>(null);
     const [internalId, setInternalId] = useState<string | null>(null);
 
     // Workout matching state
     const [matchedLaps, setMatchedLaps] = useState<MatchedLap[]>([]);
-    const [workoutAssignment, setWorkoutAssignment] = useState<any>(null);
+    const [workoutAssignment, setWorkoutAssignment] = useState<WorkoutAssignment | null>(null);
     const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
     const { alertState, showAlert, closeAlert } = useAlertDialog();
     const [lapFilter, setLapFilter] = useState<'all' | 'warmup' | 'active' | 'recovery' | 'cooldown'>('all');
@@ -94,9 +138,9 @@ export default function ActivityDetailPage() {
 
                 // Set whether the current viewer is the athlete (owner) or a coach
                 setIsAthlete(response.data._viewerIsOwner || false);
-            } catch (err: any) {
-                console.error('Failed to fetch activity:', err);
-                setError(err.response?.data?.error || t('errorLoad'));
+            } catch (error: unknown) {
+                console.error('Failed to fetch activity:', error);
+                setError(getApiErrorMessage(error, t('errorLoad')));
             } finally {
                 setLoading(false);
             }
@@ -109,7 +153,7 @@ export default function ActivityDetailPage() {
         const fetchCompliance = async () => {
             if (!internalId) return;
             try {
-                const response = await api.get(`/v2/activities/${internalId}/compliance`);
+                const response = await api.get<ComplianceData>(`/v2/activities/${internalId}/compliance`);
                 setCompliance(response.data);
             } catch (err) {
                 console.error('Failed to fetch compliance:', err);
@@ -158,10 +202,11 @@ export default function ActivityDetailPage() {
 
                 // Fetch owner's assignments for that date
                 const assignmentsRes = await api.get(`/v2/users/${activity._ownerId}/details`);
-                const assignments = assignmentsRes.data?.assignments || [];
+                const assignments =
+                    (assignmentsRes.data as { assignments?: WorkoutAssignment[] } | undefined)?.assignments || [];
 
                 // Find assignment matching this date
-                const matchingAssignment = assignments.find((a: any) => {
+                const matchingAssignment = assignments.find((a: WorkoutAssignment) => {
                     // 1. Check for explicit link using internal UUID
                     const currentActivityId = activity._internalId || String(activity.id);
                     if (a.activity_id === currentActivityId) return true;
@@ -214,8 +259,8 @@ export default function ActivityDetailPage() {
                     // Initialize with default RPE of 5 (moderate)
                     setFeedback({ rpe: 5, comments: '' });
                 }
-            } catch (err: any) {
-                console.error('Failed to fetch feedback:', err);
+            } catch (error: unknown) {
+                console.error('Failed to fetch feedback:', error);
                 // Initialize with default RPE of 5 (moderate)
                 setFeedback({ rpe: 5, comments: '' });
             } finally {
@@ -240,8 +285,8 @@ export default function ActivityDetailPage() {
                 rpe: response.data.rpe,
                 comments: response.data.comments || '',
             });
-        } catch (err: any) {
-            console.error('Failed to save feedback:', err);
+        } catch (error: unknown) {
+            console.error('Failed to save feedback:', error);
             showAlert('error', t('errorSaveFeedback'));
         } finally {
             setFeedbackSaving(false);
@@ -304,10 +349,6 @@ export default function ActivityDetailPage() {
     // Helper functions to identify activity types
     const isRunning = (sportType: string): boolean => {
         return ['Run', 'TrailRun', 'VirtualRun'].includes(sportType);
-    };
-
-    const isCycling = (sportType: string): boolean => {
-        return ['Ride', 'VirtualRide', 'MountainBikeRide', 'GravelRide', 'EBikeRide'].includes(sportType);
     };
 
     const isWeightTraining = (sportType: string): boolean => {
@@ -713,160 +754,23 @@ export default function ActivityDetailPage() {
                         {/* Laps Tab */}
                         {activity.laps && activity.laps.length > 0 && (
                             <TabsContent value="laps" className="mt-0 outline-none">
-                                <div className="flex flex-wrap items-center gap-2 mb-6">
-                                    <Badge
-                                        variant={lapFilter === 'all' ? 'default' : 'outline'}
-                                        className="cursor-pointer"
-                                        onClick={() => setLapFilter('all')}
-                                    >
-                                        Todos
-                                    </Badge>
-                                    <Badge
-                                        variant={lapFilter === 'warmup' ? 'default' : 'outline'}
-                                        className={`cursor-pointer ${lapFilter !== 'warmup' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20 hover:bg-blue-500/20' : ''}`}
-                                        onClick={() => setLapFilter('warmup')}
-                                    >
-                                        Calentamiento
-                                    </Badge>
-                                    <Badge
-                                        variant={lapFilter === 'active' ? 'default' : 'outline'}
-                                        className={`cursor-pointer ${lapFilter !== 'active' ? 'bg-orange-500/10 text-orange-500 border-orange-500/20 hover:bg-orange-500/20' : ''}`}
-                                        onClick={() => setLapFilter('active')}
-                                    >
-                                        Activo
-                                    </Badge>
-                                    <Badge
-                                        variant={lapFilter === 'recovery' ? 'default' : 'outline'}
-                                        className={`cursor-pointer ${lapFilter !== 'recovery' ? 'bg-green-500/10 text-green-500 border-green-500/20 hover:bg-green-500/20' : ''}`}
-                                        onClick={() => setLapFilter('recovery')}
-                                    >
-                                        Recuperación
-                                    </Badge>
-                                    <Badge
-                                        variant={lapFilter === 'cooldown' ? 'default' : 'outline'}
-                                        className={`cursor-pointer ${lapFilter !== 'cooldown' ? 'bg-purple-500/10 text-purple-500 border-purple-500/20 hover:bg-purple-500/20' : ''}`}
-                                        onClick={() => setLapFilter('cooldown')}
-                                    >
-                                        Enfriamiento
-                                    </Badge>
-                                </div>
-                                <div className="overflow-x-auto">
-                                    <Table className="w-full">
-                                        <TableHeader>
-                                            <TableRow className="border-b border-muted hover:bg-transparent">
-                                                <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4 pl-0">{t('table.lap')}</TableHead>
-                                                <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.time')}</TableHead>
-                                                <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.distance')}</TableHead>
-                                                <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.avgPace')}</TableHead>
-                                                {!!activity.laps[0]?.average_heartrate && (
-                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.avgHr')}</TableHead>
-                                                )}
-                                                {!!activity.laps[0]?.average_cadence && (
-                                                    <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.cadence')}</TableHead>
-                                                )}
-                                                <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.elevGain')}</TableHead>
-                                                <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4 text-right pr-0"></TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {activity.laps.map((lap, idx) => ({ lap, idx }))
-                                                .filter(({ idx }) => {
-                                                    if (lapFilter === 'all') return true;
-                                                    const matchedLap = matchedLaps.find(m => m.lapIndex === idx);
-                                                    return matchedLap?.stepType === lapFilter;
-                                                })
-                                                .map(({ lap, idx }) => {
-                                                    const matchedLap = matchedLaps.find(m => m.lapIndex === idx);
-                                                    const stepTypeColors: Record<string, string> = {
-                                                        warmup: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-                                                        active: 'bg-orange-500/10 text-orange-500 border-orange-500/20',
-                                                        recovery: 'bg-green-500/10 text-green-500 border-green-500/20',
-                                                        rest: 'bg-gray-400/10 text-muted-foreground border-gray-400/20',
-                                                        cooldown: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
-                                                        other: 'bg-gray-500/10 text-muted-foreground border-gray-500/20',
-                                                    };
-
-                                                    return (
-                                                        <TableRow key={lap.id}>
-                                                            <TableCell className="font-medium">
-                                                                {lap.lap_index === 0 || (activity.laps![0]?.lap_index === 0) ? lap.lap_index + 1 : lap.lap_index}
-                                                            </TableCell>
-                                                            <TableCell>{formatTime(lap.moving_time)}</TableCell>
-                                                            <TableCell>{(lap.distance / 1000).toFixed(2)} {t('metrics.units.km')}</TableCell>
-                                                            <TableCell>{formatPace(lap.average_speed)}</TableCell>
-                                                            {!!activity.laps![0]?.average_heartrate && (
-                                                                <TableCell>
-                                                                    {lap.average_heartrate ? (
-                                                                        <span className={`px-2 py-1 rounded font-medium ${getHRZoneColor(lap.average_heartrate)}`}>
-                                                                            {lap.average_heartrate.toFixed(0)} {t('metrics.units.bpm')}
-                                                                        </span>
-                                                                    ) : (
-                                                                        <span className="text-muted-foreground">-</span>
-                                                                    )}
-                                                                </TableCell>
-                                                            )}
-                                                            {!!activity.laps![0]?.average_cadence && (
-                                                                <TableCell>
-                                                                    {lap.average_cadence ? (
-                                                                        <span>{lap.average_cadence.toFixed(0)} {t('metrics.units.spm')}</span>
-                                                                    ) : (
-                                                                        <span className="text-muted-foreground">-</span>
-                                                                    )}
-                                                                </TableCell>
-                                                            )}
-                                                            <TableCell>{lap.total_elevation_gain.toFixed(1)} {t('metrics.units.m')}</TableCell>
-                                                            <TableCell className="text-right pr-0">
-                                                                {(() => {
-                                                                    const overrideType = lapOverrides[lap.lap_index];
-                                                                    const effectiveType = overrideType || matchedLap?.stepType || 'other';
-
-                                                                    const overrideLabels: Record<string, string> = {
-                                                                        warmup: 'Warm up',
-                                                                        active: 'Active',
-                                                                        rest: 'Rest',
-                                                                        recovery: 'Recovery',
-                                                                        cooldown: 'Cool Down'
-                                                                    };
-
-                                                                    const displayLabel = overrideType ? overrideLabels[overrideType] : (matchedLap ? matchedLap.stepLabel : 'Unmatched');
-                                                                    const displayColorClass = stepTypeColors[effectiveType] || stepTypeColors.other;
-
-                                                                    const badgeEl = (
-                                                                        <Badge
-                                                                            variant="outline"
-                                                                            className={`${displayColorClass} border transition-opacity`}
-                                                                        >
-                                                                            {displayLabel}
-                                                                        </Badge>
-                                                                    );
-
-                                                                    if (!isAthlete) {
-                                                                        return (
-                                                                            <DropdownMenu>
-                                                                                <DropdownMenuTrigger asChild className="cursor-pointer hover:opacity-80">
-                                                                                    {badgeEl}
-                                                                                </DropdownMenuTrigger>
-                                                                                <DropdownMenuContent align="end" className="w-[150px]">
-                                                                                    {Object.entries(overrideLabels).map(([key, label]) => (
-                                                                                        <DropdownMenuItem key={key} onClick={() => handleOverrideStepType(lap.lap_index, key)}>
-                                                                                            <div className={`w-2 h-2 rounded-full mr-2 ${stepTypeColors[key].split(' ')[0]}`} />
-                                                                                            {label}
-                                                                                        </DropdownMenuItem>
-                                                                                    ))}
-                                                                                </DropdownMenuContent>
-                                                                            </DropdownMenu>
-                                                                        );
-                                                                    }
-
-                                                                    return badgeEl;
-                                                                })()}
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    );
-                                                })}
-                                        </TableBody>
-                                    </Table>
-                                </div>
+                                <LapFilterBadges
+                                    value={lapFilter}
+                                    onChange={setLapFilter}
+                                    t={t}
+                                />
+                                <LapsTable
+                                    laps={activity.laps}
+                                    matchedLaps={matchedLaps}
+                                    lapFilter={lapFilter}
+                                    isAthlete={isAthlete}
+                                    lapOverrides={lapOverrides}
+                                    onOverrideStepType={handleOverrideStepType}
+                                    formatTime={formatTime}
+                                    formatPace={formatPace}
+                                    getHRZoneColor={getHRZoneColor}
+                                    t={t}
+                                />
                             </TabsContent>
                         )}
 

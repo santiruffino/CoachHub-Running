@@ -26,6 +26,13 @@ function question(query: string): Promise<string> {
     });
 }
 
+type ProfilePayload = {
+    name: string;
+    role: 'ADMIN';
+    must_change_password: boolean;
+    team_id?: string;
+};
+
 async function main() {
     console.log('\n🚀 Coach Hub - Create Admin User\n');
 
@@ -131,7 +138,7 @@ async function main() {
         }
 
         // Update profile to ADMIN role and assign team_id
-        const profilePayload: any = {
+        const profilePayload: ProfilePayload = {
             name,
             role: 'ADMIN',
             must_change_password: false,
@@ -175,8 +182,9 @@ async function main() {
         if (selectedTeamId) console.log(`   Team ID: ${selectedTeamId}`);
         console.log(`\n   You can now login at http://localhost:3000/login\n`);
 
-    } catch (error: any) {
-        console.error('\n❌ Error:', error.message);
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        console.error('\n❌ Error:', message);
         process.exit(1);
     }
 }

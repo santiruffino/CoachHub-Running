@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, use } from 'react';
+import { useEffect, useState, use, useCallback } from 'react';
 import Link from 'next/link';
 import { GroupDetails } from '@/interfaces/group';
 import { groupsService } from '@/features/groups/services/groups.service';
@@ -50,9 +50,27 @@ import {
 } from '@/components/ui/tabs';
 import { GroupWeeklyCalendar } from '@/features/groups/components/GroupWeeklyCalendar';
 import { TrainingAssignment } from '@/interfaces/training';
-import { startOfWeek, addDays, format } from 'date-fns';
+import { startOfWeek, addDays } from 'date-fns';
 
 import { GroupAthleteData } from '@/interfaces/athlete';
+
+interface GroupMemberRelation {
+  athlete: {
+    id: string;
+  };
+}
+
+interface AthleteApiItem {
+  id: string;
+  name?: string;
+  email: string;
+  stats?: {
+    completedAssignments?: number;
+    totalAssignments?: number;
+    plannedAssignments?: number;
+    completionPercentage?: number;
+  };
+}
 
 const AVATAR_COLORS = [
   'bg-blue-600',
@@ -78,14 +96,14 @@ export default function GroupDetailsPage({ params }: { params: Promise<{ id: str
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
 
-  function determineLevel(completedTrainings: number): string {
+  const determineLevel = useCallback((completedTrainings: number): string => {
     if (completedTrainings >= 50) return tAthletes('levels.elite');
     if (completedTrainings >= 30) return tAthletes('levels.advanced');
     if (completedTrainings >= 10) return tAthletes('levels.intermediate');
     return tAthletes('levels.beginner');
-  }
+  }, [tAthletes]);
 
-  const fetchGroupData = async () => {
+  const fetchGroupData = useCallback(async () => {
     try {
       setLoading(true);
       const [groupRes, athletesRes, calendarRes] = await Promise.all([
@@ -104,11 +122,11 @@ export default function GroupDetailsPage({ params }: { params: Promise<{ id: str
       setGroup(groupData);
       setGroupAssignments(calendarRes.data);
 
-      const groupMemberIds = new Set(groupData.members.map((m: { athlete: any }) => m.athlete.id));
+      const groupMemberIds = new Set((groupData.members as GroupMemberRelation[]).map((member) => member.athlete.id));
 
-      const filteredAthletes: GroupAthleteData[] = athletesRes.data
-        .filter((a: any) => groupMemberIds.has(a.id))
-        .map((athlete: any) => ({
+      const filteredAthletes: GroupAthleteData[] = (athletesRes.data as AthleteApiItem[])
+        .filter((athlete) => groupMemberIds.has(athlete.id))
+        .map((athlete) => ({
           id: athlete.id,
           name: athlete.name || athlete.email.split('@')[0],
           email: athlete.email,
@@ -127,11 +145,11 @@ export default function GroupDetailsPage({ params }: { params: Promise<{ id: str
     } finally {
       setLoading(false);
     }
-  };
+  }, [determineLevel, id, router, tAthletes]);
 
   useEffect(() => {
     fetchGroupData();
-  }, [id]);
+  }, [id, fetchGroupData]);
 
   const handleRemoveMember = async (athleteId: string) => {
     if (confirm(t('groups.detail.removeConfirm'))) {

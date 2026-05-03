@@ -19,7 +19,6 @@ interface RepeatBlockCardProps {
     selectedBlockId?: string | null;
     athleteId?: string;
     readOnly?: boolean;
-    dragHandleProps?: any;
 }
 
 export function RepeatBlockCard({
@@ -34,8 +33,7 @@ export function RepeatBlockCard({
     onSelect,
     selectedBlockId,
     athleteId,
-    readOnly = false,
-    dragHandleProps
+    readOnly = false
 }: RepeatBlockCardProps) {
     const t = useTranslations('builder');
     const [collapsed, setCollapsed] = useState(false);

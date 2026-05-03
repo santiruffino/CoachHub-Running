@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/api-helpers';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 
+interface StravaTokenResponse {
+    access_token: string;
+    refresh_token: string;
+    expires_at: number;
+}
+
 /**
  * Get Activity Detail
  * 
@@ -13,7 +19,7 @@ import { createServiceRoleClient } from '@/lib/supabase/server';
  * - Coach can view athlete's activities (if in their groups)
  */
 export async function GET(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
@@ -126,7 +132,7 @@ export async function GET(
                 );
             }
 
-            const tokenData = await refreshResponse.json();
+            const tokenData = (await refreshResponse.json()) as StravaTokenResponse;
             accessToken = tokenData.access_token;
 
             // Update stored tokens using service role client
@@ -168,10 +174,10 @@ export async function GET(
             ...activityDetail,
             _viewerIsOwner: isOwner,
             _ownerId: activityOwnerId,
-            _internalId: activity.id || (activity as any).id, // Pass internal UUID
+            _internalId: activity.id, // Pass internal UUID
             lap_overrides: activity.lap_overrides || {},
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Get activity detail error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
@@ -197,7 +203,7 @@ export async function PATCH(
 
         const { supabase, user } = authResult;
         const serviceSupabase = createServiceRoleClient();
-        const body = await request.json();
+        const body = (await request.json()) as { lapOverrides?: unknown };
         const { lapOverrides } = body;
 
         // Verify activity and permissions (internal UUID)
@@ -261,7 +267,7 @@ export async function PATCH(
 
         return NextResponse.json({ success: true, lapOverrides });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Update activity detail error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

@@ -19,20 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import api from '@/lib/axios';
-import { useTranslations } from 'next-intl';
-
-interface AthleteData {
-  id: string;
-  name: string;
-  email: string;
-  sport: string;
-  level: string;
-  coach?: {
-    id: string;
-    name: string;
-  } | null;
-  groups: { id: string; name: string }[];
-}
+import { AthleteData } from '@/interfaces/athlete';
 
 interface EditAthleteModalProps {
   athlete: AthleteData | null;
@@ -48,9 +35,30 @@ export function EditAthleteModal({ athlete, open, onClose, onSuccess, isAdmin, c
   const [coachId, setCoachId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  
-  // Translation fallback, assuming 'athletes' namespace might not have 'edit' keys yet
-  const t = useTranslations('athletes');
+
+  type ApiErrorShape = {
+    response?: {
+      data?: {
+        error?: string;
+      };
+    };
+  };
+
+  const getApiErrorMessage = (err: unknown, fallback: string): string => {
+    if (typeof err === 'object' && err !== null) {
+      const apiError = err as ApiErrorShape;
+      const responseError = apiError.response?.data?.error;
+      if (typeof responseError === 'string' && responseError.length > 0) {
+        return responseError;
+      }
+    }
+
+    if (err instanceof Error && err.message) {
+      return err.message;
+    }
+
+    return fallback;
+  };
 
   useEffect(() => {
     if (athlete && open) {
@@ -68,7 +76,7 @@ export function EditAthleteModal({ athlete, open, onClose, onSuccess, isAdmin, c
       setLoading(true);
       setError('');
       
-      const payload: any = { name };
+      const payload: { name: string; coach_id?: string } = { name };
       if (isAdmin && coachId !== athlete.coach?.id) {
         payload.coach_id = coachId;
       }
@@ -76,8 +84,8 @@ export function EditAthleteModal({ athlete, open, onClose, onSuccess, isAdmin, c
       await api.patch(`/v2/users/${athlete.id}`, payload);
       onSuccess();
       onClose();
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to update athlete');
+    } catch (err: unknown) {
+      setError(getApiErrorMessage(err, 'Failed to update athlete'));
     } finally {
       setLoading(false);
     }

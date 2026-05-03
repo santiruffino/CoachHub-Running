@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { matchingService } from '../services/matching.service';
 import { Calendar, CheckCircle2, Link as LinkIcon, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { MatchCandidateAssignment } from '../types';
 
 interface LinkWorkoutModalProps {
     isOpen: boolean;
@@ -21,18 +22,12 @@ interface LinkWorkoutModalProps {
 }
 
 export function LinkWorkoutModal({ isOpen, onClose, activityId, activityTitle, onLinkSuccess }: LinkWorkoutModalProps) {
-    const [candidates, setCandidates] = useState<any[]>([]);
+    const [candidates, setCandidates] = useState<MatchCandidateAssignment[]>([]);
     const [loading, setLoading] = useState(false);
     const [actionLoading, setActionLoading] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (isOpen && activityId) {
-            fetchCandidates();
-        }
-    }, [isOpen, activityId]);
-
-    const fetchCandidates = async () => {
+    const fetchCandidates = useCallback(async () => {
         try {
             setLoading(true);
             setError(null);
@@ -44,7 +39,13 @@ export function LinkWorkoutModal({ isOpen, onClose, activityId, activityTitle, o
         } finally {
             setLoading(false);
         }
-    };
+    }, [activityId]);
+
+    useEffect(() => {
+        if (isOpen && activityId) {
+            fetchCandidates();
+        }
+    }, [isOpen, activityId, fetchCandidates]);
 
     const handleLink = async (assignmentId: string) => {
         try {

@@ -103,8 +103,9 @@ async function main() {
         console.log(`   Role: COACH`);
         console.log(`\n   You can now login at http://localhost:3001/login\n`);
 
-    } catch (error: any) {
-        console.error('\n❌ Error:', error.message);
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        console.error('\n❌ Error:', message);
         process.exit(1);
     }
 }

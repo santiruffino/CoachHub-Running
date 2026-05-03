@@ -16,6 +16,7 @@ export async function GET(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        void request;
         const { id } = await params;
         const authResult = await requireRole('COACH');
 
@@ -79,7 +80,7 @@ export async function GET(
         }
 
         return NextResponse.json(group);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Get group details error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
@@ -100,6 +101,7 @@ export async function DELETE(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        void request;
         const { id } = await params;
         const authResult = await requireRole('COACH');
 
@@ -157,7 +159,7 @@ export async function DELETE(
         return NextResponse.json({
             message: 'Group deleted successfully'
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Delete group error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
@@ -213,8 +215,15 @@ export async function PATCH(
             return NextResponse.json({ error: 'Not authorized to edit this group' }, { status: 403 });
         }
 
-        const body = await request.json();
-        const updateData: any = {};
+        const body = (await request.json()) as {
+            name?: string;
+            description?: string;
+            group_type?: string;
+            race_date?: string;
+            race_distance?: number;
+            race_priority?: string;
+        };
+        const updateData: Record<string, string | number> = {};
         
         if (body.name !== undefined) updateData.name = body.name;
         if (body.description !== undefined) updateData.description = body.description;
@@ -240,7 +249,7 @@ export async function PATCH(
         }
 
         return NextResponse.json(updatedGroup);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Update group error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }

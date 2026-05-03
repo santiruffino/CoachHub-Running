@@ -1,6 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
-import { access } from 'fs';
+
+interface StravaTokenResponse {
+    access_token: string;
+    refresh_token: string;
+    expires_at: number;
+}
+
+interface StravaActivity {
+    id: number;
+    name: string;
+    type: string;
+    distance: number;
+    moving_time: number;
+    start_date: string;
+    elapsed_time: number;
+    total_elevation_gain: number;
+    average_heartrate: number | null;
+    max_heartrate: number | null;
+    private: boolean;
+}
 
 /**
  * Manual Strava Activity Sync
@@ -12,6 +31,7 @@ import { access } from 'fs';
  */
 export async function POST(request: NextRequest) {
     try {
+        void request;
         const authResult = await requireRole('ATHLETE');
 
         if (authResult.response) {
@@ -61,7 +81,7 @@ export async function POST(request: NextRequest) {
                 );
             }
 
-            const tokenData = await refreshResponse.json();
+            const tokenData = (await refreshResponse.json()) as StravaTokenResponse;
             accessToken = tokenData.access_token;
 
             // Update stored tokens
@@ -93,7 +113,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const stravaActivities = await activitiesResponse.json();
+        const stravaActivities = (await activitiesResponse.json()) as StravaActivity[];
 
         let syncedCount = 0;
         let skippedCount = 0;
@@ -170,7 +190,7 @@ export async function POST(request: NextRequest) {
             total: stravaActivities.length,
             zonesSynced: zonesResult.success,
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Strava sync error:', error);
 
         // Log failure
@@ -180,7 +200,7 @@ export async function POST(request: NextRequest) {
                 await supabase.from('sync_logs').insert({
                     user_id: user.id,
                     status: 'FAILED',
-                    message: error.message || 'Sync failed',
+                    message: error instanceof Error ? error.message : 'Sync failed',
                     completed_at: new Date().toISOString(),
                 });
             }
@@ -189,7 +209,7 @@ export async function POST(request: NextRequest) {
         }
 
         return NextResponse.json(
-            { error: 'Sync failed: ' + error.message },
+            { error: `Sync failed: ${error instanceof Error ? error.message : 'Unknown error'}` },
             { status: 500 }
         );
     }

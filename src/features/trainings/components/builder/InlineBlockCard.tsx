@@ -1,8 +1,8 @@
 'use client';
 
-import { WorkoutBlock, DurationType, TargetType, BlockType } from './types';
+import { WorkoutBlock, TargetType, BlockType } from './types';
 import { GripVertical, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { calculateTargetPace, VAM_DEFAULT, VAM_ZONES } from '@/features/profiles/constants/vam';
 import { BLOCK_COLORS } from './constants';
 import { useTranslations } from 'next-intl';
@@ -16,7 +16,7 @@ interface InlineBlockCardProps {
     indented?: boolean;
     athleteId?: string;
     readOnly?: boolean;
-    dragHandleProps?: any;
+    dragHandleProps?: React.HTMLAttributes<HTMLButtonElement>;
 }
 
 // Helper functions
@@ -51,10 +51,20 @@ export function InlineBlockCard({
 }: InlineBlockCardProps) {
     const t = useTranslations('builder');
     const [expanded, setExpanded] = useState(false);
-    const [timeString, setTimeString] = useState(
-        block.duration.type === 'time' ? secondsToHms(block.duration.value) : ''
-    );
+    const [timeString, setTimeString] = useState('');
     const [athleteVAM, setAthleteVAM] = useState<string | null>(null);
+
+    const displayedTimeString = useMemo(() => {
+        if (block.duration.type !== 'time') {
+            return '';
+        }
+
+        if (timeString.trim().length > 0) {
+            return timeString;
+        }
+
+        return secondsToHms(block.duration.value);
+    }, [block.duration.type, block.duration.value, timeString]);
 
     // Fetch athlete VAM when athleteId is provided
     useEffect(() => {
@@ -69,18 +79,12 @@ export function InlineBlockCard({
                     const data = await response.json();
                     setAthleteVAM(data.athleteProfile?.vam || null);
                 }
-            } catch (error) {
+            } catch {
                 setAthleteVAM(null);
             }
         };
         fetchAthleteVAM();
     }, [athleteId]);
-
-    useEffect(() => {
-        if (block.duration.type === 'time') {
-            setTimeString(secondsToHms(block.duration.value));
-        }
-    }, [block.duration.value, block.duration.type]);
 
     const getDistanceDisplayValue = () => {
         if (block.duration.unit === 'km') {
@@ -270,7 +274,7 @@ export function InlineBlockCard({
                             <div className="grid grid-cols-2 gap-2">
                                 <input
                                     type="text"
-                                    value={block.duration.type === 'time' ? timeString : getDistanceDisplayValue()}
+                                     value={block.duration.type === 'time' ? displayedTimeString : getDistanceDisplayValue()}
                                     onChange={(e) => {
                                         e.stopPropagation();
                                         handleDurationChange(e.target.value);

@@ -47,6 +47,48 @@ interface ActivityChartProps {
 type Resolution = 'low' | 'medium' | 'high';
 type XAxisType = 'time' | 'distance';
 
+interface ChartSamplePoint {
+    xLabel: string;
+    pace: number;
+    heartRate: number | null;
+    cadence: number | null;
+    elevation: number | null;
+    grade: number | null;
+}
+
+interface ChartDataResult {
+    xAxisData: string[];
+    series: {
+        pace: number[];
+        heartRate: Array<number | null>;
+        cadence: Array<number | null>;
+        elevation: Array<number | null>;
+        grade: Array<number | null>;
+    };
+}
+
+const EMPTY_CHART_DATA: ChartDataResult = {
+    xAxisData: [],
+    series: {
+        pace: [],
+        heartRate: [],
+        cadence: [],
+        elevation: [],
+        grade: [],
+    },
+};
+
+interface TooltipParam {
+    axisValue: string;
+    seriesName: string;
+    value: number | null;
+    marker: string;
+}
+
+interface LegendSelectChangedEvent {
+    selected: Record<string, boolean>;
+}
+
 /**
  * Moving average filter to smooth "peaky" data
  */
@@ -72,6 +114,7 @@ const movingAverage = (data: (number | null)[], windowSize: number): (number | n
 
 export function ActivityChart({ activityId, laps, hrZones, isRunning }: ActivityChartProps) {
     const t = useTranslations('activities.detail.dynamics');
+    const paceMetricName = isRunning ? t('metrics.pace') : t('metrics.pace');
     const [streams, setStreams] = useState<StreamData | null>(null);
     const [loading, setLoading] = useState(true);
     const [resolution, setResolution] = useState<Resolution>('medium');
@@ -80,7 +123,7 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
 
     // Track which series are selected in the legend
     const [legendSelected, setLegendSelected] = useState<Record<string, boolean>>({
-        [t('metrics.pace')]: true,
+        [paceMetricName]: true,
         [t('metrics.heartRate')]: true,
         [t('metrics.cadence')]: true,
         [t('metrics.elevation')]: true,
@@ -106,7 +149,7 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
     }, [activityId]);
 
     // Downsample data based on resolution
-    const downsampleData = (data: any[], resolution: Resolution): any[] => {
+    const downsampleData = <T,>(data: T[], resolution: Resolution): T[] => {
         if (!data || data.length === 0) return [];
 
         const steps = {
@@ -153,12 +196,12 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
     };
 
     // Prepare chart data
-    const chartData = useMemo(() => {
+    const chartData = useMemo<ChartDataResult>(() => {
         if (!streams || !streams.time) {
-            if (!laps || laps.length === 0) return { xAxisData: [], series: {} };
+            if (!laps || laps.length === 0) return EMPTY_CHART_DATA;
 
             // Fallback to laps
-            return {
+            const fallbackData: ChartDataResult = {
                 xAxisData: laps.map(l => {
                     const displayIndex = l.lap_index === 0 || (laps[0]?.lap_index === 0) ? l.lap_index + 1 : l.lap_index;
                     return `Lap ${displayIndex}`;
@@ -171,6 +214,8 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
                     grade: laps.map(() => null),
                 }
             };
+
+            return fallbackData;
         }
 
         const timeData = streams.time.data;
@@ -181,7 +226,7 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
         const smoothedCadence = movingAverage(streams.cadence?.data || [], 10);
 
         // Build full dataset
-        const fullData = timeData.map((time, index) => {
+        const fullData: ChartSamplePoint[] = timeData.map((time, index) => {
             const velocity = smoothedVelocity[index] || 0;
             const distance = streams.distance?.data[index] || 0;
 
@@ -199,7 +244,7 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
 
         const sampledData = downsampleData(fullData, resolution);
 
-        return {
+        const sampledResult: ChartDataResult = {
             xAxisData: sampledData.map(d => d.xLabel),
             series: {
                 pace: sampledData.map(d => d.pace),
@@ -209,19 +254,20 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
                 grade: sampledData.map(d => d.grade),
             }
         };
+        return sampledResult;
     }, [streams, laps, xAxisType, resolution]);
 
     // Build ECharts option
     const option = useMemo(() => {
-        const yAxisArray: any[] = [];
-        const seriesArray: any[] = [];
+        const yAxisArray: Array<Record<string, unknown>> = [];
+        const seriesArray: Array<Record<string, unknown>> = [];
         let yAxisIndex = 0;
 
         // Check what data is available
-        const hasHeartRateData = chartData.series.heartRate?.some((v: any) => v !== null);
-        const hasCadenceData = chartData.series.cadence?.some((v: any) => v !== null);
-        const hasElevationData = chartData.series.elevation?.some((v: any) => v !== null);
-        const hasGradeData = chartData.series.grade?.some((v: any) => v !== null);
+        const hasHeartRateData = chartData.series.heartRate?.some((v) => v !== null);
+        const hasCadenceData = chartData.series.cadence?.some((v) => v !== null);
+        const hasElevationData = chartData.series.elevation?.some((v) => v !== null);
+        const hasGradeData = chartData.series.grade?.some((v) => v !== null);
 
         // Pace axis (left, inverted) - Always shown
         const validPaces = (chartData.series.pace || []).filter((p: number) => p > 0 && p < 20);
@@ -233,13 +279,13 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
 
         yAxisArray.push({
             type: 'value',
-            name: t('metrics.pace'),
+            name: paceMetricName,
             position: 'left',
             inverse: true,
             min: paceMin,
             max: paceMax,
             interval: 1,
-            show: legendSelected[t('metrics.pace')] !== false,
+            show: legendSelected[paceMetricName] !== false,
             axisLabel: {
                 formatter: (value: number) => formatPace(value),
                 color: '#06B6D4',
@@ -248,8 +294,8 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
             splitLine: { show: false },
         });
 
-        const paceSeries: any = {
-            name: t('metrics.pace'),
+        const paceSeries: Record<string, unknown> = {
+            name: paceMetricName,
             type: 'line',
             yAxisIndex: yAxisIndex,
             data: chartData.series.pace,
@@ -274,8 +320,8 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
 
         // Add lap markAreas as a separate invisible series if showLaps is enabled
         if (showLaps && laps && laps.length > 0 && streams?.time && chartData.xAxisData.length > 0) {
-            const lapMarkAreas: any[] = [];
-            const lapMarkLines: any[] = [];
+            const lapMarkAreas: Array<Array<Record<string, unknown>>> = [];
+            const lapMarkLines: Array<Record<string, unknown>> = [];
             let cumulativeTime = 0;
             const timeData = streams.time.data;
 
@@ -363,7 +409,7 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
 
         // Heart Rate axis (right) with HR zones
         if (hasHeartRateData) {
-            const hrYAxis: any = {
+            const hrYAxis: Record<string, unknown> = {
                 type: 'value',
                 name: t('metrics.heartRate'),
                 position: 'right',
@@ -376,7 +422,7 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
                 splitLine: { show: false },
             };
 
-            const hrSeries: any = {
+            const hrSeries: Record<string, unknown> = {
                 name: t('metrics.heartRate'),
                 type: 'line',
                 yAxisIndex: yAxisIndex,
@@ -514,12 +560,12 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
                     type: 'cross',
                     label: { backgroundColor: '#6a7985' }
                 },
-                formatter: (params: any) => {
+                formatter: (params: TooltipParam[]) => {
                     let tooltipText = `<strong>${params[0].axisValue}</strong><br/>`;
-                    params.forEach((param: any) => {
+                    params.forEach((param) => {
                         if (param.seriesName === t('metrics.lapBoundaries')) return;
 
-                        if (param.seriesName === t('metrics.pace') && param.value) {
+                        if (param.seriesName === paceMetricName && param.value) {
                             tooltipText += `${param.marker} ${param.seriesName}: ${formatPace(param.value)}<br/>`;
                         } else if (param.value !== null && param.value !== undefined) {
                             tooltipText += `${param.marker} ${param.seriesName}: ${param.value.toFixed(1)}<br/>`;
@@ -590,10 +636,10 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
             yAxis: yAxisArray,
             series: seriesArray,
         };
-    }, [chartData, hrZones, xAxisType, showLaps, laps, streams, legendSelected, t]);
+    }, [chartData, hrZones, showLaps, laps, streams, legendSelected, paceMetricName, t]);
 
     const onChartEvents = {
-        legendselectchanged: (params: any) => {
+        legendselectchanged: (params: LegendSelectChangedEvent) => {
             setLegendSelected(params.selected);
         }
     };

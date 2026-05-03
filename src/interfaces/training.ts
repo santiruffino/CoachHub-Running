@@ -13,7 +13,7 @@ export interface Training {
     title: string;
     description?: string;
     type: TrainingType;
-    blocks: WorkoutBlock[] | any;
+    blocks: WorkoutBlock[];
     coachId: string;
     teamId?: string; // Links this template to a B2B Running Team
     coach?: { name: string }; // Useful for UI display badge
@@ -43,18 +43,43 @@ export interface TrainingAssignment {
     canEdit?: boolean;
 }
 
-export interface WorkoutAssignment extends TrainingAssignment {
-    // Inherits everything from TrainingAssignment
+export type WorkoutAssignment = TrainingAssignment;
+
+export interface AssignmentResponse {
+    message: string;
+    assignments: TrainingAssignment[];
+}
+
+export interface DeleteResponse {
+    message: string;
 }
 
 export interface CreateTrainingDto {
     title: string;
     description?: string;
     type: TrainingType;
-    blocks?: any;
+    blocks?: WorkoutBlock[];
     teamId?: string;
     isTemplate?: boolean;
     expectedRpe?: number;
+}
+
+export interface MatchCandidateActivity {
+    id: string;
+    title: string;
+    start_date: string;
+    distance: number;
+    duration: number;
+    sport_type: string;
+}
+
+export interface MatchCandidateAssignment {
+    id: string;
+    scheduledDate: string;
+    title: string;
+    type?: string;
+    isLinked: boolean;
+    isLinkedToThis: boolean;
 }
 
 export interface AssignTrainingDto {

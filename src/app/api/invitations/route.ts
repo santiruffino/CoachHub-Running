@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
             expiresAt: invitation.expires_at,
             accepted: invitation.accepted,
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Create invitation error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

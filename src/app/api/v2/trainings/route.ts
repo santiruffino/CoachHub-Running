@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
 
+interface TrainingRow {
+    created_by: string | null;
+    coach?: {
+        name: string;
+    };
+    [key: string]: unknown;
+}
+
 /**
  * List Trainings
  * 
@@ -10,6 +18,7 @@ import { requireRole } from '@/lib/supabase/api-helpers';
  */
 export async function GET(request: NextRequest) {
     try {
+        void request;
         const authResult = await requireRole('COACH');
 
         if (authResult.response) {
@@ -49,23 +58,30 @@ export async function GET(request: NextRequest) {
         }
 
         // Attach Coach Names Manually (to bypass PGRST FK missing issues)
-        const creatorIds = [...new Set(trainings?.map((t: any) => t.created_by).filter(Boolean))];
+        const mutableTrainings = (trainings || []) as TrainingRow[];
+        const creatorIds = [
+            ...new Set(
+                mutableTrainings
+                    .map((training) => training.created_by)
+                    .filter((value): value is string => typeof value === 'string' && value.length > 0)
+            )
+        ];
         if (creatorIds.length > 0 && trainings) {
             const { data: coachesData } = await supabase
                 .from('profiles')
                 .select('id, name')
                 .in('id', creatorIds);
-                
-            const coachMap = new Map(coachesData?.map(c => [c.id, c.name]));
-            trainings.forEach((t: any) => {
-                if (t.created_by) {
-                    t.coach = { name: coachMap.get(t.created_by) || 'Unknown Coach' };
+
+            const coachMap = new Map((coachesData || []).map(c => [c.id, c.name]));
+            mutableTrainings.forEach((training) => {
+                if (training.created_by) {
+                    training.coach = { name: coachMap.get(training.created_by) || 'Unknown Coach' };
                 }
             });
         }
 
-        return NextResponse.json(trainings || []);
-    } catch (error: any) {
+        return NextResponse.json(mutableTrainings);
+    } catch (error: unknown) {
         console.error('Get trainings error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
@@ -90,7 +106,13 @@ export async function POST(request: NextRequest) {
         }
 
         const { supabase, user } = authResult;
-        const body = await request.json();
+        const body = (await request.json()) as {
+            title?: string;
+            description?: string;
+            type?: string;
+            blocks?: unknown;
+            isTemplate?: boolean;
+        };
         const { title, description, type, blocks, isTemplate = true } = body;
 
         // Validation
@@ -140,7 +162,7 @@ export async function POST(request: NextRequest) {
         }
 
         return NextResponse.json(training, { status: 201 });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Create training error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { authService } from '../services/auth.service';
 import { useState } from 'react';
+import { isAxiosError } from 'axios';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -35,9 +36,9 @@ export default function ForgotPasswordForm() {
 
             await authService.resetPassword(data.email);
             setSuccess(true);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('❌ [ForgotPasswordForm] Failed to send reset email:', err);
-            setError(err?.message || t('errorMessage'));
+            setError(isAxiosError(err) ? err.message : t('errorMessage'));
         }
     };
 

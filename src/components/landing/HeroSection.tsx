@@ -23,7 +23,11 @@ const chartData = [
 export function HeroSection() {
   const [mounted, setMounted] = useState(false);
   const t = useTranslations('landing.hero');
-  useEffect(() => setMounted(true), []);
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(frame);
+  }, []);
 
   const athletes = [
     { name: 'Sarah M.', note: t('athleteNoteForm') },
@@ -156,7 +160,7 @@ export function HeroSection() {
                   </div>
                 </div>
 
-                {/* Chart — only render on client to avoid Recharts -1 dimension error */}
+                {/* Chart */}
                 <div className="h-44">
                   {mounted && (
                     <ResponsiveContainer width="100%" height="100%">

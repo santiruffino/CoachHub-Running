@@ -1,4 +1,4 @@
-import { User, Role } from '@/interfaces/auth';
+import { User } from '@/interfaces/auth';
 import { AthleteProfile } from '@/interfaces/athlete';
 
 export interface UpdateProfileDto {

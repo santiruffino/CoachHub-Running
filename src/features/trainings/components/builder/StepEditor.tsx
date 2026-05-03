@@ -9,7 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { X, Plus } from 'lucide-react';
 import { useState } from 'react';
-import { calculateTargetPace, VAM_DEFAULT, VAM_ZONES } from '@/features/profiles/constants/vam';
+import { calculateTargetPace, VAM_ZONES } from '@/features/profiles/constants/vam';
 import { BLOCK_COLORS } from './constants';
 import { useTranslations } from 'next-intl';
 
@@ -23,8 +23,10 @@ interface StepEditorProps {
 }
 
 export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = false, athleteProfile = null }: StepEditorProps) {
+    void isInRepeat;
     const t = useTranslations('builder');
     const [showCadence, setShowCadence] = useState(!!step.cadenceRange);
+    const tVamZoneName = (zone: string) => t(`vamZoneFullNames.${zone}`);
 
     const TARGET_TYPES: { value: TargetType; label: string }[] = [
         { value: 'vam_zone', label: t('vamZone') },
@@ -148,7 +150,7 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                 <div className="flex items-center gap-3">
                     <Select
                         value={step.type}
-                        onValueChange={(value) => onUpdate({ type: value as any })}
+                        onValueChange={(value) => onUpdate({ type: value as WorkoutBlock['type'] })}
                     >
                         <SelectTrigger className="w-[140px] bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-2 rounded-t-md focus:ring-0 text-[#2b3437] dark:text-[#f8f9fa] text-sm font-semibold transition-colors">
                             <SelectValue />
@@ -243,7 +245,7 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                                     type="number"
                                     value={step.target.min ?? ''}
                                     onChange={(e) => onUpdate({
-                                        target: { ...step.target, min: e.target.value as any }
+                                        target: { ...step.target, min: e.target.value }
                                     })}
                                     onBlur={(e) => {
                                         const val = parseFloat(e.target.value);
@@ -258,7 +260,7 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                                     type="number"
                                     value={step.target.max ?? ''}
                                     onChange={(e) => onUpdate({
-                                        target: { ...step.target, max: e.target.value as any }
+                                        target: { ...step.target, max: e.target.value }
                                     })}
                                     onBlur={(e) => {
                                         const val = parseFloat(e.target.value);
@@ -281,7 +283,7 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                                     max="10"
                                     value={step.target.min ?? ''}
                                     onChange={(e) => onUpdate({
-                                        target: { ...step.target, min: e.target.value as any }
+                                        target: { ...step.target, min: e.target.value }
                                     })}
                                     onBlur={(e) => {
                                         const val = parseFloat(e.target.value);
@@ -298,7 +300,7 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                                     max="10"
                                     value={step.target.max ?? ''}
                                     onChange={(e) => onUpdate({
-                                        target: { ...step.target, max: e.target.value as any }
+                                        target: { ...step.target, max: e.target.value }
                                     })}
                                     onBlur={(e) => {
                                         const val = parseFloat(e.target.value);
@@ -323,11 +325,11 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="1">{t('vamZoneFullNames.1' as any)}</SelectItem>
-                                    <SelectItem value="2">{t('vamZoneFullNames.2' as any)}</SelectItem>
-                                    <SelectItem value="3">{t('vamZoneFullNames.3' as any)}</SelectItem>
-                                    <SelectItem value="4">{t('vamZoneFullNames.4' as any)}</SelectItem>
-                                    <SelectItem value="5">{t('vamZoneFullNames.5' as any)}</SelectItem>
+                                    <SelectItem value="1">{tVamZoneName('1')}</SelectItem>
+                                    <SelectItem value="2">{tVamZoneName('2')}</SelectItem>
+                                    <SelectItem value="3">{tVamZoneName('3')}</SelectItem>
+                                    <SelectItem value="4">{tVamZoneName('4')}</SelectItem>
+                                    <SelectItem value="5">{tVamZoneName('5')}</SelectItem>
                                 </SelectContent>
                             </Select>
                         )}

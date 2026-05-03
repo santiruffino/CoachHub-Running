@@ -6,7 +6,7 @@ import { format } from 'date-fns';
 import { WorkoutBuilder } from '@/features/trainings/components/builder/WorkoutBuilder';
 import { WorkoutBlock } from '@/features/trainings/components/builder/types';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, User, Calendar, Activity, CheckCircle2, Trash2, Users } from 'lucide-react';
+import { ArrowLeft, User, Calendar, CheckCircle2, Trash2, Users } from 'lucide-react';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import api from '@/lib/axios';
 import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
@@ -14,6 +14,30 @@ import { Slider } from '@/components/ui/slider';
 import { useTranslations } from 'next-intl';
 
 import { WorkoutAssignment } from '@/interfaces/training';
+
+type ApiErrorShape = {
+    response?: {
+        data?: {
+            error?: string;
+        };
+    };
+};
+
+const getApiErrorMessage = (error: unknown, fallback: string): string => {
+    if (typeof error === 'object' && error !== null) {
+        const apiError = error as ApiErrorShape;
+        const responseError = apiError.response?.data?.error;
+        if (typeof responseError === 'string' && responseError.length > 0) {
+            return responseError;
+        }
+    }
+
+    if (error instanceof Error && error.message) {
+        return error.message;
+    }
+
+    return fallback;
+};
 
 export default function WorkoutDetailsPage() {
     const params = useParams();
@@ -42,9 +66,9 @@ export default function WorkoutDetailsPage() {
                 setAssignment(response.data);
                 setEditedBlocks(response.data.training.blocks || []);
                 setEditedExpectedRpe(response.data.expectedRpe || 5);
-            } catch (err: any) {
-                console.error('Failed to fetch assignment:', err);
-                setError(err.response?.data?.error || t('loadingError'));
+            } catch (error: unknown) {
+                console.error('Failed to fetch assignment:', error);
+                setError(getApiErrorMessage(error, t('loadingError')));
             } finally {
                 setLoading(false);
             }
@@ -80,9 +104,9 @@ export default function WorkoutDetailsPage() {
             setHasChanges(false);
 
             showAlert('success', t('syncSuccess'));
-        } catch (err: any) {
-            console.error('Failed to save workout:', err);
-            setError(err.response?.data?.error || t('syncFailed'));
+        } catch (error: unknown) {
+            console.error('Failed to save workout:', error);
+            setError(getApiErrorMessage(error, t('syncFailed')));
         } finally {
             setSaving(false);
         }
@@ -118,8 +142,8 @@ export default function WorkoutDetailsPage() {
             });
             showAlert('success', t('deleteSuccess'));
             setTimeout(() => router.back(), 1500);
-        } catch (err: any) {
-            console.error('Failed to delete assignment:', err);
+        } catch (error: unknown) {
+            console.error('Failed to delete assignment:', error);
             showAlert('error', t('deleteFailed'));
         } finally {
             setDeleting(false);

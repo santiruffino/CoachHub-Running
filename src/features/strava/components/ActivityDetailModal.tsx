@@ -1,9 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { stravaService } from '../services/strava.service';
-import { Loader2, Activity, Heart, Mountain } from 'lucide-react';
+import { Loader2, Heart, Mountain } from 'lucide-react';
 import { ActivityChart } from './ActivityChart';
 import { format } from 'date-fns';
+import { StravaActivityDetailResponse } from '../services/strava.service';
+
+const EMPTY_ACTIVITY: StravaActivityDetailResponse = {
+    id: '',
+    title: '',
+    type: '',
+    distance: 0,
+    duration: 0,
+    startDate: '',
+    streams: [],
+};
 
 interface ActivityDetailModalProps {
     activityId: string | null;
@@ -12,37 +23,51 @@ interface ActivityDetailModalProps {
 }
 
 export function ActivityDetailModal({ activityId, open, onClose }: ActivityDetailModalProps) {
-    const [loading, setLoading] = useState(false);
-    const [data, setData] = useState<any>(null); // Full activity with streams
+    const [data, setData] = useState<StravaActivityDetailResponse>(EMPTY_ACTIVITY);
+
+    const loading = open && !!activityId && (data.id === '' || data.id !== activityId);
+    const isLoaded = data.id !== '' && !!activityId && data.id === activityId;
 
     useEffect(() => {
-        if (open && activityId) {
-            setLoading(true);
-            stravaService.getActivityDetails(activityId)
-                .then(res => setData(res))
-                .catch(err => console.error(err))
-                .finally(() => setLoading(false));
-        } else {
-            setData(null);
+        if (!open || !activityId) {
+            return;
         }
+
+        let cancelled = false;
+
+        stravaService.getActivityDetails(activityId)
+            .then((res) => {
+                if (!cancelled) {
+                    setData(res);
+                }
+            })
+            .catch((err) => {
+                if (!cancelled) {
+                    console.error(err);
+                    setData(EMPTY_ACTIVITY);
+                }
+            })
+            .finally(() => undefined);
+
+        return () => {
+            cancelled = true;
+        };
     }, [open, activityId]);
 
     // Helper to extract stream data
     const getStreamData = (type: string) => {
-        if (!data || !data.streams) return [];
-        const stream = data.streams.find((s: any) => s.type === type);
+        if (!data.streams) return [];
+        const stream = data.streams.find((s) => s.type === type);
         if (!stream) return [];
 
-        // Strava streams usually allow 'data' as array of numbers
-        // Our DB stores 'data' as Json, so we cast it
-        const values = stream.data as number[];
+        const values = stream.data;
 
         return values.map((val, idx) => ({ index: idx, value: val }));
     };
 
     const hrData = getStreamData('HEART_RATE');
-    const paceData = getStreamData('PACE'); // Note: Strava sends pace as m/s usually, might need conversion
-    // const elevationData = getStreamData('ALTITUDE'); // Need to map enum correctly
+    const paceData = getStreamData('PACE');
+    void paceData;
 
     return (
         <Dialog open={open} onOpenChange={onClose}>
@@ -61,7 +86,7 @@ export function ActivityDetailModal({ activityId, open, onClose }: ActivityDetai
                     <div className="h-60 flex items-center justify-center">
                         <Loader2 className="h-8 w-8 animate-spin text-brand-primary" />
                     </div>
-                ) : data ? (
+                ) : isLoaded ? (
                     <div className="space-y-6">
                         {/* Summary Stats Grid */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">

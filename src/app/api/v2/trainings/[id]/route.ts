@@ -9,7 +9,7 @@ import { requireRole } from '@/lib/supabase/api-helpers';
  * Access: COACH only
  */
 export async function GET(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
@@ -57,7 +57,7 @@ export async function GET(
         }
 
         return NextResponse.json(training);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Get training error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
@@ -74,7 +74,7 @@ export async function GET(
  * Access: COACH only
  */
 export async function DELETE(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
@@ -139,7 +139,7 @@ export async function DELETE(
             { message: 'Training deleted successfully' },
             { status: 200 }
         );
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Delete training error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
@@ -218,7 +218,7 @@ export async function PATCH(
         }
 
         return NextResponse.json(training);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Update training error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }

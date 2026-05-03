@@ -57,9 +57,9 @@ export async function GET() {
     }
 
     return NextResponse.json(races || []);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: error instanceof Error ? error.message : 'Internal server error' },
       { status: 500 }
     );
   }
@@ -135,10 +135,10 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(race, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('POST /v2/races error:', error);
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: error instanceof Error ? error.message : 'Internal server error' },
       { status: 500 }
     );
   }

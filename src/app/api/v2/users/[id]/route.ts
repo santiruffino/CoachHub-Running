@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import { requireAuth } from '@/lib/supabase/api-helpers';
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -35,8 +34,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return NextResponse.json({ error: 'Cannot edit an athlete outside your team' }, { status: 403 });
     }
 
-    const body = await request.json();
-    const updateData: any = {};
+    const body = (await request.json()) as {
+      name?: string;
+      coach_id?: string | null;
+    };
+    const updateData: Partial<{ name: string; coach_id: string | null }> = {};
     if (body.name !== undefined) updateData.name = body.name;
     // coach_id changes remain allowed only where direct coach responsibility is needed
     if (body.coach_id !== undefined && (profile.role === 'ADMIN' || profile.role === 'COACH')) {
@@ -55,13 +57,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (updateError) throw updateError;
 
     return NextResponse.json({ message: 'User updated successfully' });
-  } catch (error: any) {
-    console.error('PATCH user Error:', error.message);
+  } catch (error: unknown) {
+    console.error('PATCH user Error:', error instanceof Error ? error.message : error);
     return NextResponse.json({ error: 'Failed to update user' }, { status: 500 });
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const authResult = await requireAuth();
   if (authResult.response) return authResult.response;
 
@@ -115,8 +117,8 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     }
 
     return NextResponse.json({ message: 'User deleted successfully' });
-  } catch (error: any) {
-    console.error('DELETE user Error:', error.message);
+  } catch (error: unknown) {
+    console.error('DELETE user Error:', error instanceof Error ? error.message : error);
     return NextResponse.json({ error: 'Failed to delete user' }, { status: 500 });
   }
 }

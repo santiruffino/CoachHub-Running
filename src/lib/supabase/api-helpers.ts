@@ -1,6 +1,14 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
+export type AppRole = 'COACH' | 'ATHLETE' | 'ADMIN';
+
+export interface RequesterProfile {
+  id: string;
+  role: AppRole;
+  team_id: string | null;
+}
+
 export async function getAuthenticatedUser() {
   const supabase = await createClient();
   const {
@@ -44,8 +52,10 @@ export async function requireRole(role: 'COACH' | 'ATHLETE' | 'ADMIN' | ('COACH'
 
   const allowedRoles = Array.isArray(role) ? role : [role];
 
-  // Admis have access to everything to act as "Super Coaches"
-  const isAllowed = profile?.role === 'ADMIN' || allowedRoles.includes(profile?.role as any);
+  const profileRole = profile?.role as AppRole | undefined;
+
+  // Admins have access to everything to act as "Super Coaches"
+  const isAllowed = profileRole === 'ADMIN' || (profileRole ? allowedRoles.includes(profileRole) : false);
 
   if (!isAllowed) {
     const roleString = Array.isArray(role) ? role.join(' or ').toLowerCase() : role.toLowerCase();
@@ -62,3 +72,24 @@ export async function requireRole(role: 'COACH' | 'ATHLETE' | 'ADMIN' | ('COACH'
   return { user: authResult.user, supabase: authResult.supabase, response: null };
 }
 
+export async function getRequesterProfile(userId: string) {
+  const supabase = await createClient();
+  const { data: profile, error } = await supabase
+    .from('profiles')
+    .select('id, role, team_id')
+    .eq('id', userId)
+    .single();
+
+  if (error || !profile) {
+    return { profile: null, error: 'Profile not found' } as const;
+  }
+
+  return {
+    profile: {
+      id: profile.id,
+      role: profile.role as AppRole,
+      team_id: profile.team_id,
+    } as RequesterProfile,
+    error: null,
+  } as const;
+}

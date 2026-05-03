@@ -25,6 +25,25 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
+type ErrorWithMessage = {
+    message?: string;
+};
+
+const getErrorMessage = (error: unknown, fallback: string): string => {
+    if (typeof error === 'object' && error !== null) {
+        const withMessage = error as ErrorWithMessage;
+        if (typeof withMessage.message === 'string' && withMessage.message.length > 0) {
+            return withMessage.message;
+        }
+    }
+
+    if (error instanceof Error && error.message) {
+        return error.message;
+    }
+
+    return fallback;
+};
+
 export default function AcceptInvitationPage() {
     const params = useParams();
     const token = params?.token as string;
@@ -79,8 +98,8 @@ export default function AcceptInvitationPage() {
 
             // Redirect to password change page (since must_change_password is set)
             setTimeout(() => router.push('/change-password'), 1500);
-        } catch (err: any) {
-            setError(err?.message || 'Registration failed. Please try again.');
+        } catch (error: unknown) {
+            setError(getErrorMessage(error, 'Registration failed. Please try again.'));
         }
     };
 

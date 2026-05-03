@@ -1,6 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { stravaService, StravaConnectionStatus } from '../services/strava.service';
 import { useRouter } from 'next/navigation';
+import { AxiosError } from 'axios';
+
+interface ApiErrorResponse {
+    error?: string;
+}
 
 export function useStravaAuth(options?: { enabled?: boolean }) {
     const enabled = options?.enabled ?? true;
@@ -15,9 +20,10 @@ export function useStravaAuth(options?: { enabled?: boolean }) {
             const data = await stravaService.getStatus();
             setStatus(data);
             setError(null);
-        } catch (err) {
+        } catch (err: unknown) {
             console.error(err);
-            setError('Failed to fetch Strava status');
+            const message = (err as AxiosError<ApiErrorResponse>)?.response?.data?.error;
+            setError(message || 'Failed to fetch Strava status');
         } finally {
             setLoading(false);
         }
@@ -36,9 +42,10 @@ export function useStravaAuth(options?: { enabled?: boolean }) {
             const { url } = await stravaService.getAuthUrl();
             // Redirect to Strava
             window.location.href = url;
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
-            setError('Failed to initiate connection');
+            const message = (err as AxiosError<ApiErrorResponse>)?.response?.data?.error;
+            setError(message || 'Failed to initiate connection');
             setLoading(false);
         }
     }, []);
@@ -48,9 +55,10 @@ export function useStravaAuth(options?: { enabled?: boolean }) {
             setLoading(true);
             await stravaService.disconnect();
             await fetchStatus(); // Refresh status
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
-            setError('Failed to disconnect');
+            const message = (err as AxiosError<ApiErrorResponse>)?.response?.data?.error;
+            setError(message || 'Failed to disconnect');
             setLoading(false);
         }
     }, [fetchStatus]);
@@ -60,9 +68,10 @@ export function useStravaAuth(options?: { enabled?: boolean }) {
             setLoading(true);
             await stravaService.exchangeCode(code);
             router.push('/profile'); // Redirect back to profile page
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
-            setError('Failed to complete connection');
+            const message = (err as AxiosError<ApiErrorResponse>)?.response?.data?.error;
+            setError(message || 'Failed to complete connection');
         } finally {
             setLoading(false);
         }
@@ -75,9 +84,10 @@ export function useStravaAuth(options?: { enabled?: boolean }) {
             // Optionally fetch status again to update "lastSync"
             await fetchStatus();
             return result;
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
-            setError('Failed to sync activities');
+            const message = (err as AxiosError<ApiErrorResponse>)?.response?.data?.error;
+            setError(message || 'Failed to sync activities');
             setLoading(false);
         }
     }, [fetchStatus]);

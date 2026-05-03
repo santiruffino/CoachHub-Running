@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { useRouter } from 'next/navigation';
+import { isAxiosError } from 'axios';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { profileService } from '@/features/profiles/services/profile.service';
 import { Input } from '@/components/ui/input';
@@ -19,8 +21,19 @@ import {
 } from '@/components/layout/EditorialLayout';
 import { useTranslations } from 'next-intl';
 
+interface OnboardingFormValues {
+    firstName: string;
+    lastName: string;
+    phone: string;
+    dob: string;
+    gender: string;
+    height: string;
+    weight: string;
+}
+
 export default function OnboardingForm() {
     const { user, loading: authLoading } = useAuth();
+    const router = useRouter();
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [selectedGender, setSelectedGender] = useState('');
@@ -31,7 +44,7 @@ export default function OnboardingForm() {
         handleSubmit,
         setValue,
         formState: { errors },
-    } = useForm({
+    } = useForm<OnboardingFormValues>({
         defaultValues: {
             firstName: '',
             lastName: '',
@@ -55,7 +68,7 @@ export default function OnboardingForm() {
         setValue('gender', value, { shouldValidate: true });
     };
 
-    const onSubmit = async (data: any) => {
+    const onSubmit = async (data: OnboardingFormValues) => {
         setSubmitting(true);
         setError('');
         try {
@@ -69,12 +82,15 @@ export default function OnboardingForm() {
                 weight: Number(data.weight) || undefined,
                 isOnboardingCompleted: true,
             });
-            window.location.href = '/dashboard';
-        } catch (err: any) {
+            router.replace('/dashboard');
+        } catch (err: unknown) {
             console.error('Onboarding save error:', err);
-            setError(
-                err?.response?.data?.message || t('errorSave')
-            );
+            if (isAxiosError(err) && err.response && typeof err.response.data === 'object' && err.response.data !== null) {
+                const responseData = err.response.data as { message?: string };
+                setError(responseData.message || t('errorSave'));
+            } else {
+                setError(t('errorSave'));
+            }
             setSubmitting(false);
         }
     };

@@ -33,8 +33,9 @@ async function main() {
     console.log("Profile error:", profileError);
     console.log("Profile data:", profile);
 
-  } catch (e: any) {
-    console.log("Catch error:", e.message);
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : 'Unknown error';
+    console.log("Catch error:", message);
   }
 }
 main();

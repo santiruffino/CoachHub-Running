@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,7 +16,7 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, UserPlus, AlertTriangle, Mail, Phone, MoreHorizontal, Edit, Trash2 } from 'lucide-react';
+import { Search, UserPlus, AlertTriangle, Mail, MoreHorizontal, Edit, Trash2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,6 +40,28 @@ import { EditAthleteModal } from './components/EditAthleteModal';
 
 import { AthleteData } from '@/interfaces/athlete';
 
+interface AthleteApiItem {
+  id: string;
+  name?: string;
+  email: string;
+  coach?: {
+    id: string;
+    name: string;
+  } | null;
+  groups?: Array<{ id: string; name: string }>;
+  stats?: {
+    totalAssignments?: number;
+    plannedAssignments?: number;
+    completedAssignments?: number;
+    completionPercentage?: number;
+  };
+}
+
+interface CoachApiItem {
+  id: string;
+  name: string;
+}
+
 const AVATAR_COLORS = [
   'bg-blue-600',
   'bg-purple-600',
@@ -48,6 +70,13 @@ const AVATAR_COLORS = [
   'bg-cyan-600',
   'bg-teal-600',
 ];
+
+function determineLevelFromCount(completedTrainings: number, t: ReturnType<typeof useTranslations>): string {
+  if (completedTrainings >= 50) return t('levels.elite');
+  if (completedTrainings >= 30) return t('levels.advanced');
+  if (completedTrainings >= 10) return t('levels.intermediate');
+  return t('levels.beginner');
+}
 
 export default function AthletesPage() {
   const { user } = useAuth();
@@ -75,25 +104,18 @@ export default function AthletesPage() {
   const t = useTranslations('athletes');
   const tDashboard = useTranslations('dashboard');
 
-  function determineLevel(completedTrainings: number): string {
-    if (completedTrainings >= 50) return t('levels.elite');
-    if (completedTrainings >= 30) return t('levels.advanced');
-    if (completedTrainings >= 10) return t('levels.intermediate');
-    return t('levels.beginner');
-  }
-
-  const fetchAthletes = async () => {
+  const fetchAthletes = useCallback(async () => {
     try {
       setLoading(true);
-      const athletesRes = await api.get('/v2/users/athletes');
+      const athletesRes = await api.get<AthleteApiItem[]>('/v2/users/athletes');
       const athletesList = athletesRes.data;
 
-      const athletesData: AthleteData[] = athletesList.map((athlete: any) => ({
+      const athletesData: AthleteData[] = athletesList.map((athlete) => ({
         id: athlete.id,
         name: athlete.name || athlete.email.split('@')[0],
         email: athlete.email,
         sport: t('sports.running'),
-        level: determineLevel(athlete.stats?.completedAssignments || 0),
+        level: determineLevelFromCount(athlete.stats?.completedAssignments || 0, t),
         coach: athlete.coach,
         groups: athlete.groups || [],
         totalTrainings: athlete.stats?.totalAssignments || 0,
@@ -105,19 +127,19 @@ export default function AthletesPage() {
       setAthletes(athletesData);
 
       if (isAdmin) {
-        const coachesRes = await api.get('/v2/users/coaches');
-        setCoaches(coachesRes.data.map((c: any) => ({ id: c.id, name: c.name })));
+        const coachesRes = await api.get<CoachApiItem[]>('/v2/users/coaches');
+        setCoaches(coachesRes.data.map((c) => ({ id: c.id, name: c.name })));
       }
     } catch (error) {
       console.error('Failed to fetch athletes', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [isAdmin, t]);
 
   useEffect(() => {
-    fetchAthletes();
-  }, [isAdmin]);
+    void fetchAthletes();
+  }, [fetchAthletes]);
 
   const handleDelete = async () => {
     if (!deleteId) return;

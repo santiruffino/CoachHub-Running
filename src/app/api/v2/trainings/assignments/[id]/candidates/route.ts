@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/supabase/api-helpers';
-import { format, subDays, addDays } from 'date-fns';
+import { getRequesterProfile, requireAuth } from '@/lib/supabase/api-helpers';
+import { subDays, addDays } from 'date-fns';
 
 /**
  * Get Candidate Activities for Assignment Match
@@ -37,12 +37,40 @@ export async function GET(
             );
         }
 
-        // Authorization check
-        if (user!.role === 'ATHLETE' && assignment.user_id !== user!.id) {
+        const { profile: requesterProfile, error: requesterError } = await getRequesterProfile(user!.id);
+        if (requesterError || !requesterProfile) {
             return NextResponse.json(
                 { error: 'Not authorized' },
                 { status: 403 }
             );
+        }
+
+        // Authorization check
+        if (requesterProfile.role === 'ATHLETE' && assignment.user_id !== requesterProfile.id) {
+            return NextResponse.json(
+                { error: 'Not authorized' },
+                { status: 403 }
+            );
+        }
+
+        if ((requesterProfile.role === 'COACH' || requesterProfile.role === 'ADMIN') && assignment.user_id !== requesterProfile.id) {
+            const { data: athleteProfile, error: athleteError } = await supabase
+                .from('profiles')
+                .select('team_id')
+                .eq('id', assignment.user_id)
+                .single();
+
+            if (
+                athleteError ||
+                !athleteProfile ||
+                !requesterProfile.team_id ||
+                athleteProfile.team_id !== requesterProfile.team_id
+            ) {
+                return NextResponse.json(
+                    { error: 'Not authorized' },
+                    { status: 403 }
+                );
+            }
         }
 
         // Search window: +/- 2 days from scheduled date
@@ -64,10 +92,10 @@ export async function GET(
 
         return NextResponse.json(activities || []);
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Get candidate activities error:', error);
         return NextResponse.json(
-            { error: 'Internal server error', details: error.message },
+            { error: 'Internal server error' },
             { status: 500 }
         );
     }

@@ -15,6 +15,7 @@ interface CoachNotesProps {
 }
 
 export function CoachNotes({ athleteId, initialNotes = '', onSave, readOnly = false }: CoachNotesProps) {
+  void athleteId;
   const t = useTranslations('dashboard.coachNotes');
   const [notes, setNotes] = useState(initialNotes);
   const [isSaving, setIsSaving] = useState(false);

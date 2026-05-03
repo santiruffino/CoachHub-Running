@@ -1,6 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
 
+interface StravaZone {
+    min: number;
+    max: number;
+}
+
+interface StravaHeartRateZones {
+    zones: StravaZone[];
+    custom_zones?: boolean;
+}
+
+interface StravaZonesResponse {
+    heart_rate?: StravaHeartRateZones;
+}
+
+interface StravaTokenResponse {
+    access_token: string;
+    refresh_token: string;
+    expires_at: number;
+}
+
 /**
  * Sync Heart Rate Zones from Strava
  * 
@@ -11,6 +31,7 @@ import { requireRole } from '@/lib/supabase/api-helpers';
  */
 export async function POST(request: NextRequest) {
     try {
+        void request;
         const authResult = await requireRole('ATHLETE');
 
         if (authResult.response) {
@@ -60,7 +81,7 @@ export async function POST(request: NextRequest) {
                 );
             }
 
-            const tokenData = await refreshResponse.json();
+            const tokenData = (await refreshResponse.json()) as StravaTokenResponse;
             accessToken = tokenData.access_token;
 
             // Update stored tokens
@@ -94,7 +115,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const zonesData = await zonesResponse.json();
+        const zonesData = (await zonesResponse.json()) as StravaZonesResponse;
 
         // Extract heart rate zones
         // Strava returns: { heart_rate: { zones: [...], custom_zones: boolean } }
@@ -109,7 +130,7 @@ export async function POST(request: NextRequest) {
 
         // Transform zones to our format
         const hrZones = {
-            zones: heartRateZones.zones.map((zone: any) => ({
+            zones: heartRateZones.zones.map((zone) => ({
                 min: zone.min,
                 max: zone.max,
             })),
@@ -140,10 +161,10 @@ export async function POST(request: NextRequest) {
             message: 'Heart rate zones synced successfully',
             zones: hrZones,
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Zones sync error:', error);
         return NextResponse.json(
-            { error: 'Zones sync failed: ' + error.message },
+            { error: `Zones sync failed: ${error instanceof Error ? error.message : 'Unknown error'}` },
             { status: 500 }
         );
     }

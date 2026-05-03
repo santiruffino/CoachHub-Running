@@ -1,6 +1,6 @@
 'use client';
 
-import { Activity, Clock, MapPin, Mountain } from 'lucide-react';
+import { Clock, MapPin, Mountain } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 
 interface WeeklySummaryProps {

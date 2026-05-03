@@ -1,5 +1,11 @@
 import api from '@/lib/axios';
-import { Training, CreateTrainingDto, AssignTrainingDto } from '../types';
+import {
+    Training,
+    CreateTrainingDto,
+    AssignTrainingDto,
+    AssignmentResponse,
+    DeleteResponse,
+} from '../types';
 
 export const trainingsService = {
     findAll: async () => {
@@ -19,14 +25,14 @@ export const trainingsService = {
     },
 
     assign: async (data: AssignTrainingDto) => {
-        return api.post('/v2/trainings/assign', data);
+        return api.post<AssignmentResponse>('/v2/trainings/assign', data);
     },
 
     delete: async (id: string) => {
-        return api.delete(`/v2/trainings/${id}`);
+        return api.delete<DeleteResponse>(`/v2/trainings/${id}`);
     },
 
     deleteAssignment: async (id: string) => {
-        return api.delete(`/v2/trainings/assignments/${id}`);
+        return api.delete<DeleteResponse>(`/v2/trainings/assignments/${id}`);
     }
 };

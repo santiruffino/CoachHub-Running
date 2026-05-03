@@ -11,6 +11,7 @@ export async function GET(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        void request;
         const { id: activityUuid } = await params;
         const supabase = await createClient();
         const { data: { session } } = await supabase.auth.getSession();
@@ -62,7 +63,7 @@ export async function GET(
             let errorData;
             try {
                 errorData = await response.json();
-            } catch (e) {
+            } catch {
                 errorData = { error: 'Failed to parse error response', details: await response.text().catch(() => 'No text body') };
             }
             return NextResponse.json(errorData, { status: response.status });
@@ -70,7 +71,7 @@ export async function GET(
 
         const data = await response.json();
         return NextResponse.json(data);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Streams API error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

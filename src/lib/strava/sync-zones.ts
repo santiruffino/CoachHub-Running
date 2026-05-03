@@ -1,5 +1,24 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 
+type StravaZone = {
+    min: number;
+    max: number;
+};
+
+type StravaHeartRateZones = {
+    zones: StravaZone[];
+    custom_zones?: boolean;
+};
+
+type StravaZonesResponse = {
+    heart_rate?: StravaHeartRateZones;
+};
+
+type HrZonesPayload = {
+    zones: Array<{ min: number; max: number }>;
+    custom_zones?: boolean;
+};
+
 /**
  * Sync heart rate zones from Strava to athlete profile
  * 
@@ -15,7 +34,7 @@ export async function syncHeartRateZonesFromStrava(
     accessToken: string,
     supabase: SupabaseClient,
     userId: string
-): Promise<{ success: boolean; zones?: any; error?: string }> {
+): Promise<{ success: boolean; zones?: HrZonesPayload; error?: string }> {
     try {
         // Fetch athlete zones from Strava
         const zonesResponse = await fetch(
@@ -35,7 +54,7 @@ export async function syncHeartRateZonesFromStrava(
             };
         }
 
-        const zonesData = await zonesResponse.json();
+        const zonesData = await zonesResponse.json() as StravaZonesResponse;
         const heartRateZones = zonesData.heart_rate;
 
         if (!heartRateZones || !heartRateZones.zones) {
@@ -47,7 +66,7 @@ export async function syncHeartRateZonesFromStrava(
 
         // Transform zones to our format
         const hrZones = {
-            zones: heartRateZones.zones.map((zone: any) => ({
+            zones: heartRateZones.zones.map((zone) => ({
                 min: zone.min,
                 max: zone.max,
             })),
@@ -73,15 +92,16 @@ export async function syncHeartRateZonesFromStrava(
             };
         }
 
-        return {
-            success: true,
-            zones: hrZones
-        };
-    } catch (error: any) {
+            return {
+                success: true,
+                zones: hrZones
+            };
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
         console.error('Error syncing heart rate zones:', error);
         return {
             success: false,
-            error: error.message
+            error: message
         };
     }
 }

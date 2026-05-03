@@ -10,6 +10,7 @@ import { requireRole } from '@/lib/supabase/api-helpers';
  */
 export async function GET(request: NextRequest) {
     try {
+        void request;
         const authResult = await requireRole('ATHLETE');
 
         if (authResult.response) {
@@ -53,7 +54,7 @@ export async function GET(request: NextRequest) {
             athleteId: connection?.strava_athlete_id,
             lastSync: lastSync || connection?.updated_at,
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Get Strava status error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

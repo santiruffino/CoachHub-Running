@@ -16,7 +16,7 @@ export function CreateTrainingForm({ onSuccess }: { onSuccess?: () => void }) {
             await trainingsService.create({ ...data, blocks: [] });
             reset();
             if (onSuccess) onSuccess();
-        } catch (err) {
+        } catch {
             setError(t('new.errorCreate'));
         }
     };

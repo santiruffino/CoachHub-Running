@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import { format, startOfWeek, endOfWeek, subWeeks, addWeeks, eachDayOfInterval, startOfDay } from 'date-fns';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { format, startOfWeek, endOfWeek, subWeeks, addWeeks } from 'date-fns';
 import { es } from 'date-fns/locale';
 import api from '@/lib/axios';
 import { useTranslations } from 'next-intl';
@@ -18,22 +18,39 @@ import { Button } from '@/components/ui/button';
 import { stravaService } from '@/features/strava/services/strava.service';
 import { racesService } from '@/features/races/services/races.service';
 import { AssignRaceModal } from '@/features/races/components/AssignRaceModal';
-import { cacheService } from '@/lib/cache.service';
 import { normalizeActivityType } from '@/utils/activity-utils';
 import { NextRaces } from './NextRaces';
+import { User } from '@/interfaces/auth';
+import { Activity } from '@/interfaces/activity';
+import { TrainingAssignment } from '@/interfaces/training';
+import { AthleteRace } from '@/interfaces/race';
+import { HeartRateZones as HeartRateZonesType } from '@/interfaces/athlete';
 
-export default function AthleteDashboard({ user }: { user: any }) {
+interface AthleteDetails {
+    athleteProfile?: {
+        coachNotes?: string;
+        hrZones?: HeartRateZonesType;
+    } | null;
+}
+
+interface PerformancePoint {
+    week: string;
+    value: number;
+}
+
+export default function AthleteDashboard({ user }: { user: User }) {
     const t = useTranslations();
+    const userDisplayName = user.firstName || user.name?.split(' ')[0] || user.email.split('@')[0];
     const [loading, setLoading] = useState(true);
-    const [activities, setActivities] = useState<any[]>([]);
-    const [assignments, setAssignments] = useState<any[]>([]);
-    const [races, setRaces] = useState<any[]>([]);
-    const [athleteDetails, setAthleteDetails] = useState<any>(null);
+    const [activities, setActivities] = useState<Activity[]>([]);
+    const [assignments, setAssignments] = useState<TrainingAssignment[]>([]);
+    const [races, setRaces] = useState<AthleteRace[]>([]);
+    const [athleteDetails, setAthleteDetails] = useState<AthleteDetails | null>(null);
     const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
-    const [performanceData, setPerformanceData] = useState<any[]>([]);
+    const [performanceData, setPerformanceData] = useState<PerformancePoint[]>([]);
     const [isAssignRaceModalOpen, setIsAssignRaceModalOpen] = useState(false);
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         if (!user) return;
         try {
             setLoading(true);
@@ -56,10 +73,10 @@ export default function AthleteDashboard({ user }: { user: any }) {
                 racesService.findByUser(user.id)
             ]);
 
-            const detailsData = detailsRes.status === 'fulfilled' ? detailsRes.value.data : null;
-            const activitiesData = activitiesRes.status === 'fulfilled' ? activitiesRes.value.data : [];
-            const assignmentsData = calendarRes.status === 'fulfilled' ? calendarRes.value.data : [];
-            const racesData = racesRes.status === 'fulfilled' ? racesRes.value.data : [];
+            const detailsData = detailsRes.status === 'fulfilled' ? (detailsRes.value.data as AthleteDetails) : null;
+            const activitiesData = activitiesRes.status === 'fulfilled' ? (activitiesRes.value.data as Activity[]) : [];
+            const assignmentsData = calendarRes.status === 'fulfilled' ? (calendarRes.value.data as TrainingAssignment[]) : [];
+            const racesData = racesRes.status === 'fulfilled' ? (racesRes.value.data as AthleteRace[]) : [];
 
             if (detailsRes.status === 'rejected') console.error('Failed to fetch athlete details:', detailsRes.reason);
             if (activitiesRes.status === 'rejected') console.error('Failed to fetch activities:', activitiesRes.reason);
@@ -78,18 +95,18 @@ export default function AthleteDashboard({ user }: { user: any }) {
                 const wStart = startOfWeek(week, { weekStartsOn: 1 });
                 const wEnd = endOfWeek(week, { weekStartsOn: 1 });
                 
-                const weekAssignments = assignmentsData.filter((a: any) => {
-                    const dateValue = a.scheduled_date || a.scheduledDate;
+                const weekAssignments = assignmentsData.filter((assignment) => {
+                    const dateValue = assignment.scheduled_date || assignment.scheduledDate;
                     const d = dateValue.split('T')[0];
                     return d >= format(wStart, 'yyyy-MM-dd') && d <= format(wEnd, 'yyyy-MM-dd');
                 });
 
-                const completed = weekAssignments.filter((a: any) => {
-                    if (a.completed) return true;
-                    const dateValue = a.scheduled_date || a.scheduledDate;
-                    return activitiesData.some((act: any) => 
-                        format(new Date(act.start_date), 'yyyy-MM-dd') === dateValue.split('T')[0] &&
-                        normalizeActivityType(act.type) === a.training.type
+                const completed = weekAssignments.filter((assignment) => {
+                    if (assignment.completed) return true;
+                    const dateValue = assignment.scheduled_date || assignment.scheduledDate;
+                    return activitiesData.some((activity) => 
+                        format(new Date(activity.start_date), 'yyyy-MM-dd') === dateValue.split('T')[0] &&
+                        normalizeActivityType(activity.type) === assignment.training.type
                     );
                 }).length;
 
@@ -105,11 +122,11 @@ export default function AthleteDashboard({ user }: { user: any }) {
         } finally {
             setLoading(false);
         }
-    };
+    }, [user]);
 
     useEffect(() => {
-        fetchData();
-    }, [user]);
+        void fetchData();
+    }, [fetchData]);
 
     const weeklyStats = useMemo(() => {
         const wEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
@@ -121,23 +138,23 @@ export default function AthleteDashboard({ user }: { user: any }) {
             return d >= weekStartStr && d <= weekEndStr;
         });
 
-        const weekAssignments = assignments.filter((assignment: any) => {
+        const weekAssignments = assignments.filter((assignment) => {
             const dateValue = assignment.scheduled_date || assignment.scheduledDate;
             if (!dateValue) return false;
             const d = dateValue.split('T')[0];
             return d >= weekStartStr && d <= weekEndStr;
         });
 
-        const completedAssignments = weekAssignments.filter((assignment: any) => {
+        const completedAssignments = weekAssignments.filter((assignment) => {
             if (assignment.completed) return true;
 
             const dateValue = assignment.scheduled_date || assignment.scheduledDate;
             if (!dateValue) return false;
             const assignmentDate = dateValue.split('T')[0];
 
-            return weekActs.some((act: any) => {
-                const activityDate = format(new Date(act.start_date), 'yyyy-MM-dd');
-                return activityDate === assignmentDate && normalizeActivityType(act.type) === assignment.training?.type;
+            return weekActs.some((activity) => {
+                const activityDate = format(new Date(activity.start_date), 'yyyy-MM-dd');
+                return activityDate === assignmentDate && normalizeActivityType(activity.type) === assignment.training.type;
             });
         }).length;
 
@@ -175,7 +192,7 @@ export default function AthleteDashboard({ user }: { user: any }) {
                     </div>
                     <div>
                         <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">
-                            {t('dashboard.messages.hi', { name: user.firstName || user.name?.split(' ')[0] })}
+                            {t('dashboard.messages.hi', { name: userDisplayName })}
                         </h1>
                         <p className="text-sm text-muted-foreground mt-1">
                             {format(new Date(), 'EEEE, d MMMM', { locale: es })}

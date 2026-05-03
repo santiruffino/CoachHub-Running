@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense, useEffect } from 'react';
+import { useState, Suspense, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { WorkoutBuilder } from '@/features/trainings/components/builder/WorkoutBuilder';
 import { WorkoutBlock } from '@/features/trainings/components/builder/types';
@@ -27,13 +27,7 @@ function WorkoutBuilderContent() {
     const { alertState, showAlert, closeAlert } = useAlertDialog();
     const t = useTranslations('builder');
 
-    useEffect(() => {
-        if (workoutId) {
-            loadWorkout(workoutId);
-        }
-    }, [workoutId]);
-
-    const loadWorkout = async (id: string) => {
+    const loadWorkout = useCallback(async (id: string) => {
         try {
             setLoading(true);
             const res = await trainingsService.findOne(id);
@@ -49,7 +43,13 @@ function WorkoutBuilderContent() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [showAlert]);
+
+    useEffect(() => {
+        if (workoutId) {
+            loadWorkout(workoutId);
+        }
+    }, [workoutId, loadWorkout]);
 
     const handleSave = async () => {
         if (!workoutTitle.trim()) {

@@ -21,7 +21,7 @@ export async function PATCH(
 
         const { supabase, user } = authResult;
 
-        const { scheduledDate } = await request.json();
+        const { scheduledDate } = (await request.json()) as { scheduledDate?: string };
 
         if (!scheduledDate) {
             return NextResponse.json(
@@ -85,7 +85,7 @@ export async function PATCH(
         }
 
         return NextResponse.json(updated);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Update assignment error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

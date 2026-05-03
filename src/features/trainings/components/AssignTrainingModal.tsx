@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button';
 import { trainingsService } from '@/features/trainings/services/trainings.service';
 import api from '@/lib/axios';
-import { Training, TrainingType } from '@/interfaces/training';
+import { Training } from '@/interfaces/training';
 import { format } from 'date-fns';
 import { WorkoutBuilder } from './builder/WorkoutBuilder';
 import { WorkoutBlock } from './builder/types';
@@ -31,6 +31,16 @@ interface Group {
     id: string;
     name: string;
 }
+
+type CreatableTraining = {
+    title: string;
+    type: Training['type'];
+    description: string;
+    blocks: WorkoutBlock[];
+    isTemplate: boolean;
+};
+
+const FALLBACK_TRAINING_TYPE: Training['type'] = 'RUNNING' as Training['type'];
 
 export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, onClose, onSuccess }: AssignTrainingModalProps) {
     const t = useTranslations('trainings.assign');
@@ -120,16 +130,6 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
         }
     };
 
-    const handleTrainingSelect = (id: string) => {
-        setSelectedTrainingId(id);
-        if (id) {
-            loadTraining(id);
-        } else {
-            setSelectedTraining(null);
-            setEditedBlocks([]);
-        }
-    };
-
     const getRpeLabel = (rpe: number) => {
         if (rpe <= 2) return t('rpeVeryEasy');
         if (rpe <= 4) return t('rpeEasy');
@@ -155,13 +155,15 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                 setLoading(true);
                 setError('');
 
-                const newTraining = await trainingsService.create({
+                const newTrainingPayload: CreatableTraining = {
                     title: workoutName || `Workout for ${format(new Date(`${scheduledDate}T00:00:00`), 'MMM d, yyyy')}`,
-                    type: 'RUNNING' as any,
+                    type: FALLBACK_TRAINING_TYPE,
                     description: 'Custom workout',
                     blocks: editedBlocks,
                     isTemplate: false
-                });
+                };
+
+                const newTraining = await trainingsService.create(newTrainingPayload);
 
                 await trainingsService.assign({
                     trainingId: newTraining.data.id,

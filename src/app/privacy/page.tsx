@@ -28,7 +28,7 @@ export default function PrivacyPage() {
                     <section className="mb-8">
                         <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Introduction</h2>
                         <p className="text-gray-700 dark:text-gray-light mb-4">
-                            Welcome to Coach Hub Running ("we," "our," or "us"). We are committed to protecting your personal information and your right to privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform.
+                            Welcome to Coach Hub Running (referred to as &quot;we,&quot; &quot;our,&quot; or &quot;us&quot;). We are committed to protecting your personal information and your right to privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform.
                         </p>
                         <p className="text-gray-700 dark:text-gray-light">
                             By using Coach Hub Running, you agree to the collection and use of information in accordance with this policy. If you do not agree with our policies and practices, please do not use our service.
@@ -166,7 +166,7 @@ export default function PrivacyPage() {
 
                     {/* Children's Privacy */}
                     <section className="mb-8">
-                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Children's Privacy</h2>
+                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Children&apos;s Privacy</h2>
                         <p className="text-gray-700 dark:text-gray-light">
                             Our service is not intended for users under the age of 13. We do not knowingly collect personal information from children under 13. If you believe we have collected information from a child under 13, please contact us immediately, and we will take steps to delete such information.
                         </p>
@@ -184,7 +184,7 @@ export default function PrivacyPage() {
                     <section className="mb-8">
                         <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Changes to This Privacy Policy</h2>
                         <p className="text-gray-700 dark:text-gray-light">
-                            We may update this Privacy Policy from time to time. We will notify you of any significant changes by posting the new Privacy Policy on this page and updating the "Last updated" date. We encourage you to review this Privacy Policy periodically for any changes.
+                            We may update this Privacy Policy from time to time. We will notify you of any significant changes by posting the new Privacy Policy on this page and updating the &quot;Last updated&quot; date. We encourage you to review this Privacy Policy periodically for any changes.
                         </p>
                     </section>
 

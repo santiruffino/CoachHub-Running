@@ -1,5 +1,3 @@
-import { WorkoutMatch, MatchQuality } from '../types';
-
 /**
  * Calculate match score color class
  */

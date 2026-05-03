@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/supabase/api-helpers';
+import { getRequesterProfile, requireAuth } from '@/lib/supabase/api-helpers';
 
 export async function POST(
     request: NextRequest,
@@ -24,6 +24,14 @@ export async function POST(
         }
 
         const { supabase, user } = authResult;
+        const { profile: requesterProfile, error: requesterError } = await getRequesterProfile(user!.id);
+
+        if (requesterError || !requesterProfile) {
+            return NextResponse.json(
+                { error: 'Not authorized' },
+                { status: 403 }
+            );
+        }
 
         // Verify assignment belongs to user (or user is coach)
         const { data: assignment, error: fetchError } = await supabase
@@ -40,15 +48,9 @@ export async function POST(
         }
 
         // Authorization: Athlete owner OR Coach in the same team as athlete
-        if (assignment.user_id !== user!.id) {
-            if (user!.role === 'COACH') {
-                const { data: coachProfile } = await supabase
-                    .from('profiles')
-                    .select('team_id')
-                    .eq('id', user!.id)
-                    .single();
-
-                if (!coachProfile?.team_id) {
+        if (assignment.user_id !== requesterProfile.id) {
+            if (requesterProfile.role === 'COACH' || requesterProfile.role === 'ADMIN') {
+                if (!requesterProfile.team_id) {
                     return NextResponse.json(
                         { error: 'Not authorized' },
                         { status: 403 }
@@ -59,7 +61,7 @@ export async function POST(
                     .from('profiles')
                     .select('id, team_id')
                     .eq('id', assignment.user_id)
-                    .eq('team_id', coachProfile.team_id)
+                    .eq('team_id', requesterProfile.team_id)
                     .single();
 
                 if (coachError || !athleteProfile) {
@@ -102,7 +104,7 @@ export async function POST(
 
         return NextResponse.json({ success: true });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Link activity error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
@@ -125,19 +127,54 @@ export async function DELETE(
         }
 
         const { supabase, user } = authResult;
+        const { profile: requesterProfile, error: requesterError } = await getRequesterProfile(user!.id);
+
+        if (requesterError || !requesterProfile) {
+            return NextResponse.json(
+                { error: 'Not authorized' },
+                { status: 403 }
+            );
+        }
 
         // Verify ownership before unlinking
-        const { data: assignment } = await supabase
+        const { data: assignment, error: assignmentError } = await supabase
             .from('training_assignments')
             .select('user_id')
             .eq('id', assignmentId)
             .single();
 
-        if (assignment && assignment.user_id !== user!.id) {
+        if (assignmentError || !assignment) {
             return NextResponse.json(
-                { error: 'Not authorized' },
-                { status: 403 }
+                { error: 'Assignment not found' },
+                { status: 404 }
             );
+        }
+
+        if (assignment.user_id !== requesterProfile.id) {
+            if (requesterProfile.role !== 'COACH' && requesterProfile.role !== 'ADMIN') {
+                return NextResponse.json(
+                    { error: 'Not authorized' },
+                    { status: 403 }
+                );
+            }
+
+            const { data: athleteProfile, error: athleteError } = await supabase
+                .from('profiles')
+                .select('team_id')
+                .eq('id', assignment.user_id)
+                .single();
+
+            if (
+                athleteError ||
+                !athleteProfile ||
+                !requesterProfile.team_id ||
+                athleteProfile.team_id !== requesterProfile.team_id
+            ) {
+                return NextResponse.json(
+                    { error: 'Not authorized' },
+                    { status: 403 }
+                );
+            }
         }
 
         const { error: updateError } = await supabase
@@ -154,7 +191,7 @@ export async function DELETE(
         }
 
         return NextResponse.json({ success: true });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Unlink activity error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

@@ -39,15 +39,14 @@ export async function GET() {
     }
 
     // Get all groups for this team
-    let groupsQuery = supabase
+    const groupsQuery = supabase
       .from('groups')
       .select(`
         *,
         _count:athlete_groups(count)
       `)
-      .order('created_at', { ascending: false });
-
-    groupsQuery = groupsQuery.eq('team_id', profile.team_id);
+      .order('created_at', { ascending: false })
+      .eq('team_id', profile.team_id);
 
     const { data: groups, error } = await groupsQuery;
 
@@ -59,9 +58,9 @@ export async function GET() {
     }
 
     return NextResponse.json(groups);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: error instanceof Error ? error.message : 'Internal server error' },
       { status: 500 }
     );
   }
@@ -126,9 +125,9 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(group, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: error instanceof Error ? error.message : 'Internal server error' },
       { status: 500 }
     );
   }

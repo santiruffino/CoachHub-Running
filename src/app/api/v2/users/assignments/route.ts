@@ -1,5 +1,19 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/api-helpers';
+
+interface GroupDetails {
+    id: string;
+    group_type: string | null;
+    race_priority: string | null;
+}
+
+interface AssignmentWithGroup {
+    user_id: string;
+    scheduled_date: string;
+    source_group_id: string | null;
+    group?: GroupDetails;
+    [key: string]: unknown;
+}
 
 /**
  * Get User Assignments
@@ -7,7 +21,7 @@ import { requireAuth } from '@/lib/supabase/api-helpers';
  * Fetches training assignments for the authenticated user.
  * Includes full training details for each assignment.
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
     try {
         const authResult = await requireAuth();
 
@@ -21,6 +35,7 @@ export async function GET(request: NextRequest) {
         const { data: assignments, error } = await supabase
             .from('training_assignments')
             .select(`
+        user_id,
         id,
         scheduled_date,
         completed,
@@ -49,28 +64,36 @@ export async function GET(request: NextRequest) {
             );
         }
 
+        const mutableAssignments = (assignments || []) as AssignmentWithGroup[];
+
         // Manual fetch for groups to resolve missing foreign key relationship
-        const sgIds = [...new Set(assignments?.map(a => a.source_group_id).filter(Boolean))];
-        if (sgIds.length > 0 && assignments) {
+        const sgIds = [
+            ...new Set(
+                mutableAssignments
+                    .map((assignment) => assignment.source_group_id)
+                    .filter((value): value is string => typeof value === 'string' && value.length > 0)
+            )
+        ];
+        if (sgIds.length > 0) {
             const { data: groupsData } = await supabase
                 .from('groups')
                 .select('id, group_type, race_priority')
                 .in('id', sgIds);
-                
-            const groupMap = new Map(groupsData?.map(g => [g.id, g]));
-            assignments.forEach((a: any) => {
-                if (a.source_group_id) {
-                    a.group = groupMap.get(a.source_group_id);
+
+            const groupMap = new Map((groupsData || []).map(group => [group.id, group]));
+            mutableAssignments.forEach((assignment) => {
+                if (assignment.source_group_id) {
+                    assignment.group = groupMap.get(assignment.source_group_id);
                 }
             });
         }
 
         // Apply Priority Engine Conflict Resolution
         const { resolveAssignmentConflicts } = await import('@/lib/training/priority-engine');
-        const resolvedAssignments = resolveAssignmentConflicts(assignments || []);
+        const resolvedAssignments = resolveAssignmentConflicts(mutableAssignments);
 
         return NextResponse.json(resolvedAssignments);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Get assignments error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

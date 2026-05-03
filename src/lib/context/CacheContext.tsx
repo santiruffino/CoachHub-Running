@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
+import { createContext, useContext, useEffect, useCallback, useRef } from 'react';
 
 interface CacheEntry<T> {
     data: T;
@@ -24,9 +24,10 @@ const CacheContext = createContext<CacheContextType | undefined>(undefined);
 const DEFAULT_TTL = 5 * 60 * 1000; // 5 minutes
 const STORAGE_KEY_PREFIX = 'cache:';
 
+type UnknownCacheEntry = CacheEntry<unknown>;
+
 export function CacheProvider({ children }: { children: React.ReactNode }) {
-    const cacheRef = useRef<Map<string, CacheEntry<any>>>(new Map());
-    const [, forceUpdate] = useState(0);
+    const cacheRef = useRef<Map<string, UnknownCacheEntry>>(new Map());
 
     // Load cache from session storage on mount
     useEffect(() => {
@@ -41,7 +42,7 @@ export function CacheProvider({ children }: { children: React.ReactNode }) {
                 const stored = sessionStorage.getItem(storageKey);
                 if (stored) {
                     try {
-                        const entry: CacheEntry<any> = JSON.parse(stored);
+                        const entry: UnknownCacheEntry = JSON.parse(stored);
                         // Check if entry is still valid
                         if (Date.now() - entry.timestamp < entry.ttl) {
                             cacheRef.current.set(key, entry);
@@ -59,7 +60,7 @@ export function CacheProvider({ children }: { children: React.ReactNode }) {
         }
     }, []);
 
-    const persistToStorage = useCallback((key: string, entry: CacheEntry<any>) => {
+    const persistToStorage = useCallback((key: string, entry: UnknownCacheEntry) => {
         if (typeof window === 'undefined') return;
 
         try {
