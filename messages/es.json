@@ -2,6 +2,7 @@
     "nav": {
         "dashboard": "Dashboard",
         "athletes": "Atletas",
+        "coaches": "Coaches",
         "groups": "Grupos",
         "workoutLibrary": "Biblioteca de Entrenamientos",
         "trainings": "Entrenamientos",
@@ -188,7 +189,8 @@
             "recentActivity": "Actividad Reciente",
             "noRecentActivity": "No hay actividad reciente",
             "week": "Sem {n}",
-            "coachComments": "Comentarios del coach"
+            "coachComments": "Comentarios del coach",
+            "performanceAndZones": "Rendimiento y Zonas"
         },
         "editModal": {
             "title": "Editar atleta",
@@ -399,6 +401,11 @@
             "backToLogin": "Volver al inicio de sesión",
             "noSessionError": "No hay una sesión activa. Haz clic nuevamente en el enlace de restablecimiento.",
             "errorMessage": "No se pudo actualizar la contraseña"
+        },
+        "codeError": {
+            "title": "Error de autenticación",
+            "description": "Ocurrió un error durante la autenticación. Es posible que el enlace haya expirado o sea inválido.",
+            "backToLogin": "Volver al inicio de sesión"
         }
     },
     "groups": {
@@ -461,10 +468,27 @@
             "locationPlaceholder": "Ej. Buenos Aires, Argentina",
             "creating": "Creando...",
             "createGroup": "Crear grupo"
+        },
+        "editModal": {
+            "groupNameLabel": "Nombre del grupo",
+            "descriptionLabel": "Descripción",
+            "optionalPlaceholder": "Opcional",
+            "selectRacePlaceholder": "Selecciona una carrera...",
+            "noDate": "Sin fecha",
+            "raceNamePlaceholder": "Ej. Maratón de Buenos Aires",
+            "raceDistancePlaceholder": "Ej. 42k",
+            "syncWithMembers": "Sincronizar con miembros",
+            "syncWithMembersDescription": "Asignar esta carrera automáticamente al calendario de todos los atletas del grupo."
+        },
+        "detailPage": {
+            "editGroup": "Editar grupo",
+            "groupPlanning": "Planificación del grupo",
+            "scheduleTraining": "Programar entrenamiento"
         }
     },
     "coaches": {
         "title": "Gestión de Coaches",
+        "inviteCoach": "Invitar Coach",
         "searchPlaceholder": "Buscar coach por nombre o email",
         "deleteTitle": "¿Eliminar Entrenador?",
         "deleteMessage": "Esta acción no se puede deshacer. El entrenador será borrado y todos sus atletas serán reasignados temporalmente a tu cuenta (Administrador).",
@@ -495,6 +519,8 @@
             "detailsCard": "Detalles del Entrenamiento",
             "titleLabel": "Título",
             "titlePlaceholder": "Ej: Intervalos de velocidad 5k",
+            "focusLabel": "Enfoque:",
+            "focusPlaceholder": "Desarrollo de umbral • Ciclismo",
             "sportTypeLabel": "Tipo de deporte",
             "descriptionLabel": "Descripción",
             "descriptionPlaceholder": "Descripción opcional...",
@@ -505,7 +531,9 @@
             "errorCreate": "Error al crear el entrenamiento. Por favor, inténtalo de nuevo.",
             "saving": "Guardando...",
             "save": "Guardar Entrenamiento",
-            "cancel": "Cancelar"
+            "cancel": "Cancelar",
+            "versionHistory": "Historial de versiones",
+            "shareWithAthlete": "Compartir con atleta"
         },
         "assign": {
             "titleAthlete": "Asignar Entrenamiento a Atleta",
@@ -693,6 +721,22 @@
             "viewDetails": "Ver detalles completos de la actividad",
             "workoutBlocks": "Bloques del Entrenamiento",
             "pace": "Ritmo: {min} - {max} min/km"
+        },
+        "linkModal": {
+            "title": "Vincular con entrenamiento planificado",
+            "activityLabel": "Actividad",
+            "errorLoad": "No se pudieron cargar los entrenamientos sugeridos",
+            "errorLink": "No se pudo vincular el entrenamiento",
+            "errorUnlink": "No se pudo desvincular el entrenamiento",
+            "confirmUnlink": "¿Estás seguro de que quieres desvincular este entrenamiento?",
+            "loading": "Buscando entrenamientos cercanos...",
+            "noCandidates": "No se encontraron entrenamientos planificados cercanos (+/- 2 días).",
+            "linked": "Vinculado",
+            "linkedToAnother": "Vinculado a otra actividad",
+            "unlinking": "Desvinculando...",
+            "unlink": "Desvincular",
+            "linking": "Vinculando...",
+            "link": "Vincular"
         }
     },
     "builder": {
@@ -724,6 +768,7 @@
         "coachNotes": "Notas del Coach",
         "notesPlaceholder": "Añade notas para el atleta...",
         "linkedDrills": "Drills Vinculados",
+        "linkedDrillsTitle": "Técnica de alta cadencia",
         "video": "Video",
         "sessionSummary": "Resumen de la Sesión",
         "tss": "TSS (Est.)",
@@ -807,6 +852,7 @@
         "atIntensity": " al {intensity}% de intensidad",
         "editorPhase": "Fase de Edición 01",
         "coreDetails": "Detalles Principales",
+        "loadError": "Error al cargar el entrenamiento",
         "workoutTitleLabel": "Título del Entrenamiento",
         "workoutTitlePlaceholder": "ej. Desarrollo de Umbral",
         "activityTypeLabel": "Tipo de Actividad",
@@ -854,6 +900,12 @@
             "rampDownDesc": "Disminuir intensidad gradualmente",
             "build": "Progreso {n}",
             "medium": "Medio"
+        },
+        "trainingTypes": {
+            "RUNNING": "Running",
+            "CYCLING": "Ciclismo",
+            "SWIMMING": "Natación",
+            "STRENGTH": "Fuerza"
         },
         "rpeLevels": {
             "veryEasy": "Muy Fácil",
@@ -989,6 +1041,20 @@
             "tempo": "Tempo",
             "umbral": "Umbral",
             "vo2max": "VO2 Max"
+        },
+        "page": {
+            "headerTag": "MI PERFIL",
+            "integrations": {
+                "tag": "INTEGRACIONES",
+                "title": "Conexión con Strava",
+                "description": "Conecta tu cuenta de Strava para sincronizar actividades automáticamente."
+            },
+            "hrZones": {
+                "tag": "ZONAS DE FC",
+                "title": "Frecuencia cardíaca",
+                "description": "Calculadas a partir de tu FC máxima y de reposo."
+            },
+            "saveHint": "Los cambios se guardan en tu perfil de inmediato."
         }
     },
     "calendar": {
@@ -996,6 +1062,14 @@
         "done": "✓ Hecho",
         "customWorkout": "Entrenamiento diario personalizado.",
         "strava": "Strava",
+        "page": {
+            "title": "Calendario de entrenamiento",
+            "rescheduleError": "Error al reprogramar el entrenamiento",
+            "groupRescheduleMessage": "Este entrenamiento fue asignado a un grupo. ¿Quieres reprogramarlo para todos los atletas?",
+            "groupRescheduleTitle": "Reprogramar grupo",
+            "moveAll": "Mover todos",
+            "onlyThisOne": "Solo este"
+        },
         "weeklySummary": {
             "title": "Resumen semanal",
             "distance": "Distancia",
@@ -1004,6 +1078,25 @@
             "planned": "Plan",
             "actual": "Real",
             "cumulativeTotal": "Total acumulado"
+        },
+        "sessionList": {
+            "empty": "No hay sesiones para este día",
+            "workout": "Entrenamiento",
+            "completed": "Completado",
+            "distance": "Distancia",
+            "time": "Tiempo",
+            "pace": "Ritmo",
+            "avgHr": "FC Media",
+            "effortScore": "Puntaje de esfuerzo",
+            "elevation": "Desnivel",
+            "viewDetails": "Ver detalles"
+        },
+        "studentFilter": {
+            "groups": "Grupos",
+            "noGroups": "No se encontraron grupos.",
+            "students": "Atletas",
+            "all": "Todos",
+            "none": "Ninguno"
         }
     },
     "common": {
@@ -1023,7 +1116,11 @@
         "success": "¡Éxito!",
         "required": "Este campo es obligatorio",
         "today": "Hoy",
-        "distance_km": "{distance} km"
+        "distance_km": "{distance} km",
+        "a11y": {
+            "toggleMenu": "Alternar menú",
+            "openMenu": "Abrir menú"
+        }
     },
     "landing": {
         "navbar": {
@@ -1195,6 +1292,10 @@
             "target": "Objetivo: {time}",
             "defaultRaceName": "Carrera",
             "resultTime": "Tiempo Real",
+            "countdownLabel": "CUENTA REGRESIVA",
+            "todayLabel": "HOY",
+            "daysLeftLabel": "Días restantes",
+            "targetLabel": "OBJETIVO",
             "countdown": "T - {days} días",
             "countdownDay": "T - {days} día",
             "countdownHoursMinutes": "T - {hours}h {minutes}m",
@@ -1298,6 +1399,200 @@
                 "elevation": "Desnivel",
                 "link": "Enlace",
                 "viewOnStrava": "Ver en Strava"
+            }
+        },
+        "weeklyVolume": {
+            "title": "Volumen semanal (últimas 4 semanas)",
+            "planned": "Planificado",
+            "completed": "Completado",
+            "unitKm": "km"
+        },
+        "activityChart": {
+            "noData": "No hay datos disponibles"
+        },
+        "activityDetail": {
+            "title": "Detalle de actividad",
+            "distance": "Distancia",
+            "time": "Tiempo",
+            "avgHr": "FC media",
+            "elevation": "Desnivel",
+            "noDetailedData": "No hay datos de gráficos detallados para esta actividad.",
+            "failedToLoad": "No se pudieron cargar los detalles de la actividad."
+        },
+        "connectButton": {
+            "ariaLabel": "Conectar con Strava",
+            "alt": "Conectar con Strava",
+            "connecting": "Conectando..."
+        }
+    },
+    "legal": {
+        "privacy": {
+            "backToHome": "Volver al inicio",
+            "title": "Política de privacidad",
+            "lastUpdated": "Última actualización: 14 de febrero de 2026",
+            "footer": "© 2026 Coach Hub. Todos los derechos reservados.",
+            "sections": {
+                "introduction": {
+                    "title": "Introducción",
+                    "p1": "Bienvenido a Coach Hub Running (nosotros, nuestro o la plataforma). Nos comprometemos a proteger tu información personal y tu derecho a la privacidad. Esta política explica cómo recopilamos, usamos, divulgamos y protegemos tu información cuando utilizas nuestra plataforma.",
+                    "p2": "Al usar Coach Hub Running, aceptas la recopilación y uso de información conforme a esta política. Si no estás de acuerdo con estas prácticas, no utilices el servicio."
+                },
+                "collect": {
+                    "title": "Información que recopilamos",
+                    "personal": {
+                        "title": "Información personal",
+                        "subtitle": "Recopilamos información personal que nos proporcionas voluntariamente cuando:",
+                        "items": {
+                            "account": "Te registras en una cuenta (nombre, email y contraseña)",
+                            "profile": "Creas tu perfil de atleta o coach (altura, peso, zonas de frecuencia cardíaca, preferencias)",
+                            "integrations": "Conectas servicios de terceros (Strava, Garmin, etc.)",
+                            "support": "Nos contactas para soporte"
+                        }
+                    },
+                    "activity": {
+                        "title": "Datos de actividad",
+                        "subtitle": "Cuando conectas servicios de fitness de terceros, recopilamos:",
+                        "items": {
+                            "workout": "Datos de entrenamientos y actividades (distancia, duración, ritmo, frecuencia cardíaca, desnivel)",
+                            "gps": "Datos de ubicación GPS de actividades registradas",
+                            "history": "Historial de entrenamiento y métricas de rendimiento",
+                            "device": "Información de dispositivos y wearables conectados"
+                        }
+                    },
+                    "usage": {
+                        "title": "Información de uso",
+                        "subtitle": "Recopilamos automáticamente cierta información cuando usas la plataforma:",
+                        "items": {
+                            "logData": "Datos de registro (IP, navegador, sistema operativo, páginas visitadas)",
+                            "deviceInfo": "Información del dispositivo (tipo e identificadores únicos)",
+                            "cookies": "Cookies y tecnologías de seguimiento similares"
+                        }
+                    }
+                },
+                "usage": {
+                    "title": "Cómo usamos tu información",
+                    "subtitle": "Usamos la información recopilada para:",
+                    "items": {
+                        "services": {
+                            "label": "Prestación del servicio",
+                            "text": "Crear y gestionar tu cuenta, facilitar relaciones coach-atleta y entregar planes de entrenamiento"
+                        },
+                        "personalization": {
+                            "label": "Personalización",
+                            "text": "Adaptar tu experiencia y ofrecer recomendaciones de entrenamiento relevantes"
+                        },
+                        "analytics": {
+                            "label": "Analítica",
+                            "text": "Analizar tus datos de entrenamiento y brindar insights de progreso y rendimiento"
+                        },
+                        "communication": {
+                            "label": "Comunicación",
+                            "text": "Enviarte actualizaciones importantes, notificaciones y mensajes de tu coach"
+                        },
+                        "improvement": {
+                            "label": "Mejora",
+                            "text": "Entender cómo se usa la plataforma para mejorar funcionalidades"
+                        },
+                        "security": {
+                            "label": "Seguridad",
+                            "text": "Proteger contra accesos no autorizados y mantener segura tu información"
+                        },
+                        "compliance": {
+                            "label": "Cumplimiento legal",
+                            "text": "Cumplir con leyes y regulaciones aplicables"
+                        }
+                    }
+                },
+                "integrations": {
+                    "title": "Integraciones de terceros",
+                    "p1": "Coach Hub Running se integra con plataformas de terceros como Strava, Garmin y otras. Cuando conectas estos servicios:",
+                    "items": {
+                        "auth": "Nos autorizas a acceder a tus datos de actividad en esas plataformas",
+                        "policies": "Aplican sus propias políticas de privacidad y términos de servicio",
+                        "disconnect": "Puedes desconectar estos servicios en cualquier momento desde tu cuenta"
+                    },
+                    "p2": "Recomendamos revisar las políticas de privacidad de los servicios de terceros que conectes para entender cómo gestionan tus datos."
+                },
+                "sharing": {
+                    "title": "Cómo compartimos tu información",
+                    "subtitle": "Podemos compartir tu información en los siguientes casos:",
+                    "coach": {
+                        "title": "Con tu coach",
+                        "text": "Cuando te unes a un coach o grupo, tu coach tendrá acceso a tu perfil, datos de entrenamiento e historial de actividad para brindarte seguimiento."
+                    },
+                    "providers": {
+                        "title": "Proveedores de servicio",
+                        "text": "Podemos compartir datos con proveedores de confianza que nos ayudan a operar la plataforma (hosting, analítica, comunicaciones). Estos proveedores están obligados contractualmente a proteger tu información."
+                    },
+                    "legal": {
+                        "title": "Requerimientos legales",
+                        "text": "Podemos divulgar tu información si la ley lo exige, por orden judicial o requerimiento gubernamental, o para proteger nuestros derechos, propiedad o seguridad."
+                    },
+                    "noSell": "No vendemos tu información personal a terceros."
+                },
+                "security": {
+                    "title": "Seguridad de los datos",
+                    "p1": "Aplicamos medidas técnicas y organizativas adecuadas para proteger tu información personal frente a acceso, alteración, divulgación o destrucción no autorizada. Estas medidas incluyen:",
+                    "items": {
+                        "encryption": "Cifrado de datos en tránsito y en reposo",
+                        "assessments": "Evaluaciones y actualizaciones de seguridad periódicas",
+                        "accessControls": "Controles de acceso y mecanismos de autenticación",
+                        "infrastructure": "Infraestructura cloud segura"
+                    },
+                    "p2": "Sin embargo, ningún método de transmisión por internet o almacenamiento electrónico es 100% seguro. Aunque trabajamos para proteger tu información, no podemos garantizar seguridad absoluta."
+                },
+                "rights": {
+                    "title": "Tus derechos de privacidad",
+                    "subtitle": "Según tu ubicación, puedes tener los siguientes derechos:",
+                    "items": {
+                        "access": {
+                            "label": "Acceso",
+                            "text": "Solicitar acceso a la información personal que tenemos sobre ti"
+                        },
+                        "correction": {
+                            "label": "Rectificación",
+                            "text": "Solicitar corrección de datos inexactos o incompletos"
+                        },
+                        "deletion": {
+                            "label": "Eliminación",
+                            "text": "Solicitar eliminación de tu información personal"
+                        },
+                        "portability": {
+                            "label": "Portabilidad",
+                            "text": "Solicitar una copia de tus datos en formato estructurado y legible por máquina"
+                        },
+                        "optOut": {
+                            "label": "Exclusión",
+                            "text": "Excluirte de comunicaciones de marketing"
+                        },
+                        "withdraw": {
+                            "label": "Retirar consentimiento",
+                            "text": "Retirar consentimiento para el procesamiento de datos cuando aplique"
+                        }
+                    },
+                    "contact": "Para ejercer estos derechos, contáctanos en privacy@coachhub.com. Responderemos en un plazo de 30 días."
+                },
+                "retention": {
+                    "title": "Retención de datos",
+                    "text": "Conservamos tu información personal mientras sea necesaria para prestar servicios y cumplir los fines de esta política. Si eliminas tu cuenta, eliminaremos o anonimizaremos tu información dentro de 90 días, salvo obligación legal o regulatoria de conservarla."
+                },
+                "children": {
+                    "title": "Privacidad de menores",
+                    "text": "Nuestro servicio no está dirigido a menores de 13 años. No recopilamos intencionalmente información personal de menores de 13. Si crees que recopilamos datos de un menor, contáctanos de inmediato y tomaremos medidas para eliminarlos."
+                },
+                "transfers": {
+                    "title": "Transferencias internacionales de datos",
+                    "text": "Tu información puede transferirse y procesarse en países distintos al de tu residencia. Estos países pueden tener leyes de protección de datos diferentes. Al usar nuestro servicio, consientes estas transferencias. Aplicamos salvaguardas adecuadas para proteger tus datos."
+                },
+                "changes": {
+                    "title": "Cambios en esta política",
+                    "text": "Podemos actualizar esta política periódicamente. Te notificaremos cambios relevantes publicando la nueva versión en esta página y actualizando la fecha de última actualización. Te recomendamos revisarla de forma periódica."
+                },
+                "contact": {
+                    "title": "Contáctanos",
+                    "subtitle": "Si tienes preguntas o inquietudes sobre esta política o nuestras prácticas de privacidad, contáctanos:",
+                    "emailLabel": "Email"
+                }
             }
         }
     },

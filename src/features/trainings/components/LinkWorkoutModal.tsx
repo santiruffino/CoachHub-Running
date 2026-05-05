@@ -12,6 +12,7 @@ import { matchingService } from '../services/matching.service';
 import { Calendar, CheckCircle2, Link as LinkIcon, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { MatchCandidateAssignment } from '../types';
+import { useLocale, useTranslations } from 'next-intl';
 
 interface LinkWorkoutModalProps {
     isOpen: boolean;
@@ -22,6 +23,9 @@ interface LinkWorkoutModalProps {
 }
 
 export function LinkWorkoutModal({ isOpen, onClose, activityId, activityTitle, onLinkSuccess }: LinkWorkoutModalProps) {
+    const t = useTranslations('workouts.linkModal');
+    const locale = useLocale();
+
     const [candidates, setCandidates] = useState<MatchCandidateAssignment[]>([]);
     const [loading, setLoading] = useState(false);
     const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -35,11 +39,11 @@ export function LinkWorkoutModal({ isOpen, onClose, activityId, activityTitle, o
             setCandidates(data);
         } catch (err) {
             console.error('Failed to load candidates', err);
-            setError('No se pudieron cargar los entrenamientos sugeridos');
+            setError(t('errorLoad')); 
         } finally {
             setLoading(false);
         }
-    }, [activityId]);
+    }, [activityId, t]);
 
     useEffect(() => {
         if (isOpen && activityId) {
@@ -55,14 +59,14 @@ export function LinkWorkoutModal({ isOpen, onClose, activityId, activityTitle, o
             if (onLinkSuccess) onLinkSuccess();
         } catch (err) {
             console.error('Failed to link', err);
-            setError('No se pudo vincular el entrenamiento');
+            setError(t('errorLink'));
         } finally {
             setActionLoading(null);
         }
     };
 
     const handleUnlink = async (assignmentId: string) => {
-        if (!confirm('¿Estás seguro de que quieres desvincular este entrenamiento?')) return;
+        if (!confirm(t('confirmUnlink'))) return;
         try {
             setActionLoading(assignmentId);
             await matchingService.unlinkActivity(assignmentId);
@@ -70,7 +74,7 @@ export function LinkWorkoutModal({ isOpen, onClose, activityId, activityTitle, o
             if (onLinkSuccess) onLinkSuccess();
         } catch (err) {
             console.error('Failed to unlink', err);
-            setError('No se pudo desvincular el entrenamiento');
+            setError(t('errorUnlink'));
         } finally {
             setActionLoading(null);
         }
@@ -84,10 +88,10 @@ export function LinkWorkoutModal({ isOpen, onClose, activityId, activityTitle, o
                 <DialogHeader>
                     <DialogTitle className="text-xl font-bold flex items-center gap-2">
                         <LinkIcon className="w-5 h-5" />
-                        Vincular con Entrenamiento Planificado
+                        {t('title')}
                     </DialogTitle>
                     <p className="text-sm text-muted-foreground">
-                        Actividad: <span className="font-medium text-foreground">{activityTitle}</span>
+                        {t('activityLabel')}: <span className="font-medium text-foreground">{activityTitle}</span>
                     </p>
                 </DialogHeader>
 
@@ -99,13 +103,13 @@ export function LinkWorkoutModal({ isOpen, onClose, activityId, activityTitle, o
 
                 {loading ? (
                     <div className="py-12 text-center text-muted-foreground">
-                        Buscando entrenamientos cercanos...
+                        {t('loading')}
                     </div>
                 ) : (
                     <div className="space-y-4">
                         {candidates.length === 0 ? (
                             <div className="py-8 text-center text-muted-foreground">
-                                <p>No se encontraron entrenamientos planificados cercanos (+/- 2 días).</p>
+                                <p>{t('noCandidates')}</p>
                             </div>
                         ) : (
                             <div className="space-y-2">
@@ -121,22 +125,22 @@ export function LinkWorkoutModal({ isOpen, onClose, activityId, activityTitle, o
                                                     {assignment.title}
                                                 </span>
                                                 {assignment.isLinkedToThis && (
-                                                    <Badge variant="secondary" className="bg-green-100 text-green-700 hover:bg-green-100 flex items-center gap-1 text-xs">
-                                                        <CheckCircle2 className="w-3 h-3" />
-                                                        Vinculado
-                                                    </Badge>
-                                                )}
-                                                {assignment.isLinked && !assignment.isLinkedToThis && (
-                                                    <Badge variant="outline" className="text-muted-foreground text-xs flex items-center gap-1">
-                                                        <AlertCircle className="w-3 h-3" />
-                                                        Vinculado a otra actividad
-                                                    </Badge>
-                                                )}
-                                            </div>
+                                                        <Badge variant="secondary" className="bg-green-100 text-green-700 hover:bg-green-100 flex items-center gap-1 text-xs">
+                                                            <CheckCircle2 className="w-3 h-3" />
+                                                            {t('linked')}
+                                                        </Badge>
+                                                    )}
+                                                    {assignment.isLinked && !assignment.isLinkedToThis && (
+                                                        <Badge variant="outline" className="text-muted-foreground text-xs flex items-center gap-1">
+                                                            <AlertCircle className="w-3 h-3" />
+                                                            {t('linkedToAnother')}
+                                                        </Badge>
+                                                    )}
+                                                </div>
                                             <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
                                                 <div className="flex items-center gap-1">
                                                     <Calendar className="w-3 h-3" />
-                                                    {new Date(assignment.scheduledDate).toLocaleDateString()}
+                                                    {new Date(assignment.scheduledDate).toLocaleDateString(locale)}
                                                 </div>
                                                 {assignment.type && (
                                                     <Badge variant="outline" className="text-xs py-0 h-5">
@@ -155,7 +159,7 @@ export function LinkWorkoutModal({ isOpen, onClose, activityId, activityTitle, o
                                                     disabled={actionLoading === assignment.id}
                                                     className="text-red-600 hover:text-red-700 border-red-200 hover:bg-red-50"
                                                 >
-                                                    {actionLoading === assignment.id ? 'Desvinculando...' : 'Desvincular'}
+                                                    {actionLoading === assignment.id ? t('unlinking') : t('unlink')}
                                                 </Button>
                                             ) : (
                                                 <Button
@@ -165,7 +169,7 @@ export function LinkWorkoutModal({ isOpen, onClose, activityId, activityTitle, o
                                                     disabled={actionLoading === assignment.id || (assignment.isLinked && !assignment.isLinkedToThis)}
                                                     className={assignment.isLinked ? "opacity-50" : ""}
                                                 >
-                                                    {actionLoading === assignment.id ? 'Vinculando...' : 'Vincular'}
+                                                    {actionLoading === assignment.id ? t('linking') : t('link')}
                                                 </Button>
                                             )}
                                         </div>

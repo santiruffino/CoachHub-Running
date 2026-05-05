@@ -103,6 +103,7 @@ export default function AthletesPage() {
 
   const t = useTranslations('athletes');
   const tDashboard = useTranslations('dashboard');
+  const tA11y = useTranslations('common.a11y');
 
   const fetchAthletes = useCallback(async () => {
     try {
@@ -427,7 +428,7 @@ export default function AthletesPage() {
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                <span className="sr-only">Open menu</span>
+                                <span className="sr-only">{tA11y('openMenu')}</span>
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>

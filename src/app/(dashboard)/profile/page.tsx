@@ -14,8 +14,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { SectionLayout, FieldGroup } from '@/components/layout/EditorialLayout';
 import { ArrowLeft } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export default function ProfilePage() {
+    const t = useTranslations('profile.page');
+    const tCommon = useTranslations('common');
     const router = useRouter();
     const { user, loading: authLoading } = useAuth();
     const [profile, setProfile] = useState<ProfileDetails | null>(null);
@@ -92,7 +95,7 @@ export default function ProfilePage() {
                         </Avatar>
                         <div>
                             <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground mb-0.5">
-                                MI PERFIL
+                                {t('headerTag')}
                             </p>
                             <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">
                                 {displayName}
@@ -107,9 +110,9 @@ export default function ProfilePage() {
                     {/* ── Strava section (athletes only) ── */}
                     {user?.role === 'ATHLETE' && (
                         <SectionLayout
-                            tag="INTEGRACIONES"
-                            title="Conexión con Strava"
-                            description="Conecta tu cuenta de Strava para sincronizar actividades automáticamente."
+                            tag={t('integrations.tag')}
+                            title={t('integrations.title')}
+                            description={t('integrations.description')}
                         >
                             <StravaStatusCard
                                 status={stravaStatus}
@@ -124,9 +127,9 @@ export default function ProfilePage() {
                     {/* ── HR Zones section (athletes only) ── */}
                     {user?.role === 'ATHLETE' && profile?.athleteProfile && (
                         <SectionLayout
-                            tag="ZONAS DE FC"
-                            title="Frecuencia cardíaca"
-                            description="Calculadas a partir de tu FC máxima y de reposo."
+                            tag={t('hrZones.tag')}
+                            title={t('hrZones.title')}
+                            description={t('hrZones.description')}
                         >
                             <FieldGroup>
                                 <HeartRateZones zones={profile.athleteProfile.hrZones} />
@@ -141,14 +144,14 @@ export default function ProfilePage() {
             <div className="fixed bottom-16 md:bottom-0 inset-x-0 bg-background/80 backdrop-blur-md border-t border-border/20 z-40">
                 <div className="max-w-6xl mx-auto px-6 md:px-10 py-4 flex items-center justify-between">
                     <p className="text-xs text-muted-foreground hidden sm:block">
-                        Los cambios se guardan en tu perfil de inmediato.
+                        {t('saveHint')}
                     </p>
                     <Button
                         type="submit"
                         form="profile-form"
                         className="ml-auto h-10 px-8 rounded-full font-medium text-sm"
                     >
-                        Guardar cambios
+                        {tCommon('save')}
                     </Button>
                 </div>
             </div>

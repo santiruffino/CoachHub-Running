@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Users, Building2, UserCircle2, Activity } from 'lucide-react';
 import api from '@/lib/axios';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { Coach } from '@/interfaces/coach';
 import { User } from '@/interfaces/auth';
@@ -24,6 +24,7 @@ export default function AdminDashboard({ user }: { user: User }) {
   const [data, setData] = useState<AdminData | null>(null);
   const [loading, setLoading] = useState(true);
   const t = useTranslations();
+  const locale = useLocale();
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -118,7 +119,7 @@ export default function AdminDashboard({ user }: { user: User }) {
                     </p>
                     <p className="text-muted-foreground flex items-center gap-2 justify-end mt-1">
                       <Activity className="h-3 w-3" /> 
-                      {coach.lastActivity ? new Date(coach.lastActivity).toLocaleDateString() : t('dashboard.admin.noActivity')}
+                      {coach.lastActivity ? new Date(coach.lastActivity).toLocaleDateString(locale) : t('dashboard.admin.noActivity')}
                     </p>
                   </div>
                 </div>
