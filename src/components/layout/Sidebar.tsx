@@ -3,10 +3,11 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, UsersRound, Calendar, TrendingUp, Settings, Menu, X, Dumbbell, Trophy } from 'lucide-react';
+import { TrendingUp, Settings, Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useTranslations } from 'next-intl';
+import { buildNavigation } from './navigation';
 
 export function Sidebar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -20,13 +21,7 @@ export function Sidebar() {
     const userRole = user?.role || '';
 
     const navigation = [
-        { name: t('dashboard'), href: '/dashboard', icon: LayoutDashboard, roles: ['COACH', 'ATHLETE', 'ADMIN'] },
-        { name: t('athletes'), href: '/athletes', icon: Users, roles: ['COACH', 'ADMIN'] },
-        { name: t('groups'), href: '/groups', icon: UsersRound, roles: ['COACH', 'ADMIN'] },
-        { name: t('coaches'), href: '/coaches', icon: Users, roles: ['ADMIN'] },
-        { name: t('workoutLibrary'), href: '/workouts/library', icon: Dumbbell, roles: ['COACH', 'ADMIN'] },
-        { name: t('trainings'), href: '/trainings', icon: Calendar, roles: ['COACH', 'ADMIN'] },
-        { name: t('races'), href: '/races', icon: Trophy, roles: ['COACH', 'ATHLETE', 'ADMIN'] },
+        ...buildNavigation(t),
         { name: t('progress'), href: '#', icon: TrendingUp, roles: ['COACH', 'ATHLETE', 'ADMIN'] },
     ];
 
@@ -82,7 +77,7 @@ export function Sidebar() {
                         {navigation
                             .filter(item => item.roles.includes(userRole))
                             .map((item) => {
-                                const isActive = pathname === item.href;
+                                const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
                                 return (
                                     <Link
                                         key={item.href}

@@ -110,7 +110,7 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
 
     const loadTraining = async (id: string) => {
         try {
-            const res = await api.get<Training>(`/v2/trainings/${id}`);
+            const res = await trainingsService.findOne(id);
             setSelectedTraining(res.data);
             setEditedBlocks(JSON.parse(JSON.stringify(res.data.blocks || [])));
             if (res.data.expectedRpe) {
@@ -123,7 +123,7 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
 
     const loadTemplates = async () => {
         try {
-            const res = await api.get<Training[]>('/v2/trainings');
+            const res = await trainingsService.findAll();
             setAvailableTemplates(res.data.filter(t => t.isTemplate));
         } catch (e) {
             console.error('Failed to load templates', e);

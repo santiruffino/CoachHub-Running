@@ -2,28 +2,22 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Calendar, Plus, Users, Clock, MapPin, Trash2 } from 'lucide-react';
+import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 import { Training } from '@/interfaces/training';
 import { trainingsService } from '@/features/trainings/services/trainings.service';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { AssignTrainingModal } from '@/features/trainings/components/AssignTrainingModal';
 import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
 import { useTranslations } from 'next-intl';
-
-type TrainingBlock = {
-    duration?: {
-        type?: 'distance' | 'time';
-        value?: number;
-    };
-};
+import { useRouter } from 'next/navigation';
 
 export default function TrainingsPage() {
     const t = useTranslations('trainings');
+    const tCommon = useTranslations('common');
+    const router = useRouter();
     const [trainings, setTrainings] = useState<Training[]>([]);
     const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
     const [selectedTrainingId, setSelectedTrainingId] = useState<string | null>(null);
     const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
     const [pendingDelete, setPendingDelete] = useState<{ id: string; title: string } | null>(null);
@@ -33,7 +27,7 @@ export default function TrainingsPage() {
     const fetchTrainings = async () => {
         try {
             const res = await trainingsService.findAll();
-            setTrainings(res.data);
+            setTrainings(res.data.filter(training => training.isTemplate));
         } catch (e) {
             console.error(e);
         } finally {
@@ -44,20 +38,6 @@ export default function TrainingsPage() {
     useEffect(() => {
         fetchTrainings();
     }, []);
-
-    const calculateStats = (blocks: TrainingBlock[]) => {
-        if (!Array.isArray(blocks)) return { dist: 0, time: 0, blockCount: 0 };
-        const stats = blocks.reduce((acc, block) => {
-            if (block.duration?.type === 'distance') {
-                acc.dist += block.duration.value || 0;
-                acc.time += (block.duration.value || 0) / 1000 * 5; // est 5:00 min/km
-            } else if (block.duration?.type === 'time') {
-                acc.time += (block.duration.value || 0) / 60; // seconds to min
-            }
-            return acc;
-        }, { dist: 0, time: 0 });
-        return { ...stats, blockCount: blocks.length };
-    };
 
     const handleAssignClick = (trainingId: string) => {
         setSelectedTrainingId(trainingId);
@@ -89,83 +69,88 @@ export default function TrainingsPage() {
         }
     };
 
+    const filteredTrainings = trainings.filter(training =>
+        training.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        training.description?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     return (
-        <div className="space-y-6 p-8">
-            <div className="flex items-center justify-between">
+        <div className="container mx-auto px-4 py-6">
+            <div className="flex items-center justify-between mb-6">
                 <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">{t('title')}</h1>
-                <Button asChild>
-                    <Link href="/trainings/new">
+                <Link href="/workouts/builder">
+                    <Button>
                         <Plus className="h-5 w-5 mr-2" />
                         {t('createTraining')}
-                    </Link>
-                </Button>
+                    </Button>
+                </Link>
+            </div>
+
+            <div className="mb-6">
+                <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder={tCommon('search')}
+                        className="w-full pl-10 pr-4 py-2 border border-border rounded-md bg-card text-foreground focus:ring-2 focus:ring-brand-primary focus:border-transparent"
+                    />
+                </div>
             </div>
 
             {loading ? (
-                <div>{t('loading')}</div>
+                <div className="text-center py-12 text-muted-foreground">{t('loading')}</div>
+            ) : filteredTrainings.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">{t('noTrainings')}</div>
             ) : (
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {trainings.map((training) => {
-                        const stats = calculateStats(training.blocks);
-                        return (
-                            <Card key={training.id} className="hover:shadow-lg transition-shadow">
-                                <CardContent className="p-6">
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex items-center">
-                                            <div className="flex-shrink-0 bg-primary/10 p-2 rounded-full">
-                                                <Calendar className="h-5 w-5 text-primary" />
-                                            </div>
-                                            <h3 className="ml-3 text-lg font-bold font-display tracking-tight text-foreground">{training.title}</h3>
-                                        </div>
-                                        <Badge variant="secondary">{training.type}</Badge>
-                                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {filteredTrainings.map((training) => (
+                        <div
+                            key={training.id}
+                            className="bg-card border border-border rounded-lg p-4 hover:shadow-md transition-shadow"
+                        >
+                            <h3 className="text-lg font-bold font-display tracking-tight text-foreground mb-1">
+                                {training.title}
+                            </h3>
+                            {training.description && (
+                                <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                                    {training.description}
+                                </p>
+                            )}
 
-                                    {training.description && (
-                                        <p className="mt-4 text-sm text-muted-foreground line-clamp-2">{training.description}</p>
-                                    )}
-
-                                    <div className="mt-4 grid grid-cols-3 gap-2">
-                                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                            <MapPin className="h-3 w-3" />
-                                            <span>{(stats.dist / 1000).toFixed(1)}km</span>
-                                        </div>
-                                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                            <Clock className="h-3 w-3" />
-                                            <span>~{Math.ceil(stats.time)}min</span>
-                                        </div>
-                                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                            <Users className="h-3 w-3" />
-                                            <span>{t('blocks', { count: stats.blockCount })}</span>
-                                        </div>
-                                    </div>
-
-                                    <Separator className="my-4" />
-
-                                    <div className="flex gap-2">
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="flex-1 border-primary text-primary hover:bg-primary hover:text-white"
-                                            onClick={() => handleAssignClick(training.id)}
-                                        >
-                                            {t('assignToAthlete')}
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="border-destructive text-destructive hover:bg-destructive hover:text-white"
-                                            onClick={() => handleDelete(training.id, training.title)}
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        );
-                    })}
-                    {trainings.length === 0 && (
-                        <p className="text-muted-foreground col-span-full text-center py-10">{t('noTrainings')}</p>
-                    )}
+                            <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
+                                <span className="text-xs text-muted-foreground">
+                                    {t('blocks', { count: training.blocks?.length || 0 })}
+                                </span>
+                                <div className="flex gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => router.push(`/workouts/builder?id=${training.id}`)}
+                                        title={tCommon('edit')}
+                                    >
+                                        <Edit className="w-4 h-4" />
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handleAssignClick(training.id)}
+                                    >
+                                        {t('assignToAthlete')}
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handleDelete(training.id, training.title)}
+                                        className="border-destructive text-destructive hover:bg-destructive hover:text-white"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             )}
 

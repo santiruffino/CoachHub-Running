@@ -26,8 +26,6 @@ This list reflects currently implemented screens from the App Router.
 - `src/app/(dashboard)/groups/[id]/page.tsx`
 - `src/app/(dashboard)/groups/new/page.tsx`
 - `src/app/(dashboard)/trainings/page.tsx`
-- `src/app/(dashboard)/trainings/new/page.tsx`
-- `src/app/(dashboard)/workouts/library/page.tsx`
 - `src/app/(dashboard)/workouts/builder/page.tsx`
 - `src/app/(dashboard)/workouts/assign/page.tsx`
 - `src/app/(dashboard)/workouts/[assignmentId]/page.tsx`

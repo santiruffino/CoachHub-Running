@@ -81,7 +81,7 @@ function WorkoutBuilderContent() {
             }
 
             showAlert('success', t('saveSuccess'));
-            setTimeout(() => router.push('/workouts/library'), 1500);
+            setTimeout(() => router.push('/trainings'), 1500);
         } catch (error) {
             console.error('Failed to save workout:', error);
             showAlert('error', t('saveError'));
@@ -171,7 +171,7 @@ function WorkoutBuilderContent() {
                  <span className="text-xs text-white/60">{t('publishDescription')}</span>
             </div>
             <div className="flex items-center gap-4">
-                <Button variant="outline" className="border-white/20 text-white bg-transparent hover:bg-white/10 hover:text-white uppercase tracking-wider text-xs font-semibold px-6 py-6" onClick={() => router.push('/workouts/library')}>
+                <Button variant="outline" className="border-white/20 text-white bg-transparent hover:bg-white/10 hover:text-white uppercase tracking-wider text-xs font-semibold px-6 py-6" onClick={() => router.push('/trainings')}>
                     {t('cancelExit')}
                 </Button>
                 <Button 

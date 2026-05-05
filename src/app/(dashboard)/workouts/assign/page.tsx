@@ -182,7 +182,7 @@ function AssignWorkoutContent() {
             const [athletesRes, groupsRes, templatesRes] = await Promise.all([
                 api.get<Athlete[]>('/v2/users/athletes'),
                 api.get<Group[]>('/v2/groups'),
-                api.get<Training[]>('/v2/trainings'),
+                trainingsService.findAll(),
             ]);
             setAthletes(athletesRes.data);
             setGroups(groupsRes.data);
@@ -194,7 +194,7 @@ function AssignWorkoutContent() {
 
     const loadTemplate = async (id: string) => {
         try {
-            const res = await api.get<Training>(`/v2/trainings/${id}`);
+            const res = await trainingsService.findOne(id);
             setSelectedTemplate(res.data);
             setBlocks(JSON.parse(JSON.stringify(res.data.blocks || [])));
         } catch (error) {
