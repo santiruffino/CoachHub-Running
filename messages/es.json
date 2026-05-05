@@ -189,6 +189,18 @@
             "noRecentActivity": "No hay actividad reciente",
             "week": "Sem {n}",
             "coachComments": "Comentarios del coach"
+        },
+        "editModal": {
+            "title": "Editar atleta",
+            "nameLabel": "Nombre",
+            "namePlaceholder": "Nombre completo",
+            "emailReadonlyLabel": "Email (no modificable)",
+            "assignedCoachLabel": "Entrenador asignado",
+            "selectCoachPlaceholder": "Selecciona un coach",
+            "noCoach": "Sin entrenador",
+            "saving": "Guardando...",
+            "saveChanges": "Guardar cambios",
+            "updateError": "No se pudo actualizar el atleta"
         }
     },
     "activities": {
@@ -380,7 +392,13 @@
             "submittingButton": "Guardando...",
             "successMessage": "¡Contraseña actualizada correctamente!",
             "passwordMismatch": "Las contraseñas no coinciden",
-            "passwordTooShort": "La contraseña debe tener al menos 6 caracteres"
+            "passwordTooShort": "La contraseña debe tener al menos 6 caracteres",
+            "verifyingLink": "Verificando tu enlace de recuperación...",
+            "invalidTitle": "Enlace inválido o expirado",
+            "invalidDescription": "El enlace para restablecer tu contraseña es inválido o expiró. Solicita un nuevo email de restablecimiento.",
+            "backToLogin": "Volver al inicio de sesión",
+            "noSessionError": "No hay una sesión activa. Haz clic nuevamente en el enlace de restablecimiento.",
+            "errorMessage": "No se pudo actualizar la contraseña"
         }
     },
     "groups": {
@@ -428,6 +446,21 @@
             "createNewRace": "Crear nueva carrera",
             "pickFromLibrary": "Elegir de la biblioteca",
             "raceDetails": "Detalles de la Carrera"
+        },
+        "createForm": {
+            "subtitle": "Configura un nuevo equipo de entrenamiento.",
+            "groupNameLabel": "Nombre del grupo",
+            "groupNamePlaceholder": "Ej. Team Maratón 2025",
+            "descriptionLabel": "Descripción",
+            "descriptionPlaceholder": "Opcional: detalles del grupo, objetivos, etc.",
+            "selectRacePlaceholder": "Selecciona una carrera...",
+            "emptyRaceLibrary": "No hay carreras en la biblioteca. Crea una nueva.",
+            "raceNamePlaceholder": "Ej. Maratón de Buenos Aires",
+            "raceDistancePlaceholder": "Ej. 42k",
+            "locationLabel": "Ubicación",
+            "locationPlaceholder": "Ej. Buenos Aires, Argentina",
+            "creating": "Creando...",
+            "createGroup": "Crear grupo"
         }
     },
     "coaches": {
@@ -962,7 +995,16 @@
         "restDay": "Día de descanso",
         "done": "✓ Hecho",
         "customWorkout": "Entrenamiento diario personalizado.",
-        "strava": "Strava"
+        "strava": "Strava",
+        "weeklySummary": {
+            "title": "Resumen semanal",
+            "distance": "Distancia",
+            "time": "Tiempo",
+            "elevation": "Desnivel",
+            "planned": "Plan",
+            "actual": "Real",
+            "cumulativeTotal": "Total acumulado"
+        }
     },
     "common": {
         "loading": "Cargando...",
@@ -1204,6 +1246,7 @@
             "successDescription": "Tu cuenta ha sido creada exitosamente. Redirigiendo al login...",
             "title": "Aceptar Invitación",
             "subtitle": "Crea tu cuenta para comenzar a entrenar",
+            "emailLabel": "Email",
             "fullName": "Nombre Completo",
             "fullNamePlaceholder": "Juan Pérez",
             "nameRequired": "El nombre es requerido",
@@ -1219,7 +1262,8 @@
             "creatingAccount": "Creando cuenta...",
             "createAccount": "Crear Cuenta",
             "loadError": "No se pudo crear la cuenta. Intenta de nuevo.",
-            "suspenseLoading": "Cargando..."
+            "suspenseLoading": "Cargando...",
+            "signInFailedAfterCreate": "La cuenta se creó, pero no se pudo iniciar sesión. Intenta ingresar manualmente."
         },
         "createForm": {
             "title": "Invitar Atleta",
@@ -1229,6 +1273,32 @@
             "send": "Enviar Invitación",
             "success": "Invitación enviada a {email}. Comparte este enlace: {link}",
             "error": "No se pudo enviar la invitación"
+        }
+    },
+    "strava": {
+        "status": {
+            "integrationTitle": "Integración con Strava",
+            "connectDescription": "Conecta tu cuenta de Strava para sincronizar tus actividades.",
+            "connected": "Conectado",
+            "disconnected": "Sin conexión",
+            "connectedAthleteId": "Conectado al atleta con ID: {id}",
+            "connectAutoSync": "Conecta tu cuenta para sincronizar las actividades automáticamente.",
+            "disconnect": "Desconectar",
+            "lastSync": "Última sincronización: {date}"
+        },
+        "activities": {
+            "title": "Actividades recientes",
+            "empty": "Aún no hay actividades sincronizadas.",
+            "table": {
+                "date": "Fecha",
+                "name": "Nombre",
+                "type": "Tipo",
+                "distance": "Distancia",
+                "time": "Tiempo",
+                "elevation": "Desnivel",
+                "link": "Enlace",
+                "viewOnStrava": "Ver en Strava"
+            }
         }
     },
     "stravaAuth": {

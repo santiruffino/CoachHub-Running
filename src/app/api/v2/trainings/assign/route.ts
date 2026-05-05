@@ -196,9 +196,7 @@ export async function POST(request: NextRequest) {
             console.error('Assignments to create:', assignmentsToCreate);
             return NextResponse.json(
                 {
-                    error: 'Failed to assign training',
-                    details: insertError.message,
-                    code: insertError.code
+                    error: 'Failed to assign training'
                 },
                 { status: 500 }
             );
@@ -212,8 +210,7 @@ export async function POST(request: NextRequest) {
         console.error('Assign training error:', error);
         return NextResponse.json(
             {
-                error: 'Internal server error',
-                details: error instanceof Error ? error.message : 'Unknown error'
+                error: 'Internal server error'
             },
             { status: 500 }
         );

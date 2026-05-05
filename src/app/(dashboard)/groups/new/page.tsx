@@ -16,6 +16,7 @@ import { useTranslations } from 'next-intl';
 export default function CreateGroupPage() {
     const t = useTranslations('groups');
     const tCommon = useTranslations('common');
+    const tForm = useTranslations('groups.createForm');
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [raceLibrary, setRaceLibrary] = useState<Race[]>([]);
@@ -92,7 +93,7 @@ export default function CreateGroupPage() {
                 </Button>
                 <div>
                     <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">{t('createGroup')}</h1>
-                    <p className="text-sm text-muted-foreground">Configura un nuevo equipo de entrenamiento.</p>
+                    <p className="text-sm text-muted-foreground">{tForm('subtitle')}</p>
                 </div>
             </div>
 
@@ -100,10 +101,10 @@ export default function CreateGroupPage() {
                 <div className="bg-card border border-border/40 rounded-[2rem] p-6 sm:p-8 shadow-sm space-y-6">
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="name" className="text-xs font-bold tracking-widest uppercase opacity-70">Nombre del Grupo</Label>
+                            <Label htmlFor="name" className="text-xs font-bold tracking-widest uppercase opacity-70">{tForm('groupNameLabel')}</Label>
                             <Input 
                                 id="name"
-                                placeholder="Ej. Team Maratón 2025" 
+                                placeholder={tForm('groupNamePlaceholder')} 
                                 value={name} 
                                 onChange={(e) => setName(e.target.value)} 
                                 required 
@@ -112,10 +113,10 @@ export default function CreateGroupPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="description" className="text-xs font-bold tracking-widest uppercase opacity-70">Descripción</Label>
+                            <Label htmlFor="description" className="text-xs font-bold tracking-widest uppercase opacity-70">{tForm('descriptionLabel')}</Label>
                             <Textarea 
                                 id="description"
-                                placeholder="Opcional: detalles del grupo, objetivos, etc." 
+                                placeholder={tForm('descriptionPlaceholder')} 
                                 value={description} 
                                 onChange={(e) => setDescription(e.target.value)} 
                                 className="bg-muted/30 border-none rounded-xl focus-visible:ring-1 focus-visible:ring-primary/20 min-h-[100px]"
@@ -163,10 +164,10 @@ export default function CreateGroupPage() {
                                         <select 
                                             className="flex h-12 w-full rounded-xl border-none bg-muted/30 pl-11 pr-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/20 appearance-none cursor-pointer"
                                             value={selectedRaceId}
-                                            onChange={(e) => setSelectedRaceId(e.target.value)}
-                                            required={group_type === 'RACE' && raceSelectionMode === 'EXISTING'}
-                                        >
-                                            <option value="">Selecciona una carrera...</option>
+                                        onChange={(e) => setSelectedRaceId(e.target.value)}
+                                        required={group_type === 'RACE' && raceSelectionMode === 'EXISTING'}
+                                    >
+                                            <option value="">{tForm('selectRacePlaceholder')}</option>
                                             {raceLibrary.map(race => (
                                                 <option key={race.id} value={race.id}>
                                                     {race.name} ({new Date(race.date || '').toLocaleDateString()})
@@ -175,7 +176,7 @@ export default function CreateGroupPage() {
                                         </select>
                                     </div>
                                     {raceLibrary.length === 0 && (
-                                        <p className="text-xs text-orange-500 mt-2">No hay carreras en la biblioteca. Crea una nueva.</p>
+                                        <p className="text-xs text-orange-500 mt-2">{tForm('emptyRaceLibrary')}</p>
                                     )}
                                 </div>
                             ) : (
@@ -183,7 +184,7 @@ export default function CreateGroupPage() {
                                     <div className="space-y-2 col-span-1 md:col-span-2">
                                         <Label className="text-xs font-bold tracking-widest uppercase opacity-70">{t('detail.raceName')}</Label>
                                         <Input 
-                                            placeholder="Ej. Maratón de Buenos Aires" 
+                                            placeholder={tForm('raceNamePlaceholder')} 
                                             value={race_name} 
                                             onChange={(e) => setRaceName(e.target.value)} 
                                             required={group_type === 'RACE' && raceSelectionMode === 'NEW'}
@@ -203,16 +204,16 @@ export default function CreateGroupPage() {
                                     <div className="space-y-2">
                                         <Label className="text-xs font-bold tracking-widest uppercase opacity-70">{t('detail.raceDistance')}</Label>
                                         <Input 
-                                            placeholder="Ej. 42k" 
+                                            placeholder={tForm('raceDistancePlaceholder')} 
                                             value={race_distance} 
                                             onChange={(e) => setRaceDistance(e.target.value)} 
                                             className="bg-muted/30 border-none h-11 rounded-xl"
                                         />
                                     </div>
                                     <div className="space-y-2 col-span-1 md:col-span-2">
-                                        <Label className="text-xs font-bold tracking-widest uppercase opacity-70">Ubicación</Label>
+                                        <Label className="text-xs font-bold tracking-widest uppercase opacity-70">{tForm('locationLabel')}</Label>
                                         <Input 
-                                            placeholder="Ej. Buenos Aires, Argentina" 
+                                            placeholder={tForm('locationPlaceholder')} 
                                             value={race_location} 
                                             onChange={(e) => setRaceLocation(e.target.value)} 
                                             className="bg-muted/30 border-none h-11 rounded-xl"
@@ -230,9 +231,9 @@ export default function CreateGroupPage() {
                     </Button>
                     <Button type="submit" disabled={loading} className="rounded-xl px-8 font-bold uppercase tracking-wider text-xs shadow-lg shadow-primary/20">
                         {loading ? (
-                            <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Creando... </>
+                            <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> {tForm('creating')} </>
                         ) : (
-                            'Crear Grupo'
+                            tForm('createGroup')
                         )}
                     </Button>
                 </div>

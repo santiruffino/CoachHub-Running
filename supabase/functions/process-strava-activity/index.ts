@@ -23,10 +23,10 @@ Deno.serve(async (req) => {
 
   // Custom Authentication: Verify the webhook secret.
   const webhookSecret = req.headers.get('x-webhook-secret')
-  const expectedSecret = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+  const expectedSecret = Deno.env.get('STRAVA_WEBHOOK_SHARED_SECRET')
   
   if (!webhookSecret || webhookSecret !== expectedSecret) {
-    console.error(`Unauthorized: Invalid or missing X-Webhook-Secret.`)
+    console.error('[WEBHOOK] Unauthorized request')
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 401,
@@ -67,9 +67,25 @@ Deno.serve(async (req) => {
     // CASE 2: ACTIVITY DELETE
     if (object_type === 'activity' && aspect_type === 'delete') {
       console.log(`[WEBHOOK] Deleting activity ${object_id}`)
+
+      const { data: deleteConnection, error: deleteConnError } = await supabase
+        .from('strava_connections')
+        .select('user_id')
+        .eq('strava_athlete_id', owner_id.toString())
+        .maybeSingle()
+
+      if (deleteConnError || !deleteConnection?.user_id) {
+        console.warn(`[WEBHOOK] Unable to resolve user for delete event ${object_id}`)
+        return new Response(JSON.stringify({ success: true, message: 'No matching user for delete event' }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        })
+      }
+
       const { error: deleteError } = await supabase
         .from('activities')
         .delete()
+        .eq('user_id', deleteConnection.user_id)
         .eq('external_id', object_id.toString())
 
       if (deleteError) throw deleteError
@@ -166,7 +182,7 @@ Deno.serve(async (req) => {
           is_private: activity.private || false,
           metadata: activity,
           updated_at: new Date().toISOString(),
-        }, { onConflict: 'external_id' })
+        }, { onConflict: 'user_id,external_id' })
         .select()
         .single()
 
@@ -262,9 +278,9 @@ Deno.serve(async (req) => {
       status: 200,
     })
 
-  } catch (error) {
-    console.error(`[WEBHOOK] Error: ${error.message}`)
-    return new Response(JSON.stringify({ error: error.message }), {
+  } catch {
+    console.error('[WEBHOOK] Error while processing event')
+    return new Response(JSON.stringify({ error: 'Webhook processing failed' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,
     })

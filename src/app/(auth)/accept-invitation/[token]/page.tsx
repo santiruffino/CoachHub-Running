@@ -13,17 +13,13 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { createClient } from '@/lib/supabase/client';
+import { useTranslations } from 'next-intl';
 
-const schema = z.object({
-    name: z.string().min(2, 'Name must be at least 2 characters'),
-    password: z.string().min(6, 'Password must be at least 6 characters'),
-    confirmPassword: z.string().min(6, 'Password must be at least 6 characters'),
-}).refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ['confirmPassword'],
-});
-
-type FormData = z.infer<typeof schema>;
+type FormData = {
+    name: string;
+    password: string;
+    confirmPassword: string;
+};
 
 type ErrorWithMessage = {
     message?: string;
@@ -45,6 +41,7 @@ const getErrorMessage = (error: unknown, fallback: string): string => {
 };
 
 export default function AcceptInvitationPage() {
+    const t = useTranslations('invitations.accept');
     const params = useParams();
     const token = params?.token as string;
     const [valid, setValid] = useState<boolean | null>(null);
@@ -53,6 +50,15 @@ export default function AcceptInvitationPage() {
     const [success, setSuccess] = useState(false);
     const router = useRouter();
     const supabase = createClient();
+
+    const schema = z.object({
+        name: z.string().min(2, t('nameMin')),
+        password: z.string().min(6, t('passwordMin')),
+        confirmPassword: z.string().min(6, t('passwordMin')),
+    }).refine((data) => data.password === data.confirmPassword, {
+        message: t('passwordMismatch'),
+        path: ['confirmPassword'],
+    });
 
     const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
         resolver: zodResolver(schema),
@@ -91,7 +97,7 @@ export default function AcceptInvitationPage() {
             });
 
             if (signInError) {
-                setError('Account created but login failed. Please try logging in manually.');
+                setError(t('signInFailedAfterCreate'));
                 setTimeout(() => router.push('/login'), 3000);
                 return;
             }
@@ -99,7 +105,7 @@ export default function AcceptInvitationPage() {
             // Redirect to password change page (since must_change_password is set)
             setTimeout(() => router.push('/change-password'), 1500);
         } catch (error: unknown) {
-            setError(getErrorMessage(error, 'Registration failed. Please try again.'));
+            setError(getErrorMessage(error, t('loadError')));
         }
     };
 
@@ -108,7 +114,7 @@ export default function AcceptInvitationPage() {
             <div className="flex min-h-screen items-center justify-center">
                 <Card className="w-full max-w-md">
                     <CardContent className="pt-6">
-                        <p className="text-center">Validating invitation...</p>
+                        <p className="text-center">{t('loading')}</p>
                     </CardContent>
                 </Card>
             </div>
@@ -122,14 +128,14 @@ export default function AcceptInvitationPage() {
                     <CardContent className="pt-6">
                         <Alert variant="destructive">
                             <AlertDescription>
-                                {error || 'Invalid or expired invitation.'}
+                                {error || t('invalidDescription')}
                             </AlertDescription>
                         </Alert>
                         <Button
                             className="w-full mt-4"
                             onClick={() => router.push('/login')}
                         >
-                            Go to Login
+                            {t('goToLogin')}
                         </Button>
                     </CardContent>
                 </Card>
@@ -141,11 +147,11 @@ export default function AcceptInvitationPage() {
         <div className="flex min-h-screen items-center justify-center">
             <Card className="w-full max-w-md">
                 <CardHeader>
-                    <CardTitle className="text-2xl text-center">Join Coach Hub</CardTitle>
+                    <CardTitle className="text-2xl text-center">{t('title')}</CardTitle>
                     <CardDescription className="text-center">
-                        You have been invited as an Athlete
+                        {t('subtitle')}
                         <br />
-                        Email: <strong>{email}</strong>
+                        {t('emailLabel')}: <strong>{email}</strong>
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -157,18 +163,16 @@ export default function AcceptInvitationPage() {
 
                     {success && (
                         <Alert className="mb-4">
-                            <AlertDescription>
-                                Account created successfully! Redirecting...
-                            </AlertDescription>
+                            <AlertDescription>{t('successDescription')}</AlertDescription>
                         </Alert>
                     )}
 
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="name">Full Name</Label>
+                            <Label htmlFor="name">{t('fullName')}</Label>
                             <Input
                                 id="name"
-                                placeholder="John Doe"
+                                placeholder={t('fullNamePlaceholder')}
                                 {...register('name')}
                             />
                             {errors.name && (
@@ -177,7 +181,7 @@ export default function AcceptInvitationPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="password">Set Password</Label>
+                            <Label htmlFor="password">{t('password')}</Label>
                             <Input
                                 id="password"
                                 type="password"
@@ -190,7 +194,7 @@ export default function AcceptInvitationPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="confirmPassword">Confirm Password</Label>
+                            <Label htmlFor="confirmPassword">{t('confirmPassword')}</Label>
                             <Input
                                 id="confirmPassword"
                                 type="password"
@@ -207,7 +211,7 @@ export default function AcceptInvitationPage() {
                             disabled={isSubmitting || success}
                             className="w-full"
                         >
-                            {isSubmitting ? 'Creating Account...' : 'Create Account'}
+                            {isSubmitting ? t('creatingAccount') : t('createAccount')}
                         </Button>
                     </form>
                 </CardContent>

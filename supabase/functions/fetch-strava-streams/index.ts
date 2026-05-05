@@ -156,9 +156,8 @@ Deno.serve(async (req) => {
       })
 
       if (!refreshResponse.ok) {
-          const errorData = await refreshResponse.json().catch(() => ({}));
-          console.error('[STREAMS] Token refresh failed:', errorData)
-          return new Response(JSON.stringify({ error: 'Failed to refresh Strava token', details: errorData }), {
+          console.error('[STREAMS] Token refresh failed')
+          return new Response(JSON.stringify({ error: 'Failed to refresh Strava token' }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: refreshResponse.status === 401 ? 401 : 502,
           })
@@ -190,11 +189,9 @@ Deno.serve(async (req) => {
 
     if (!stravaResponse.ok) {
         console.error(`[STREAMS] Strava API error: ${stravaResponse.status} ${stravaResponse.statusText}`)
-        const errorText = await stravaResponse.text().catch(() => 'No error body')
         return new Response(JSON.stringify({ 
             error: 'Strava API error', 
-            status: stravaResponse.status,
-            details: errorText 
+            status: stravaResponse.status
         }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: stravaResponse.status === 429 ? 429 : 502,
@@ -222,8 +219,8 @@ Deno.serve(async (req) => {
     })
 
   } catch (error) {
-    console.error(`[STREAMS] Uncaught error: ${error.message}`)
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error('[STREAMS] Uncaught error', error)
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
     })

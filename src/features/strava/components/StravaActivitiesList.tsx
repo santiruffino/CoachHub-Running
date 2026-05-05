@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { Activity } from 'lucide-react';
 import { useState } from 'react';
 import { ActivityDetailModal } from './ActivityDetailModal';
+import { useTranslations } from 'next-intl';
 
 import { StravaActivity } from '@/interfaces/activity';
 
@@ -13,12 +14,13 @@ interface StravaActivitiesListProps {
 }
 
 export function StravaActivitiesList({ activities, loading }: StravaActivitiesListProps) {
+    const t = useTranslations('strava.activities');
     const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null);
 
     if (loading) {
         return (
             <Card>
-                <CardHeader><CardTitle>Recent Activities</CardTitle></CardHeader>
+                <CardHeader><CardTitle>{t('title')}</CardTitle></CardHeader>
                 <CardContent className="h-40 animate-pulse bg-gray-100 rounded"></CardContent>
             </Card>
         );
@@ -27,9 +29,9 @@ export function StravaActivitiesList({ activities, loading }: StravaActivitiesLi
     if (activities.length === 0) {
         return (
             <Card>
-                <CardHeader><CardTitle>Recent Activities</CardTitle></CardHeader>
+                <CardHeader><CardTitle>{t('title')}</CardTitle></CardHeader>
                 <CardContent className="text-center text-gray-500 py-8">
-                    No activities synced yet.
+                    {t('empty')}
                 </CardContent>
             </Card>
         );
@@ -38,19 +40,19 @@ export function StravaActivitiesList({ activities, loading }: StravaActivitiesLi
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Activity className="h-5 w-5" /> Recent Activities</CardTitle>
+                <CardTitle className="flex items-center gap-2"><Activity className="h-5 w-5" /> {t('title')}</CardTitle>
             </CardHeader>
             <CardContent>
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Type</TableHead>
-                            <TableHead>Distance</TableHead>
-                            <TableHead>Time</TableHead>
-                            <TableHead>Elev.</TableHead>
-                            <TableHead className="text-right">Link</TableHead>
+                            <TableHead>{t('table.date')}</TableHead>
+                            <TableHead>{t('table.name')}</TableHead>
+                            <TableHead>{t('table.type')}</TableHead>
+                            <TableHead>{t('table.distance')}</TableHead>
+                            <TableHead>{t('table.time')}</TableHead>
+                            <TableHead>{t('table.elevation')}</TableHead>
+                            <TableHead className="text-right">{t('table.link')}</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -74,7 +76,7 @@ export function StravaActivitiesList({ activities, loading }: StravaActivitiesLi
                                         className="font-bold text-[#FC5200] hover:underline text-sm"
                                         onClick={(e) => e.stopPropagation()}
                                     >
-                                        View on Strava
+                                        {t('table.viewOnStrava')}
                                     </a>
                                 </TableCell>
                             </TableRow>

@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import api from '@/lib/axios';
 import { AthleteData } from '@/interfaces/athlete';
+import { useTranslations } from 'next-intl';
 
 interface EditAthleteModalProps {
   athlete: AthleteData | null;
@@ -31,6 +32,9 @@ interface EditAthleteModalProps {
 }
 
 export function EditAthleteModal({ athlete, open, onClose, onSuccess, isAdmin, coaches }: EditAthleteModalProps) {
+  const t = useTranslations('athletes.editModal');
+  const tCommon = useTranslations('common');
+
   const [name, setName] = useState('');
   const [coachId, setCoachId] = useState('');
   const [loading, setLoading] = useState(false);
@@ -85,7 +89,7 @@ export function EditAthleteModal({ athlete, open, onClose, onSuccess, isAdmin, c
       onSuccess();
       onClose();
     } catch (err: unknown) {
-      setError(getApiErrorMessage(err, 'Failed to update athlete'));
+      setError(getApiErrorMessage(err, t('updateError')));
     } finally {
       setLoading(false);
     }
@@ -95,7 +99,7 @@ export function EditAthleteModal({ athlete, open, onClose, onSuccess, isAdmin, c
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Editar Atleta</DialogTitle>
+          <DialogTitle>{t('title')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
           {error && (
@@ -105,18 +109,18 @@ export function EditAthleteModal({ athlete, open, onClose, onSuccess, isAdmin, c
           )}
           
           <div className="space-y-2">
-            <Label htmlFor="name">Nombre</Label>
+            <Label htmlFor="name">{t('nameLabel')}</Label>
             <Input
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Nombre completo"
+              placeholder={t('namePlaceholder')}
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email (No modificable)</Label>
+            <Label htmlFor="email">{t('emailReadonlyLabel')}</Label>
             <Input
               id="email"
               value={athlete?.email || ''}
@@ -127,13 +131,13 @@ export function EditAthleteModal({ athlete, open, onClose, onSuccess, isAdmin, c
 
           {isAdmin && (
             <div className="space-y-2">
-              <Label htmlFor="coach">Entrenador Asignado</Label>
+              <Label htmlFor="coach">{t('assignedCoachLabel')}</Label>
               <Select value={coachId} onValueChange={setCoachId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecciona un coach" />
+                  <SelectValue placeholder={t('selectCoachPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Sin Entrenador</SelectItem>
+                  <SelectItem value="none">{t('noCoach')}</SelectItem>
                   {coaches.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
                       {c.name || c.id}
@@ -146,10 +150,10 @@ export function EditAthleteModal({ athlete, open, onClose, onSuccess, isAdmin, c
 
           <DialogFooter className="mt-6">
             <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
-              Cancelar
+              {tCommon('cancel')}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? 'Guardando...' : 'Guardar Cambios'}
+              {loading ? t('saving') : t('saveChanges')}
             </Button>
           </DialogFooter>
         </form>

@@ -60,13 +60,10 @@ export async function GET(
 
         if (!response.ok) {
             console.error(`[STREAMS] Edge Function returned error: ${response.status}`);
-            let errorData;
-            try {
-                errorData = await response.json();
-            } catch {
-                errorData = { error: 'Failed to parse error response', details: await response.text().catch(() => 'No text body') };
-            }
-            return NextResponse.json(errorData, { status: response.status });
+            return NextResponse.json(
+                { error: 'Failed to load activity streams' },
+                { status: response.status }
+            );
         }
 
         const data = await response.json();

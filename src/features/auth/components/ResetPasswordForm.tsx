@@ -13,18 +13,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { createClient } from '@/lib/supabase/client';
 import { isAxiosError } from 'axios';
+import { useTranslations } from 'next-intl';
 
-const schema = z.object({
-    newPassword: z.string().min(6, 'Password must be at least 6 characters'),
-    confirmPassword: z.string().min(6, 'Password must be at least 6 characters'),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ['confirmPassword'],
-});
-
-type FormData = z.infer<typeof schema>;
+type FormData = {
+    newPassword: string;
+    confirmPassword: string;
+};
 
 export default function ResetPasswordForm() {
+    const t = useTranslations('auth.resetPassword');
+
+    const schema = z.object({
+        newPassword: z.string().min(6, t('passwordTooShort')),
+        confirmPassword: z.string().min(6, t('passwordTooShort')),
+    }).refine((data) => data.newPassword === data.confirmPassword, {
+        message: t('passwordMismatch'),
+        path: ['confirmPassword'],
+    });
+
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
     const [hasSession, setHasSession] = useState(false);
@@ -70,7 +76,7 @@ export default function ResetPasswordForm() {
 
         if (!hasSession) {
             console.error('❌ [ResetPasswordForm] Cannot submit - no active session');
-            setError('No active session. Please click the password reset link again.');
+            setError(t('noSessionError'));
             return;
         }
 
@@ -87,7 +93,7 @@ export default function ResetPasswordForm() {
             }, 1500);
         } catch (err: unknown) {
             console.error('❌ [ResetPasswordForm] Update failed:', err);
-            setError(isAxiosError(err) ? err.message : 'Failed to update password');
+            setError(isAxiosError(err) ? err.message : t('errorMessage'));
         }
     };
 
@@ -95,9 +101,9 @@ export default function ResetPasswordForm() {
         return (
             <Card className="w-full max-w-md">
                 <CardHeader>
-                    <CardTitle className="text-2xl">Reset Password</CardTitle>
+                    <CardTitle className="text-2xl">{t('title')}</CardTitle>
                     <CardDescription>
-                        Verifying your recovery link...
+                        {t('verifyingLink')}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -113,16 +119,16 @@ export default function ResetPasswordForm() {
         return (
             <Card className="w-full max-w-md border-destructive/50">
                 <CardHeader>
-                    <CardTitle className="text-xl text-destructive">Invalid or Expired Link</CardTitle>
+                    <CardTitle className="text-xl text-destructive">{t('invalidTitle')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <Alert variant="destructive">
                         <AlertDescription>
-                            The password reset link is invalid or has expired. Please request a new password reset email.
+                            {t('invalidDescription')}
                         </AlertDescription>
                     </Alert>
                     <Button asChild className="w-full">
-                        <a href="/login">Return to Login</a>
+                        <a href="/login">{t('backToLogin')}</a>
                     </Button>
                 </CardContent>
             </Card>
@@ -132,9 +138,9 @@ export default function ResetPasswordForm() {
     return (
         <Card className="w-full max-w-md">
             <CardHeader>
-                <CardTitle className="text-2xl">Reset Password</CardTitle>
+                <CardTitle className="text-2xl">{t('title')}</CardTitle>
                 <CardDescription>
-                    Enter your new password below.
+                    {t('description')}
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -146,13 +152,13 @@ export default function ResetPasswordForm() {
 
                 {success && (
                     <Alert className="mb-4 bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800">
-                        <AlertDescription>Password updated successfully! Redirecting...</AlertDescription>
+                        <AlertDescription>{t('successMessage')}</AlertDescription>
                     </Alert>
                 )}
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="newPassword">New Password</Label>
+                        <Label htmlFor="newPassword">{t('newPasswordLabel')}</Label>
                         <Input
                             id="newPassword"
                             type="password"
@@ -165,7 +171,7 @@ export default function ResetPasswordForm() {
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                        <Label htmlFor="confirmPassword">{t('confirmPasswordLabel')}</Label>
                         <Input
                             id="confirmPassword"
                             type="password"
@@ -182,7 +188,7 @@ export default function ResetPasswordForm() {
                         disabled={isSubmitting || success}
                         className="w-full"
                     >
-                        {isSubmitting ? 'Updating Password...' : 'Update Password'}
+                        {isSubmitting ? t('submittingButton') : t('submitButton')}
                     </Button>
                 </form>
             </CardContent>

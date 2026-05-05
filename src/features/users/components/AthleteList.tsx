@@ -16,10 +16,15 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from 'next-intl';
 
 import { Athlete } from '@/interfaces/athlete';
 
 export function AthleteList() {
+    const tAthletes = useTranslations('athletes');
+    const tAuth = useTranslations('auth.login');
+    const tDashboardAdmin = useTranslations('dashboard.admin');
+
     const [athletes, setAthletes] = useState<Athlete[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -50,7 +55,7 @@ export function AthleteList() {
         return (
             <Card>
                 <CardContent className="p-6 text-center">
-                    <p className="text-muted-foreground">No athletes found. Invite some or add them to groups!</p>
+                    <p className="text-muted-foreground">{tAthletes('noAthletes')}</p>
                 </CardContent>
             </Card>
         );
@@ -59,12 +64,12 @@ export function AthleteList() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Your Athletes</CardTitle>
+                <CardTitle>{tAthletes('title')}</CardTitle>
             </CardHeader>
             <CardContent>
                 <div className="mb-4">
                     <Input
-                        placeholder="Search athletes by name or email..."
+                        placeholder={tAthletes('searchPlaceholder')}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="max-w-sm"
@@ -75,11 +80,11 @@ export function AthleteList() {
                         <TableHeader>
                             <TableRow>
                                 <TableHead className="w-[50px]"></TableHead>
-                                <TableHead>Name</TableHead>
-                                <TableHead>Email</TableHead>
-                                <TableHead>Esta Semana</TableHead>
-                                <TableHead>Progreso</TableHead>
-                                <TableHead className="text-right">Action</TableHead>
+                                <TableHead>{tAthletes('table.athlete')}</TableHead>
+                                <TableHead>{tAuth('emailLabel')}</TableHead>
+                                <TableHead>{tAthletes('detail.thisWeek')}</TableHead>
+                                <TableHead>{tAthletes('table.compliance')}</TableHead>
+                                <TableHead className="text-right">{tAthletes('table.actions')}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -92,7 +97,7 @@ export function AthleteList() {
                                             </AvatarFallback>
                                         </Avatar>
                                     </TableCell>
-                                    <TableCell className="font-medium">{athlete.name || 'Unnamed'}</TableCell>
+                                    <TableCell className="font-medium">{athlete.name || tDashboardAdmin('noName')}</TableCell>
                                     <TableCell>{athlete.email}</TableCell>
                                     <TableCell>
                                         {athlete.weeklyStats ? (
@@ -126,7 +131,7 @@ export function AthleteList() {
                                     <TableCell className="text-right">
                                         <Button asChild variant="ghost" size="sm">
                                             <Link href={`/athletes/${athlete.id}`}>
-                                                View Profile
+                                                {tAthletes('viewProfile')}
                                             </Link>
                                         </Button>
                                     </TableCell>
@@ -137,7 +142,7 @@ export function AthleteList() {
                 </div>
                 {filteredAthletes.length === 0 && (
                     <div className="p-4 text-center text-sm text-muted-foreground">
-                        No athletes found matching your search.
+                        {tAthletes('noAthletes')}
                     </div>
                 )}
             </CardContent>

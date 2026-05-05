@@ -24,6 +24,11 @@ export async function GET(req: NextRequest) {
 
   const verifyToken = process.env.STRAVA_WEBHOOK_VERIFY_TOKEN;
 
+  if (!verifyToken) {
+    console.error('Strava webhook verify token is not configured');
+    return new NextResponse('Forbidden', { status: 403 });
+  }
+
   if (mode === 'subscribe' && token === verifyToken && challenge) {
     return NextResponse.json({ 'hub.challenge': challenge });
   }
@@ -50,6 +55,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid subscription ID' }, { status: 401 });
     }
 
+    const sharedSecret = process.env.STRAVA_WEBHOOK_SHARED_SECRET;
+    if (!sharedSecret) {
+      console.error('Strava webhook shared secret is not configured');
+      return NextResponse.json({ error: 'Webhook configuration error' }, { status: 500 });
+    }
+
     const supabase = createServiceRoleClient();
 
     // 2. Log the incoming webhook to webhook_logs
@@ -68,7 +79,7 @@ export async function POST(req: NextRequest) {
       const { data: funcData, error: funcError } = await supabase.functions.invoke('process-strava-activity', {
         body: payload,
         headers: {
-          'X-Webhook-Secret': process.env.SUPABASE_SECRET_KEY || '',
+          'X-Webhook-Secret': sharedSecret,
         },
       });
 

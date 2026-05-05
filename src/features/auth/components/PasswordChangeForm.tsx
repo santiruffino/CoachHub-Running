@@ -13,19 +13,26 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { isAxiosError } from 'axios';
+import { useTranslations } from 'next-intl';
 
-const schema = z.object({
-    currentPassword: z.string().min(6, 'Password must be at least 6 characters'),
-    newPassword: z.string().min(6, 'Password must be at least 6 characters'),
-    confirmPassword: z.string().min(6, 'Password must be at least 6 characters'),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ['confirmPassword'],
-});
-
-type FormData = z.infer<typeof schema>;
+type FormData = {
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+};
 
 export default function PasswordChangeForm() {
+    const t = useTranslations('profile.changePassword');
+
+    const schema = z.object({
+        currentPassword: z.string().min(6, t('tooShort')),
+        newPassword: z.string().min(6, t('tooShort')),
+        confirmPassword: z.string().min(6, t('tooShort')),
+    }).refine((data) => data.newPassword === data.confirmPassword, {
+        message: t('mismatch'),
+        path: ['confirmPassword'],
+    });
+
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
     useAuth();
@@ -47,16 +54,16 @@ export default function PasswordChangeForm() {
                 router.push('/dashboard');
             }, 1500);
         } catch (err: unknown) {
-            setError(isAxiosError(err) ? err.message : 'Failed to change password');
+            setError(isAxiosError(err) ? err.message : t('error'));
         }
     };
 
     return (
         <Card className="w-full max-w-md">
             <CardHeader>
-                <CardTitle className="text-2xl">Change Password</CardTitle>
+                <CardTitle className="text-2xl">{t('title')}</CardTitle>
                 <CardDescription>
-                    Please change your password to continue
+                    {t('description')}
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -68,13 +75,13 @@ export default function PasswordChangeForm() {
 
                 {success && (
                     <Alert className="mb-4">
-                        <AlertDescription>Password changed successfully! Redirecting...</AlertDescription>
+                        <AlertDescription>{t('success')}</AlertDescription>
                     </Alert>
                 )}
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="currentPassword">Current Password</Label>
+                        <Label htmlFor="currentPassword">{t('currentPassword')}</Label>
                         <Input
                             id="currentPassword"
                             type="password"
@@ -87,7 +94,7 @@ export default function PasswordChangeForm() {
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="newPassword">New Password</Label>
+                        <Label htmlFor="newPassword">{t('newPassword')}</Label>
                         <Input
                             id="newPassword"
                             type="password"
@@ -100,7 +107,7 @@ export default function PasswordChangeForm() {
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                        <Label htmlFor="confirmPassword">{t('confirmPassword')}</Label>
                         <Input
                             id="confirmPassword"
                             type="password"
@@ -117,7 +124,7 @@ export default function PasswordChangeForm() {
                         disabled={isSubmitting || success}
                         className="w-full"
                     >
-                        {isSubmitting ? 'Changing Password...' : 'Change Password'}
+                        {isSubmitting ? t('submit') + '...' : t('submit')}
                     </Button>
                 </form>
             </CardContent>
