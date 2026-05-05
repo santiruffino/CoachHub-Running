@@ -257,16 +257,16 @@ export default function AthleteDashboard({ user }: { user: User }) {
             </div>
 
             <div className="mt-16 bg-card border border-border/40 p-8 md:p-10 rounded-[2rem] shadow-sm">
-                <h3 className="text-[22px] font-display font-bold tracking-tight mb-8 text-foreground">Performance & Zones</h3>
+                <h3 className="text-[22px] font-display font-bold tracking-tight mb-8 text-foreground">{t('athletes.detail.performanceAndZones')}</h3>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
                     <PerformanceTrendChart data={performanceData} className="bg-background/50 border-border/40" />
                     <div className="rounded-2xl border border-border/40 bg-muted/20 p-5 sm:p-6">
-                        <h4 className="mb-6 text-lg font-semibold text-foreground">Heart Rate Zones</h4>
+                        <h4 className="mb-6 text-lg font-semibold text-foreground">{t('activities.detail.zones.hrTitle')}</h4>
                         {athleteDetails?.athleteProfile?.hrZones ? (
                             <HeartRateZones zones={athleteDetails.athleteProfile.hrZones} />
                         ) : (
                             <p className="text-sm text-muted-foreground">
-                                No hay zonas de FC configuradas.
+                                {t('activities.detail.zones.noHrData')}
                             </p>
                         )}
                     </div>

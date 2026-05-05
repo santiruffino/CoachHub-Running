@@ -22,7 +22,7 @@ import {
 import { Card } from '@/components/ui/card';
 import { Clock, MapPin, TrendingUp, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { MatchCandidateActivity } from '../types';
 
 interface WorkoutMatchModalProps {
@@ -34,6 +34,7 @@ interface WorkoutMatchModalProps {
 
 export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle }: WorkoutMatchModalProps) {
     const t = useTranslations('workouts.matchModal');
+    const locale = useLocale();
     const [match, setMatch] = useState<WorkoutMatch | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -167,7 +168,7 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
                                         <div>
                                             <div className="font-medium">{activity.title}</div>
                                             <div className="text-sm text-muted-foreground">
-                                                {new Date(activity.start_date).toLocaleDateString()} • {(activity.distance / 1000).toFixed(2)} km
+                                                {new Date(activity.start_date).toLocaleDateString(locale)} • {(activity.distance / 1000).toFixed(2)} km
                                             </div>
                                         </div>
                                         <Button size="sm" variant="ghost">{t('link')}</Button>

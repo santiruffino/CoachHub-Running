@@ -18,8 +18,8 @@ export interface StravaExchangeResponse {
 export interface StravaSyncResponse {
     success: boolean;
     message: string;
-    synced: number;
-    skipped: number;
+    inserted: number;
+    updated: number;
     total: number;
     zonesSynced: boolean;
 }

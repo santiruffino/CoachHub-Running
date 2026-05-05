@@ -13,6 +13,7 @@ export function Sidebar() {
     const pathname = usePathname();
     const { user, loading } = useAuth();
     const t = useTranslations('nav');
+    const tA11y = useTranslations('common.a11y');
 
     if (loading) return null;
 
@@ -22,7 +23,7 @@ export function Sidebar() {
         { name: t('dashboard'), href: '/dashboard', icon: LayoutDashboard, roles: ['COACH', 'ATHLETE', 'ADMIN'] },
         { name: t('athletes'), href: '/athletes', icon: Users, roles: ['COACH', 'ADMIN'] },
         { name: t('groups'), href: '/groups', icon: UsersRound, roles: ['COACH', 'ADMIN'] },
-        { name: 'Coaches', href: '/coaches', icon: Users, roles: ['ADMIN'] },
+        { name: t('coaches'), href: '/coaches', icon: Users, roles: ['ADMIN'] },
         { name: t('workoutLibrary'), href: '/workouts/library', icon: Dumbbell, roles: ['COACH', 'ADMIN'] },
         { name: t('trainings'), href: '/trainings', icon: Calendar, roles: ['COACH', 'ADMIN'] },
         { name: t('races'), href: '/races', icon: Trophy, roles: ['COACH', 'ATHLETE', 'ADMIN'] },
@@ -38,7 +39,7 @@ export function Sidebar() {
                 type="button"
                 className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-background border border-border shadow-lg hover:bg-muted transition-colors"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                aria-label="Toggle menu"
+                aria-label={tA11y('toggleMenu')}
             >
                 {isMobileMenuOpen ? (
                     <X className="h-6 w-6" />

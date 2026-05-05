@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 interface Student {
     id: string;
     name: string;
@@ -31,11 +33,13 @@ export function StudentFilter({
     onSelectAllStudents,
     onDeselectAllStudents
 }: StudentFilterProps) {
+    const t = useTranslations('calendar.studentFilter');
+
     return (
         <div className="w-64 bg-white p-4 rounded-lg shadow-sm h-full overflow-y-auto">
             {/* Groups Section */}
             <div className="mb-6">
-                <h3 className="font-semibold text-gray-700 mb-2">Groups</h3>
+                <h3 className="font-semibold text-gray-700 mb-2">{t('groups')}</h3>
                 <div className="space-y-2">
                     {groups.map((group) => (
                         <div key={group.id} className="flex items-center space-x-2">
@@ -51,7 +55,7 @@ export function StudentFilter({
                             </label>
                         </div>
                     ))}
-                    {groups.length === 0 && <p className="text-xs text-gray-400">No groups found.</p>}
+                    {groups.length === 0 && <p className="text-xs text-gray-400">{t('noGroups')}</p>}
                 </div>
             </div>
 
@@ -59,10 +63,10 @@ export function StudentFilter({
 
             {/* Students Section */}
             <div className="flex justify-between items-center mb-4">
-                <h3 className="font-semibold text-gray-700">Students</h3>
+                <h3 className="font-semibold text-gray-700">{t('students')}</h3>
                 <div className="text-xs space-x-2">
-                    <button onClick={onSelectAllStudents} className="text-blue-600 hover:text-blue-800">All</button>
-                    <button onClick={onDeselectAllStudents} className="text-gray-500 hover:text-gray-700">None</button>
+                    <button onClick={onSelectAllStudents} className="text-blue-600 hover:text-blue-800">{t('all')}</button>
+                    <button onClick={onDeselectAllStudents} className="text-gray-500 hover:text-gray-700">{t('none')}</button>
                 </div>
             </div>
             <div className="space-y-2">

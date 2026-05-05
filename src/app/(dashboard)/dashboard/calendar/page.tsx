@@ -9,6 +9,7 @@ import { startOfMonth, endOfMonth } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
+import { useTranslations } from 'next-intl';
 
 import { TrainingAssignment } from '@/interfaces/training';
 import { CalendarEvent } from '@/features/calendar/components/CalendarView';
@@ -34,6 +35,7 @@ interface EventDropArgs {
 
 export default function CalendarPage() {
     const router = useRouter();
+    const t = useTranslations('calendar.page');
     const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
     const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
     const [students, setStudents] = useState<{ id: string, name: string }[]>([]);
@@ -161,18 +163,18 @@ export default function CalendarPage() {
                 fetchAssignments();
             } catch (error) {
                 console.error('Failed to reschedule', error);
-                showAlert('error', 'Error al reprogramar el entrenamiento');
+                showAlert('error', t('rescheduleError'));
             }
         };
 
         if (assignment.source_group_id) {
             showAlert(
                 'warning',
-                'Este entrenamiento fue asignado a un grupo. ¿Quieres reprogramarlo para todos los atletas?',
-                'Reprogramar Grupo',
-                'Mover Todos',
+                t('groupRescheduleMessage'),
+                t('groupRescheduleTitle'),
+                t('moveAll'),
                 () => executeReschedule(true),
-                'Solo Este',
+                t('onlyThisOne'),
                 () => executeReschedule(false)
             );
         } else {
@@ -197,7 +199,7 @@ export default function CalendarPage() {
                     <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full">
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
-                    <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">Calendario de Entrenamiento</h1>
+                    <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">{t('title')}</h1>
                 </div>
                 <div className="flex-1 min-h-0">
                     <CalendarView

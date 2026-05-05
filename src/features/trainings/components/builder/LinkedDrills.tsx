@@ -21,7 +21,7 @@ export function LinkedDrills() {
                 </div>
                 
                 <div className="flex-1 flex flex-col justify-center">
-                    <h4 className="text-sm font-semibold text-[#2b3437] dark:text-[#f8f9fa] leading-tight">High-Cadence Tech</h4>
+                    <h4 className="text-sm font-semibold text-[#2b3437] dark:text-[#f8f9fa] leading-tight">{t('linkedDrillsTitle')}</h4>
                     <span className="text-xs text-[#8b9bb4] mt-0.5">04:20 • {t('video').toUpperCase()}</span>
                 </div>
                 

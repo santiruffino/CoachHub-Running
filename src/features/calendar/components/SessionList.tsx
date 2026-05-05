@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { MatchQualityBadge } from '@/features/trainings/components/MatchQualityBadge';
 import { WorkoutMatchModal } from '@/features/trainings/components/WorkoutMatchModal';
 import { WorkoutMatch } from '@/interfaces/training';
+import { useTranslations } from 'next-intl';
 
 interface SessionIcon {
     name: string;
@@ -41,6 +42,8 @@ interface SessionListProps {
 }
 
 export function SessionList({ sessions }: SessionListProps) {
+    const t = useTranslations('calendar.sessionList');
+
     const [selectedMatchAssignmentId, setSelectedMatchAssignmentId] = useState<string | null>(null);
     const [selectedMatchTitle, setSelectedMatchTitle] = useState<string>('');
 
@@ -55,7 +58,7 @@ export function SessionList({ sessions }: SessionListProps) {
         return (
             <div className="flex flex-col items-center justify-center py-10 text-gray-400 bg-white dark:bg-gray-800 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
                 <Activity className="w-10 h-10 mb-2 opacity-20" />
-                <p>No hay sesiones para este día</p>
+                <p>{t('empty')}</p>
             </div>
         );
     }
@@ -76,7 +79,7 @@ export function SessionList({ sessions }: SessionListProps) {
                                     </div>
                                     <div>
                                         <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-                                            {session.subtitle || 'Entrenamiento'}
+                                            {session.subtitle || t('workout')}
                                         </p>
                                         <h3 className="text-lg font-bold text-gray-900 dark:text-white leading-tight">
                                             {session.title}
@@ -103,7 +106,7 @@ export function SessionList({ sessions }: SessionListProps) {
                                     )}
                                     {session.type === 'COMPLETED' && (
                                         <Badge variant="secondary" className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/30">
-                                            Completado
+                                            {t('completed')}
                                         </Badge>
                                     )}
                                 </div>
@@ -118,7 +121,7 @@ export function SessionList({ sessions }: SessionListProps) {
                                                 <MapPin className="w-4 h-4" />
                                             </div>
                                             <div>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400">Distancia</p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">{t('distance')}</p>
                                                 <p className="font-bold text-gray-900 dark:text-white">{((session.stats.distance || 0) / 1000).toFixed(2)} km</p>
                                             </div>
                                         </div>
@@ -129,7 +132,7 @@ export function SessionList({ sessions }: SessionListProps) {
                                             <Clock className="w-4 h-4" />
                                         </div>
                                         <div>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">Tiempo</p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">{t('time')}</p>
                                             <p className="font-bold text-gray-900 dark:text-white">{formatDuration(session.stats.duration || 0)}</p>
                                         </div>
                                     </div>
@@ -141,7 +144,7 @@ export function SessionList({ sessions }: SessionListProps) {
                                                 <TrendingUp className="w-4 h-4" />
                                             </div>
                                             <div>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400">Ritmo</p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">{t('pace')}</p>
                                                 <p className="font-bold text-gray-900 dark:text-white">{session.stats.pace}</p>
                                             </div>
                                         </div>
@@ -154,7 +157,7 @@ export function SessionList({ sessions }: SessionListProps) {
                                                 <Heart className="w-4 h-4" />
                                             </div>
                                             <div>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400">FC Media</p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">{t('avgHr')}</p>
                                                 <p className="font-bold text-gray-900 dark:text-white">{Math.round(session.stats.average_heartrate)} ppm</p>
                                             </div>
                                         </div>
@@ -167,7 +170,7 @@ export function SessionList({ sessions }: SessionListProps) {
                                                 <Zap className="w-4 h-4" />
                                             </div>
                                             <div>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400">Effort Score</p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">{t('effortScore')}</p>
                                                 <p className="font-bold text-gray-900 dark:text-white">{Math.round(session.stats.effort_score)}</p>
                                             </div>
                                         </div>
@@ -179,7 +182,7 @@ export function SessionList({ sessions }: SessionListProps) {
                                                 <TrendingUp className="w-4 h-4" />
                                             </div>
                                             <div>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400">Desnivel</p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">{t('elevation')}</p>
                                                 <p className="font-bold text-gray-900 dark:text-white">{Math.round(session.stats.elevation)} m</p>
                                             </div>
                                         </div>
@@ -193,7 +196,7 @@ export function SessionList({ sessions }: SessionListProps) {
                                         <Clock className="w-4 h-4" />
                                         <span>~ {formatDuration(session.stats?.duration || 3600)}</span>
                                     </div>
-                                    <span className="text-orange-500 font-medium cursor-pointer hover:underline">Ver detalles</span>
+                                    <span className="text-orange-500 font-medium cursor-pointer hover:underline">{t('viewDetails')}</span>
                                 </div>
                             )}
                         </div>

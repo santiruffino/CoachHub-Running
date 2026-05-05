@@ -5,6 +5,7 @@ import { Loader2, Heart, Mountain } from 'lucide-react';
 import { ActivityChart } from './ActivityChart';
 import { format } from 'date-fns';
 import { StravaActivityDetailResponse } from '../services/strava.service';
+import { useTranslations } from 'next-intl';
 
 const EMPTY_ACTIVITY: StravaActivityDetailResponse = {
     id: '',
@@ -23,6 +24,7 @@ interface ActivityDetailModalProps {
 }
 
 export function ActivityDetailModal({ activityId, open, onClose }: ActivityDetailModalProps) {
+    const t = useTranslations('strava.activityDetail');
     const [data, setData] = useState<StravaActivityDetailResponse>(EMPTY_ACTIVITY);
 
     const loading = open && !!activityId && (data.id === '' || data.id !== activityId);
@@ -75,7 +77,7 @@ export function ActivityDetailModal({ activityId, open, onClose }: ActivityDetai
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         {data?.type === 'Run' ? '🏃' : '🚴'}
-                        {data?.title || 'Activity Details'}
+                        {data?.title || t('title')}
                     </DialogTitle>
                     <p className="text-sm text-gray-500">
                         {data?.startDate && format(new Date(data.startDate), 'PPP p')}
@@ -91,22 +93,22 @@ export function ActivityDetailModal({ activityId, open, onClose }: ActivityDetai
                         {/* Summary Stats Grid */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                             <div>
-                                <p className="text-xs text-gray-500 uppercase">Distance</p>
+                                <p className="text-xs text-gray-500 uppercase">{t('distance')}</p>
                                 <p className="text-lg font-bold">{(data.distance / 1000).toFixed(2)} km</p>
                             </div>
                             <div>
-                                <p className="text-xs text-gray-500 uppercase">Time</p>
+                                <p className="text-xs text-gray-500 uppercase">{t('time')}</p>
                                 <p className="text-lg font-bold">{Math.floor(data.duration / 60)}m {data.duration % 60}s</p>
                             </div>
                             <div>
-                                <p className="text-xs text-gray-500 uppercase">Avg HR</p>
+                                <p className="text-xs text-gray-500 uppercase">{t('avgHr')}</p>
                                 <p className="text-lg font-bold flex items-center gap-1">
                                     <Heart className="w-4 h-4 text-red-500" />
                                     {data.avgHr ? Math.round(data.avgHr) : '--'} bpm
                                 </p>
                             </div>
                             <div>
-                                <p className="text-xs text-gray-500 uppercase">Elevation</p>
+                                <p className="text-xs text-gray-500 uppercase">{t('elevation')}</p>
                                 <p className="text-lg font-bold flex items-center gap-1">
                                     <Mountain className="w-4 h-4 text-gray-600" />
                                     {data.elevationGain ? Math.round(data.elevationGain) : '--'} m
@@ -131,14 +133,14 @@ export function ActivityDetailModal({ activityId, open, onClose }: ActivityDetai
 
                             {hrData.length === 0 && (
                                 <div className="text-center py-8 text-gray-400">
-                                    No detailed chart data available for this activity.
+                                    {t('noDetailedData')}
                                 </div>
                             )}
                         </div>
                     </div>
                 ) : (
                     <div className="text-center py-8 text-red-400">
-                        Failed to load activity details.
+                        {t('failedToLoad')}
                     </div>
                 )}
             </DialogContent>

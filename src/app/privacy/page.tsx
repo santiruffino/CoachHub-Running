@@ -1,6 +1,9 @@
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
+    const t = await getTranslations('legal.privacy');
+
     return (
         <div className="min-h-screen bg-white dark:bg-dark-navy">
             {/* Header */}
@@ -13,189 +16,189 @@ export default function PrivacyPage() {
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
-                        Back to Home
+                        {t('backToHome')}
                     </Link>
                 </div>
             </header>
 
             {/* Content */}
             <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Privacy Policy</h1>
-                <p className="text-sm text-gray-600 dark:text-gray-light mb-8">Last updated: February 14, 2026</p>
+                <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">{t('title')}</h1>
+                <p className="text-sm text-gray-600 dark:text-gray-light mb-8">{t('lastUpdated')}</p>
 
                 <div className="prose prose-gray dark:prose-invert max-w-none">
                     {/* Introduction */}
                     <section className="mb-8">
-                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Introduction</h2>
+                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">{t('sections.introduction.title')}</h2>
                         <p className="text-gray-700 dark:text-gray-light mb-4">
-                            Welcome to Coach Hub Running (referred to as &quot;we,&quot; &quot;our,&quot; or &quot;us&quot;). We are committed to protecting your personal information and your right to privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform.
+                            {t('sections.introduction.p1')}
                         </p>
                         <p className="text-gray-700 dark:text-gray-light">
-                            By using Coach Hub Running, you agree to the collection and use of information in accordance with this policy. If you do not agree with our policies and practices, please do not use our service.
+                            {t('sections.introduction.p2')}
                         </p>
                     </section>
 
                     {/* Information We Collect */}
                     <section className="mb-8">
-                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Information We Collect</h2>
+                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">{t('sections.collect.title')}</h2>
 
-                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">Personal Information</h3>
-                        <p className="text-gray-700 dark:text-gray-light mb-2">We collect personal information that you voluntarily provide to us when you:</p>
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">{t('sections.collect.personal.title')}</h3>
+                        <p className="text-gray-700 dark:text-gray-light mb-2">{t('sections.collect.personal.subtitle')}</p>
                         <ul className="list-disc pl-6 text-gray-700 dark:text-gray-light space-y-2 mb-4">
-                            <li>Register for an account (name, email address, password)</li>
-                            <li>Create your athlete or coach profile (height, weight, heart rate zones, training preferences)</li>
-                            <li>Connect third-party services (Strava, Garmin, etc.)</li>
-                            <li>Contact us for support</li>
+                            <li>{t('sections.collect.personal.items.account')}</li>
+                            <li>{t('sections.collect.personal.items.profile')}</li>
+                            <li>{t('sections.collect.personal.items.integrations')}</li>
+                            <li>{t('sections.collect.personal.items.support')}</li>
                         </ul>
 
-                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">Activity Data</h3>
-                        <p className="text-gray-700 dark:text-gray-light mb-2">When you connect third-party fitness services, we collect:</p>
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">{t('sections.collect.activity.title')}</h3>
+                        <p className="text-gray-700 dark:text-gray-light mb-2">{t('sections.collect.activity.subtitle')}</p>
                         <ul className="list-disc pl-6 text-gray-700 dark:text-gray-light space-y-2 mb-4">
-                            <li>Workout and activity data (distance, duration, pace, heart rate, elevation)</li>
-                            <li>GPS location data from your recorded activities</li>
-                            <li>Training history and performance metrics</li>
-                            <li>Device information from connected fitness trackers</li>
+                            <li>{t('sections.collect.activity.items.workout')}</li>
+                            <li>{t('sections.collect.activity.items.gps')}</li>
+                            <li>{t('sections.collect.activity.items.history')}</li>
+                            <li>{t('sections.collect.activity.items.device')}</li>
                         </ul>
 
-                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">Usage Information</h3>
-                        <p className="text-gray-700 dark:text-gray-light mb-2">We automatically collect certain information when you use our platform:</p>
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">{t('sections.collect.usage.title')}</h3>
+                        <p className="text-gray-700 dark:text-gray-light mb-2">{t('sections.collect.usage.subtitle')}</p>
                         <ul className="list-disc pl-6 text-gray-700 dark:text-gray-light space-y-2">
-                            <li>Log data (IP address, browser type, operating system, pages visited)</li>
-                            <li>Device information (device type, unique device identifiers)</li>
-                            <li>Cookies and similar tracking technologies</li>
+                            <li>{t('sections.collect.usage.items.logData')}</li>
+                            <li>{t('sections.collect.usage.items.deviceInfo')}</li>
+                            <li>{t('sections.collect.usage.items.cookies')}</li>
                         </ul>
                     </section>
 
                     {/* How We Use Your Information */}
                     <section className="mb-8">
-                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">How We Use Your Information</h2>
-                        <p className="text-gray-700 dark:text-gray-light mb-2">We use the collected information for:</p>
+                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">{t('sections.usage.title')}</h2>
+                        <p className="text-gray-700 dark:text-gray-light mb-2">{t('sections.usage.subtitle')}</p>
                         <ul className="list-disc pl-6 text-gray-700 dark:text-gray-light space-y-2">
-                            <li><strong>Providing Services:</strong> To create and manage your account, facilitate coach-athlete relationships, and deliver training plans</li>
-                            <li><strong>Personalization:</strong> To customize your experience and provide relevant workout recommendations</li>
-                            <li><strong>Analytics:</strong> To analyze your training data and provide insights on performance and progress</li>
-                            <li><strong>Communication:</strong> To send you important updates, notifications about workouts, and messages from your coach</li>
-                            <li><strong>Improvement:</strong> To understand how our platform is used and improve our features</li>
-                            <li><strong>Security:</strong> To protect against unauthorized access and maintain the security of your data</li>
-                            <li><strong>Legal Compliance:</strong> To comply with applicable laws and regulations</li>
+                            <li><strong>{t('sections.usage.items.services.label')}:</strong> {t('sections.usage.items.services.text')}</li>
+                            <li><strong>{t('sections.usage.items.personalization.label')}:</strong> {t('sections.usage.items.personalization.text')}</li>
+                            <li><strong>{t('sections.usage.items.analytics.label')}:</strong> {t('sections.usage.items.analytics.text')}</li>
+                            <li><strong>{t('sections.usage.items.communication.label')}:</strong> {t('sections.usage.items.communication.text')}</li>
+                            <li><strong>{t('sections.usage.items.improvement.label')}:</strong> {t('sections.usage.items.improvement.text')}</li>
+                            <li><strong>{t('sections.usage.items.security.label')}:</strong> {t('sections.usage.items.security.text')}</li>
+                            <li><strong>{t('sections.usage.items.compliance.label')}:</strong> {t('sections.usage.items.compliance.text')}</li>
                         </ul>
                     </section>
 
                     {/* Third-Party Integrations */}
                     <section className="mb-8">
-                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Third-Party Integrations</h2>
+                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">{t('sections.integrations.title')}</h2>
                         <p className="text-gray-700 dark:text-gray-light mb-4">
-                            Coach Hub Running integrates with third-party fitness platforms such as Strava, Garmin, and others. When you connect these services:
+                            {t('sections.integrations.p1')}
                         </p>
                         <ul className="list-disc pl-6 text-gray-700 dark:text-gray-light space-y-2 mb-4">
-                            <li>You authorize us to access your activity data from these platforms</li>
-                            <li>We are subject to their respective privacy policies and terms of service</li>
-                            <li>You can disconnect these services at any time from your account settings</li>
+                            <li>{t('sections.integrations.items.auth')}</li>
+                            <li>{t('sections.integrations.items.policies')}</li>
+                            <li>{t('sections.integrations.items.disconnect')}</li>
                         </ul>
                         <p className="text-gray-700 dark:text-gray-light">
-                            We recommend reviewing the privacy policies of any third-party services you connect to understand how they handle your data.
+                            {t('sections.integrations.p2')}
                         </p>
                     </section>
 
                     {/* Data Sharing */}
                     <section className="mb-8">
-                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">How We Share Your Information</h2>
-                        <p className="text-gray-700 dark:text-gray-light mb-2">We may share your information in the following circumstances:</p>
+                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">{t('sections.sharing.title')}</h2>
+                        <p className="text-gray-700 dark:text-gray-light mb-2">{t('sections.sharing.subtitle')}</p>
 
-                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">With Your Coach</h3>
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">{t('sections.sharing.coach.title')}</h3>
                         <p className="text-gray-700 dark:text-gray-light mb-4">
-                            When you join a coach or group, your coach will have access to your profile information, training data, and activity history to provide coaching services.
+                            {t('sections.sharing.coach.text')}
                         </p>
 
-                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">Service Providers</h3>
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">{t('sections.sharing.providers.title')}</h3>
                         <p className="text-gray-700 dark:text-gray-light mb-4">
-                            We may share data with trusted third-party service providers who assist us in operating our platform, such as hosting providers, analytics services, and email communication tools. These providers are contractually obligated to protect your information.
+                            {t('sections.sharing.providers.text')}
                         </p>
 
-                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">Legal Requirements</h3>
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">{t('sections.sharing.legal.title')}</h3>
                         <p className="text-gray-700 dark:text-gray-light mb-4">
-                            We may disclose your information if required by law, court order, or government request, or to protect our rights, property, or safety.
+                            {t('sections.sharing.legal.text')}
                         </p>
 
                         <p className="text-gray-700 dark:text-gray-light font-semibold">
-                            We do not sell your personal information to third parties.
+                            {t('sections.sharing.noSell')}
                         </p>
                     </section>
 
                     {/* Data Security */}
                     <section className="mb-8">
-                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Data Security</h2>
+                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">{t('sections.security.title')}</h2>
                         <p className="text-gray-700 dark:text-gray-light mb-4">
-                            We implement appropriate technical and organizational security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction. These measures include:
+                            {t('sections.security.p1')}
                         </p>
                         <ul className="list-disc pl-6 text-gray-700 dark:text-gray-light space-y-2 mb-4">
-                            <li>Encryption of data in transit and at rest</li>
-                            <li>Regular security assessments and updates</li>
-                            <li>Access controls and authentication mechanisms</li>
-                            <li>Secure cloud infrastructure</li>
+                            <li>{t('sections.security.items.encryption')}</li>
+                            <li>{t('sections.security.items.assessments')}</li>
+                            <li>{t('sections.security.items.accessControls')}</li>
+                            <li>{t('sections.security.items.infrastructure')}</li>
                         </ul>
                         <p className="text-gray-700 dark:text-gray-light">
-                            However, no method of transmission over the internet or electronic storage is 100% secure. While we strive to protect your information, we cannot guarantee absolute security.
+                            {t('sections.security.p2')}
                         </p>
                     </section>
 
                     {/* Your Rights */}
                     <section className="mb-8">
-                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Your Privacy Rights</h2>
-                        <p className="text-gray-700 dark:text-gray-light mb-2">Depending on your location, you may have the following rights:</p>
+                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">{t('sections.rights.title')}</h2>
+                        <p className="text-gray-700 dark:text-gray-light mb-2">{t('sections.rights.subtitle')}</p>
                         <ul className="list-disc pl-6 text-gray-700 dark:text-gray-light space-y-2 mb-4">
-                            <li><strong>Access:</strong> Request access to your personal information we hold</li>
-                            <li><strong>Correction:</strong> Request correction of inaccurate or incomplete data</li>
-                            <li><strong>Deletion:</strong> Request deletion of your personal information</li>
-                            <li><strong>Portability:</strong> Request a copy of your data in a structured, machine-readable format</li>
-                            <li><strong>Opt-Out:</strong> Opt out of marketing communications</li>
-                            <li><strong>Withdraw Consent:</strong> Withdraw consent for data processing where applicable</li>
+                            <li><strong>{t('sections.rights.items.access.label')}:</strong> {t('sections.rights.items.access.text')}</li>
+                            <li><strong>{t('sections.rights.items.correction.label')}:</strong> {t('sections.rights.items.correction.text')}</li>
+                            <li><strong>{t('sections.rights.items.deletion.label')}:</strong> {t('sections.rights.items.deletion.text')}</li>
+                            <li><strong>{t('sections.rights.items.portability.label')}:</strong> {t('sections.rights.items.portability.text')}</li>
+                            <li><strong>{t('sections.rights.items.optOut.label')}:</strong> {t('sections.rights.items.optOut.text')}</li>
+                            <li><strong>{t('sections.rights.items.withdraw.label')}:</strong> {t('sections.rights.items.withdraw.text')}</li>
                         </ul>
                         <p className="text-gray-700 dark:text-gray-light">
-                            To exercise these rights, please contact us at privacy@coachhub.com. We will respond to your request within 30 days.
+                            {t('sections.rights.contact')}
                         </p>
                     </section>
 
                     {/* Data Retention */}
                     <section className="mb-8">
-                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Data Retention</h2>
+                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">{t('sections.retention.title')}</h2>
                         <p className="text-gray-700 dark:text-gray-light">
-                            We retain your personal information for as long as necessary to provide our services and fulfill the purposes outlined in this Privacy Policy. When you delete your account, we will delete or anonymize your personal information within 90 days, except where we are required to retain it for legal or regulatory purposes.
+                            {t('sections.retention.text')}
                         </p>
                     </section>
 
                     {/* Children's Privacy */}
                     <section className="mb-8">
-                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Children&apos;s Privacy</h2>
+                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">{t('sections.children.title')}</h2>
                         <p className="text-gray-700 dark:text-gray-light">
-                            Our service is not intended for users under the age of 13. We do not knowingly collect personal information from children under 13. If you believe we have collected information from a child under 13, please contact us immediately, and we will take steps to delete such information.
+                            {t('sections.children.text')}
                         </p>
                     </section>
 
                     {/* International Transfers */}
                     <section className="mb-8">
-                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">International Data Transfers</h2>
+                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">{t('sections.transfers.title')}</h2>
                         <p className="text-gray-700 dark:text-gray-light">
-                            Your information may be transferred to and processed in countries other than your country of residence. These countries may have different data protection laws. By using our service, you consent to the transfer of your information to these countries. We ensure appropriate safeguards are in place to protect your data.
+                            {t('sections.transfers.text')}
                         </p>
                     </section>
 
                     {/* Changes to Privacy Policy */}
                     <section className="mb-8">
-                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Changes to This Privacy Policy</h2>
+                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">{t('sections.changes.title')}</h2>
                         <p className="text-gray-700 dark:text-gray-light">
-                            We may update this Privacy Policy from time to time. We will notify you of any significant changes by posting the new Privacy Policy on this page and updating the &quot;Last updated&quot; date. We encourage you to review this Privacy Policy periodically for any changes.
+                            {t('sections.changes.text')}
                         </p>
                     </section>
 
                     {/* Contact Us */}
                     <section className="mb-8">
-                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Contact Us</h2>
+                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">{t('sections.contact.title')}</h2>
                         <p className="text-gray-700 dark:text-gray-light mb-2">
-                            If you have any questions or concerns about this Privacy Policy or our privacy practices, please contact us:
+                            {t('sections.contact.subtitle')}
                         </p>
                         <div className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg p-4 mt-4">
-                            <p className="text-gray-700 dark:text-gray-light"><strong>Email:</strong> privacy@coachhub.com</p>
+                            <p className="text-gray-700 dark:text-gray-light"><strong>{t('sections.contact.emailLabel')}:</strong> privacy@coachhub.com</p>
                         </div>
                     </section>
                 </div>
@@ -205,7 +208,7 @@ export default function PrivacyPage() {
             <footer className="border-t border-gray-200 dark:border-white/10 mt-16">
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                     <p className="text-center text-sm text-gray-600 dark:text-gray-light">
-                        © 2026 Coach Hub. All rights reserved.
+                        {t('footer')}
                     </p>
                 </div>
             </footer>

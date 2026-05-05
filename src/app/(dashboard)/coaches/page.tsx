@@ -95,7 +95,7 @@ export default function CoachesPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">{t('coaches.title')}</h1>
         <Button onClick={() => setIsInviteModalOpen(true)}>
-            Invitar Coach
+            {t('coaches.inviteCoach')}
         </Button>
       </div>
 

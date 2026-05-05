@@ -10,6 +10,7 @@ import {
     AreaChart,
     Area
 } from 'recharts';
+import { useTranslations } from 'next-intl';
 
 interface ActivityPoint {
     index: number;
@@ -23,7 +24,9 @@ interface ActivityChartProps {
 }
 
 export const ActivityChart: React.FC<ActivityChartProps> = ({ data, type, color }) => {
-    if (!data || data.length === 0) return <div className="h-48 flex items-center justify-center text-gray-400">No data available</div>;
+    const t = useTranslations('strava.activityChart');
+
+    if (!data || data.length === 0) return <div className="h-48 flex items-center justify-center text-gray-400">{t('noData')}</div>;
 
     // Helper to format tooltip values
     const formatValue = (value: number) => {

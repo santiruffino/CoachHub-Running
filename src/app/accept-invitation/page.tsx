@@ -154,7 +154,7 @@ function AcceptInvitationContent() {
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                         {/* Email (read-only) */}
                         <div className="space-y-2">
-                            <Label htmlFor="email">Email</Label>
+                            <Label htmlFor="email">{t('emailLabel')}</Label>
                             <Input
                                 id="email"
                                 type="email"

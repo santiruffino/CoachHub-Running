@@ -26,6 +26,7 @@ function WorkoutBuilderContent() {
     const [saving, setSaving] = useState(false);
     const { alertState, showAlert, closeAlert } = useAlertDialog();
     const t = useTranslations('builder');
+    const tCommon = useTranslations('common');
 
     const loadWorkout = useCallback(async (id: string) => {
         try {
@@ -39,11 +40,11 @@ function WorkoutBuilderContent() {
             setBlocks(workout.blocks || []);
         } catch (error) {
             console.error('Failed to load workout:', error);
-            showAlert('error', 'Error al cargar el entrenamiento');
+            showAlert('error', t('loadError'));
         } finally {
             setLoading(false);
         }
-    }, [showAlert]);
+    }, [showAlert, t]);
 
     useEffect(() => {
         if (workoutId) {
@@ -121,10 +122,10 @@ function WorkoutBuilderContent() {
                         onChange={(e) => setActivityType(e.target.value as TrainingType)}
                         className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-2 text-foreground focus:ring-0 focus:border-primary outline-none"
                     >
-                        <option value="RUNNING">Running</option>
-                        <option value="CYCLING">Cycling</option>
-                        <option value="SWIMMING">Swimming</option>
-                        <option value="STRENGTH">Strength</option>
+                        <option value="RUNNING">{t('trainingTypes.RUNNING')}</option>
+                        <option value="CYCLING">{t('trainingTypes.CYCLING')}</option>
+                        <option value="SWIMMING">{t('trainingTypes.SWIMMING')}</option>
+                        <option value="STRENGTH">{t('trainingTypes.STRENGTH')}</option>
                     </select>
                 </div>
 
@@ -160,7 +161,7 @@ function WorkoutBuilderContent() {
     );
 
     if (loading) {
-        return <div className="flex-1 flex items-center justify-center">Cargando...</div>;
+        return <div className="flex-1 flex items-center justify-center">{tCommon('loading')}</div>;
     }
 
     const footerContent = (

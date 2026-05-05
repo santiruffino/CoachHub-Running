@@ -30,6 +30,8 @@ import { normalizeActivityType } from '@/utils/activity-utils';
 
 export default function AthleteDetailPage() {
     const t = useTranslations();
+    const tAthlete = useTranslations('athletes.detail');
+    const tRaces = useTranslations('races.athlete');
     const params = useParams();
     const router = useRouter();
     const id = params.id as string;
@@ -174,7 +176,7 @@ export default function AthleteDetailPage() {
             } : null);
         } catch (error) {
             console.error('Failed to save notes:', error);
-            showAlert('error', 'Error al guardar las notas');
+            showAlert('error', t('profile.errorUpdate'));
         }
     };
 
@@ -185,7 +187,7 @@ export default function AthleteDetailPage() {
             setAssignments(prev => prev.filter(a => a.id !== pendingDeleteAssignment));
         } catch (error) {
             console.error('Failed to delete assignment:', error);
-            showAlert('error', t?.('deleteAssignmentError') || 'Error al eliminar');
+            showAlert('error', tAthlete('deleteAssignmentError'));
         } finally {
             setPendingDeleteAssignment(null);
         }
@@ -203,7 +205,7 @@ export default function AthleteDetailPage() {
             } : null);
         } catch (error) {
             console.error('Failed to update VAM:', error);
-            showAlert('error', t?.('updateVAMError') || 'Error al actualizar VAM');
+            showAlert('error', tAthlete('updateVAMError'));
         }
     };
 
@@ -228,7 +230,7 @@ export default function AthleteDetailPage() {
         );
     }
 
-    if (!athlete) return <div className="p-8">Athlete not found</div>;
+    if (!athlete) return <div className="p-8">{tAthlete('notFound')}</div>;
 
     const totalTrainings = assignments.length;
 
@@ -390,7 +392,7 @@ export default function AthleteDetailPage() {
                         {!athlete.athleteProfile?.vam && (
                             <Select onValueChange={handleUpdateVAM}>
                                 <SelectTrigger className="h-6 text-[10px] font-bold uppercase tracking-wider text-primary bg-muted dark:bg-white/5 border-0 rounded px-2 w-fit gap-1 focus:ring-0 mt-1">
-                                    <SelectValue placeholder="Assign level" />
+                                     <SelectValue placeholder={tAthlete('assignLevel')} />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {VAM_LEVELS.map((level) => (
@@ -425,7 +427,7 @@ export default function AthleteDetailPage() {
                         <ChevronLeft className="w-4 h-4" />
                     </Button>
                     <span className="px-5 font-semibold text-[13px] tracking-wide w-40 text-center text-foreground capitalize">
-                        {format(currentWeekStart, 'MMMM yyyy')}
+                        {format(currentWeekStart, 'MMMM yyyy', { locale: es })}
                     </span>
                     <Button variant="ghost" onClick={handleNextWeek} size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
                         <ChevronRight className="w-4 h-4" />
@@ -509,7 +511,7 @@ export default function AthleteDetailPage() {
                                                 <div className="flex justify-between items-start mb-4">
                                                     <div>
                                                         <h4 className={`text-lg font-display font-medium mb-0.5 ${index === 0 ? 'text-white' : 'text-foreground'}`}>
-                                                            {race.name_override || race.race?.name || 'Carrera'}
+                                                            {race.name_override || race.race?.name || tRaces('defaultRaceName')}
                                                         </h4>
                                                         <p className={`text-xs ${index === 0 ? 'text-white/80' : 'text-muted-foreground'} font-medium`}>
                                                             {format(raceDate, "d 'de' MMMM, yyyy", { locale: es })}
@@ -524,21 +526,21 @@ export default function AthleteDetailPage() {
                                                 <div className="mt-auto flex justify-between items-end">
                                                     <div>
                                                         <p className={`text-[9px] uppercase tracking-widest font-bold ${index === 0 ? 'text-white/60' : 'text-muted-foreground'} mb-1`}>
-                                                            {daysLeft > 0 ? 'COUNTDOWN' : 'HOY'}
+                                                            {daysLeft > 0 ? tRaces('countdownLabel') : tRaces('todayLabel')}
                                                         </p>
                                                         <div className="flex items-baseline gap-2">
                                                             <span className="text-3xl font-display leading-none tracking-tight">
                                                                 {Math.max(0, daysLeft)}
                                                             </span>
                                                             <span className={`text-xs ${index === 0 ? 'text-white/80' : 'text-muted-foreground'} font-medium`}>
-                                                                Days Left
+                                                                {tRaces('daysLeftLabel')}
                                                             </span>
                                                         </div>
                                                     </div>
                                                     {race.target_time && (
                                                         <div className="text-right">
                                                             <p className={`text-[9px] uppercase tracking-widest font-bold ${index === 0 ? 'text-white/60' : 'text-muted-foreground'} mb-1`}>
-                                                                OBJETIVO
+                                                                {tRaces('targetLabel')}
                                                             </p>
                                                             <p className="text-sm font-mono font-bold">
                                                                 {race.target_time}
@@ -578,7 +580,7 @@ export default function AthleteDetailPage() {
 
             {/* Extra Tools and charts - accessible further down */}
             <div className="mt-20 bg-card dark:border dark:border-white/5 p-8 md:p-12 rounded-[2rem] shadow-[0_20px_40px_rgba(43,52,55,0.02)] border border-muted">
-                <h3 className="text-[22px] font-display font-bold tracking-tight mb-10 text-foreground">Performance & Zones</h3>
+                <h3 className="text-[22px] font-display font-bold tracking-tight mb-10 text-foreground">{tAthlete('performanceAndZones')}</h3>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                     <PerformanceTrendChart data={performanceData} />
                     {athlete.athleteProfile?.hrZones && (
@@ -592,9 +594,9 @@ export default function AthleteDetailPage() {
                 onClose={() => { closeAlert(); setPendingDeleteAssignment(null); }}
                 onConfirm={pendingDeleteAssignment ? doDeleteAssignment : undefined}
                 type={pendingDeleteAssignment ? 'warning' : alertState.type}
-                title={pendingDeleteAssignment ? t?.('deleteAssignmentTitle') : alertState.title}
-                message={pendingDeleteAssignment ? t?.('deleteAssignmentConfirm') : alertState.message}
-                confirmText={pendingDeleteAssignment ? t?.('deleteAssignmentButton') : alertState.confirmText}
+                title={pendingDeleteAssignment ? tAthlete('deleteAssignmentTitle') : alertState.title}
+                message={pendingDeleteAssignment ? tAthlete('deleteAssignmentConfirm') : alertState.message}
+                confirmText={pendingDeleteAssignment ? tAthlete('deleteAssignmentButton') : alertState.confirmText}
             />
 
             <AssignRaceModal

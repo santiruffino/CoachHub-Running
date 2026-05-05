@@ -11,6 +11,7 @@ import {
 } from 'recharts';
 import { startOfWeek, format, subWeeks, isSameWeek } from 'date-fns';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { useTranslations } from 'next-intl';
 
 interface WeeklyActivity {
     startDate: string;
@@ -28,6 +29,8 @@ interface WeeklyVolumeChartProps {
 }
 
 export function WeeklyVolumeChart({ activities, assignments }: WeeklyVolumeChartProps) {
+    const t = useTranslations('strava.weeklyVolume');
+
     const data = useMemo(() => {
         // Generate last 4 weeks keys
         const weeks = [];
@@ -88,9 +91,9 @@ export function WeeklyVolumeChart({ activities, assignments }: WeeklyVolumeChart
     }, [activities, assignments]);
 
     return (
-        <Card>
+            <Card>
             <CardHeader className="pb-2">
-                <CardTitle className="text-lg font-medium">Weekly Volume (Last 4 Weeks)</CardTitle>
+                <CardTitle className="text-lg font-medium">{t('title')}</CardTitle>
             </CardHeader>
             <CardContent>
                 <div className="h-64 w-full">
@@ -113,7 +116,7 @@ export function WeeklyVolumeChart({ activities, assignments }: WeeklyVolumeChart
                             <YAxis
                                 tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
                                 axisLine={{ stroke: 'hsl(var(--border))' }}
-                                label={{ value: 'km', angle: -90, position: 'insideLeft', style: { fill: 'hsl(var(--muted-foreground))' } }}
+                                label={{ value: t('unitKm'), angle: -90, position: 'insideLeft', style: { fill: 'hsl(var(--muted-foreground))' } }}
                             />
                             <Tooltip
                                 cursor={{ fill: 'hsl(var(--muted))', opacity: 0.4 }}
@@ -127,8 +130,8 @@ export function WeeklyVolumeChart({ activities, assignments }: WeeklyVolumeChart
                                 itemStyle={{ color: 'hsl(var(--foreground))' }}
                             />
                             <Legend wrapperStyle={{ paddingTop: '10px' }} />
-                            <Bar dataKey="planned" name="Planned" fill="hsl(var(--muted))" radius={[4, 4, 0, 0]} />
-                            <Bar dataKey="actual" name="Completed" fill="#EA580C" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="planned" name={t('planned')} fill="hsl(var(--muted))" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="actual" name={t('completed')} fill="#EA580C" radius={[4, 4, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>

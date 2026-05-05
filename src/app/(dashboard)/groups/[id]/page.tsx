@@ -51,6 +51,7 @@ import {
 import { GroupWeeklyCalendar } from '@/features/groups/components/GroupWeeklyCalendar';
 import { TrainingAssignment } from '@/interfaces/training';
 import { startOfWeek, addDays } from 'date-fns';
+import { useLocale } from 'next-intl';
 
 import { GroupAthleteData } from '@/interfaces/athlete';
 
@@ -84,6 +85,9 @@ const AVATAR_COLORS = [
 export default function GroupDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const t = useTranslations();
   const tAthletes = useTranslations('athletes');
+  const tGroupDetail = useTranslations('groups.detailPage');
+  const tA11y = useTranslations('common.a11y');
+  const locale = useLocale();
   const router = useRouter();
   const resolvedParams = use(params);
   const id = resolvedParams.id;
@@ -194,7 +198,7 @@ export default function GroupDetailsPage({ params }: { params: Promise<{ id: str
                 {group.race_date && (
                   <span className="text-xs text-muted-foreground flex items-center">
                     <Calendar className="h-3 w-3 mr-1" />
-                    {new Date(group.race_date).toLocaleDateString()}
+                    {new Date(group.race_date).toLocaleDateString(locale)}
                   </span>
                 )}
               </div>
@@ -203,7 +207,7 @@ export default function GroupDetailsPage({ params }: { params: Promise<{ id: str
         </div>
         <Button variant="outline" size="sm" onClick={() => setIsEditModalOpen(true)}>
           <Settings className="h-4 w-4 mr-2" />
-          Editar Grupo
+          {tGroupDetail('editGroup')}
         </Button>
       </div>
 
@@ -382,7 +386,7 @@ export default function GroupDetailsPage({ params }: { params: Promise<{ id: str
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                    <span className="sr-only">Open menu</span>
+                                    <span className="sr-only">{tA11y('openMenu')}</span>
                                     <MoreHorizontal className="h-4 w-4" />
                                   </Button>
                                 </DropdownMenuTrigger>
@@ -414,10 +418,10 @@ export default function GroupDetailsPage({ params }: { params: Promise<{ id: str
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
-                <CardTitle>Planificación del Grupo</CardTitle>
+                <CardTitle>{tGroupDetail('groupPlanning')}</CardTitle>
                 <Button size="sm" onClick={() => setIsAssignModalOpen(true)}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Programar Entrenamiento
+                  {tGroupDetail('scheduleTraining')}
                 </Button>
               </div>
             </CardHeader>

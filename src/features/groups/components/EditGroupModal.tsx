@@ -18,7 +18,7 @@ import { groupsService } from '../services/groups.service';
 import { racesService } from '@/features/races/services/races.service';
 import { Race } from '@/interfaces/race';
 import { Group, CreateGroupDto } from '@/interfaces/group';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 interface EditGroupModalProps {
   group: Group;
@@ -30,6 +30,8 @@ interface EditGroupModalProps {
 export function EditGroupModal({ group, isOpen, onClose, onUpdated }: EditGroupModalProps) {
   const t = useTranslations('common');
   const tGroups = useTranslations('groups');
+  const tEdit = useTranslations('groups.editModal');
+  const locale = useLocale();
   const [loading, setLoading] = useState(false);
   const [raceLibrary, setRaceLibrary] = useState<Race[]>([]);
   
@@ -139,7 +141,7 @@ export function EditGroupModal({ group, isOpen, onClose, onUpdated }: EditGroupM
         <form onSubmit={handleSubmit} className="space-y-6 py-4">
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-name" className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-70">Nombre del Grupo</Label>
+              <Label htmlFor="edit-name" className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-70">{tEdit('groupNameLabel')}</Label>
               <Input
                 id="edit-name"
                 value={name}
@@ -149,12 +151,12 @@ export function EditGroupModal({ group, isOpen, onClose, onUpdated }: EditGroupM
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-description" className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-70">Descripción</Label>
+              <Label htmlFor="edit-description" className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-70">{tEdit('descriptionLabel')}</Label>
               <Textarea
                 id="edit-description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Opcional"
+                placeholder={tEdit('optionalPlaceholder')}
                 className="bg-muted/30 border-none rounded-xl focus-visible:ring-1 focus-visible:ring-primary/20 min-h-[80px]"
               />
             </div>
@@ -202,10 +204,10 @@ export function EditGroupModal({ group, isOpen, onClose, onUpdated }: EditGroupM
                       onChange={(e) => setSelectedRaceId(e.target.value)}
                       required={group_type === 'RACE' && raceSelectionMode === 'EXISTING'}
                     >
-                      <option value="">Selecciona una carrera...</option>
+                      <option value="">{tEdit('selectRacePlaceholder')}</option>
                       {raceLibrary.map(race => (
                         <option key={race.id} value={race.id}>
-                          {race.name} ({race.date ? new Date(race.date).toLocaleDateString() : 'Sin fecha'})
+                          {race.name} ({race.date ? new Date(race.date).toLocaleDateString(locale) : tEdit('noDate')})
                         </option>
                       ))}
                     </select>
@@ -216,7 +218,7 @@ export function EditGroupModal({ group, isOpen, onClose, onUpdated }: EditGroupM
                   <div className="space-y-2 col-span-1 md:col-span-2">
                     <Label className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-70">{tGroups('detail.raceName')}</Label>
                     <Input 
-                      placeholder="Ej. Maratón de Buenos Aires" 
+                      placeholder={tEdit('raceNamePlaceholder')} 
                       value={race_name} 
                       onChange={(e) => setRaceName(e.target.value)} 
                       required={group_type === 'RACE' && raceSelectionMode === 'NEW'}
@@ -236,7 +238,7 @@ export function EditGroupModal({ group, isOpen, onClose, onUpdated }: EditGroupM
                   <div className="space-y-2">
                     <Label className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-70">{tGroups('detail.raceDistance')}</Label>
                     <Input 
-                      placeholder="Ej. 42k" 
+                      placeholder={tEdit('raceDistancePlaceholder')} 
                       value={race_distance} 
                       onChange={(e) => setRaceDistance(e.target.value)} 
                       className="bg-muted/30 border-none h-11 rounded-xl focus-visible:ring-1 focus-visible:ring-primary/20"
@@ -266,10 +268,10 @@ export function EditGroupModal({ group, isOpen, onClose, onUpdated }: EditGroupM
                 />
                 <div className="grid gap-1.5 leading-none">
                   <Label htmlFor="sync-members" className="font-semibold cursor-pointer">
-                    Sincronizar con miembros
+                    {tEdit('syncWithMembers')}
                   </Label>
                   <p className="text-[11px] text-muted-foreground">
-                    Asignar esta carrera automáticamente al calendario de todos los atletas del grupo.
+                    {tEdit('syncWithMembersDescription')}
                   </p>
                 </div>
               </div>

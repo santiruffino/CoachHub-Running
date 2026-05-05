@@ -16,9 +16,41 @@ interface StravaActivity {
     start_date: string;
     elapsed_time: number;
     total_elevation_gain: number;
+    average_speed?: number | null;
+    max_speed?: number | null;
     average_heartrate: number | null;
     max_heartrate: number | null;
     private: boolean;
+}
+
+interface ActivityUpsertRow {
+    user_id: string;
+    external_id: string;
+    title: string;
+    type: string;
+    distance: number;
+    duration: number;
+    start_date: string;
+    elapsed_time: number;
+    elevation_gain: number;
+    average_speed: number;
+    max_speed: number;
+    avg_hr: number | null;
+    max_hr: number | null;
+    is_private: boolean;
+    metadata: StravaActivity;
+    updated_at: string;
+}
+
+function chunkArray<T>(items: T[], chunkSize: number): T[][] {
+    if (items.length === 0) return [];
+
+    const chunks: T[][] = [];
+    for (let index = 0; index < items.length; index += chunkSize) {
+        chunks.push(items.slice(index, index + chunkSize));
+    }
+
+    return chunks;
 }
 
 /**
@@ -115,46 +147,68 @@ export async function POST(request: NextRequest) {
 
         const stravaActivities = (await activitiesResponse.json()) as StravaActivity[];
 
-        let syncedCount = 0;
-        let skippedCount = 0;
+        const dedupedActivities = Array.from(
+            new Map(stravaActivities.map((activity) => [activity.id.toString(), activity])).values()
+        );
 
-        // Process each activity
-        for (const activity of stravaActivities) {
-            // Check if activity already exists
-            const { data: existing } = await supabase
+        const externalIds = dedupedActivities.map((activity) => activity.id.toString());
+
+        let existingExternalIds = new Set<string>();
+        if (externalIds.length > 0) {
+            const { data: existingRows, error: existingError } = await supabase
                 .from('activities')
-                .select('id')
-                .eq('external_id', activity.id.toString())
-                .single();
+                .select('external_id')
+                .eq('user_id', user!.id)
+                .in('external_id', externalIds);
 
-            if (existing) {
-                skippedCount++;
-                continue;
+            if (existingError) {
+                console.error('Failed to load existing activities before upsert:', existingError);
+                return NextResponse.json(
+                    { error: 'Failed to prepare activity sync' },
+                    { status: 500 }
+                );
             }
 
-            // Insert new activity
-            const { error: insertError } = await supabase
-                .from('activities')
-                .insert({
-                    user_id: user!.id,
-                    external_id: activity.id.toString(),
-                    title: activity.name,
-                    type: activity.type,
-                    distance: activity.distance,
-                    duration: activity.moving_time,
-                    start_date: activity.start_date,
-                    elapsed_time: activity.elapsed_time,
-                    elevation_gain: activity.total_elevation_gain,
-                    avg_hr: activity.average_heartrate,
-                    max_hr: activity.max_heartrate,
-                    is_private: activity.private,
-                    metadata: activity,
-                });
+            existingExternalIds = new Set((existingRows || []).map((row) => row.external_id));
+        }
 
-            if (!insertError) {
-                syncedCount++;
+        const upsertRows: ActivityUpsertRow[] = dedupedActivities.map((activity) => ({
+            user_id: user!.id,
+            external_id: activity.id.toString(),
+            title: activity.name,
+            type: activity.type,
+            distance: activity.distance || 0,
+            duration: activity.moving_time || activity.elapsed_time || 0,
+            start_date: activity.start_date,
+            elapsed_time: activity.elapsed_time || 0,
+            elevation_gain: activity.total_elevation_gain || 0,
+            average_speed: activity.average_speed || 0,
+            max_speed: activity.max_speed || 0,
+            avg_hr: activity.average_heartrate,
+            max_hr: activity.max_heartrate,
+            is_private: activity.private || false,
+            metadata: activity,
+            updated_at: new Date().toISOString(),
+        }));
+
+        for (const batch of chunkArray(upsertRows, 100)) {
+            const { error: upsertError } = await supabase
+                .from('activities')
+                .upsert(batch, { onConflict: 'user_id,external_id' });
+
+            if (upsertError) {
+                console.error('Bulk upsert failed for Strava activities:', upsertError);
+                return NextResponse.json(
+                    { error: 'Failed to sync activities to database' },
+                    { status: 500 }
+                );
             }
         }
+
+        const insertedCount = dedupedActivities.filter(
+            (activity) => !existingExternalIds.has(activity.id.toString())
+        ).length;
+        const updatedCount = dedupedActivities.length - insertedCount;
 
         // Log sync
         await supabase
@@ -162,8 +216,8 @@ export async function POST(request: NextRequest) {
             .insert({
                 user_id: user!.id,
                 status: 'SUCCESS',
-                message: `Synced ${syncedCount} activities, skipped ${skippedCount} existing`,
-                items_processed: stravaActivities.length,
+                message: `Synced ${insertedCount} new activities, updated ${updatedCount} existing`,
+                items_processed: dedupedActivities.length,
                 completed_at: new Date().toISOString(),
             });
 
@@ -184,10 +238,10 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({
             success: true,
-            message: `Sync complete: ${syncedCount} new, ${skippedCount} existing`,
-            synced: syncedCount,
-            skipped: skippedCount,
-            total: stravaActivities.length,
+            message: `Sync complete: ${insertedCount} new, ${updatedCount} updated`,
+            inserted: insertedCount,
+            updated: updatedCount,
+            total: dedupedActivities.length,
             zonesSynced: zonesResult.success,
         });
     } catch (error: unknown) {
