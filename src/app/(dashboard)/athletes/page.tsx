@@ -85,6 +85,7 @@ export default function AthletesPage() {
   const [athletes, setAthletes] = useState<AthleteData[]>([]);
   const [coaches, setCoaches] = useState<{id: string, name: string}[]>([]);
   const [loading, setLoading] = useState(true);
+  const [scope, setScope] = useState<'mine' | 'team'>('mine');
   
   // Modals & Action States
   const [searchTerm, setSearchTerm] = useState('');
@@ -108,7 +109,7 @@ export default function AthletesPage() {
   const fetchAthletes = useCallback(async () => {
     try {
       setLoading(true);
-      const athletesRes = await api.get<AthleteApiItem[]>('/v2/users/athletes');
+      const athletesRes = await api.get<AthleteApiItem[]>('/v2/users/athletes', { params: { scope } });
       const athletesList = athletesRes.data;
 
       const athletesData: AthleteData[] = athletesList.map((athlete) => ({
@@ -136,7 +137,7 @@ export default function AthletesPage() {
     } finally {
       setLoading(false);
     }
-  }, [isAdmin, t]);
+  }, [isAdmin, scope, t]);
 
   useEffect(() => {
     void fetchAthletes();
@@ -192,10 +193,32 @@ export default function AthletesPage() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">{t('title')} {isAdmin && ' (Global)'}</h1>
         </div>
-        <Button onClick={() => setInviteModalOpen(true)} size="sm" className="sm:size-default">
-          <UserPlus className="h-4 w-4 sm:mr-2" />
-          <span className="hidden sm:inline">{t('addAthlete')}</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          {!isAdmin && (
+            <div className="flex items-center gap-2 rounded-xl bg-muted p-1">
+              <Button
+                type="button"
+                variant={scope === 'mine' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setScope('mine')}
+              >
+                {tDashboard('alerts.myAthletes')}
+              </Button>
+              <Button
+                type="button"
+                variant={scope === 'team' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setScope('team')}
+              >
+                {tDashboard('alerts.teamView')}
+              </Button>
+            </div>
+          )}
+          <Button onClick={() => setInviteModalOpen(true)} size="sm" className="sm:size-default">
+            <UserPlus className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">{t('addAthlete')}</span>
+          </Button>
+        </div>
       </div>
 
       <InviteAthleteModal

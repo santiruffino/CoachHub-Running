@@ -51,6 +51,44 @@ Deno.serve(async (req) => {
     // CASE 1: ATHLETE DEAUTHORIZATION
     if (object_type === 'athlete' && updates?.authorized === false) {
       console.log(`[WEBHOOK] User ${owner_id} revoked access.`)
+
+      const { data: revokedConnection, error: revokedConnError } = await supabase
+        .from('strava_connections')
+        .select('user_id')
+        .eq('strava_athlete_id', owner_id.toString())
+        .maybeSingle()
+
+      if (revokedConnError) throw revokedConnError
+
+      if (revokedConnection?.user_id) {
+        const userId = revokedConnection.user_id
+
+        const { error: deleteActivitiesError } = await supabase
+          .from('activities')
+          .delete()
+          .eq('user_id', userId)
+          .not('external_id', 'is', null)
+
+        if (deleteActivitiesError) throw deleteActivitiesError
+
+        const { error: clearZonesError } = await supabase
+          .from('athlete_profiles')
+          .update({
+            hr_zones: null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('user_id', userId)
+
+        if (clearZonesError) throw clearZonesError
+
+        const { error: deleteSyncLogsError } = await supabase
+          .from('sync_logs')
+          .delete()
+          .eq('user_id', userId)
+
+        if (deleteSyncLogsError) throw deleteSyncLogsError
+      }
+
       const { error: deleteError } = await supabase
         .from('strava_connections')
         .delete()

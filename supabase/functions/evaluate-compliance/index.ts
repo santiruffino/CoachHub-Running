@@ -58,6 +58,13 @@ type ViolationDetails = {
   primaryMetric: 'heartrate';
 };
 
+function scoreToPriority(score: number): 'P1' | 'P2' | 'P3' | 'P4' {
+  if (score >= 80) return 'P1';
+  if (score >= 60) return 'P2';
+  if (score >= 35) return 'P3';
+  return 'P4';
+}
+
 Deno.serve(async (req) => {
   // Handle CORS
   if (req.method === 'OPTIONS') {
@@ -233,20 +240,37 @@ Deno.serve(async (req) => {
        // Get coach_id from profiles
        const { data: profile } = await supabase
         .from('profiles')
-        .select('coach_id, full_name')
+        .select('coach_id, name, team_id')
         .eq('id', userId)
         .single();
-       
-       if (profile?.coach_id) {
-          console.log(`[COMPLIANCE] Creating alert for coach ${profile.coach_id}`)
-          await supabase.from('alerts').insert({
-            coach_id: profile.coach_id,
-            athlete_id: userId,
-            activity_id: activityId,
-            type: 'ZONE_VIOLATION',
-            message: `¡Atención! ${profile.full_name} superó las zonas de intensidad prescritas (${complianceScore.toFixed(0)}% de cumplimiento).`
-          });
-       }
+        
+        if (profile?.coach_id && profile?.team_id) {
+            const baseScore = 45;
+            const severityBoost = complianceScore < 50 ? 20 : complianceScore < 70 ? 10 : 0;
+            const score = Math.max(0, Math.min(100, Math.round(baseScore + severityBoost)));
+            const priority = scoreToPriority(score);
+            const reasonCodes = [
+              'ZONE_VIOLATION',
+              complianceScore < 50 ? 'COMPLIANCE_CRITICAL' : 'COMPLIANCE_LOW',
+            ];
+
+            console.log(`[COMPLIANCE] Creating alert for coach ${profile.coach_id}`)
+            await supabase.from('alerts').insert({
+              coach_id: profile.coach_id,
+              recipient_coach_id: profile.coach_id,
+              team_id: profile.team_id,
+              scope: 'COACH',
+              athlete_id: userId,
+              activity_id: activityId,
+              type: 'ZONE_VIOLATION',
+              message: `¡Atencion! ${profile.name || 'El atleta'} supero las zonas de intensidad prescritas (${complianceScore.toFixed(0)}% de cumplimiento).`,
+              score,
+              priority,
+              reason_codes: reasonCodes,
+              recommended_action: 'Contactar al atleta hoy y ajustar la carga inmediata',
+              status: 'OPEN',
+            });
+        }
     }
 
     return new Response(JSON.stringify({ success: true, complianceScore, isViolation }), {

@@ -6,6 +6,7 @@ import { ActivityChart } from './ActivityChart';
 import { format } from 'date-fns';
 import { StravaActivityDetailResponse } from '../services/strava.service';
 import { useTranslations } from 'next-intl';
+import { isGarminSource } from '@/lib/strava/source';
 
 const EMPTY_ACTIVITY: StravaActivityDetailResponse = {
     id: '',
@@ -26,6 +27,7 @@ interface ActivityDetailModalProps {
 export function ActivityDetailModal({ activityId, open, onClose }: ActivityDetailModalProps) {
     const t = useTranslations('strava.activityDetail');
     const [data, setData] = useState<StravaActivityDetailResponse>(EMPTY_ACTIVITY);
+    const hasGarminSource = isGarminSource(data.device_name);
 
     const loading = open && !!activityId && (data.id === '' || data.id !== activityId);
     const isLoaded = data.id !== '' && !!activityId && data.id === activityId;
@@ -135,6 +137,12 @@ export function ActivityDetailModal({ activityId, open, onClose }: ActivityDetai
                                 <div className="text-center py-8 text-gray-400">
                                     {t('noDetailedData')}
                                 </div>
+                            )}
+
+                            {hasGarminSource && (
+                                <p className="text-xs text-muted-foreground">
+                                    {t('garminAttribution')}
+                                </p>
                             )}
                         </div>
                     </div>

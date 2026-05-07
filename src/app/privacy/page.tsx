@@ -98,6 +98,17 @@ export default async function PrivacyPage() {
                         <p className="text-gray-700 dark:text-gray-light">
                             {t('sections.integrations.p2')}
                         </p>
+
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">{t('sections.integrations.strava.title')}</h3>
+                        <p className="text-gray-700 dark:text-gray-light mb-2">{t('sections.integrations.strava.intro')}</p>
+                        <ul className="list-disc pl-6 text-gray-700 dark:text-gray-light space-y-2">
+                            <li>{t('sections.integrations.strava.items.consent')}</li>
+                            <li>{t('sections.integrations.strava.items.scope')}</li>
+                            <li>{t('sections.integrations.strava.items.withdrawal')}</li>
+                            <li>{t('sections.integrations.strava.items.deletion')}</li>
+                            <li>{t('sections.integrations.strava.items.usageData')}</li>
+                            <li>{t('sections.integrations.strava.items.attribution')}</li>
+                        </ul>
                     </section>
 
                     {/* Data Sharing */}
@@ -164,6 +175,9 @@ export default async function PrivacyPage() {
                         <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">{t('sections.retention.title')}</h2>
                         <p className="text-gray-700 dark:text-gray-light">
                             {t('sections.retention.text')}
+                        </p>
+                        <p className="text-gray-700 dark:text-gray-light mt-4">
+                            {t('sections.retention.strava')}
                         </p>
                     </section>
 

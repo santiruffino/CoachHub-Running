@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
+import * as Sentry from '@sentry/nextjs';
+import { createRequestLogger, withRequestId } from '@/lib/logger';
 
 interface AssignmentToCreate {
     user_id: string;
@@ -36,10 +38,15 @@ interface AssignmentToCreate {
  * Access: COACH only
  */
 export async function POST(request: NextRequest) {
+    const { requestId, logger } = createRequestLogger('/api/v2/trainings/assign', request);
+    const respond = (body: unknown, init?: ResponseInit) =>
+        NextResponse.json(body, withRequestId(init, requestId));
+
     try {
         const authResult = await requireRole('COACH');
 
         if (authResult.response) {
+            authResult.response.headers.set('x-request-id', requestId);
             return authResult.response;
         }
 
@@ -56,21 +63,21 @@ export async function POST(request: NextRequest) {
 
         // Validation
         if (!trainingId) {
-            return NextResponse.json(
+            return respond(
                 { error: 'trainingId is required' },
                 { status: 400 }
             );
         }
 
         if (!scheduledDate) {
-            return NextResponse.json(
+            return respond(
                 { error: 'scheduledDate is required' },
                 { status: 400 }
             );
         }
 
         if ((!athleteIds || athleteIds.length === 0) && (!groupIds || groupIds.length === 0)) {
-            return NextResponse.json(
+            return respond(
                 { error: 'At least one athleteId or groupId is required' },
                 { status: 400 }
             );
@@ -83,7 +90,8 @@ export async function POST(request: NextRequest) {
             .single();
 
         if (!profile?.team_id) {
-            return NextResponse.json(
+            logger.warn('assign_training.missing_team', { userId: user!.id });
+            return respond(
                 { error: 'Coach must belong to a team' },
                 { status: 403 }
             );
@@ -97,14 +105,16 @@ export async function POST(request: NextRequest) {
             .single();
 
         if (trainingError || !training) {
-            return NextResponse.json(
+            logger.warn('assign_training.training_not_found', { userId: user!.id, trainingId, error: trainingError });
+            return respond(
                 { error: 'Training not found' },
                 { status: 404 }
             );
         }
 
         if (training.team_id !== profile.team_id) {
-            return NextResponse.json(
+            logger.warn('assign_training.forbidden_training', { userId: user!.id, trainingId });
+            return respond(
                 { error: 'Not authorized to assign this training' },
                 { status: 403 }
             );
@@ -142,7 +152,12 @@ export async function POST(request: NextRequest) {
             const { data: groups } = await groupsQuery;
 
             if (!groups || groups.length !== groupIds.length) {
-                return NextResponse.json(
+                logger.warn('assign_training.group_not_found_or_forbidden', {
+                    userId: user!.id,
+                    requestedGroups: groupIds.length,
+                    resolvedGroups: groups?.length || 0,
+                });
+                return respond(
                     { error: 'One or more groups not found or not owned by you' },
                     { status: 404 }
                 );
@@ -179,7 +194,7 @@ export async function POST(request: NextRequest) {
         }
 
         if (assignmentsToCreate.length === 0) {
-            return NextResponse.json(
+            return respond(
                 { error: 'No athletes found to assign training to' },
                 { status: 400 }
             );
@@ -192,9 +207,13 @@ export async function POST(request: NextRequest) {
             .select();
 
         if (insertError) {
-            console.error('Assign training error:', insertError);
-            console.error('Assignments to create:', assignmentsToCreate);
-            return NextResponse.json(
+            logger.error('assign_training.insert_failed', {
+                userId: user!.id,
+                trainingId,
+                assignmentCount: assignmentsToCreate.length,
+                error: insertError,
+            });
+            return respond(
                 {
                     error: 'Failed to assign training'
                 },
@@ -202,13 +221,43 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        return NextResponse.json({
+        // Auto-resolve missing-workout alerts once a coach assigns training.
+        // This keeps the dashboard clean when the underlying issue is solved.
+        const resolvedAthleteIds = Array.from(athleteSourceMap.keys());
+        if (resolvedAthleteIds.length > 0) {
+            const { error: resolveAlertsError } = await supabase
+                .from('alerts')
+                .delete()
+                .eq('team_id', profile.team_id)
+                .in('type', ['MISSING_WORKOUT', 'missing_workout'])
+                .in('athlete_id', resolvedAthleteIds);
+
+            if (resolveAlertsError) {
+                logger.warn('assign_training.resolve_missing_alerts_failed', {
+                    userId: user!.id,
+                    error: resolveAlertsError,
+                    resolvedAthletes: resolvedAthleteIds.length,
+                });
+            }
+        }
+
+        logger.info('assign_training.completed', {
+            userId: user!.id,
+            trainingId,
+            assignments: assignments?.length || 0,
+            athleteCount: athleteSourceMap.size,
+        });
+
+        return respond({
             message: `Training assigned to ${assignments?.length || 0} athlete(s)`,
             assignments: assignments || [],
         }, { status: 201 });
     } catch (error: unknown) {
-        console.error('Assign training error:', error);
-        return NextResponse.json(
+        logger.error('assign_training.unhandled_error', { error });
+        Sentry.captureException(error, {
+            tags: { route: '/api/v2/trainings/assign', requestId },
+        });
+        return respond(
             {
                 error: 'Internal server error'
             },

@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/api-helpers';
+import { formatSecondsToHhMmSs, parseDurationInput } from '@/lib/time/duration';
+import * as Sentry from '@sentry/nextjs';
+import { createRequestLogger, withRequestId } from '@/lib/logger';
 
 /**
  * PATCH /v2/users/[id]/races/[athleteRaceId]
@@ -10,11 +13,16 @@ export async function PATCH(
     request: NextRequest,
     { params }: { params: Promise<{ id: string; athleteRaceId: string }> }
 ) {
+    const { requestId, logger } = createRequestLogger('/api/v2/users/[id]/races/[athleteRaceId]', request);
+    const respond = (body: unknown, init?: ResponseInit) =>
+        NextResponse.json(body, withRequestId(init, requestId));
+
     try {
         const { id, athleteRaceId } = await params;
         const authResult = await requireAuth();
 
         if (authResult.response) {
+            authResult.response.headers.set('x-request-id', requestId);
             return authResult.response;
         }
 
@@ -38,13 +46,15 @@ export async function PATCH(
                     .single();
 
                 if (!athleteProfile || !profile.team_id || athleteProfile.team_id !== profile.team_id) {
-                    return NextResponse.json(
+                    logger.warn('user_race_update.forbidden_cross_team_access', { userId: user!.id, targetUserId });
+                    return respond(
                         { error: 'Not authorized to update this user\'s races' },
                         { status: 403 }
                     );
                 }
             } else {
-                return NextResponse.json(
+                logger.warn('user_race_update.forbidden_role_access', { userId: user!.id, targetUserId });
+                return respond(
                     { error: 'Not authorized to update this user\'s races' },
                     { status: 403 }
                 );
@@ -62,15 +72,43 @@ export async function PATCH(
             notes
         } = body;
 
+        let normalizedTargetTime: string | null | undefined;
+        if (target_time === null || target_time === '') {
+            normalizedTargetTime = null;
+        } else if (typeof target_time === 'string') {
+            const parsedTarget = parseDurationInput(target_time);
+            if (parsedTarget === null || parsedTarget <= 0) {
+                return respond(
+                    { error: 'Invalid target_time format. Use HH:MM:SS, MM:SS, or 1h20m' },
+                    { status: 400 }
+                );
+            }
+            normalizedTargetTime = formatSecondsToHhMmSs(parsedTarget);
+        }
+
+        let normalizedResultTime: string | null | undefined;
+        if (result_time === null || result_time === '') {
+            normalizedResultTime = null;
+        } else if (typeof result_time === 'string') {
+            const parsedResult = parseDurationInput(result_time);
+            if (parsedResult === null || parsedResult <= 0) {
+                return respond(
+                    { error: 'Invalid result_time format. Use HH:MM:SS, MM:SS, or 1h20m' },
+                    { status: 400 }
+                );
+            }
+            normalizedResultTime = formatSecondsToHhMmSs(parsedResult);
+        }
+
         const { data: athleteRace, error } = await supabase
             .from('athlete_races')
             .update({
                 name_override,
                 date,
                 priority,
-                target_time,
+                target_time: normalizedTargetTime,
                 status,
-                result_time,
+                result_time: normalizedResultTime,
                 notes
             })
             .eq('id', athleteRaceId)
@@ -82,17 +120,21 @@ export async function PATCH(
             .single();
 
         if (error) {
-            console.error('Update athlete race error:', error);
-            return NextResponse.json(
+            logger.error('user_race_update.failed', { userId: user!.id, targetUserId, athleteRaceId, error });
+            return respond(
                 { error: 'Failed to update race assignment' },
                 { status: 500 }
             );
         }
 
-        return NextResponse.json(athleteRace);
+        logger.info('user_race_update.success', { userId: user!.id, targetUserId, athleteRaceId });
+        return respond(athleteRace, { status: 200 });
     } catch (error: unknown) {
-        console.error('PATCH /v2/users/[id]/races/[athleteRaceId] error:', error);
-        return NextResponse.json(
+        logger.error('user_race_update.unhandled_error', { error });
+        Sentry.captureException(error, {
+            tags: { route: '/api/v2/users/[id]/races/[athleteRaceId]', requestId, method: 'PATCH' },
+        });
+        return respond(
             { error: 'Internal server error' },
             { status: 500 }
         );
@@ -105,14 +147,19 @@ export async function PATCH(
  * Removes a race assignment.
  */
 export async function DELETE(
-    _request: NextRequest,
+    request: NextRequest,
     { params }: { params: Promise<{ id: string; athleteRaceId: string }> }
 ) {
+    const { requestId, logger } = createRequestLogger('/api/v2/users/[id]/races/[athleteRaceId]', request);
+    const respond = (body: unknown, init?: ResponseInit) =>
+        NextResponse.json(body, withRequestId(init, requestId));
+
     try {
         const { id, athleteRaceId } = await params;
         const authResult = await requireAuth();
 
         if (authResult.response) {
+            authResult.response.headers.set('x-request-id', requestId);
             return authResult.response;
         }
 
@@ -134,14 +181,16 @@ export async function DELETE(
                 .single();
 
             if (!athleteProfile || !profile.team_id || athleteProfile.team_id !== profile.team_id) {
-                return NextResponse.json(
+                logger.warn('user_race_delete.forbidden_cross_team_access', { userId: user!.id, targetUserId });
+                return respond(
                     { error: 'Not authorized to delete this user\'s races' },
                     { status: 403 }
                 );
             }
         } else {
             // Athletes cannot delete assignments
-            return NextResponse.json(
+            logger.warn('user_race_delete.forbidden_role_access', { userId: user!.id, role: profile?.role });
+            return respond(
                 { error: 'Not authorized to delete race assignments' },
                 { status: 403 }
             );
@@ -154,17 +203,21 @@ export async function DELETE(
             .eq('athlete_id', targetUserId);
 
         if (error) {
-            console.error('Delete athlete race error:', error);
-            return NextResponse.json(
+            logger.error('user_race_delete.failed', { userId: user!.id, targetUserId, athleteRaceId, error });
+            return respond(
                 { error: 'Failed to delete race assignment' },
                 { status: 500 }
             );
         }
 
-        return new Response(null, { status: 204 });
+        logger.info('user_race_delete.success', { userId: user!.id, targetUserId, athleteRaceId });
+        return new Response(null, withRequestId({ status: 204 }, requestId));
     } catch (error: unknown) {
-        console.error('DELETE /v2/users/[id]/races/[athleteRaceId] error:', error);
-        return NextResponse.json(
+        logger.error('user_race_delete.unhandled_error', { error });
+        Sentry.captureException(error, {
+            tags: { route: '/api/v2/users/[id]/races/[athleteRaceId]', requestId, method: 'DELETE' },
+        });
+        return respond(
             { error: 'Internal server error' },
             { status: 500 }
         );

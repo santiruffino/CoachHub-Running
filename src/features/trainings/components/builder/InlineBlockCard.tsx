@@ -376,7 +376,7 @@ export function InlineBlockCard({
                                 <div className="grid grid-cols-2 gap-2">
                                     <input
                                         type="number"
-                                        placeholder="80"
+                                        placeholder={t('lthrMinPlaceholder')}
                                         value={block.target.min}
                                         onChange={(e) => {
                                             e.stopPropagation();
@@ -387,7 +387,7 @@ export function InlineBlockCard({
                                     />
                                     <input
                                         type="number"
-                                        placeholder="90"
+                                        placeholder={t('lthrMaxPlaceholder')}
                                         value={block.target.max}
                                         onChange={(e) => {
                                             e.stopPropagation();

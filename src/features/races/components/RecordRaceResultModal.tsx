@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { racesService } from '../services/races.service';
 import { AthleteRace } from '../types';
+import { formatSecondsToHhMmSs, parseDurationInput } from '@/lib/time/duration';
 
 interface RecordRaceResultModalProps {
   open: boolean;
@@ -20,6 +21,7 @@ interface RecordRaceResultModalProps {
 export function RecordRaceResultModal({ open, onOpenChange, race, onSuccess }: RecordRaceResultModalProps) {
   const t = useTranslations('races');
   const [loading, setLoading] = useState(false);
+  const [timeError, setTimeError] = useState('');
   const [formData, setFormData] = useState({
     result_time: '',
     notes: '',
@@ -31,6 +33,7 @@ export function RecordRaceResultModal({ open, onOpenChange, race, onSuccess }: R
         result_time: race.result_time || '',
         notes: race.notes || '',
       });
+      setTimeError('');
     }
   }, [open, race]);
 
@@ -38,10 +41,17 @@ export function RecordRaceResultModal({ open, onOpenChange, race, onSuccess }: R
     e.preventDefault();
     if (!race) return;
 
+    const parsedResult = parseDurationInput(formData.result_time);
+    if (parsedResult === null || parsedResult <= 0) {
+      setTimeError(t('athlete.invalidTimeFormat'));
+      return;
+    }
+
     setLoading(true);
     try {
       await racesService.updateAthleteRace(race.athlete_id, race.id, {
         ...formData,
+        result_time: formatSecondsToHhMmSs(parsedResult),
         status: 'COMPLETED'
       });
       onSuccess();
@@ -71,11 +81,28 @@ export function RecordRaceResultModal({ open, onOpenChange, race, onSuccess }: R
             </Label>
             <Input
               value={formData.result_time}
-              onChange={(e) => setFormData({ ...formData, result_time: e.target.value })}
-              placeholder="HH:MM:SS"
+              onChange={(e) => {
+                setFormData({ ...formData, result_time: e.target.value });
+                if (timeError) setTimeError('');
+              }}
+              onBlur={() => {
+                const parsed = parseDurationInput(formData.result_time);
+                if (parsed === null || parsed <= 0) {
+                  setTimeError(t('athlete.invalidTimeFormat'));
+                  return;
+                }
+
+                setFormData((prev) => ({
+                  ...prev,
+                  result_time: formatSecondsToHhMmSs(parsed),
+                }));
+                setTimeError('');
+              }}
+              placeholder={t('athlete.resultTimePlaceholder')}
               className="bg-surface-container-low dark:bg-[#131b23] border-none h-12 focus:ring-1 focus:ring-primary/20 font-mono"
               required
             />
+            {timeError && <p className="text-xs font-medium text-red-500">{timeError}</p>}
           </div>
 
           <div className="space-y-2">

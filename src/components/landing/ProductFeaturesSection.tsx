@@ -13,6 +13,7 @@ const lineChartData = Array.from({ length: 20 }, (_, i) => ({
 export function ProductFeaturesSection() {
   const [mounted, setMounted] = useState(false);
   const t = useTranslations('landing.productFeatures');
+  const tUnits = useTranslations('common.units');
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => setMounted(true));
@@ -143,7 +144,7 @@ export function ProductFeaturesSection() {
                       {t('currentLoad')}
                     </p>
                     <p className="font-display text-2xl font-bold text-foreground leading-none">
-                      980<span className="text-xs font-normal text-muted-foreground ml-1">km</span>
+                      980<span className="text-xs font-normal text-muted-foreground ml-1">{tUnits('km')}</span>
                     </p>
                   </div>
                   <div>

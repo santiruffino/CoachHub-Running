@@ -1,26 +1,32 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { CriticalAlertItem } from '@/components/dashboard/CriticalAlertItem';
 import { GroupStatusCard } from '@/components/dashboard/GroupStatusCard';
 import { NextRaces } from './NextRaces';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 import api from '@/lib/axios';
-import { DashboardStats, LowCompliance, MissingWorkout, RPEMismatch, TimelineEvent } from '../types';
+import { DashboardStats, LowCompliance, MissingWorkout, RPEMismatch, SmartAlert, TimelineEvent } from '../types';
 import { useTranslations } from 'next-intl';
 import { User } from '@/interfaces/auth';
 
 interface DashboardAlertItem {
+  alertId?: string;
   id: string;
   name: string;
   type: 'zone_violation' | 'new_feedback' | 'rpe_mismatch' | 'low_compliance' | 'missing_workout';
   time: string;
   message: string;
   details: string;
+  priority?: 'P1' | 'P2' | 'P3' | 'P4';
+  score?: number;
+  recommendedAction?: string;
 }
 
 interface ZoneViolation {
+  alertId?: string;
   id: string;
   name: string;
   time: string;
@@ -48,6 +54,7 @@ interface DashboardData {
     missingWorkouts: MissingWorkout[];
     recentFeedback: RecentFeedbackItem[];
     zoneViolations: ZoneViolation[];
+    smartAlerts: SmartAlert[];
   };
   groupCompliance: { groupId: string; groupName: string; athleteCount: number; completionRate: number }[];
   activityTimeline: TimelineEvent[];
@@ -69,24 +76,48 @@ function TimelineItem({ time, content, isSystem = false }: RecentTimelineItemPro
 export default function CoachDashboard({ user }: { user: User }) {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [markingRead, setMarkingRead] = useState(false);
+  const [scope, setScope] = useState<'mine' | 'team'>('mine');
   const t = useTranslations();
   const userDisplayName = user.firstName || user.name?.split(' ')[0] || user.email.split('@')[0];
 
-  useEffect(() => {
-    const fetchDashboard = async () => {
-      try {
-        setLoading(true);
-        const res = await api.get('/v2/dashboard/coach');
-        setData(res.data);
-      } catch (error) {
-        console.error('Failed to fetch dashboard data', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchDashboard = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await api.get('/v2/dashboard/coach', { params: { scope } });
+      setData(res.data);
+    } catch (error) {
+      console.error('Failed to fetch dashboard data', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [scope]);
 
-    fetchDashboard();
-  }, []);
+  useEffect(() => {
+    void fetchDashboard();
+  }, [fetchDashboard]);
+
+  const handleMarkAsRead = async () => {
+    try {
+      setMarkingRead(true);
+      await api.post('/v2/dashboard/coach/alerts/read', { scope });
+      setData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          alerts: {
+            ...prev.alerts,
+            zoneViolations: [],
+          },
+        };
+      });
+      await fetchDashboard();
+    } catch (error) {
+      console.error('Failed to mark alerts as read', error);
+    } finally {
+      setMarkingRead(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -108,62 +139,80 @@ export default function CoachDashboard({ user }: { user: User }) {
   const missingCount = data?.alerts?.missingWorkouts?.length ?? 0;
   const lowComplianceCount = data?.alerts?.lowCompliance?.length ?? 0;
   const zoneViolationCount = data?.alerts?.zoneViolations?.length ?? 0;
-  const pendingActionCount = rpeCount + missingCount + lowComplianceCount + zoneViolationCount;
+  const pendingActionCount = data?.alerts?.smartAlerts?.filter((alert) => alert.priority === 'P1' || alert.priority === 'P2').length
+    ?? (rpeCount + missingCount + lowComplianceCount + zoneViolationCount);
   const groupCount = data?.stats?.totalGroups ?? 0;
 
-  const formatPlanSub = (groupName?: string, raceDate?: string) => {
-    if (!groupName && !raceDate) return "";
-    return t("dashboard.planSubtitle", { 
-        groupName: groupName || t("dashboard.athlete.defaultName"), 
-        timeframe: raceDate || "" 
-    }).replace(/ - $/, ""); // Remove trailing separator if no timeframe
-  };
-
-  // Real alerts mapped to UI properties
-  const allAlerts: DashboardAlertItem[] = [
-    ...(data?.alerts?.zoneViolations?.map((zoneViolation) => ({
-      id: zoneViolation.id,
-      name: zoneViolation.name,
-      type: 'zone_violation' as const,
-      time: new Date(zoneViolation.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      message: t("dashboard.alertTypes.zone_violation"),
-      details: zoneViolation.details,
-    })) || []),
-    ...(data?.alerts?.recentFeedback?.map((feedback) => ({
-      id: feedback.athleteId,
-      name: feedback.athleteName,
-      type: 'new_feedback' as const,
-      time: feedback.timestamp || t("dashboard.alerts.new"),
-      message: t("dashboard.alertTypes.new_feedback"),
-      details: feedback.activityName,
-    })) || []),
-    ...(data?.alerts?.rpeMismatches?.map((m: RPEMismatch) => ({
-      id: m.athleteId,
-      name: m.athleteName,
-      type: 'rpe_mismatch' as const,
-      time: t("dashboard.alerts.rpeCheck"),
-      message: t("dashboard.alertTypes.rpe_mismatch"),
-      details: formatPlanSub(m.groupName, m.targetRace)
-    })) || []),
-    ...(data?.alerts?.lowCompliance?.map((l: LowCompliance) => ({
-      id: l.athleteId,
-      name: l.athleteName,
-      type: 'low_compliance' as const,
-      time: t("athletes.detail.complianceRate") + `: ${l.completionRate}%`,
-      message: t("dashboard.alertTypes.low_compliance"),
-      details: formatPlanSub(l.groupName, l.targetRace)
-    })) || []),
-    ...(data?.alerts?.missingWorkouts?.map((m: MissingWorkout) => ({
-      id: m.id,
-      name: m.name,
-      type: 'missing_workout' as const,
-      time: t("dashboard.alerts.nextWeek"),
-      message: t("dashboard.alertTypes.missing_workout"),
-      details: formatPlanSub(m.groupName, m.targetRace)
-    })) || [])
-  ];
+  const allAlerts: DashboardAlertItem[] = (data?.alerts?.smartAlerts || []).map((alert) => ({
+    alertId: alert.alertId,
+    id: alert.athleteId,
+    name: alert.athleteName,
+    type: alert.type,
+    time: new Date(alert.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    message: t(`dashboard.alertTypes.${alert.type}`),
+    details: alert.details,
+    priority: alert.priority,
+    score: alert.score,
+    recommendedAction: t(`dashboard.alertActions.recommended.${alert.recommendedActionKey}`),
+  }));
 
   const groupComplianceData = data?.groupCompliance ?? [];
+
+  const handleMarkSingleAlertAsRead = async (alert?: DashboardAlertItem) => {
+    if (!alert || alert.type !== 'zone_violation' || !alert.alertId) {
+      return;
+    }
+
+    try {
+      await api.post('/v2/dashboard/coach/alerts/read', {
+        scope,
+        alertIds: [alert.alertId],
+      });
+      setData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          alerts: {
+            ...prev.alerts,
+            zoneViolations: prev.alerts.zoneViolations.filter((z) => z.alertId !== alert.alertId),
+          },
+        };
+      });
+    } catch (error) {
+      console.error('Failed to mark alert as read', error);
+    }
+  };
+
+  const handleResolveAlert = async (alert?: DashboardAlertItem) => {
+    if (!alert?.alertId) return;
+
+    try {
+      await api.post('/v2/dashboard/coach/alerts/read', {
+        scope,
+        action: 'resolve',
+        alertIds: [alert.alertId],
+      });
+      await fetchDashboard();
+    } catch (error) {
+      console.error('Failed to resolve alert', error);
+    }
+  };
+
+  const handleSnoozeAlert = async (alert?: DashboardAlertItem) => {
+    if (!alert?.alertId) return;
+
+    try {
+      await api.post('/v2/dashboard/coach/alerts/read', {
+        scope,
+        action: 'snooze',
+        snoozeHours: 24,
+        alertIds: [alert.alertId],
+      });
+      await fetchDashboard();
+    } catch (error) {
+      console.error('Failed to snooze alert', error);
+    }
+  };
 
   return (
     <div className="p-4 md:p-8 pb-20 max-w-[1400px] mx-auto">
@@ -177,6 +226,24 @@ export default function CoachDashboard({ user }: { user: User }) {
           <p className="text-sm text-muted-foreground font-medium">
             {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).replace(/^\w/, c => c.toUpperCase())}
           </p>
+        </div>
+        <div className="mt-4 sm:mt-0 flex items-center gap-2 rounded-xl bg-muted p-1">
+          <Button
+            type="button"
+            variant={scope === 'mine' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setScope('mine')}
+          >
+            {t('dashboard.alerts.myAthletes')}
+          </Button>
+          <Button
+            type="button"
+            variant={scope === 'team' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setScope('team')}
+          >
+            {t('dashboard.alerts.teamView')}
+          </Button>
         </div>
       </div>
 
@@ -198,6 +265,15 @@ export default function CoachDashboard({ user }: { user: User }) {
           <div className="bg-muted p-6 md:p-8 rounded-[1.5rem]">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold text-foreground">{t("dashboard.alerts.athletesCompliance")}</h2>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleMarkAsRead}
+                disabled={markingRead || zoneViolationCount === 0}
+              >
+                {markingRead ? t('common.loading') : t('dashboard.alerts.markAsRead')}
+              </Button>
             </div>
 
             <div className="space-y-3">
@@ -210,6 +286,15 @@ export default function CoachDashboard({ user }: { user: User }) {
                   timestamp={alert.time}
                   message={alert.message}
                   details={alert.details}
+                  priority={alert.priority}
+                  score={alert.score}
+                  recommendedAction={alert.recommendedAction}
+                  onMarkAsRead={() => void handleMarkSingleAlertAsRead(alert)}
+                  canMarkAsRead={alert.type === 'zone_violation' && Boolean(alert.alertId)}
+                  canResolve={Boolean(alert.alertId)}
+                  onResolve={() => void handleResolveAlert(alert)}
+                  canSnooze={Boolean(alert.alertId)}
+                  onSnooze={() => void handleSnoozeAlert(alert)}
                 />
               )) : (
                 <p className="text-sm text-muted-foreground p-4 text-center">{t("dashboard.alerts.noCurrentAlerts")}</p>

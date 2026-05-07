@@ -162,7 +162,7 @@ export default function ResetPasswordForm() {
                         <Input
                             id="newPassword"
                             type="password"
-                            placeholder="••••••"
+                            placeholder={t('passwordPlaceholder')}
                             {...register('newPassword')}
                         />
                         {errors.newPassword && (
@@ -175,7 +175,7 @@ export default function ResetPasswordForm() {
                         <Input
                             id="confirmPassword"
                             type="password"
-                            placeholder="••••••"
+                            placeholder={t('confirmPasswordPlaceholder')}
                             {...register('confirmPassword')}
                         />
                         {errors.confirmPassword && (

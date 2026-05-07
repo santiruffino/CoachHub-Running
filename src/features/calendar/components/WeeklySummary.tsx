@@ -14,6 +14,7 @@ interface WeeklySummaryProps {
 
 export function WeeklySummary({ summary }: WeeklySummaryProps) {
     const t = useTranslations('calendar.weeklySummary');
+    const tUnits = useTranslations('common.units');
 
     return (
         <Card className="p-4 border-gray-100 dark:border-gray-700 shadow-sm bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900">
@@ -29,12 +30,12 @@ export function WeeklySummary({ summary }: WeeklySummaryProps) {
                     <div className="space-y-1">
                         <div className="flex justify-between items-baseline">
                             <span className="text-xs text-gray-400 dark:text-gray-500">{t('planned')}</span>
-                            <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{summary.distance.planned} km</span>
+                            <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{summary.distance.planned} {tUnits('km')}</span>
                         </div>
                         <div className="flex justify-between items-baseline">
                             <span className="text-xs text-gray-400 dark:text-gray-500">{t('actual')}</span>
                             <span className={summary.distance.completed >= summary.distance.planned ? "text-sm font-bold text-green-600 dark:text-green-400" : "text-sm font-bold text-orange-500"}>
-                                {summary.distance.completed.toFixed(1)} km
+                                {summary.distance.completed.toFixed(1)} {tUnits('km')}
                             </span>
                         </div>
                         {/* Progress Bar */}
@@ -56,12 +57,12 @@ export function WeeklySummary({ summary }: WeeklySummaryProps) {
                     <div className="space-y-1">
                         <div className="flex justify-between items-baseline">
                             <span className="text-xs text-gray-400 dark:text-gray-500">{t('planned')}</span>
-                            <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{Math.round(summary.duration.planned / 60)}h</span>
+                            <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{Math.round(summary.duration.planned / 60)}{tUnits('h')}</span>
                         </div>
                         <div className="flex justify-between items-baseline">
                             <span className="text-xs text-gray-400 dark:text-gray-500">{t('actual')}</span>
                             <span className={summary.duration.completed >= summary.duration.planned ? "text-sm font-bold text-green-600 dark:text-green-400" : "text-sm font-bold text-orange-500"}>
-                                {(summary.duration.completed / 60).toFixed(1)}h
+                                {(summary.duration.completed / 60).toFixed(1)}{tUnits('h')}
                             </span>
                         </div>
                         {/* Progress Bar */}
@@ -82,7 +83,7 @@ export function WeeklySummary({ summary }: WeeklySummaryProps) {
                     </div>
                     <div>
                         <span className="text-2xl font-bold text-gray-900 dark:text-white">{Math.round(summary.elevation.completed)}</span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">m</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">{tUnits('m')}</span>
                     </div>
                     <span className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">{t('cumulativeTotal')}</span>
                 </div>

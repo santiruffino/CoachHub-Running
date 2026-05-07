@@ -7,6 +7,7 @@ import { ActivityDetailModal } from './ActivityDetailModal';
 import { useTranslations } from 'next-intl';
 
 import { StravaActivity } from '@/interfaces/activity';
+import { isGarminSource } from '@/lib/strava/source';
 
 interface StravaActivitiesListProps {
     activities: StravaActivity[];
@@ -16,6 +17,7 @@ interface StravaActivitiesListProps {
 export function StravaActivitiesList({ activities, loading }: StravaActivitiesListProps) {
     const t = useTranslations('strava.activities');
     const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null);
+    const hasGarminSource = activities.some((activity) => isGarminSource(activity.deviceName));
 
     if (loading) {
         return (
@@ -83,6 +85,9 @@ export function StravaActivitiesList({ activities, loading }: StravaActivitiesLi
                         ))}
                     </TableBody>
                 </Table>
+                <p className="mt-4 text-xs text-muted-foreground">
+                    {t('attribution.strava')} {hasGarminSource ? ` ${t('attribution.garmin')}` : ''}
+                </p>
             </CardContent>
 
             <ActivityDetailModal

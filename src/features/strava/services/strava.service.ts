@@ -33,6 +33,7 @@ export interface StravaActivityDetailResponse {
     startDate: string;
     avgHr?: number;
     elevationGain?: number;
+    device_name?: string;
     streams?: Array<{
         type: string;
         data: number[];

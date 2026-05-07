@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
+import * as Sentry from '@sentry/nextjs';
+import { createRequestLogger, withRequestId } from '@/lib/logger';
 
 interface StravaTokenResponse {
     access_token: string;
@@ -62,11 +64,16 @@ function chunkArray<T>(items: T[], chunkSize: number): T[][] {
  * Access: ATHLETE only
  */
 export async function POST(request: NextRequest) {
+    const { requestId, logger } = createRequestLogger('/api/v2/strava/auth/sync', request);
+    const respond = (body: unknown, init?: ResponseInit) =>
+        NextResponse.json(body, withRequestId(init, requestId));
+
     try {
         void request;
         const authResult = await requireRole('ATHLETE');
 
         if (authResult.response) {
+            authResult.response.headers.set('x-request-id', requestId);
             return authResult.response;
         }
 
@@ -80,7 +87,8 @@ export async function POST(request: NextRequest) {
             .single();
 
         if (connError || !connection) {
-            return NextResponse.json(
+            logger.warn('strava_sync.connection_missing', { userId: user!.id, error: connError });
+            return respond(
                 { error: 'Strava not connected' },
                 { status: 404 }
             );
@@ -107,7 +115,8 @@ export async function POST(request: NextRequest) {
             });
 
             if (!refreshResponse.ok) {
-                return NextResponse.json(
+                logger.error('strava_sync.token_refresh_failed', { userId: user!.id, status: refreshResponse.status });
+                return respond(
                     { error: 'Failed to refresh Strava token' },
                     { status: 401 }
                 );
@@ -139,7 +148,8 @@ export async function POST(request: NextRequest) {
         );
 
         if (!activitiesResponse.ok) {
-            return NextResponse.json(
+            logger.error('strava_sync.fetch_activities_failed', { userId: user!.id, status: activitiesResponse.status });
+            return respond(
                 { error: 'Failed to fetch activities from Strava' },
                 { status: 500 }
             );
@@ -162,8 +172,8 @@ export async function POST(request: NextRequest) {
                 .in('external_id', externalIds);
 
             if (existingError) {
-                console.error('Failed to load existing activities before upsert:', existingError);
-                return NextResponse.json(
+                logger.error('strava_sync.load_existing_failed', { userId: user!.id, error: existingError });
+                return respond(
                     { error: 'Failed to prepare activity sync' },
                     { status: 500 }
                 );
@@ -197,8 +207,8 @@ export async function POST(request: NextRequest) {
                 .upsert(batch, { onConflict: 'user_id,external_id' });
 
             if (upsertError) {
-                console.error('Bulk upsert failed for Strava activities:', upsertError);
-                return NextResponse.json(
+                logger.error('strava_sync.bulk_upsert_failed', { userId: user!.id, error: upsertError });
+                return respond(
                     { error: 'Failed to sync activities to database' },
                     { status: 500 }
                 );
@@ -232,20 +242,31 @@ export async function POST(request: NextRequest) {
         if (zonesResult.success) {
             // Zones synced successfully
         } else {
-            console.warn('Failed to sync heart rate zones during activity sync:', zonesResult.error);
+            logger.warn('strava_sync.zones_sync_failed', { userId: user!.id, error: zonesResult.error });
             // Don't fail the sync if zones sync fails
         }
 
-        return NextResponse.json({
+        logger.info('strava_sync.completed', {
+            userId: user!.id,
+            inserted: insertedCount,
+            updated: updatedCount,
+            total: dedupedActivities.length,
+            zonesSynced: zonesResult.success,
+        });
+
+        return respond({
             success: true,
             message: `Sync complete: ${insertedCount} new, ${updatedCount} updated`,
             inserted: insertedCount,
             updated: updatedCount,
             total: dedupedActivities.length,
             zonesSynced: zonesResult.success,
-        });
+        }, { status: 200 });
     } catch (error: unknown) {
-        console.error('Strava sync error:', error);
+        logger.error('strava_sync.unhandled_error', { error });
+        Sentry.captureException(error, {
+            tags: { route: '/api/v2/strava/auth/sync', requestId },
+        });
 
         // Log failure
         try {
@@ -259,10 +280,10 @@ export async function POST(request: NextRequest) {
                 });
             }
         } catch (logError) {
-            console.error('Failed to log sync error:', logError);
+            logger.error('strava_sync.log_failure_failed', { error: logError });
         }
 
-        return NextResponse.json(
+        return respond(
             { error: `Sync failed: ${error instanceof Error ? error.message : 'Unknown error'}` },
             { status: 500 }
         );

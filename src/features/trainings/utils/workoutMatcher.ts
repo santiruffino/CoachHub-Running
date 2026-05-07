@@ -45,6 +45,18 @@ export interface RawLap {
     moving_time?: number;
 }
 
+const WORKOUT_MATCHER_DEBUG = process.env.NODE_ENV !== 'production';
+
+function debugLog(message: string, metadata?: unknown) {
+    if (!WORKOUT_MATCHER_DEBUG) return;
+    if (typeof metadata === 'undefined') {
+        console.log(message);
+        return;
+    }
+
+    console.log(message, metadata);
+}
+
 /**
  * Flatten a workout structure into a sequential list of steps
  */
@@ -52,7 +64,7 @@ export function flattenWorkout(blocks: RawBlock[]): FlatStep[] {
     const flatSteps: FlatStep[] = [];
     let stepIndex = 0;
     // Process all blocks
-    console.log('flattenWorkout input blocks:', JSON.stringify(blocks, null, 2));
+    debugLog('flattenWorkout input blocks:', JSON.stringify(blocks, null, 2));
 
     // Group blocks by group.id to handle repeats
     // Iterating linearly. If we encounter a block with a group.id, we need to check if we've already processed this group?
@@ -138,7 +150,7 @@ export function flattenWorkout(blocks: RawBlock[]): FlatStep[] {
         }
     }
 
-    console.log('flattenWorkout output steps:', flatSteps.length);
+    debugLog('flattenWorkout output steps:', flatSteps.length);
 
     return flatSteps;
 }
@@ -210,10 +222,10 @@ export function matchLapsToWorkout(
     laps: RawLap[],
     flatSteps: FlatStep[]
 ): MatchedLap[] {
-    console.log('=== WORKOUT MATCHER DEBUG ===');
-    console.log('Total laps to match:', laps.length);
-    console.log('Total flat steps:', flatSteps.length);
-    console.log('Flat steps:', flatSteps.map((s, i) => ({
+    debugLog('=== WORKOUT MATCHER DEBUG ===');
+    debugLog('Total laps to match:', laps.length);
+    debugLog('Total flat steps:', flatSteps.length);
+    debugLog('Flat steps:', flatSteps.map((s, i) => ({
         index: i,
         name: s.name,
         stepType: s.stepType,
@@ -227,8 +239,8 @@ export function matchLapsToWorkout(
 
     for (let i = 0; i < laps.length; i++) {
         const lap = laps[i];
-        console.log(`\n--- Processing Lap ${i} ---`);
-        console.log('Lap data:', {
+        debugLog(`\n--- Processing Lap ${i} ---`);
+        debugLog('Lap data:', {
             distance: lap.distance,
             elapsed_time: lap.elapsed_time,
             moving_time: lap.moving_time,
@@ -237,7 +249,7 @@ export function matchLapsToWorkout(
 
         // If we've matched all steps, mark remaining laps as unmatched
         if (currentStepIndex >= flatSteps.length) {
-            console.log('All steps matched, marking remaining laps as Extra');
+            debugLog('All steps matched, marking remaining laps as Extra');
             matchedLaps.push({
                 lapIndex: i,
                 stepIndex: null,
@@ -251,7 +263,7 @@ export function matchLapsToWorkout(
         }
 
         const step = flatSteps[currentStepIndex];
-        console.log('Comparing against step:', {
+        debugLog('Comparing against step:', {
             stepIndex: currentStepIndex,
             name: step.name,
             stepType: step.stepType,
@@ -269,12 +281,12 @@ export function matchLapsToWorkout(
             lapValue = lap.distance || 0; // in meters
             stepValue = step.target_value;
             targetType = 'distance';
-            console.log('Comparing DISTANCE:', { lapValue, stepValue });
+            debugLog('Comparing DISTANCE:', { lapValue, stepValue });
         } else if (step.target_type === 'duration') {
             lapValue = lap.elapsed_time || lap.moving_time || 0; // in seconds
             stepValue = step.target_value;
             targetType = 'duration';
-            console.log('Comparing DURATION:', {
+            debugLog('Comparing DURATION:', {
                 lapValue,
                 stepValue,
                 lapFormatted: `${Math.floor(lapValue / 60)}:${(lapValue % 60).toString().padStart(2, '0')}`,
@@ -283,7 +295,7 @@ export function matchLapsToWorkout(
             });
         } else {
             // Unsupported target type
-            console.log('Unsupported target type:', step.target_type);
+            debugLog('Unsupported target type:', step.target_type);
             matchedLaps.push({
                 lapIndex: i,
                 stepIndex: null,
@@ -298,7 +310,7 @@ export function matchLapsToWorkout(
 
         const { matches, variance, confidence } = isMatch(lapValue, stepValue, targetType, step.stepType);
 
-        console.log('Match result:', {
+        debugLog('Match result:', {
             matches,
             variance: variance.toFixed(2) + '%',
             confidence: confidence.toFixed(2),
@@ -309,7 +321,7 @@ export function matchLapsToWorkout(
 
         if (matches) {
             // Match found
-            console.log('✅ MATCH! Assigning lap to step', currentStepIndex);
+            debugLog('MATCH! Assigning lap to step', currentStepIndex);
             matchedLaps.push({
                 lapIndex: i,
                 stepIndex: currentStepIndex,
@@ -322,7 +334,7 @@ export function matchLapsToWorkout(
             currentStepIndex++; // Move to next step
         } else {
             // No match with current step - try look-ahead to next few steps
-            console.log('❌ NO MATCH with current step - trying look-ahead...');
+            debugLog('NO MATCH with current step - trying look-ahead...');
 
             let foundMatch = false;
             const maxLookAhead = 3; // Try next 3 steps
@@ -348,7 +360,7 @@ export function matchLapsToWorkout(
 
                 const lookAheadResult = isMatch(nextLapValue, nextStepValue, nextTargetType, nextStep.stepType);
 
-                console.log(`  Testing step ${currentStepIndex + lookAhead} (look-ahead ${lookAhead}):`, {
+                debugLog(`  Testing step ${currentStepIndex + lookAhead} (look-ahead ${lookAhead}):`, {
                     stepName: nextStep.name,
                     matches: lookAheadResult.matches,
                     variance: lookAheadResult.variance.toFixed(2) + '%'
@@ -356,11 +368,11 @@ export function matchLapsToWorkout(
 
                 if (lookAheadResult.matches) {
                     // Found a match ahead! Skip the steps in between
-                    console.log(`  ✅ Found match at step ${currentStepIndex + lookAhead}! Skipping ${lookAhead} step(s)`);
+                    debugLog(`  Found match at step ${currentStepIndex + lookAhead}. Skipping ${lookAhead} step(s)`);
 
                     // Mark skipped steps
                     for (let skip = 0; skip < lookAhead; skip++) {
-                        console.log(`    Marking step ${currentStepIndex + skip} as skipped`);
+                        debugLog(`    Marking step ${currentStepIndex + skip} as skipped`);
                         // We don't create a matchedLap entry for skipped steps
                         // They were planned but not executed
                     }
@@ -385,7 +397,7 @@ export function matchLapsToWorkout(
 
             if (!foundMatch) {
                 // No match found even with look-ahead - mark as unmatched and DON'T advance
-                console.log('  ❌ No match found in look-ahead - marking as unmatched');
+                debugLog('  No match found in look-ahead - marking as unmatched');
                 matchedLaps.push({
                     lapIndex: i,
                     stepIndex: null,
@@ -400,8 +412,8 @@ export function matchLapsToWorkout(
         }
     }
 
-    console.log('\n=== MATCHING COMPLETE ===');
-    console.log('Matched laps:', matchedLaps.map(ml => ({
+    debugLog('\n=== MATCHING COMPLETE ===');
+    debugLog('Matched laps:', matchedLaps.map(ml => ({
         lapIndex: ml.lapIndex,
         stepLabel: ml.stepLabel,
         matched: ml.matched,

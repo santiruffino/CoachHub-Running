@@ -91,7 +91,7 @@ export default function LoginForm() {
                         <Input
                             id="email"
                             type="email"
-                            placeholder="coach@example.com"
+                            placeholder={t('emailPlaceholder')}
                             {...register('email')}
                         />
                         {errors.email && (
@@ -104,7 +104,7 @@ export default function LoginForm() {
                         <Input
                             id="password"
                             type="password"
-                            placeholder="••••••"
+                            placeholder={t('passwordPlaceholder')}
                             {...register('password')}
                         />
                         {errors.password && (

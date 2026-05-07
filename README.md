@@ -61,12 +61,38 @@ STRAVA_REDIRECT_URI=http://localhost:3000/strava/callback
 # Strava webhook
 STRAVA_WEBHOOK_VERIFY_TOKEN=
 STRAVA_SUBSCRIPTION_ID=
+STRAVA_WEBHOOK_SHARED_SECRET=
+
+# Logging
+LOG_LEVEL=debug
+
+# Sentry (server)
+SENTRY_DSN=
+SENTRY_ENVIRONMENT=development
+SENTRY_TRACES_SAMPLE_RATE=0.1
+SENTRY_ORG=
+SENTRY_PROJECT=
+SENTRY_AUTH_TOKEN=
+
+# Sentry (client)
+NEXT_PUBLIC_SENTRY_DSN=
+NEXT_PUBLIC_SENTRY_ENVIRONMENT=development
+NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE=0.1
+NEXT_PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE=1.0
+NEXT_PUBLIC_SENTRY_REPLAYS_SESSION_SAMPLE_RATE=0.05
 ```
 
 Notes:
 
 - `SUPABASE_SECRET_KEY` is server-only (never expose in client code).
 - Keep `NEXT_PUBLIC_*` only for non-sensitive values.
+
+Sentry notes:
+
+- `SENTRY_DSN` captures server and edge errors.
+- `NEXT_PUBLIC_SENTRY_DSN` captures client runtime errors.
+- `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, and `SENTRY_PROJECT` are required only for build-time source map upload.
+- Source maps are configured via `withSentryConfig` in `next.config.ts`.
 
 ## Local development
 

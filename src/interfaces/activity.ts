@@ -7,6 +7,7 @@ export interface Activity {
     elevation_gain?: number;
     start_date: string;
     type: string;
+    hasFeedback?: boolean;
 }
 
 export interface SegmentEffort {
@@ -110,4 +111,5 @@ export interface StravaActivity {
     startDate: string;
     elevationGain: number;
     athlete_id?: string;
+    deviceName?: string;
 }

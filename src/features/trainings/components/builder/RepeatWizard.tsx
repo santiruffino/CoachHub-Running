@@ -125,7 +125,7 @@ export function RepeatWizard({ onAdd, onClose }: RepeatWizardProps) {
                                         >
                                             <option value="vam_zone">{t('vamZone')}</option>
                                             <option value="lthr">{t('lthr')}</option>
-                                            <option value="rpe_target">RPE</option>
+                                            <option value="rpe_target">{t('rpeShort')}</option>
                                         </select>
                                     </div>
                                     <div className="flex gap-2">
@@ -181,7 +181,7 @@ export function RepeatWizard({ onAdd, onClose }: RepeatWizardProps) {
                                         >
                                             <option value="vam_zone">{t('vamZone')}</option>
                                             <option value="lthr">{t('lthr')}</option>
-                                            <option value="rpe_target">RPE</option>
+                                            <option value="rpe_target">{t('rpeShort')}</option>
                                         </select>
                                     </div>
                                     <div className="flex gap-2">

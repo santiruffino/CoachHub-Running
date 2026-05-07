@@ -20,6 +20,7 @@ import { racesService } from '@/features/races/services/races.service';
 import { AssignRaceModal } from '@/features/races/components/AssignRaceModal';
 import { normalizeActivityType } from '@/utils/activity-utils';
 import { NextRaces } from './NextRaces';
+import { NewActivityFeedbackModal } from './NewActivityFeedbackModal';
 import { User } from '@/interfaces/auth';
 import { Activity } from '@/interfaces/activity';
 import { TrainingAssignment } from '@/interfaces/training';
@@ -49,6 +50,8 @@ export default function AthleteDashboard({ user }: { user: User }) {
     const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
     const [performanceData, setPerformanceData] = useState<PerformancePoint[]>([]);
     const [isAssignRaceModalOpen, setIsAssignRaceModalOpen] = useState(false);
+    const [pendingFeedbackActivity, setPendingFeedbackActivity] = useState<Activity | null>(null);
+    const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
 
     const fetchData = useCallback(async () => {
         if (!user) return;
@@ -127,6 +130,43 @@ export default function AthleteDashboard({ user }: { user: User }) {
     useEffect(() => {
         void fetchData();
     }, [fetchData]);
+
+    useEffect(() => {
+        if (!activities.length) {
+            setPendingFeedbackActivity(null);
+            setIsFeedbackModalOpen(false);
+            return;
+        }
+
+        const nextPendingActivity = activities.find((activity) => !activity.hasFeedback) || null;
+
+        if (!nextPendingActivity) {
+            setPendingFeedbackActivity(null);
+            setIsFeedbackModalOpen(false);
+            return;
+        }
+
+        const dismissedKey = `feedback_modal_dismissed_${nextPendingActivity.id}`;
+        const wasDismissed = sessionStorage.getItem(dismissedKey) === 'true';
+
+        setPendingFeedbackActivity(nextPendingActivity);
+        setIsFeedbackModalOpen(!wasDismissed);
+    }, [activities]);
+
+    const handleFeedbackModalOpenChange = (open: boolean) => {
+        setIsFeedbackModalOpen(open);
+
+        if (!open && pendingFeedbackActivity) {
+            sessionStorage.setItem(`feedback_modal_dismissed_${pendingFeedbackActivity.id}`, 'true');
+        }
+    };
+
+    const handleFeedbackSubmitted = () => {
+        if (pendingFeedbackActivity) {
+            sessionStorage.removeItem(`feedback_modal_dismissed_${pendingFeedbackActivity.id}`);
+        }
+        void fetchData();
+    };
 
     const weeklyStats = useMemo(() => {
         const wEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
@@ -278,6 +318,13 @@ export default function AthleteDashboard({ user }: { user: User }) {
                 onOpenChange={setIsAssignRaceModalOpen}
                 athleteId={user.id}
                 onSuccess={fetchData}
+            />
+
+            <NewActivityFeedbackModal
+                open={isFeedbackModalOpen}
+                activity={pendingFeedbackActivity}
+                onOpenChange={handleFeedbackModalOpenChange}
+                onSubmitted={handleFeedbackSubmitted}
             />
         </div>
     );

@@ -862,23 +862,23 @@ export default function ActivityDetailPage() {
                                 <div className="flex flex-wrap gap-4">
                                     <div className="flex items-center gap-2">
                                         <span className="w-2.5 h-2.5 rounded-full bg-muted-foreground/40"></span>
-                                        <span className="text-xs font-medium text-foreground">Z1 <span className="text-muted-foreground ml-1">({heartrateZones.zones[0]?.min}-{heartrateZones.zones[0]?.max})</span></span>
+                                        <span className="text-xs font-medium text-foreground">{t('zones.short.z1')} <span className="text-muted-foreground ml-1">({heartrateZones.zones[0]?.min}-{heartrateZones.zones[0]?.max})</span></span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
-                                        <span className="text-xs font-medium text-foreground">Z2 <span className="text-muted-foreground ml-1">({heartrateZones.zones[1]?.min}-{heartrateZones.zones[1]?.max})</span></span>
+                                        <span className="text-xs font-medium text-foreground">{t('zones.short.z2')} <span className="text-muted-foreground ml-1">({heartrateZones.zones[1]?.min}-{heartrateZones.zones[1]?.max})</span></span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <span className="w-2.5 h-2.5 rounded-full bg-green-500"></span>
-                                        <span className="text-xs font-medium text-foreground">Z3 <span className="text-muted-foreground ml-1">({heartrateZones.zones[2]?.min}-{heartrateZones.zones[2]?.max})</span></span>
+                                        <span className="text-xs font-medium text-foreground">{t('zones.short.z3')} <span className="text-muted-foreground ml-1">({heartrateZones.zones[2]?.min}-{heartrateZones.zones[2]?.max})</span></span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <span className="w-2.5 h-2.5 rounded-full bg-yellow-500"></span>
-                                        <span className="text-xs font-medium text-foreground">Z4 <span className="text-muted-foreground ml-1">({heartrateZones.zones[3]?.min}-{heartrateZones.zones[3]?.max})</span></span>
+                                        <span className="text-xs font-medium text-foreground">{t('zones.short.z4')} <span className="text-muted-foreground ml-1">({heartrateZones.zones[3]?.min}-{heartrateZones.zones[3]?.max})</span></span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <span className="w-2.5 h-2.5 rounded-full bg-red-500"></span>
-                                        <span className="text-xs font-medium text-foreground">Z5 <span className="text-muted-foreground ml-1">({heartrateZones.zones[4]?.min}-{heartrateZones.zones[4]?.max})</span></span>
+                                        <span className="text-xs font-medium text-foreground">{t('zones.short.z5')} <span className="text-muted-foreground ml-1">({heartrateZones.zones[4]?.min}-{heartrateZones.zones[4]?.max})</span></span>
                                     </div>
                                 </div>
                             </div>

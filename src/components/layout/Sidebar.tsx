@@ -64,7 +64,7 @@ export function Sidebar() {
                 {/* Header */}
                 <div className="flex flex-col px-6 py-6 border-b border-border mt-16 lg:mt-0">
                     <h1 className="text-xl font-bold tracking-tight">
-                        Coach Hub
+                        {t('brand')}
                     </h1>
                     <p className="text-sm text-muted-foreground mt-1">
                         {t('athleteManagement')}

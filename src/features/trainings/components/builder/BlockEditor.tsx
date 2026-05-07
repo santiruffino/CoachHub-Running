@@ -6,6 +6,7 @@ import { useMemo, useState, useEffect } from 'react';
 import { calculateTargetPace, VAM_DEFAULT, VAM_ZONES } from '@/features/profiles/constants/vam';
 import { BLOCK_COLORS } from './constants';
 import { useTranslations } from 'next-intl';
+import { formatSecondsToClock, parseDurationInput } from '@/lib/time/duration';
 
 interface BlockEditorProps {
     block: WorkoutBlock;
@@ -15,31 +16,10 @@ interface BlockEditorProps {
     readOnly?: boolean; // If true, disables all editing
 }
 
-// Helper for HH:MM:SS
-const secondsToHms = (d: number) => {
-    d = Number(d);
-    const h = Math.floor(d / 3600);
-    const m = Math.floor(d % 3600 / 60);
-    const s = Math.floor(d % 3600 % 60);
-
-    if (h > 0) return `${h}:${m < 10 ? "0" : ""}${m}:${s < 10 ? "0" : ""}${s}`;
-    return `${m}:${s < 10 ? "0" + s : s}`;
-};
-
-// Simple parser: supports h:m:s, m:s, s
-const hmsToSeconds = (str: string) => {
-    const parts = str.split(':').map(Number);
-    if (parts.some(isNaN)) return 0;
-
-    if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
-    if (parts.length === 2) return parts[0] * 60 + parts[1];
-    if (parts.length === 1) return parts[0];
-    return 0;
-};
-
 export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = false }: BlockEditorProps) {
     const t = useTranslations('builder');
     const [timeString, setTimeString] = useState('');
+    const [timeInputError, setTimeInputError] = useState(false);
     const [athleteVAM, setAthleteVAM] = useState<string | null>(null);
 
     const displayedTimeString = useMemo(() => {
@@ -51,7 +31,7 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
             return timeString;
         }
 
-        return secondsToHms(block.duration.value);
+        return formatSecondsToClock(block.duration.value);
     }, [block.duration.type, block.duration.value, timeString]);
 
     // Fetch athlete VAM when athleteId is provided
@@ -82,7 +62,13 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
     const handleDurationChange = (inputValue: string) => {
         if (block.duration.type === 'time') {
             setTimeString(inputValue);
-            const secs = hmsToSeconds(inputValue);
+            const secs = parseDurationInput(inputValue);
+            if (secs === null) {
+                setTimeInputError(Boolean(inputValue.trim()));
+                return;
+            }
+
+            setTimeInputError(false);
             onUpdate(block.id, {
                 duration: { ...block.duration, value: secs }
             });
@@ -101,9 +87,11 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
             duration: { type: value, value: defaultValue, unit: value === 'distance' ? 'm' : undefined }
         });
         if (value === 'time') {
-            setTimeString(secondsToHms(300));
+            setTimeString(formatSecondsToClock(300));
+            setTimeInputError(false);
         } else {
             setTimeString('');
+            setTimeInputError(false);
         }
     };
 
@@ -198,7 +186,28 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
                             type="text"
                             value={block.duration.type === 'time' ? displayedTimeString : getDistanceDisplayValue()}
                             onChange={(e) => handleDurationChange(e.target.value)}
-                            placeholder={block.duration.type === 'time' ? "min:sec" : "0"}
+                            onFocus={() => {
+                                if (block.duration.type !== 'time') return;
+                                if (timeString.trim().length === 0) {
+                                    setTimeString(formatSecondsToClock(block.duration.value));
+                                }
+                            }}
+                            onBlur={() => {
+                                if (block.duration.type !== 'time') return;
+                                const parsed = parseDurationInput(timeString);
+                                if (parsed === null) {
+                                    setTimeString(formatSecondsToClock(block.duration.value));
+                                    setTimeInputError(false);
+                                    return;
+                                }
+
+                                onUpdate(block.id, {
+                                    duration: { ...block.duration, value: parsed }
+                                });
+                                setTimeString(formatSecondsToClock(parsed));
+                                setTimeInputError(false);
+                            }}
+                            placeholder={block.duration.type === 'time' ? t('durationInputPlaceholder') : '0'}
                             className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-gray-900 dark:text-white dark:bg-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                         />
 
@@ -222,6 +231,11 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
                             <option value="time">{t('minutes')}</option>
                         </select>
                     </div>
+                    {block.duration.type === 'time' && timeInputError && (
+                        <p className="mt-2 text-xs font-medium text-amber-600 dark:text-amber-400">
+                            {t('invalidDurationFormat')}
+                        </p>
+                    )}
                 </div>
 
                 {/* Intensity (RPE) Slider */}
@@ -276,14 +290,14 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
                         <div className="grid grid-cols-2 gap-3">
                             <input
                                 type="number"
-                                placeholder="85"
+                                placeholder={t('lthrMinPlaceholder')}
                                 value={block.target.min}
                                 onChange={(e) => onUpdate(block.id, { target: { ...block.target, min: e.target.value } })}
                                 className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-gray-900 dark:text-white dark:bg-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                             />
                             <input
                                 type="number"
-                                placeholder="95"
+                                placeholder={t('lthrMaxPlaceholder')}
                                 value={block.target.max}
                                 onChange={(e) => onUpdate(block.id, { target: { ...block.target, max: e.target.value } })}
                                 className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-gray-900 dark:text-white dark:bg-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500"
@@ -298,7 +312,7 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
                                 type="number"
                                 min="1"
                                 max="10"
-                                placeholder="5"
+                                placeholder={t('rpeMinPlaceholder')}
                                 value={block.target.min}
                                 onChange={(e) => onUpdate(block.id, { target: { ...block.target, min: e.target.value } })}
                                 className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-gray-900 dark:text-white dark:bg-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500"
@@ -307,7 +321,7 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
                                 type="number"
                                 min="1"
                                 max="10"
-                                placeholder="7"
+                                placeholder={t('rpeMaxPlaceholder')}
                                 value={block.target.max}
                                 onChange={(e) => onUpdate(block.id, { target: { ...block.target, max: e.target.value } })}
                                 className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-gray-900 dark:text-white dark:bg-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500"
@@ -340,10 +354,10 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
                             {athleteId ? (
                                 <div className={`mt-2 p-2 rounded border ${athleteVAM ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'}`}>
                                     <p className={`text-sm font-medium ${athleteVAM ? 'text-green-800 dark:text-green-300' : 'text-amber-800 dark:text-amber-300'}`}>
-                                        📊 {athleteVAM ? t('expectedPace') : t('estimatedPaceDefault')} {calculatePaceFromVAM(athleteVAM, String(block.target.min || '2'))} min/km
+                                        📊 {athleteVAM ? t('expectedPace') : t('estimatedPaceDefault')} {calculatePaceFromVAM(athleteVAM, String(block.target.min || '2'))} {t('units.minPerKm')}
                                     </p>
                                     <p className={`text-xs mt-1 ${athleteVAM ? 'text-green-700 dark:text-green-400' : 'text-amber-700 dark:text-amber-400'}`}>
-                                        {t('basedOnVam')} {athleteVAM || VAM_DEFAULT} min/km
+                                        {t('basedOnVam')} {athleteVAM || VAM_DEFAULT} {t('units.minPerKm')}
                                     </p>
                                 </div>
                             ) : (

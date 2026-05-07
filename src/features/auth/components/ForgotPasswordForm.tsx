@@ -71,7 +71,7 @@ export default function ForgotPasswordForm() {
                         <Input
                             id="email"
                             type="email"
-                            placeholder="tu@ejemplo.com"
+                            placeholder={t('emailPlaceholder')}
                             {...register('email')}
                             disabled={success}
                         />

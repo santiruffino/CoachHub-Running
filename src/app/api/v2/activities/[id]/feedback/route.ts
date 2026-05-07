@@ -112,16 +112,24 @@ export async function POST(
         const serviceSupabase = createServiceRoleClient();
         const body = (await request.json()) as {
             rpe?: number;
+            sensations?: number;
             comments?: string;
             training_assignment_id?: string;
         };
 
-        const { rpe, comments, training_assignment_id } = body;
+        const { rpe, sensations, comments, training_assignment_id } = body;
 
         // Validate RPE if provided
         if (rpe !== undefined && (rpe < 1 || rpe > 10)) {
             return NextResponse.json(
                 { error: 'RPE must be between 1 and 10' },
+                { status: 400 }
+            );
+        }
+
+        if (sensations !== undefined && (sensations < 1 || sensations > 10)) {
+            return NextResponse.json(
+                { error: 'Sensations must be between 1 and 10' },
                 { status: 400 }
             );
         }
@@ -149,15 +157,34 @@ export async function POST(
         }
 
         // Upsert feedback
+        const payload: {
+            activity_id: string;
+            user_id: string;
+            training_assignment_id: string | null;
+            rpe?: number | null;
+            sensations?: number | null;
+            comments?: string | null;
+        } = {
+            activity_id: activity.id,
+            user_id: user!.id,
+            training_assignment_id: training_assignment_id || null,
+        };
+
+        if (rpe !== undefined) {
+            payload.rpe = rpe || null;
+        }
+
+        if (sensations !== undefined) {
+            payload.sensations = sensations || null;
+        }
+
+        if (comments !== undefined) {
+            payload.comments = comments || null;
+        }
+
         const { data: feedback, error: feedbackError } = await serviceSupabase
             .from('activity_feedback')
-            .upsert({
-                activity_id: activity.id,
-                user_id: user!.id,
-                rpe: rpe || null,
-                comments: comments || null,
-                training_assignment_id: training_assignment_id || null,
-            }, {
+            .upsert(payload, {
                 onConflict: 'activity_id,user_id'
             })
             .select()

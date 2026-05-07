@@ -1,5 +1,7 @@
 {
     "nav": {
+        "brand": "Coach Hub",
+        "userFallback": "Usuario",
         "dashboard": "Dashboard",
         "athletes": "Atletas",
         "coaches": "Coaches",
@@ -34,6 +36,24 @@
         "messages": {
             "hi": "Hola, {name} 👋"
         },
+        "athleteFeedbackModal": {
+            "title": "Feedback de tu nueva actividad",
+            "description": "Completalo ahora para que tu coach tenga contexto fresco de la sesión.",
+            "rpeLabel": "RPE (1-10)",
+            "sensationsLabel": "Sensaciones (1-10)",
+            "commentsLabel": "Comentario (opcional)",
+            "commentsPlaceholder": "Ej: piernas cargadas al final, pero buen control de ritmo.",
+            "later": "Más tarde",
+            "submit": "Enviar feedback",
+            "saving": "Guardando...",
+            "scale": {
+                "veryLow": "Muy bajo",
+                "low": "Bajo",
+                "medium": "Medio",
+                "high": "Alto",
+                "veryHigh": "Muy alto"
+            }
+        },
         "metrics": {
             "activeAthletes": "Atletas Activos",
             "completedToday": "Completados hoy",
@@ -49,6 +69,8 @@
         "alerts": {
             "title": "Alertas Importantes",
             "markAsRead": "Marcar como leídas",
+            "resolve": "Resolver",
+            "snooze": "Posponer 24h",
             "noAlerts": "Sin alertas críticas en este momento",
             "thisWeek": "esta semana",
             "nextWeek": "próxima semana",
@@ -67,6 +89,8 @@
             "athletesCompliance": "Cumplimientos de los atletas",
             "noCurrentAlerts": "No hay alertas actuales",
             "groupStatus": "Estado de grupos",
+            "myAthletes": "Mis atletas",
+            "teamView": "Equipo",
             "recentActivity": "Actividad Reciente",
             "noRecentActivity": "No hay actividad reciente",
             "nextRaces": "Próximas Carreras",
@@ -89,10 +113,19 @@
         },
         "planSubtitle": "{groupName} - {timeframe}",
         "alertActions": {
+            "markRead": "OK",
+            "snooze": "Posponer 24h",
+            "resolve": "Resolver",
             "reply": "Responder",
             "adjustPlan": "Ajustar plan",
             "viewComment": "Ver comentario",
-            "flagReview": "Marcar para revisar"
+            "flagReview": "Marcar para revisar",
+            "recommended": {
+                "contactNowAdjustLoad": "Contactar al atleta hoy y ajustar la carga inmediata",
+                "reviewAndAdjustWeek": "Revisar la semana y ajustar los proximos entrenos",
+                "monitorAndCheckIn": "Monitorear y pedir check-in en 24-48h",
+                "logAndMonitor": "Registrar contexto y continuar seguimiento"
+            }
         },
         "groups": {
             "title": "Estado de los grupos",
@@ -285,6 +318,13 @@
                 "paceTitle": "Zonas de Ritmo",
                 "noHrData": "No hay datos de frecuencia cardíaca disponibles para esta actividad.",
                 "noPaceData": "No hay datos de ritmo disponibles para esta actividad.",
+                "short": {
+                    "z1": "Z1",
+                    "z2": "Z2",
+                    "z3": "Z3",
+                    "z4": "Z4",
+                    "z5": "Z5"
+                },
                 "names": {
                     "z1": "Z1 - Recuperación",
                     "z2_hr": "Z2 - Resistencia",
@@ -365,7 +405,9 @@
         "login": {
             "title": "Bienvenido",
             "emailLabel": "Email",
+            "emailPlaceholder": "coach@ejemplo.com",
             "passwordLabel": "Contraseña",
+            "passwordPlaceholder": "••••••",
             "submitButton": "Ingresar",
             "submittingButton": "Ingresando...",
             "forgotPassword": "¿Olvidaste tu contraseña?",
@@ -377,6 +419,7 @@
             "title": "Restablecer contraseña",
             "description": "Ingresa tu email y te enviaremos un enlace para restablecer tu contraseña.",
             "emailLabel": "Dirección de email",
+            "emailPlaceholder": "tu@ejemplo.com",
             "submitButton": "Enviar enlace",
             "submittingButton": "Enviando...",
             "successMessage": "¡Email enviado! Revisa tu bandeja de entrada para continuar.",
@@ -388,7 +431,9 @@
             "title": "Nueva contraseña",
             "description": "Ingresa tu nueva contraseña.",
             "newPasswordLabel": "Nueva contraseña",
+            "passwordPlaceholder": "••••••",
             "confirmPasswordLabel": "Confirmar contraseña",
+            "confirmPasswordPlaceholder": "••••••",
             "submitButton": "Guardar contraseña",
             "submittingButton": "Guardando...",
             "successMessage": "¡Contraseña actualizada correctamente!",
@@ -815,10 +860,19 @@
         "deleteBlock": "Eliminar Bloque",
         "addStepToRepeat": "Añadir paso a la repetición",
         "stepDuration": "Duración del Paso",
+        "durationInputPlaceholder": "MM:SS o HH:MM:SS",
+        "invalidDurationFormat": "Formato inválido. Usa MM:SS, HH:MM:SS o 1h20m.",
+        "lthrMinPlaceholder": "85",
+        "lthrMaxPlaceholder": "95",
+        "rpeMinPlaceholder": "5",
+        "rpeMaxPlaceholder": "7",
+        "rpeShort": "RPE",
+        "zone": "Zona",
         "targetRange": "Rango Objetivo",
         "endStepOnLap": "Finalizar paso al pulsar botón lap",
         "removeCadence": "Eliminar cadencia",
         "addCadence": "Añadir rango de cadencia",
+        "cadenceRange": "Rango de cadencia",
         "intervalRpeOptional": "RPE del Intervalo (Opcional)",
         "noRpeSet": "Sin RPE definido",
         "noAthleteSelectedLthr": "No se seleccionó atleta - LTHR no disponible",
@@ -989,7 +1043,8 @@
             "error": "Error al cambiar la contraseña. Verifica la contraseña actual.",
             "mismatch": "Las contraseñas no coinciden",
             "required": "Requerido",
-            "tooShort": "Mínimo 6 caracteres"
+            "tooShort": "Mínimo 6 caracteres",
+            "passwordPlaceholder": "••••••"
         },
         "sections": {
             "identity": {
@@ -1116,6 +1171,17 @@
         "required": "Este campo es obligatorio",
         "today": "Hoy",
         "distance_km": "{distance} km",
+        "units": {
+            "min": "min",
+            "h": "h",
+            "km": "km",
+            "m": "m",
+            "minPerKm": "min/km",
+            "bpm": "ppm",
+            "cm": "cm",
+            "kg": "kg",
+            "spm": "ppm"
+        },
         "a11y": {
             "toggleMenu": "Alternar menú",
             "openMenu": "Abrir menú"
@@ -1272,6 +1338,7 @@
             "priorityC": "Prioridad C (Preparación)",
             "targetTimeLabel": "TIEMPO OBJETIVO",
             "targetTimePlaceholder": "HH:MM:SS",
+            "invalidTargetTimeFormat": "Formato inválido. Usa HH:MM:SS, MM:SS o 1h20m.",
             "notesLabel": "NOTAS / ESTRATEGIA",
             "notesPlaceholder": "Escribe aquí la estrategia o notas para el atleta...",
             "success": "Carrera asignada correctamente",
@@ -1291,6 +1358,8 @@
             "target": "Objetivo: {time}",
             "defaultRaceName": "Carrera",
             "resultTime": "Tiempo Real",
+            "resultTimePlaceholder": "HH:MM:SS",
+            "invalidTimeFormat": "Formato inválido. Usa HH:MM:SS, MM:SS o 1h20m.",
             "countdownLabel": "CUENTA REGRESIVA",
             "todayLabel": "HOY",
             "daysLeftLabel": "Días restantes",
@@ -1389,6 +1458,10 @@
         "activities": {
             "title": "Actividades recientes",
             "empty": "Aún no hay actividades sincronizadas.",
+            "attribution": {
+                "garmin": "Algunas métricas pueden incluir datos de Garmin. Garmin y sus marcas son propiedad de Garmin.",
+                "strava": "Datos de actividad proporcionados por Strava."
+            },
             "table": {
                 "date": "Fecha",
                 "name": "Nombre",
@@ -1415,6 +1488,7 @@
             "time": "Tiempo",
             "avgHr": "FC media",
             "elevation": "Desnivel",
+            "garminAttribution": "Si esta actividad contiene datos provenientes de Garmin en Strava, se requiere atribución a Garmin.",
             "noDetailedData": "No hay datos de gráficos detallados para esta actividad.",
             "failedToLoad": "No se pudieron cargar los detalles de la actividad."
         },
@@ -1510,7 +1584,19 @@
                         "policies": "Aplican sus propias políticas de privacidad y términos de servicio",
                         "disconnect": "Puedes desconectar estos servicios en cualquier momento desde tu cuenta"
                     },
-                    "p2": "Recomendamos revisar las políticas de privacidad de los servicios de terceros que conectes para entender cómo gestionan tus datos."
+                    "p2": "Recomendamos revisar las políticas de privacidad de los servicios de terceros que conectes para entender cómo gestionan tus datos.",
+                    "strava": {
+                        "title": "Divulgaciones específicas de Strava",
+                        "intro": "Si conectas Strava, también aplican estas condiciones específicas:",
+                        "items": {
+                            "consent": "Solo accedemos a tus datos de Strava cuando nos das autorización explícita y puedes revocarla en cualquier momento desde Strava o desde tu cuenta.",
+                            "scope": "Te informamos qué datos se solicitan (por ejemplo: perfil, actividades y zonas de frecuencia cardíaca) y para qué se usan dentro de Coach Hub Running.",
+                            "withdrawal": "Si revocas el acceso de Strava, dejamos de sincronizar y eliminamos los datos derivados de Strava que conservamos en nuestros sistemas.",
+                            "deletion": "Puedes solicitar eliminación de datos vinculados a Strava escribiendo a privacy@coachhub.com.",
+                            "usageData": "Strava puede recopilar información de uso relacionada con el acceso a su API desde nuestra integración, de acuerdo con su API Agreement y su política de privacidad.",
+                            "attribution": "Cuando corresponda, mostramos la atribución \"Powered by Strava\" y cualquier atribución adicional exigida por proveedores de datos como Garmin."
+                        }
+                    }
                 },
                 "sharing": {
                     "title": "Cómo compartimos tu información",
@@ -1573,7 +1659,8 @@
                 },
                 "retention": {
                     "title": "Retención de datos",
-                    "text": "Conservamos tu información personal mientras sea necesaria para prestar servicios y cumplir los fines de esta política. Si eliminas tu cuenta, eliminaremos o anonimizaremos tu información dentro de 90 días, salvo obligación legal o regulatoria de conservarla."
+                    "text": "Conservamos tu información personal mientras sea necesaria para prestar servicios y cumplir los fines de esta política. Si eliminas tu cuenta, eliminaremos o anonimizaremos tu información dentro de 90 días, salvo obligación legal o regulatoria de conservarla.",
+                    "strava": "Para datos obtenidos desde Strava aplicamos reglas adicionales: el caché técnico de streams tiene una retención máxima de 7 días y, cuando revocas autorización o solicitas eliminación, borramos los datos de Strava asociados en nuestros sistemas tan pronto como sea técnicamente posible."
                 },
                 "children": {
                     "title": "Privacidad de menores",

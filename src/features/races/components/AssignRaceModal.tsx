@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { racesService } from '../services/races.service';
 import { Race, AssignRaceDTO, RacePriority } from '../types';
+import { formatSecondsToHhMmSs, parseDurationInput } from '@/lib/time/duration';
 
 interface AssignRaceModalProps {
   open: boolean;
@@ -28,6 +29,7 @@ interface AssignRaceModalProps {
 export function AssignRaceModal({ open, onOpenChange, athleteId, onSuccess }: AssignRaceModalProps) {
   const t = useTranslations('races.assign');
   const [loading, setLoading] = useState(false);
+  const [targetTimeError, setTargetTimeError] = useState('');
   const [mode, setMode] = useState<'template' | 'custom'>('template');
   const [searchTerm, setSearchTerm] = useState('');
   const [templates, setTemplates] = useState<Race[]>([]);
@@ -54,6 +56,7 @@ export function AssignRaceModal({ open, onOpenChange, athleteId, onSuccess }: As
         target_time: '',
         notes: '',
       });
+      setTargetTimeError('');
     }
   }, [open]);
 
@@ -71,13 +74,24 @@ export function AssignRaceModal({ open, onOpenChange, athleteId, onSuccess }: As
     if (mode === 'template' && !formData.race_id) return;
     if (mode === 'custom' && !formData.name_override?.trim()) return;
 
+    let formattedTargetTime: string | undefined;
+    const targetTimeInput = formData.target_time?.trim();
+    if (targetTimeInput) {
+      const parsedTarget = parseDurationInput(targetTimeInput);
+      if (parsedTarget === null || parsedTarget <= 0) {
+        setTargetTimeError(t('invalidTargetTimeFormat'));
+        return;
+      }
+      formattedTargetTime = formatSecondsToHhMmSs(parsedTarget);
+    }
+
     setLoading(true);
     try {
       const payload: AssignRaceDTO = {
         athlete_id: athleteId,
         date: formData.date,
         priority: (formData.priority || 'C') as RacePriority,
-        target_time: formData.target_time || undefined,
+        target_time: formattedTargetTime,
         notes: formData.notes || undefined,
         ...(mode === 'template'
           ? { race_id: formData.race_id }
@@ -206,10 +220,30 @@ export function AssignRaceModal({ open, onOpenChange, athleteId, onSuccess }: As
             </Label>
             <Input
               value={formData.target_time}
-              onChange={(e) => setFormData({ ...formData, target_time: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, target_time: e.target.value });
+                if (targetTimeError) setTargetTimeError('');
+              }}
+              onBlur={() => {
+                const raw = formData.target_time?.trim();
+                if (!raw) {
+                  setTargetTimeError('');
+                  return;
+                }
+
+                const parsed = parseDurationInput(raw);
+                if (parsed === null || parsed <= 0) {
+                  setTargetTimeError(t('invalidTargetTimeFormat'));
+                  return;
+                }
+
+                setFormData((prev) => ({ ...prev, target_time: formatSecondsToHhMmSs(parsed) }));
+                setTargetTimeError('');
+              }}
               placeholder={t('targetTimePlaceholder')}
               className="bg-surface-container-low dark:bg-[#131b23] border-none h-12 focus:ring-1 focus:ring-primary/20"
             />
+            {targetTimeError && <p className="text-xs font-medium text-red-500">{targetTimeError}</p>}
           </div>
 
           <div className="space-y-2">

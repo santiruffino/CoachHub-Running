@@ -32,6 +32,7 @@ export default function AthleteDetailPage() {
     const t = useTranslations();
     const tAthlete = useTranslations('athletes.detail');
     const tRaces = useTranslations('races.athlete');
+    const tUnits = useTranslations('common.units');
     const params = useParams();
     const router = useRouter();
     const id = params.id as string;
@@ -310,7 +311,7 @@ export default function AthleteDetailPage() {
                         <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">{t("athletes.detail.weeklyVolume")}</p>
                         <div className="flex items-baseline gap-1.5">
                             <p className="text-[40px] leading-none font-display font-light text-foreground">{totalWeeklyDistance.toFixed(1)}</p>
-                            <span className="text-sm font-medium text-muted-foreground">km</span>
+                            <span className="text-sm font-medium text-muted-foreground">{tUnits('km')}</span>
                         </div>
                     </div>
                     <div className="w-px bg-border/40 my-2" />
@@ -318,7 +319,7 @@ export default function AthleteDetailPage() {
                         <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">{t("athletes.detail.weeklyTime")}</p>
                         <div className="flex items-baseline gap-1.5">
                             <p className="text-[40px] leading-none font-display font-light text-foreground">{hrs.toString().padStart(2, '0')}:{mins.toString().padStart(2, '0')}</p>
-                            <span className="text-sm font-medium text-muted-foreground">hr</span>
+                            <span className="text-sm font-medium text-muted-foreground">{tUnits('h')}</span>
                         </div>
                     </div>
                 </div>
@@ -334,7 +335,7 @@ export default function AthleteDetailPage() {
                                 {athlete.athleteProfile?.height ?? '—'}
                             </span>
                             {athlete.athleteProfile?.height && (
-                                <span className="text-xs font-semibold text-muted-foreground">cm</span>
+                                <span className="text-xs font-semibold text-muted-foreground">{tUnits('cm')}</span>
                             )}
                         </div>
                     </div>
@@ -347,7 +348,7 @@ export default function AthleteDetailPage() {
                                 {athlete.athleteProfile?.weight ?? '—'}
                             </span>
                             {athlete.athleteProfile?.weight && (
-                                <span className="text-xs font-semibold text-muted-foreground">kg</span>
+                                <span className="text-xs font-semibold text-muted-foreground">{tUnits('kg')}</span>
                             )}
                         </div>
                     </div>
@@ -360,7 +361,7 @@ export default function AthleteDetailPage() {
                                 {athlete.athleteProfile?.restHR ?? '—'}
                             </span>
                             {athlete.athleteProfile?.restHR && (
-                                <span className="text-xs font-semibold text-muted-foreground">bpm</span>
+                                <span className="text-xs font-semibold text-muted-foreground">{tUnits('bpm')}</span>
                             )}
                         </div>
                     </div>
@@ -373,7 +374,7 @@ export default function AthleteDetailPage() {
                                 {athlete.athleteProfile?.maxHR ?? '—'}
                             </span>
                             {athlete.athleteProfile?.maxHR && (
-                                <span className="text-xs font-semibold text-muted-foreground">bpm</span>
+                                <span className="text-xs font-semibold text-muted-foreground">{tUnits('bpm')}</span>
                             )}
                         </div>
                     </div>
@@ -386,7 +387,7 @@ export default function AthleteDetailPage() {
                                 {athlete.athleteProfile?.vam ?? '—'}
                             </span>
                             {athlete.athleteProfile?.vam && (
-                                <span className="text-xs font-semibold text-muted-foreground">min/km</span>
+                                <span className="text-xs font-semibold text-muted-foreground">{tUnits('minPerKm')}</span>
                             )}
                         </div>
                         {!athlete.athleteProfile?.vam && (
@@ -413,7 +414,7 @@ export default function AthleteDetailPage() {
                                 {athlete.athleteProfile?.uan ?? '—'}
                             </span>
                             {athlete.athleteProfile?.uan && (
-                                <span className="text-xs font-semibold text-muted-foreground">min/km</span>
+                                <span className="text-xs font-semibold text-muted-foreground">{tUnits('minPerKm')}</span>
                             )}
                         </div>
                     </div>

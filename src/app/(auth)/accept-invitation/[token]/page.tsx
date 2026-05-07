@@ -185,7 +185,7 @@ export default function AcceptInvitationPage() {
                             <Input
                                 id="password"
                                 type="password"
-                                placeholder="••••••"
+                                placeholder={t('passwordPlaceholder')}
                                 {...register('password')}
                             />
                             {errors.password && (
@@ -198,7 +198,7 @@ export default function AcceptInvitationPage() {
                             <Input
                                 id="confirmPassword"
                                 type="password"
-                                placeholder="••••••"
+                                placeholder={t('confirmPasswordPlaceholder')}
                                 {...register('confirmPassword')}
                             />
                             {errors.confirmPassword && (

@@ -10,9 +10,12 @@ interface AthleteGroupMembership {
   group: AthleteGroup | AthleteGroup[] | null;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const supabase = await createClient();
+    const { searchParams } = new URL(request.url);
+    const scopeParam = searchParams.get('scope');
+    const scope = scopeParam === 'team' ? 'team' : 'mine';
 
     const {
       data: { user },
@@ -67,6 +70,10 @@ export async function GET() {
     // Both COACH and ADMIN can see all athletes in their team
     if (profile.role === 'COACH' || profile.role === 'ADMIN') {
       query = query.eq('team_id', profile.team_id);
+    }
+
+    if (profile.role === 'COACH' && scope === 'mine') {
+      query = query.eq('coach_id', user.id);
     }
 
     const { data: athletes, error } = await query;

@@ -85,7 +85,7 @@ export default function PasswordChangeForm() {
                         <Input
                             id="currentPassword"
                             type="password"
-                            placeholder="••••••"
+                            placeholder={t('passwordPlaceholder')}
                             {...register('currentPassword')}
                         />
                         {errors.currentPassword && (
@@ -98,7 +98,7 @@ export default function PasswordChangeForm() {
                         <Input
                             id="newPassword"
                             type="password"
-                            placeholder="••••••"
+                            placeholder={t('passwordPlaceholder')}
                             {...register('newPassword')}
                         />
                         {errors.newPassword && (
@@ -111,7 +111,7 @@ export default function PasswordChangeForm() {
                         <Input
                             id="confirmPassword"
                             type="password"
-                            placeholder="••••••"
+                            placeholder={t('passwordPlaceholder')}
                             {...register('confirmPassword')}
                         />
                         {errors.confirmPassword && (

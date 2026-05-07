@@ -5,6 +5,22 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+const STREAM_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000
+
+const toIsoDate = (value: unknown): string | null => {
+  if (!value || typeof value !== 'string') return null
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return null
+  return date.toISOString()
+}
+
+const isCacheFresh = (createdAt: unknown): boolean => {
+  const iso = toIsoDate(createdAt)
+  if (!iso) return false
+  const ageMs = Date.now() - new Date(iso).getTime()
+  return ageMs <= STREAM_CACHE_TTL_MS
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -51,7 +67,7 @@ Deno.serve(async (req) => {
     // 4. Check Cache by UUID
     const { data: cachedStream, error: cacheError } = await supabase
       .from('activity_streams')
-      .select('stream_data, activity_id')
+      .select('stream_data, activity_id, created_at')
       .eq('activity_id', activityUuid)
       .maybeSingle()
 
@@ -59,12 +75,20 @@ Deno.serve(async (req) => {
         console.error('[STREAMS] Cache lookup error:', cacheError)
     }
 
-    if (cachedStream) {
+    if (cachedStream && isCacheFresh(cachedStream.created_at)) {
       console.log(`[STREAMS] Cache hit for activity UUID: ${activityUuid}`)
       return new Response(JSON.stringify(cachedStream.stream_data), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       })
+    }
+
+    if (cachedStream && !isCacheFresh(cachedStream.created_at)) {
+      console.log(`[STREAMS] Cache expired for activity UUID: ${activityUuid}. Refreshing from Strava...`)
+      await supabase
+        .from('activity_streams')
+        .delete()
+        .eq('activity_id', activityUuid)
     }
 
     // 5. Cache Miss - Fetch from Strava
@@ -212,6 +236,8 @@ Deno.serve(async (req) => {
       }, { onConflict: 'activity_id' })
     
     if (persistError) console.error('[STREAMS] Error caching data:', persistError)
+
+    await supabase.rpc('purge_expired_activity_streams')
 
     return new Response(JSON.stringify(streamsData), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

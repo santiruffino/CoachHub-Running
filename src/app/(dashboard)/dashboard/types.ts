@@ -66,3 +66,17 @@ export interface TimelineEvent {
   activityName: string;
   content: string;
 }
+
+export interface SmartAlert {
+  id: string;
+  alertId?: string;
+  athleteId: string;
+  athleteName: string;
+  type: 'zone_violation' | 'new_feedback' | 'rpe_mismatch' | 'low_compliance' | 'missing_workout';
+  time: string;
+  details: string;
+  score: number;
+  priority: 'P1' | 'P2' | 'P3' | 'P4';
+  recommendedActionKey: 'contactNowAdjustLoad' | 'reviewAndAdjustWeek' | 'monitorAndCheckIn' | 'logAndMonitor';
+  reasonCodes: string[];
+}

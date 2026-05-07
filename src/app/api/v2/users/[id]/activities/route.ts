@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/api-helpers';
 import { createServiceRoleClient } from '@/lib/supabase/server';
+import * as Sentry from '@sentry/nextjs';
+import { createRequestLogger, withRequestId } from '@/lib/logger';
 
 /**
  * Get User Activities
@@ -12,14 +14,19 @@ import { createServiceRoleClient } from '@/lib/supabase/server';
  * - Coach can view athlete's activities (if in their groups)
  */
 export async function GET(
-    _request: NextRequest,
+    request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    const { requestId, logger } = createRequestLogger('/api/v2/users/[id]/activities', request);
+    const respond = (body: unknown, init?: ResponseInit) =>
+        NextResponse.json(body, withRequestId(init, requestId));
+
     try {
         const { id } = await params;
         const authResult = await requireAuth();
 
         if (authResult.response) {
+            authResult.response.headers.set('x-request-id', requestId);
             return authResult.response;
         }
 
@@ -45,13 +52,15 @@ export async function GET(
                     .single();
 
                 if (!athleteProfile || !profile.team_id || athleteProfile.team_id !== profile.team_id) {
-                    return NextResponse.json(
+                    logger.warn('user_activities.forbidden_cross_team_access', { userId: user!.id, targetUserId });
+                    return respond(
                         { error: 'Not authorized to view this user\'s activities' },
                         { status: 403 }
                     );
                 }
             } else {
-                return NextResponse.json(
+                logger.warn('user_activities.forbidden_role_access', { userId: user!.id, targetUserId });
+                return respond(
                     { error: 'Not authorized to view this user\'s activities' },
                     { status: 403 }
                 );
@@ -62,7 +71,7 @@ export async function GET(
         const serviceSupabase = createServiceRoleClient();
         const { data: activities, error } = await serviceSupabase
             .from('activities')
-            .select(`
+        .select(`
         id,
         external_id,
         title,
@@ -72,6 +81,7 @@ export async function GET(
         start_date,
         elapsed_time,
         elevation_gain,
+        metadata,
         avg_hr,
         max_hr,
         is_private,
@@ -81,17 +91,49 @@ export async function GET(
             .order('start_date', { ascending: false });
 
         if (error) {
-            console.error('Fetch activities error:', error);
-            return NextResponse.json(
+            logger.error('user_activities.fetch_failed', { userId: user!.id, targetUserId, error });
+            return respond(
                 { error: 'Failed to fetch activities' },
                 { status: 500 }
             );
         }
 
-        return NextResponse.json(activities || []);
+        const activityIds = (activities || []).map((activity) => activity.id);
+        let feedbackByActivity = new Set<string>();
+
+        if (activityIds.length > 0) {
+            const { data: feedbackRows } = await serviceSupabase
+                .from('activity_feedback')
+                .select('activity_id')
+                .eq('user_id', targetUserId)
+                .in('activity_id', activityIds);
+
+            feedbackByActivity = new Set(
+                (feedbackRows || [])
+                    .map((row) => row.activity_id)
+                    .filter((value): value is string => typeof value === 'string')
+            );
+        }
+
+        const activitiesWithFeedback = (activities || []).map((activity) => ({
+            ...activity,
+            deviceName: typeof activity.metadata?.device_name === 'string' ? activity.metadata.device_name : undefined,
+            hasFeedback: feedbackByActivity.has(activity.id),
+        }));
+
+        logger.debug('user_activities.fetch_success', {
+            userId: user!.id,
+            targetUserId,
+            activities: activitiesWithFeedback.length,
+        });
+
+        return respond(activitiesWithFeedback, { status: 200 });
     } catch (error: unknown) {
-        console.error('Get activities error:', error);
-        return NextResponse.json(
+        logger.error('user_activities.unhandled_error', { error });
+        Sentry.captureException(error, {
+            tags: { route: '/api/v2/users/[id]/activities', requestId },
+        });
+        return respond(
             { error: 'Internal server error' },
             { status: 500 }
         );

@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/api-helpers';
+import { formatSecondsToHhMmSs, parseDurationInput } from '@/lib/time/duration';
+import * as Sentry from '@sentry/nextjs';
+import { createRequestLogger, withRequestId } from '@/lib/logger';
 
 /**
  * GET /v2/users/[id]/races
@@ -11,14 +14,19 @@ import { requireAuth } from '@/lib/supabase/api-helpers';
  * - Coach can view their athletes' races
  */
 export async function GET(
-    _request: NextRequest,
+    request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    const { requestId, logger } = createRequestLogger('/api/v2/users/[id]/races', request);
+    const respond = (body: unknown, init?: ResponseInit) =>
+        NextResponse.json(body, withRequestId(init, requestId));
+
     try {
         const { id } = await params;
         const authResult = await requireAuth();
 
         if (authResult.response) {
+            authResult.response.headers.set('x-request-id', requestId);
             return authResult.response;
         }
 
@@ -42,13 +50,15 @@ export async function GET(
                     .single();
 
                 if (!athleteProfile || !profile.team_id || athleteProfile.team_id !== profile.team_id) {
-                    return NextResponse.json(
+                    logger.warn('user_races.forbidden_cross_team_access', { userId: user!.id, targetUserId });
+                    return respond(
                         { error: 'Not authorized to view this user\'s races' },
                         { status: 403 }
                     );
                 }
             } else {
-                return NextResponse.json(
+                logger.warn('user_races.forbidden_role_access', { userId: user!.id, targetUserId });
+                return respond(
                     { error: 'Not authorized to view this user\'s races' },
                     { status: 403 }
                 );
@@ -66,17 +76,20 @@ export async function GET(
             .order('date', { ascending: true });
 
         if (error) {
-            console.error('Fetch athlete races error:', error);
-            return NextResponse.json(
+            logger.error('user_races.fetch_failed', { userId: user!.id, targetUserId, error });
+            return respond(
                 { error: 'Failed to fetch athlete races' },
                 { status: 500 }
             );
         }
 
-        return NextResponse.json(athleteRaces || []);
+        return respond(athleteRaces || [], { status: 200 });
     } catch (error: unknown) {
-        console.error('GET /v2/users/[id]/races error:', error);
-        return NextResponse.json(
+        logger.error('user_races.get_unhandled_error', { error });
+        Sentry.captureException(error, {
+            tags: { route: '/api/v2/users/[id]/races', requestId },
+        });
+        return respond(
             { error: 'Internal server error' },
             { status: 500 }
         );
@@ -96,10 +109,15 @@ export async function POST(
     request: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    const { requestId, logger } = createRequestLogger('/api/v2/users/[id]/races', request);
+    const respond = (body: unknown, init?: ResponseInit) =>
+        NextResponse.json(body, withRequestId(init, requestId));
+
     try {
         const { id } = await params;
         const authResult = await requireAuth();
         if (authResult.response) {
+            authResult.response.headers.set('x-request-id', requestId);
             return authResult.response;
         }
 
@@ -114,7 +132,8 @@ export async function POST(
                 .single();
 
             if (userProfile?.role !== 'COACH' && userProfile?.role !== 'ADMIN') {
-                return NextResponse.json(
+                logger.warn('user_races.create_forbidden_role', { userId: user!.id, targetUserId });
+                return respond(
                     { error: 'Not authorized to assign races to this athlete' },
                     { status: 403 }
                 );
@@ -127,7 +146,8 @@ export async function POST(
                 .single();
 
             if (!athleteProfile || !userProfile.team_id || athleteProfile.team_id !== userProfile.team_id) {
-                return NextResponse.json(
+                logger.warn('user_races.create_forbidden_cross_team', { userId: user!.id, targetUserId });
+                return respond(
                     { error: 'Not authorized to assign races to this athlete' },
                     { status: 403 }
                 );
@@ -145,8 +165,20 @@ export async function POST(
             notes
         } = body;
 
+        let normalizedTargetTime: string | null = null;
+        if (typeof target_time === 'string' && target_time.trim().length > 0) {
+            const parsed = parseDurationInput(target_time);
+            if (parsed === null || parsed <= 0) {
+                return respond(
+                    { error: 'Invalid target_time format. Use HH:MM:SS, MM:SS, or 1h20m' },
+                    { status: 400 }
+                );
+            }
+            normalizedTargetTime = formatSecondsToHhMmSs(parsed);
+        }
+
         if (!date) {
-            return NextResponse.json(
+            return respond(
                 { error: 'Race date is required' },
                 { status: 400 }
             );
@@ -160,7 +192,7 @@ export async function POST(
                 name_override,
                 date,
                 priority: priority || 'C',
-                target_time,
+                target_time: normalizedTargetTime,
                 status: status || 'PLANNED',
                 notes
             })
@@ -171,17 +203,21 @@ export async function POST(
             .single();
 
         if (error) {
-            console.error('Create athlete race error:', error);
-            return NextResponse.json(
+            logger.error('user_races.create_failed', { userId: user!.id, targetUserId, error });
+            return respond(
                 { error: 'Failed to assign race' },
                 { status: 500 }
             );
         }
 
-        return NextResponse.json(athleteRace, { status: 201 });
+        logger.info('user_races.created', { userId: user!.id, targetUserId, athleteRaceId: athleteRace?.id });
+        return respond(athleteRace, { status: 201 });
     } catch (error: unknown) {
-        console.error('POST /v2/users/[id]/races error:', error);
-        return NextResponse.json(
+        logger.error('user_races.post_unhandled_error', { error });
+        Sentry.captureException(error, {
+            tags: { route: '/api/v2/users/[id]/races', requestId },
+        });
+        return respond(
             { error: 'Internal server error' },
             { status: 500 }
         );

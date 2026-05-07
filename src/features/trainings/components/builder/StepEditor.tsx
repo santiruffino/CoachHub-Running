@@ -12,6 +12,7 @@ import { useState } from 'react';
 import { calculateTargetPace, VAM_ZONES } from '@/features/profiles/constants/vam';
 import { BLOCK_COLORS } from './constants';
 import { useTranslations } from 'next-intl';
+import { formatSecondsToClock, parseDurationInput } from '@/lib/time/duration';
 
 interface StepEditorProps {
     step: WorkoutBlock;
@@ -26,6 +27,8 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
     void isInRepeat;
     const t = useTranslations('builder');
     const [showCadence, setShowCadence] = useState(!!step.cadenceRange);
+    const [timeInput, setTimeInput] = useState('');
+    const [timeInputError, setTimeInputError] = useState(false);
     const tVamZoneName = (zone: string) => t(`vamZoneFullNames.${zone}`);
 
     const TARGET_TYPES: { value: TargetType; label: string }[] = [
@@ -108,22 +111,22 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                 if (!zone) return null;
 
                 if (!athleteProfile?.vam) {
-                    return `Zone ${min} - ${t('noAthleteVamData')}`;
+                    return `${t('zone')} ${min} - ${t('noAthleteVamData')}`;
                 }
 
                 // Calculate pace range based on zone percentages
                 const minPace = calculateTargetPace(athleteProfile.vam, zone.max);
                 const maxPace = calculateTargetPace(athleteProfile.vam, zone.min);
 
-                return `Zone ${min} (${zone.min}-${zone.max}% VAM | ${minPace} - ${maxPace} min/km)`;
+                return `${t('zone')} ${min} (${zone.min}-${zone.max}% VAM | ${minPace} - ${maxPace} ${t('units.minPerKm')})`;
             }
             case 'rpe_target': {
                 // RPE target: no calculation needed, just display the range
                 if (!min || !max) return null;
                 if (min === max) {
-                    return `RPE ${min}`;
+                    return `${t('rpeShort')} ${min}`;
                 }
-                return `RPE ${min} — ${max}`;
+                return `${t('rpeShort')} ${min} — ${max}`;
             }
             default:
                 return null;
@@ -166,13 +169,17 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                     <Select
                         value={step.duration.type}
                         onValueChange={(value: DurationType) =>
-                            onUpdate({
-                                duration: {
-                                    ...step.duration,
-                                    type: value,
-                                    value: value === 'distance' ? 1000 : 120
-                                }
-                            })
+                            {
+                                setTimeInput('');
+                                setTimeInputError(false);
+                                onUpdate({
+                                    duration: {
+                                        ...step.duration,
+                                        type: value,
+                                        value: value === 'distance' ? 1000 : 120
+                                    }
+                                });
+                            }
                         }
                     >
                         <SelectTrigger className="w-[120px] bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-2 rounded-t-md focus:ring-0 text-[#2b3437] dark:text-[#f8f9fa] text-sm font-semibold transition-colors">
@@ -204,31 +211,49 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                         ) : (
                             <input
                                 type="text"
-                                placeholder="MM:SS"
-                                value={(() => {
-                                    const mins = Math.floor(step.duration.value / 60);
-                                    const secs = step.duration.value % 60;
-                                    return `${mins}:${secs.toString().padStart(2, '0')}`;
-                                })()}
+                                placeholder={t('durationInputPlaceholder')}
+                                value={timeInput || formatSecondsToClock(step.duration.value)}
                                 onChange={(e) => {
                                     const val = e.target.value;
-                                    if (val.includes(':')) {
-                                        const [m, s] = val.split(':').map(part => parseInt(part) || 0);
-                                        onUpdate({ duration: { ...step.duration, value: (m * 60) + s } });
-                                    } else {
-                                        const num = parseInt(val) || 0;
-                                        if (!isNaN(num)) {
-                                            onUpdate({ duration: { ...step.duration, value: num * 60 } });
-                                        }
+                                    setTimeInput(val);
+                                    if (!val.trim()) {
+                                        setTimeInputError(false);
+                                        return;
                                     }
+
+                                    const parsed = parseDurationInput(val);
+                                    if (parsed === null) {
+                                        setTimeInputError(true);
+                                        return;
+                                    }
+
+                                    setTimeInputError(false);
+                                    onUpdate({ duration: { ...step.duration, value: parsed } });
+                                }}
+                                onBlur={() => {
+                                    const parsed = parseDurationInput(timeInput);
+                                    if (parsed === null) {
+                                        setTimeInput(formatSecondsToClock(step.duration.value));
+                                        setTimeInputError(false);
+                                        return;
+                                    }
+
+                                    onUpdate({ duration: { ...step.duration, value: parsed } });
+                                    setTimeInput(formatSecondsToClock(parsed));
+                                    setTimeInputError(false);
                                 }}
                                 className="flex-1 min-w-0 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-2 py-1 text-[#2b3437] dark:text-[#f8f9fa] text-3xl font-extrabold font-display font-mono rounded-t-md focus:ring-0 focus:border-[#4e6073] transition-colors outline-none"
                             />
                         )}
                         <span className="text-[#8b9bb4] text-sm font-semibold shrink-0">
-                            {step.duration.type === 'distance' ? 'km' : 'min'}
+                            {step.duration.type === 'distance' ? t('units.km') : t('units.min')}
                         </span>
                     </div>
+                    {step.duration.type === 'time' && timeInputError && (
+                        <p className="mt-2 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+                            {t('invalidDurationFormat')}
+                        </p>
+                    )}
                 </div>
 
 
@@ -402,7 +427,7 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
             {showCadence && step.cadenceRange && (
                 <div className="mt-6 pt-4 border-t border-[#e1e5e8] dark:border-white/5">
                     <Label className="text-[10px] font-semibold text-[#8b9bb4] tracking-[0.05em] uppercase mb-4 block">
-                        Cadence Range — {t('units.spm')}
+                        {t('cadenceRange')} - {t('units.spm')}
                     </Label>
                     <div className="flex items-baseline gap-3">
                         <input

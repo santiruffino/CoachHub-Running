@@ -44,7 +44,7 @@ export function Navbar() {
                     <div className="flex items-center gap-8">
                         {/* Logo */}
                         <Link href="/dashboard" className="flex items-center gap-2">
-                            <div className="font-bold text-lg">Coach Hub</div>
+                            <div className="font-bold text-lg">{t('brand')}</div>
                         </Link>
 
                         {/* Navigation Links */}
@@ -81,7 +81,7 @@ export function Navbar() {
                                     <AvatarFallback>{userInitials}</AvatarFallback>
                                 </Avatar>
                                 <span className="hidden lg:block text-sm font-medium">
-                                    {user?.name || 'User'}
+                                    {user?.name || t('userFallback')}
                                 </span>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-56">
