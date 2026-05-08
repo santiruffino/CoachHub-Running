@@ -23,11 +23,13 @@ async function proxyToV2(request: NextRequest, path: string[]) {
   forwardedHeaders.delete('host');
   forwardedHeaders.delete('content-length');
 
+  const canHaveBody = request.method !== 'GET' && request.method !== 'HEAD';
+  const body = canHaveBody ? await request.arrayBuffer() : undefined;
+
   const upstreamResponse = await fetch(targetUrl.toString(), {
     method: request.method,
     headers: forwardedHeaders,
-    body: request.body,
-    duplex: request.body ? 'half' : undefined,
+    body,
     redirect: 'manual',
     cache: 'no-store',
   });
