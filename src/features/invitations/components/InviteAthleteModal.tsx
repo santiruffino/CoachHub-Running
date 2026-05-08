@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -16,6 +18,7 @@ import { Label } from '@/components/ui/label';
 import api from '@/lib/axios';
 import { Check, Copy, MessageCircle } from 'lucide-react';
 import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
+import { trackInvitationCreated } from '@/lib/analytics/events';
 
 interface InviteAthleteModalProps {
     open: boolean;
@@ -42,11 +45,13 @@ export function InviteAthleteModal({ open, onClose }: InviteAthleteModalProps) {
                 email: data.email,
             });
 
+            trackInvitationCreated({ role: 'ATHLETE' });
+
             // Generate invitation link
             const link = `${window.location.origin}/accept-invitation?token=${response.data.token}`;
             setInvitationLink(link);
         } catch (error: unknown) {
-            console.error('Failed to create invitation:', error);
+            appLogger.error('Failed to create invitation:', error);
             showAlert('error', tCommon('createError'));
         } finally {
             setCreating(false);

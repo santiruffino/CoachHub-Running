@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useEffect, useState, use, useCallback } from 'react';
 import Link from 'next/link';
@@ -144,7 +146,7 @@ export default function GroupDetailsPage({ params }: { params: Promise<{ id: str
 
       setGroupAthletes(filteredAthletes);
     } catch (e) {
-      console.error(e);
+      appLogger.error(e);
       router.push('/groups');
     } finally {
       setLoading(false);
@@ -161,7 +163,7 @@ export default function GroupDetailsPage({ params }: { params: Promise<{ id: str
         await groupsService.removeMember(id, athleteId);
         fetchGroupData();
       } catch (error) {
-        console.error('Failed to remove member', error);
+        appLogger.error('Failed to remove member', error);
       }
     }
   };

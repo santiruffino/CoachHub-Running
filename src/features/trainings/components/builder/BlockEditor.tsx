@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { WorkoutBlock, DurationType, TargetType, BlockType } from './types';
 import { Trash2 } from 'lucide-react';
@@ -48,7 +50,7 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
                     setAthleteVAM(data.athleteProfile?.vam || null);
                 }
             } catch (error) {
-                console.error('Failed to fetch athlete VAM:', error);
+                appLogger.error('Failed to fetch athlete VAM:', error);
                 setAthleteVAM(null);
             }
         };

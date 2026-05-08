@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useTranslations } from 'next-intl';
-import { buildNavigation } from './navigation';
+import { buildNavigation, getSettingsPathForRole } from './navigation';
 
 export function Navbar() {
     const pathname = usePathname();
@@ -28,6 +28,7 @@ export function Navbar() {
     const navigation = buildNavigation(t);
 
     const userRole = user?.role || '';
+    const settingsPath = getSettingsPathForRole(user?.role);
     const userInitials = user?.name
         ? user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
         : 'U';
@@ -96,7 +97,7 @@ export function Navbar() {
                                     <User className="mr-2 h-4 w-4" />
                                     {t('profile')}
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => router.push('/profile')}>
+                                <DropdownMenuItem onClick={() => router.push(settingsPath)}>
                                     <Settings className="mr-2 h-4 w-4" />
                                     {t('settings')}
                                 </DropdownMenuItem>

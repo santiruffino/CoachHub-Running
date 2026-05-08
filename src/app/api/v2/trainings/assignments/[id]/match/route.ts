@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getRequesterProfile, requireAuth } from '@/lib/supabase/api-helpers';
 import { format } from 'date-fns';
+import { appLogger } from '@/lib/app-logger';
+import { apiError } from '@/lib/api/error-response';
 
 type DurationType = 'distance' | 'time';
 
@@ -106,16 +108,14 @@ export async function GET(
             .single();
 
         if (fetchError || !assignment) {
-            return NextResponse.json(
-                { error: 'Assignment not found' },
+            return NextResponse.json(apiError('ASSIGNMENT_NOT_FOUND', 'Assignment not found'),
                 { status: 404 }
             );
         }
 
         const { profile: requesterProfile, error: requesterError } = await getRequesterProfile(user!.id);
         if (requesterError || !requesterProfile) {
-            return NextResponse.json(
-                { error: 'Not authorized' },
+            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized'),
                 { status: 403 }
             );
         }
@@ -127,8 +127,7 @@ export async function GET(
 
         // Authorization check
         if (requesterProfile.role === 'ATHLETE' && assignment.user_id !== requesterProfile.id) {
-            return NextResponse.json(
-                { error: 'Not authorized to view this assignment' },
+            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized to view this assignment'),
                 { status: 403 }
             );
         }
@@ -146,8 +145,7 @@ export async function GET(
                 !requesterProfile.team_id ||
                 athleteProfile.team_id !== requesterProfile.team_id
             ) {
-                return NextResponse.json(
-                    { error: 'Not authorized to view this assignment' },
+                return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized to view this assignment'),
                     { status: 403 }
                 );
             }
@@ -249,9 +247,8 @@ export async function GET(
             isManualMatch,
         });
     } catch (error: unknown) {
-        console.error('Get workout match error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
+        appLogger.error('Get workout match error:', error);
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
             { status: 500 }
         );
     }

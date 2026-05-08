@@ -1,6 +1,8 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
 
-import { useState, useEffect } from 'react';
+
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { isAxiosError } from 'axios';
@@ -20,6 +22,7 @@ import {
     disabledInput,
 } from '@/components/layout/EditorialLayout';
 import { useTranslations } from 'next-intl';
+import { trackOnboardingCompleted, trackOnboardingFailed, trackOnboardingStarted } from '@/lib/analytics/events';
 
 interface OnboardingFormValues {
     firstName: string;
@@ -37,6 +40,7 @@ export default function OnboardingForm() {
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [selectedGender, setSelectedGender] = useState('');
+    const hasTrackedStartRef = useRef(false);
     const t = useTranslations('onboarding');
 
     const {
@@ -63,6 +67,13 @@ export default function OnboardingForm() {
         }
     }, [user, setValue]);
 
+    useEffect(() => {
+        if (!hasTrackedStartRef.current && !authLoading && user?.role === 'ATHLETE') {
+            trackOnboardingStarted({ role: 'ATHLETE', flow: 'athlete_dedicated' });
+            hasTrackedStartRef.current = true;
+        }
+    }, [authLoading, user?.role]);
+
     const handleGenderSelect = (value: string) => {
         setSelectedGender(value);
         setValue('gender', value, { shouldValidate: true });
@@ -82,14 +93,21 @@ export default function OnboardingForm() {
                 weight: Number(data.weight) || undefined,
                 isOnboardingCompleted: true,
             });
+            trackOnboardingCompleted({ role: 'ATHLETE', flow: 'athlete_dedicated' });
             router.replace('/dashboard');
         } catch (err: unknown) {
-            console.error('Onboarding save error:', err);
+            appLogger.error('Onboarding save error:', err);
             if (isAxiosError(err) && err.response && typeof err.response.data === 'object' && err.response.data !== null) {
                 const responseData = err.response.data as { message?: string };
                 setError(responseData.message || t('errorSave'));
+                trackOnboardingFailed({
+                    role: 'ATHLETE',
+                    flow: 'athlete_dedicated',
+                    reason: responseData.message || 'request_failed',
+                });
             } else {
                 setError(t('errorSave'));
+                trackOnboardingFailed({ role: 'ATHLETE', flow: 'athlete_dedicated', reason: 'request_failed' });
             }
             setSubmitting(false);
         }

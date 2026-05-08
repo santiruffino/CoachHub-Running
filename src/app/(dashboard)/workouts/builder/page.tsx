@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useState, Suspense, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -39,7 +41,7 @@ function WorkoutBuilderContent() {
             setActivityType(workout.type || TrainingType.RUNNING);
             setBlocks(workout.blocks || []);
         } catch (error) {
-            console.error('Failed to load workout:', error);
+            appLogger.error('Failed to load workout:', error);
             showAlert('error', t('loadError'));
         } finally {
             setLoading(false);
@@ -83,7 +85,7 @@ function WorkoutBuilderContent() {
             showAlert('success', t('saveSuccess'));
             setTimeout(() => router.push('/trainings'), 1500);
         } catch (error) {
-            console.error('Failed to save workout:', error);
+            appLogger.error('Failed to save workout:', error);
             showAlert('error', t('saveError'));
         } finally {
             setSaving(false);

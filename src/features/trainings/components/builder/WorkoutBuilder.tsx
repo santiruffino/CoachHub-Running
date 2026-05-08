@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useState, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
@@ -51,7 +53,7 @@ export function WorkoutBuilder({
                 const response = await api.get(`/v2/users/${athleteId}/details`);
                 setAthleteProfile(response.data.athleteProfile || null);
             } catch (error) {
-                console.error('Failed to fetch athlete profile:', error);
+                appLogger.error('Failed to fetch athlete profile:', error);
                 setAthleteProfile(null);
             }
         };

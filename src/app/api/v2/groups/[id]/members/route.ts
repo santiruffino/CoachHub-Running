@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
+import { appLogger } from '@/lib/app-logger';
+import { apiError } from '@/lib/api/error-response';
 
 /**
  * Add Member to Group
@@ -31,15 +33,13 @@ export async function POST(
             .single();
 
         if (!profile?.team_id) {
-            return NextResponse.json(
-                { error: 'Coach must belong to a team' },
+            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Coach must belong to a team'),
                 { status: 403 }
             );
         }
 
         if (!athleteId) {
-            return NextResponse.json(
-                { error: 'athleteId is required' },
+            return NextResponse.json(apiError('VALIDATION_ATHLETEID_IS_REQUIRED', 'athleteId is required'),
                 { status: 400 }
             );
         }
@@ -52,15 +52,13 @@ export async function POST(
             .single();
 
         if (groupError || !group) {
-            return NextResponse.json(
-                { error: 'Group not found' },
+            return NextResponse.json(apiError('GROUP_NOT_FOUND', 'Group not found'),
                 { status: 404 }
             );
         }
 
         if (group.team_id !== profile.team_id) {
-            return NextResponse.json(
-                { error: 'Not authorized to modify this group' },
+            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized to modify this group'),
                 { status: 403 }
             );
         }
@@ -73,15 +71,13 @@ export async function POST(
             .single();
 
         if (athleteError || !athlete) {
-            return NextResponse.json(
-                { error: 'Athlete not found' },
+            return NextResponse.json(apiError('ATHLETE_NOT_FOUND', 'Athlete not found'),
                 { status: 404 }
             );
         }
 
         if (athlete.role !== 'ATHLETE') {
-            return NextResponse.json(
-                { error: 'User is not an athlete' },
+            return NextResponse.json(apiError('VALIDATION_USER_IS_NOT_AN_ATHLETE', 'User is not an athlete'),
                 { status: 400 }
             );
         }
@@ -95,8 +91,7 @@ export async function POST(
             .single();
 
         if (existing) {
-            return NextResponse.json(
-                { error: 'Athlete is already a member of this group' },
+            return NextResponse.json(apiError('ATHLETE_IS_ALREADY_A_MEMBER_OF_THIS_GROUP', 'Athlete is already a member of this group'),
                 { status: 409 }
             );
         }
@@ -112,18 +107,16 @@ export async function POST(
             .single();
 
         if (insertError) {
-            console.error('Add member error:', insertError);
-            return NextResponse.json(
-                { error: 'Failed to add member to group' },
+            appLogger.error('Add member error:', insertError);
+            return NextResponse.json(apiError('FAILED_TO_ADD_MEMBER_TO_GROUP', 'Failed to add member to group'),
                 { status: 500 }
             );
         }
 
         return NextResponse.json(membership, { status: 201 });
     } catch (error: unknown) {
-        console.error('Add member error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
+        appLogger.error('Add member error:', error);
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
             { status: 500 }
         );
     }
@@ -160,15 +153,13 @@ export async function DELETE(
             .single();
 
         if (!profile?.team_id) {
-            return NextResponse.json(
-                { error: 'Coach must belong to a team' },
+            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Coach must belong to a team'),
                 { status: 403 }
             );
         }
 
         if (!athleteId) {
-            return NextResponse.json(
-                { error: 'athleteId is required' },
+            return NextResponse.json(apiError('VALIDATION_ATHLETEID_IS_REQUIRED', 'athleteId is required'),
                 { status: 400 }
             );
         }
@@ -181,15 +172,13 @@ export async function DELETE(
             .single();
 
         if (groupError || !group) {
-            return NextResponse.json(
-                { error: 'Group not found' },
+            return NextResponse.json(apiError('GROUP_NOT_FOUND', 'Group not found'),
                 { status: 404 }
             );
         }
 
         if (group.team_id !== profile.team_id) {
-            return NextResponse.json(
-                { error: 'Not authorized to modify this group' },
+            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized to modify this group'),
                 { status: 403 }
             );
         }
@@ -202,9 +191,8 @@ export async function DELETE(
             .eq('athlete_id', athleteId);
 
         if (deleteError) {
-            console.error('Remove member error:', deleteError);
-            return NextResponse.json(
-                { error: 'Failed to remove member from group' },
+            appLogger.error('Remove member error:', deleteError);
+            return NextResponse.json(apiError('FAILED_TO_REMOVE_MEMBER_FROM_GROUP', 'Failed to remove member from group'),
                 { status: 500 }
             );
         }
@@ -213,9 +201,8 @@ export async function DELETE(
             message: 'Member removed successfully',
         });
     } catch (error: unknown) {
-        console.error('Remove member error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
+        appLogger.error('Remove member error:', error);
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
             { status: 500 }
         );
     }

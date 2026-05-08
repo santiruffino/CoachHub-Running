@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import { StravaActivityDetailResponse } from '../services/strava.service';
 import { useTranslations } from 'next-intl';
 import { isGarminSource } from '@/lib/strava/source';
+import { appLogger } from '@/lib/app-logger';
 
 const EMPTY_ACTIVITY: StravaActivityDetailResponse = {
     id: '',
@@ -47,7 +48,7 @@ export function ActivityDetailModal({ activityId, open, onClose }: ActivityDetai
             })
             .catch((err) => {
                 if (!cancelled) {
-                    console.error(err);
+                    appLogger.error(err);
                     setData(EMPTY_ACTIVITY);
                 }
             })

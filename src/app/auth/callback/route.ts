@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, NextRequest } from 'next/server';
+import { appLogger } from '@/lib/app-logger';
 
 function sanitizeNextPath(nextParam: string | null): string {
     if (!nextParam) return '/dashboard';
@@ -55,7 +56,7 @@ export async function GET(request: NextRequest) {
 
             return response;
         } else {
-            console.error('❌ [Auth Callback] Code exchange failed:', error.message);
+            appLogger.error('❌ [Auth Callback] Code exchange failed:', error.message);
             return NextResponse.redirect(`${origin}/auth/auth-code-error`);
         }
     }

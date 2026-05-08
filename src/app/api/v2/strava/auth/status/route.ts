@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
+import { appLogger } from '@/lib/app-logger';
+import { apiError } from '@/lib/api/error-response';
 
 /**
  * Get Strava Connection Status
@@ -27,9 +29,8 @@ export async function GET(request: NextRequest) {
             .single();
 
         if (error && error.code !== 'PGRST116') { // PGRST116 = not found
-            console.error('Fetch Strava connection error:', error);
-            return NextResponse.json(
-                { error: 'Failed to fetch connection status' },
+            appLogger.error('Fetch Strava connection error:', error);
+            return NextResponse.json(apiError('FAILED_TO_FETCH_CONNECTION_STATUS', 'Failed to fetch connection status'),
                 { status: 500 }
             );
         }
@@ -55,9 +56,8 @@ export async function GET(request: NextRequest) {
             lastSync: lastSync || connection?.updated_at,
         });
     } catch (error: unknown) {
-        console.error('Get Strava status error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
+        appLogger.error('Get Strava status error:', error);
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
             { status: 500 }
         );
     }

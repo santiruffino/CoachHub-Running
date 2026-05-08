@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -11,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import api from '@/lib/axios';
 import { CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { AxiosError } from 'axios';
+import { trackSignupCompleted, trackSignupFailed, trackSignupStarted } from '@/lib/analytics/events';
 
 interface AcceptFormData {
     name: string;
@@ -20,6 +23,12 @@ interface AcceptFormData {
 
 interface ApiErrorResponse {
     error?: string;
+}
+
+interface ValidateInvitationResponse {
+    valid: boolean;
+    email: string;
+    role?: string;
 }
 
 function AcceptInvitationContent() {
@@ -32,6 +41,7 @@ function AcceptInvitationContent() {
     const [validating, setValidating] = useState(true);
     const [invitationValid, setInvitationValid] = useState(false);
     const [invitationEmail, setInvitationEmail] = useState('');
+    const [invitationRole, setInvitationRole] = useState<string>('ATHLETE');
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
@@ -46,11 +56,12 @@ function AcceptInvitationContent() {
             }
 
             try {
-                const response = await api.get(`/invitations/validate/${token}`);
+                const response = await api.get<ValidateInvitationResponse>(`/invitations/validate/${token}`);
                 setInvitationValid(true);
                 setInvitationEmail(response.data.email);
+                setInvitationRole(response.data.role || 'ATHLETE');
             } catch (error: unknown) {
-                console.error('Invalid token:', error);
+                appLogger.error('Invalid token:', error);
                 setInvitationValid(false);
             } finally {
                 setValidating(false);
@@ -64,12 +75,16 @@ function AcceptInvitationContent() {
         setSubmitting(true);
         setError('');
 
+        trackSignupStarted({ role: invitationRole, method: 'invitation' });
+
         try {
             await api.post('/auth/accept-invitation', {
                 token,
                 name: data.name,
                 password: data.password,
             });
+
+            trackSignupCompleted({ role: invitationRole, method: 'invitation' });
 
             setSuccess(true);
 
@@ -78,9 +93,10 @@ function AcceptInvitationContent() {
                 router.push('/login?message=account_created');
             }, 2000);
         } catch (error: unknown) {
-            console.error('Error accepting invitation:', error);
+            appLogger.error('Error accepting invitation:', error);
             const message = (error as AxiosError<ApiErrorResponse>)?.response?.data?.error;
             setError(message || t('loadError'));
+            trackSignupFailed({ role: invitationRole, method: 'invitation', reason: message || 'request_failed' });
             setSubmitting(false);
         }
     };

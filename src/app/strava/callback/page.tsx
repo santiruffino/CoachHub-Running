@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { Suspense, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -26,7 +28,7 @@ function CallbackContent() {
     useEffect(() => {
         // If auth is done loading and we have no user, redirect to login
         if (!authLoading && !user) {
-            console.error('No user found');
+            appLogger.error('No user found');
             router.push('/login');
             return;
         }

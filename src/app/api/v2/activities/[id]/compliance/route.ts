@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
+import { appLogger } from '@/lib/app-logger';
+import { apiError } from '@/lib/api/error-response';
 
 export async function GET(
     req: NextRequest,
@@ -23,9 +25,8 @@ export async function GET(
 
         return NextResponse.json(data);
     } catch (error: unknown) {
-        console.error('Get activity compliance error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
+        appLogger.error('Get activity compliance error:', error);
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
             { status: 500 }
         );
     }

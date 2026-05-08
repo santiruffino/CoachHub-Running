@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
 import * as Sentry from '@sentry/nextjs';
 import { createRequestLogger, withRequestId } from '@/lib/logger';
+import { apiError } from '@/lib/api/error-response';
 
 interface StravaTokenResponse {
     access_token: string;
@@ -88,8 +89,7 @@ export async function POST(request: NextRequest) {
 
         if (connError || !connection) {
             logger.warn('strava_sync.connection_missing', { userId: user!.id, error: connError });
-            return respond(
-                { error: 'Strava not connected' },
+            return respond(apiError('STRAVA_NOT_CONNECTED', 'Strava not connected'),
                 { status: 404 }
             );
         }
@@ -116,8 +116,7 @@ export async function POST(request: NextRequest) {
 
             if (!refreshResponse.ok) {
                 logger.error('strava_sync.token_refresh_failed', { userId: user!.id, status: refreshResponse.status });
-                return respond(
-                    { error: 'Failed to refresh Strava token' },
+                return respond(apiError('FAILED_TO_REFRESH_STRAVA_TOKEN', 'Failed to refresh Strava token'),
                     { status: 401 }
                 );
             }
@@ -149,8 +148,7 @@ export async function POST(request: NextRequest) {
 
         if (!activitiesResponse.ok) {
             logger.error('strava_sync.fetch_activities_failed', { userId: user!.id, status: activitiesResponse.status });
-            return respond(
-                { error: 'Failed to fetch activities from Strava' },
+            return respond(apiError('FAILED_TO_FETCH_ACTIVITIES_FROM_STRAVA', 'Failed to fetch activities from Strava'),
                 { status: 500 }
             );
         }
@@ -173,8 +171,7 @@ export async function POST(request: NextRequest) {
 
             if (existingError) {
                 logger.error('strava_sync.load_existing_failed', { userId: user!.id, error: existingError });
-                return respond(
-                    { error: 'Failed to prepare activity sync' },
+                return respond(apiError('FAILED_TO_PREPARE_ACTIVITY_SYNC', 'Failed to prepare activity sync'),
                     { status: 500 }
                 );
             }
@@ -208,8 +205,7 @@ export async function POST(request: NextRequest) {
 
             if (upsertError) {
                 logger.error('strava_sync.bulk_upsert_failed', { userId: user!.id, error: upsertError });
-                return respond(
-                    { error: 'Failed to sync activities to database' },
+                return respond(apiError('FAILED_TO_SYNC_ACTIVITIES_TO_DATABASE', 'Failed to sync activities to database'),
                     { status: 500 }
                 );
             }
@@ -283,8 +279,7 @@ export async function POST(request: NextRequest) {
             logger.error('strava_sync.log_failure_failed', { error: logError });
         }
 
-        return respond(
-            { error: `Sync failed: ${error instanceof Error ? error.message : 'Unknown error'}` },
+        return respond(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
             { status: 500 }
         );
     }

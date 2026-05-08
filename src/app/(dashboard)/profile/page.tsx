@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -36,7 +38,7 @@ export default function ProfilePage() {
         profileService
             .getProfile()
             .then((res) => setProfile(res.data))
-            .catch((e) => console.error(e))
+            .catch((e) => appLogger.error(e))
             .finally(() => setLoading(false));
     }, []);
 

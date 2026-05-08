@@ -1,3 +1,4 @@
+import { appLogger } from '@/lib/app-logger';
 /**
  * Cache Service
  * 
@@ -39,7 +40,7 @@ class CacheService {
 
             return item.data;
         } catch (error) {
-            console.error('Error parsing cache item', error);
+            appLogger.error('Error parsing cache item', error);
             sessionStorage.removeItem(fullKey);
             return null;
         }
@@ -65,13 +66,13 @@ class CacheService {
         try {
             sessionStorage.setItem(fullKey, JSON.stringify(item));
         } catch (error) {
-            console.warn('Cache set failed (likely quota exceeded)', error);
+            appLogger.warn('Cache set failed (likely quota exceeded)', error);
             // If sessionStorage is full, clear our prefix and try once more
             this.clear();
             try {
                 sessionStorage.setItem(fullKey, JSON.stringify(item));
             } catch (retryError) {
-                console.error('Final cache set failed', retryError);
+                appLogger.error('Final cache set failed', retryError);
             }
         }
     }

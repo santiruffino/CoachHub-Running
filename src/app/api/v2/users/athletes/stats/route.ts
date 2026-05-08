@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { appLogger } from '@/lib/app-logger';
+import { apiError } from '@/lib/api/error-response';
 
 export async function GET() {
     try {
@@ -11,8 +13,7 @@ export async function GET() {
         } = await supabase.auth.getUser();
 
         if (authError || !user) {
-            return NextResponse.json(
-                { error: 'Unauthorized' },
+            return NextResponse.json(apiError('AUTH_UNAUTHORIZED', 'Unauthorized'),
                 { status: 401 }
             );
         }
@@ -25,15 +26,13 @@ export async function GET() {
             .single();
 
         if (profile?.role !== 'COACH') {
-            return NextResponse.json(
-                { error: 'Only coaches can access this endpoint' },
+            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Only coaches can access this endpoint'),
                 { status: 403 }
             );
         }
 
         if (!profile?.team_id) {
-            return NextResponse.json(
-                { error: 'Coach must belong to a team' },
+            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Coach must belong to a team'),
                 { status: 403 }
             );
         }
@@ -58,9 +57,8 @@ export async function GET() {
             .eq('team_id', profile.team_id);
 
         if (athletesError) {
-            console.error('Failed to fetch athletes:', athletesError);
-            return NextResponse.json(
-                { error: 'Failed to fetch athletes' },
+            appLogger.error('Failed to fetch athletes:', athletesError);
+            return NextResponse.json(apiError('FAILED_TO_FETCH_ATHLETES', 'Failed to fetch athletes'),
                 { status: 500 }
             );
         }
@@ -80,9 +78,8 @@ export async function GET() {
             .lte('scheduled_date', weekEnd.toISOString());
 
         if (assignmentsError) {
-            console.error('Failed to fetch assignments:', assignmentsError);
-            return NextResponse.json(
-                { error: 'Failed to fetch assignments' },
+            appLogger.error('Failed to fetch assignments:', assignmentsError);
+            return NextResponse.json(apiError('FAILED_TO_FETCH_ASSIGNMENTS', 'Failed to fetch assignments'),
                 { status: 500 }
             );
         }
@@ -118,9 +115,8 @@ export async function GET() {
 
         return NextResponse.json(athletesWithStats);
     } catch (error: unknown) {
-        console.error('Error in athletes/stats route:', error);
-        return NextResponse.json(
-            { error: error instanceof Error ? error.message : 'Internal server error' },
+        appLogger.error('Error in athletes/stats route:', error);
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
             { status: 500 }
         );
     }

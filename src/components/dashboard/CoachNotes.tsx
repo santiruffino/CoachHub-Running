@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,7 +42,7 @@ export function CoachNotes({ athleteId, initialNotes = '', onSave, readOnly = fa
       });
       setLastEdited(t('lastEdited', { date: dateStr, time: timeStr }));
     } catch (error) {
-      console.error('Failed to save notes:', error);
+      appLogger.error('Failed to save notes:', error);
     } finally {
       setIsSaving(false);
     }

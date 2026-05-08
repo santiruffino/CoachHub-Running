@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useState, useEffect, Suspense, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -188,7 +190,7 @@ function AssignWorkoutContent() {
             setGroups(groupsRes.data);
             setTemplates(templatesRes.data.filter(t => t.isTemplate));
         } catch (error) {
-            console.error('Failed to load data:', error);
+            appLogger.error('Failed to load data:', error);
         }
     };
 
@@ -198,7 +200,7 @@ function AssignWorkoutContent() {
             setSelectedTemplate(res.data);
             setBlocks(JSON.parse(JSON.stringify(res.data.blocks || [])));
         } catch (error) {
-            console.error('Failed to load template:', error);
+            appLogger.error('Failed to load template:', error);
         }
     };
 
@@ -248,7 +250,7 @@ function AssignWorkoutContent() {
             showAlert('success', tAssign('successAssigned'));
             setTimeout(() => router.push(athleteId ? `/athletes/${athleteId}` : '/athletes'), 1500);
         } catch (error) {
-            console.error('Failed to assign workout:', error);
+            appLogger.error('Failed to assign workout:', error);
             showAlert('error', tAssign('errorExecutionFailed'));
         } finally {
             setLoading(false);

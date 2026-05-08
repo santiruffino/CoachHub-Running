@@ -1,5 +1,6 @@
 import api from '@/lib/axios';
 import { MatchCandidateActivity, MatchCandidateAssignment, WorkoutMatch } from '../types';
+import { appLogger } from '@/lib/app-logger';
 
 /**
  * Matching Service
@@ -20,7 +21,7 @@ class MatchingService {
             const response = await api.get<WorkoutMatch>(url);
             return response.data;
         } catch (error: unknown) {
-            console.error('Failed to fetch workout match:', error);
+            appLogger.error('Failed to fetch workout match:', error);
             throw error;
         }
     }
@@ -33,7 +34,7 @@ class MatchingService {
             const response = await api.get<MatchCandidateActivity[]>(`/v2/trainings/assignments/${assignmentId}/candidates`);
             return response.data;
         } catch (error: unknown) {
-            console.error('Failed to fetch candidate activities:', error);
+            appLogger.error('Failed to fetch candidate activities:', error);
             return [];
         }
     }
@@ -43,7 +44,7 @@ class MatchingService {
             const response = await api.get<MatchCandidateAssignment[]>(`/v2/activities/${activityId}/candidates`);
             return response.data;
         } catch (error: unknown) {
-            console.error('Failed to fetch candidate assignments:', error);
+            appLogger.error('Failed to fetch candidate assignments:', error);
             return [];
         }
     }
@@ -52,7 +53,7 @@ class MatchingService {
         try {
             await api.post(`/v2/trainings/assignments/${assignmentId}/link`, { activityId });
         } catch (error: unknown) {
-            console.error('Failed to link activity:', error);
+            appLogger.error('Failed to link activity:', error);
             throw error;
         }
     }
@@ -61,7 +62,7 @@ class MatchingService {
         try {
             await api.delete(`/v2/trainings/assignments/${assignmentId}/link`);
         } catch (error: unknown) {
-            console.error('Failed to unlink activity:', error);
+            appLogger.error('Failed to unlink activity:', error);
             throw error;
         }
     }

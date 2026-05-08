@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
@@ -58,7 +60,7 @@ export default function RacesPage() {
         setAthleteRaces(res.data);
       }
     } catch (error) {
-      console.error('Failed to fetch races', error);
+      appLogger.error('Failed to fetch races', error);
     } finally {
       setLoading(false);
     }
@@ -76,7 +78,7 @@ export default function RacesPage() {
       setRaces(prev => prev.filter(r => r.id !== deleteId));
       setDeleteId(null);
     } catch (error) {
-      console.error('Failed to delete race', error);
+      appLogger.error('Failed to delete race', error);
     } finally {
       setIsDeleting(false);
     }

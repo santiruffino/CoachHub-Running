@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/api-helpers';
 import { createServiceRoleClient } from '@/lib/supabase/server';
+import { appLogger } from '@/lib/app-logger';
+import { apiError } from '@/lib/api/error-response';
 
 interface StravaTokenResponse {
     access_token: string;
@@ -42,8 +44,7 @@ export async function GET(
             .single();
 
         if (activityError || !activity) {
-            return NextResponse.json(
-                { error: 'Activity not found' },
+            return NextResponse.json(apiError('ACTIVITY_NOT_FOUND', 'Activity not found'),
                 { status: 404 }
             );
         }
@@ -68,14 +69,12 @@ export async function GET(
                     .single();
 
                 if (!athleteProfile || !profile.team_id || athleteProfile.team_id !== profile.team_id) {
-                    return NextResponse.json(
-                        { error: 'Not authorized to view this activity' },
+                    return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized to view this activity'),
                         { status: 403 }
                     );
                 }
             } else {
-                return NextResponse.json(
-                    { error: 'Not authorized to view this activity' },
+                return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized to view this activity'),
                     { status: 403 }
                 );
             }
@@ -92,15 +91,7 @@ export async function GET(
         if (connError || !connection) {
             const isNotFound = connError?.code === 'PGRST116';
 
-            return NextResponse.json(
-                {
-                    error: isNotFound
-                        ? 'This athlete has not connected their Strava account. They need to authenticate with Strava to view activity details.'
-                        : 'Failed to retrieve Strava connection',
-                    details: isNotFound
-                        ? 'The athlete must go to their profile and connect Strava to enable detailed activity views.'
-                        : connError?.message
-                },
+            return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
                 { status: isNotFound ? 404 : 500 }
             );
         }
@@ -126,8 +117,7 @@ export async function GET(
             });
 
             if (!refreshResponse.ok) {
-                return NextResponse.json(
-                    { error: 'Failed to refresh Strava token' },
+                return NextResponse.json(apiError('FAILED_TO_REFRESH_STRAVA_TOKEN', 'Failed to refresh Strava token'),
                     { status: 401 }
                 );
             }
@@ -158,9 +148,8 @@ export async function GET(
         );
 
         if (!stravaResponse.ok) {
-            console.error('Strava API error:', await stravaResponse.text());
-            return NextResponse.json(
-                { error: 'Failed to fetch activity from Strava' },
+            appLogger.error('Strava API error:', await stravaResponse.text());
+            return NextResponse.json(apiError('FAILED_TO_FETCH_ACTIVITY_FROM_STRAVA', 'Failed to fetch activity from Strava'),
                 { status: 500 }
             );
         }
@@ -178,9 +167,8 @@ export async function GET(
             lap_overrides: activity.lap_overrides || {},
         });
     } catch (error: unknown) {
-        console.error('Get activity detail error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
+        appLogger.error('Get activity detail error:', error);
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
             { status: 500 }
         );
     }
@@ -214,8 +202,7 @@ export async function PATCH(
             .single();
 
         if (activityError || !activity) {
-            return NextResponse.json(
-                { error: 'Activity not found' },
+            return NextResponse.json(apiError('ACTIVITY_NOT_FOUND', 'Activity not found'),
                 { status: 404 }
             );
         }
@@ -244,8 +231,7 @@ export async function PATCH(
             }
             
             if (!isTeamMember) {
-                return NextResponse.json(
-                    { error: 'Not authorized to modify this activity' },
+                return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized to modify this activity'),
                     { status: 403 }
                 );
             }
@@ -258,9 +244,8 @@ export async function PATCH(
             .eq('id', activity.id);
 
         if (updateError) {
-            console.error('Failed to update lap overrides:', updateError);
-            return NextResponse.json(
-                { error: 'Failed to update overrides' },
+            appLogger.error('Failed to update lap overrides:', updateError);
+            return NextResponse.json(apiError('FAILED_TO_UPDATE_OVERRIDES', 'Failed to update overrides'),
                 { status: 500 }
             );
         }
@@ -268,9 +253,8 @@ export async function PATCH(
         return NextResponse.json({ success: true, lapOverrides });
 
     } catch (error: unknown) {
-        console.error('Update activity detail error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
+        appLogger.error('Update activity detail error:', error);
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
             { status: 500 }
         );
     }

@@ -1,6 +1,9 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
+import { appLogger } from '@/lib/app-logger';
+import { apiError } from '@/lib/api/error-response';
+import { appendAdminActionLog } from '@/lib/audit/admin-action-log';
 
 /**
  * GET /v2/races
@@ -19,8 +22,7 @@ export async function GET() {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
+      return NextResponse.json(apiError('AUTH_UNAUTHORIZED', 'Unauthorized'),
         { status: 401 }
       );
     }
@@ -49,17 +51,15 @@ export async function GET() {
     const { data: races, error } = await racesQuery;
 
     if (error) {
-      console.error('Fetch races error:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch races' },
+      appLogger.error('Fetch races error:', error);
+      return NextResponse.json(apiError('FAILED_TO_FETCH_RACES', 'Failed to fetch races'),
         { status: 500 }
       );
     }
 
     return NextResponse.json(races || []);
-  } catch (error: unknown) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Internal server error' },
+  } catch {
+    return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
       { status: 500 }
     );
   }
@@ -88,8 +88,7 @@ export async function POST(request: Request) {
       .single();
 
     if (!profile?.team_id) {
-      return NextResponse.json(
-        { error: 'User must belong to a team' },
+      return NextResponse.json(apiError('USER_MUST_BELONG_TO_A_TEAM', 'User must belong to a team'),
         { status: 403 }
       );
     }
@@ -105,8 +104,7 @@ export async function POST(request: Request) {
     } = body;
 
     if (!name) {
-      return NextResponse.json(
-        { error: 'Race name is required' },
+      return NextResponse.json(apiError('VALIDATION_RACE_NAME_IS_REQUIRED', 'Race name is required'),
         { status: 400 }
       );
     }
@@ -127,18 +125,27 @@ export async function POST(request: Request) {
       .single();
 
     if (error) {
-      console.error('Create race error:', error);
-      return NextResponse.json(
-        { error: 'Failed to create race' },
+      appLogger.error('Create race error:', error);
+      return NextResponse.json(apiError('FAILED_TO_CREATE_RACE', 'Failed to create race'),
         { status: 500 }
       );
     }
 
+    if (profile.role === 'ADMIN') {
+      await appendAdminActionLog({
+        actorId: user!.id,
+        actorRole: 'ADMIN',
+        teamId: profile.team_id,
+        action: 'race.created',
+        targetType: 'race',
+        targetId: race.id,
+      });
+    }
+
     return NextResponse.json(race, { status: 201 });
   } catch (error: unknown) {
-    console.error('POST /v2/races error:', error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Internal server error' },
+    appLogger.error('POST /v2/races error:', error);
+    return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
       { status: 500 }
     );
   }

@@ -7,7 +7,7 @@ import { TrendingUp, Settings, Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useTranslations } from 'next-intl';
-import { buildNavigation } from './navigation';
+import { buildNavigation, getSettingsPathForRole } from './navigation';
 
 export function Sidebar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -19,6 +19,7 @@ export function Sidebar() {
     if (loading) return null;
 
     const userRole = user?.role || '';
+    const settingsPath = getSettingsPathForRole(user?.role);
 
     const navigation = [
         ...buildNavigation(t),
@@ -105,11 +106,11 @@ export function Sidebar() {
 
                 {/* Settings */}
                 <div className="p-4 border-t border-border">
-                    <Link
-                        href="/profile"
+                        <Link
+                        href={settingsPath}
                         onClick={closeMobileMenu}
                         className={cn(
-                            pathname === '/profile'
+                            pathname === settingsPath
                                 ? 'bg-muted text-foreground'
                                 : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
                             'group flex items-center rounded-md px-3 py-2.5 text-sm font-medium transition-colors'

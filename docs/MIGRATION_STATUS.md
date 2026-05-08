@@ -14,12 +14,14 @@ Migration is functionally complete for core product flows.
 - Team-based RLS migration applied in repository migrations
 - Strava OAuth, sync, webhook, and edge-function processing present
 - UUID-first activity detail route model in v2 activity endpoints
+- Coach/team settings persistence + API/UI surface
+- Admin append-only critical-write audit logs (first cut)
 
 ## Remaining technical debt
 
 - Remove or formally deprecate legacy compatibility routes outside v2
 - Normalize i18n handling for API/user-facing errors
-- Address webhook and OAuth hardening items
+- Expand admin audit instrumentation beyond first-cut critical routes
 - Clean dead/orphaned components and stale docs
 
 See `documentation/platform-analysis-report.md` for evidence and priorities.

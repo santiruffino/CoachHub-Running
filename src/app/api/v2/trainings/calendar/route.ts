@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/api-helpers';
+import { appLogger } from '@/lib/app-logger';
+import { apiError } from '@/lib/api/error-response';
 
 interface AssignmentWithGroup {
     user_id: string;
@@ -43,23 +45,21 @@ export async function GET(request: NextRequest) {
             .single();
 
         if (profile?.role !== 'COACH' && profile?.role !== 'ADMIN') {
-            console.warn('[TRAININGS_CALENDAR] Forbidden role access attempt', {
+            appLogger.warn('[TRAININGS_CALENDAR] Forbidden role access attempt', {
                 userId: user!.id,
                 role: profile?.role || null,
             });
-            return NextResponse.json(
-                { error: 'Only coach or admin users can access calendar assignments' },
+            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Only coach or admin users can access calendar assignments'),
                 { status: 403 }
             );
         }
 
         if (!profile?.team_id) {
-            console.warn('[TRAININGS_CALENDAR] Missing team_id for coach/admin', {
+            appLogger.warn('[TRAININGS_CALENDAR] Missing team_id for coach/admin', {
                 userId: user!.id,
                 role: profile?.role,
             });
-            return NextResponse.json(
-                { error: 'Coach must belong to a team' },
+            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Coach must belong to a team'),
                 { status: 403 }
             );
         }
@@ -74,8 +74,7 @@ export async function GET(request: NextRequest) {
 
         // Validation
         if (!startDate || !endDate) {
-            return NextResponse.json(
-                { error: 'startDate and endDate are required' },
+            return NextResponse.json(apiError('VALIDATION_STARTDATE_AND_ENDDATE_ARE_REQUIRED', 'startDate and endDate are required'),
                 { status: 400 }
             );
         }
@@ -104,8 +103,7 @@ export async function GET(request: NextRequest) {
             const { data: groups } = await groupsQuery;
 
             if (!groups || groups.length === 0) {
-                return NextResponse.json(
-                    { error: 'No valid groups found' },
+                return NextResponse.json(apiError('NO_VALID_GROUPS_FOUND', 'No valid groups found'),
                     { status: 404 }
                 );
             }
@@ -171,9 +169,8 @@ export async function GET(request: NextRequest) {
         const { data: assignments, error } = await query;
 
         if (error) {
-            console.error('Fetch calendar assignments error:', error);
-            return NextResponse.json(
-                { error: 'Failed to fetch assignments' },
+            appLogger.error('Fetch calendar assignments error:', error);
+            return NextResponse.json(apiError('FAILED_TO_FETCH_ASSIGNMENTS', 'Failed to fetch assignments'),
                 { status: 500 }
             );
         }
@@ -208,9 +205,8 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json(resolvedAssignments);
     } catch (error: unknown) {
-        console.error('Get calendar assignments error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
+        appLogger.error('Get calendar assignments error:', error);
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
             { status: 500 }
         );
     }

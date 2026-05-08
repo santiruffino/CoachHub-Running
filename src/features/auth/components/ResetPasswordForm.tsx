@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -64,7 +66,7 @@ export default function ResetPasswordForm() {
                 }
             }
 
-            console.warn('⚠️ [ResetPasswordForm] No session found after retries');
+            appLogger.warn('⚠️ [ResetPasswordForm] No session found after retries');
             setHasSession(false);
             setCheckingSession(false);
         };
@@ -75,7 +77,7 @@ export default function ResetPasswordForm() {
     const onSubmit = async (data: FormData) => {
 
         if (!hasSession) {
-            console.error('❌ [ResetPasswordForm] Cannot submit - no active session');
+            appLogger.error('❌ [ResetPasswordForm] Cannot submit - no active session');
             setError(t('noSessionError'));
             return;
         }
@@ -92,7 +94,7 @@ export default function ResetPasswordForm() {
                 router.push('/dashboard');
             }, 1500);
         } catch (err: unknown) {
-            console.error('❌ [ResetPasswordForm] Update failed:', err);
+            appLogger.error('❌ [ResetPasswordForm] Update failed:', err);
             setError(isAxiosError(err) ? err.message : t('errorMessage'));
         }
     };

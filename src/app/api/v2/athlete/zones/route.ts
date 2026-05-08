@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
+import { appLogger } from '@/lib/app-logger';
+import { apiError } from '@/lib/api/error-response';
 
 interface StravaZone {
     min: number;
@@ -48,8 +50,7 @@ export async function POST(request: NextRequest) {
             .single();
 
         if (connError || !connection) {
-            return NextResponse.json(
-                { error: 'Strava not connected' },
+            return NextResponse.json(apiError('STRAVA_NOT_CONNECTED', 'Strava not connected'),
                 { status: 404 }
             );
         }
@@ -75,8 +76,7 @@ export async function POST(request: NextRequest) {
             });
 
             if (!refreshResponse.ok) {
-                return NextResponse.json(
-                    { error: 'Failed to refresh Strava token' },
+                return NextResponse.json(apiError('FAILED_TO_REFRESH_STRAVA_TOKEN', 'Failed to refresh Strava token'),
                     { status: 401 }
                 );
             }
@@ -108,9 +108,8 @@ export async function POST(request: NextRequest) {
 
         if (!zonesResponse.ok) {
             const errorText = await zonesResponse.text();
-            console.error('Strava zones API error:', errorText);
-            return NextResponse.json(
-                { error: 'Failed to fetch zones from Strava', details: errorText },
+            appLogger.error('Strava zones API error:', errorText);
+            return NextResponse.json(apiError('FAILED_TO_FETCH_ZONES_FROM_STRAVA', 'Failed to fetch zones from Strava'),
                 { status: zonesResponse.status }
             );
         }
@@ -122,8 +121,7 @@ export async function POST(request: NextRequest) {
         const heartRateZones = zonesData.heart_rate;
 
         if (!heartRateZones || !heartRateZones.zones) {
-            return NextResponse.json(
-                { error: 'No heart rate zones found in Strava profile' },
+            return NextResponse.json(apiError('NO_HEART_RATE_ZONES_FOUND_IN_STRAVA_PROFILE', 'No heart rate zones found in Strava profile'),
                 { status: 404 }
             );
         }
@@ -149,9 +147,8 @@ export async function POST(request: NextRequest) {
             });
 
         if (updateError) {
-            console.error('Supabase error updating zones:', updateError);
-            return NextResponse.json(
-                { error: 'Failed to update zones in profile', details: updateError.message },
+            appLogger.error('Supabase error updating zones:', updateError);
+            return NextResponse.json(apiError('FAILED_TO_UPDATE_ZONES_IN_PROFILE', 'Failed to update zones in profile'),
                 { status: 500 }
             );
         }
@@ -162,9 +159,8 @@ export async function POST(request: NextRequest) {
             zones: hrZones,
         });
     } catch (error: unknown) {
-        console.error('Zones sync error:', error);
-        return NextResponse.json(
-            { error: `Zones sync failed: ${error instanceof Error ? error.message : 'Unknown error'}` },
+        appLogger.error('Zones sync error:', error);
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
             { status: 500 }
         );
     }

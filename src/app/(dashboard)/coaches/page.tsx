@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -48,7 +50,7 @@ export default function CoachesPage() {
       const res = await api.get('/v2/users/coaches');
       setCoaches(res.data);
     } catch (error) {
-      console.error('Failed to fetch coaches', error);
+      appLogger.error('Failed to fetch coaches', error);
     } finally {
       setLoading(false);
     }
@@ -68,7 +70,7 @@ export default function CoachesPage() {
       setCoaches(prev => prev.filter(c => c.id !== deleteId));
       setDeleteId(null);
     } catch (error) {
-      console.error('Failed to delete coach', error);
+      appLogger.error('Failed to delete coach', error);
       alert(t('coaches.deleteFailed'));
     } finally {
       setIsDeleting(false);

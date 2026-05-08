@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useState, useEffect, useCallback } from 'react';
 import {
@@ -38,7 +40,7 @@ export function LinkWorkoutModal({ isOpen, onClose, activityId, activityTitle, o
             const data = await matchingService.getCandidateAssignments(activityId);
             setCandidates(data);
         } catch (err) {
-            console.error('Failed to load candidates', err);
+            appLogger.error('Failed to load candidates', err);
             setError(t('errorLoad')); 
         } finally {
             setLoading(false);
@@ -58,7 +60,7 @@ export function LinkWorkoutModal({ isOpen, onClose, activityId, activityTitle, o
             await fetchCandidates(); // Refresh list to update status
             if (onLinkSuccess) onLinkSuccess();
         } catch (err) {
-            console.error('Failed to link', err);
+            appLogger.error('Failed to link', err);
             setError(t('errorLink'));
         } finally {
             setActionLoading(null);
@@ -73,7 +75,7 @@ export function LinkWorkoutModal({ isOpen, onClose, activityId, activityTitle, o
             await fetchCandidates(); // Refresh list to update status
             if (onLinkSuccess) onLinkSuccess();
         } catch (err) {
-            console.error('Failed to unlink', err);
+            appLogger.error('Failed to unlink', err);
             setError(t('errorUnlink'));
         } finally {
             setActionLoading(null);

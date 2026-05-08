@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useState, useEffect } from 'react';
 import {
@@ -69,7 +71,7 @@ export function EditGroupModal({ group, isOpen, onClose, onUpdated }: EditGroupM
           const res = await racesService.findAll();
           setRaceLibrary(res.data);
         } catch (e) {
-          console.error('Failed to fetch races', e);
+          appLogger.error('Failed to fetch races', e);
         }
       };
       fetchRaces();
@@ -126,7 +128,7 @@ export function EditGroupModal({ group, isOpen, onClose, onUpdated }: EditGroupM
       onUpdated();
       onClose();
     } catch (error) {
-      console.error('Failed to update group', error);
+      appLogger.error('Failed to update group', error);
     } finally {
       setLoading(false);
     }

@@ -36,6 +36,9 @@ The active tenant boundary is `team_id`.
 - `activity_feedback`
 - `races`, `athlete_races`
 - `invitations`
+- `coach_settings`
+- `team_settings`
+- `admin_action_logs` (append-only)
 
 ## Access model
 
@@ -56,6 +59,21 @@ This UUID-first approach is now standard in v2 activity endpoints.
 
 - Streams are cached in `activity_streams`.
 - Stream fetching and activity processing use Supabase Edge Functions.
+
+## Settings and admin audit model
+
+- `team_settings`
+  - keyed by `team_id`
+  - stores `thresholds`, `branding`, `default_models`
+  - admin write access; team staff read access
+- `coach_settings`
+  - keyed by `coach_id`
+  - stores coach-level `thresholds` and `default_models`
+  - coach self-management (and admin override) within team boundary
+- `admin_action_logs`
+  - append-only critical write events (`action`, `target_type`, `target_id`, `metadata`)
+  - update/delete blocked by DB triggers
+  - admin team-scoped read access via RLS
 
 ## Notes for future cycling support
 

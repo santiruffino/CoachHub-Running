@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1"
 import { flattenWorkout, matchLapsToWorkout, calculateWorkoutTotals } from "../_shared/workoutMatcher.ts"
+import { createEdgeLogger, getEdgeRequestId, withRequestIdHeader } from "../_shared/logger.ts"
 
 /**
  * process-strava-activity
@@ -16,9 +17,13 @@ const corsHeaders = {
 }
 
 Deno.serve(async (req) => {
+  const requestId = getEdgeRequestId(req)
+  const logger = createEdgeLogger({ route: 'process-strava-activity', requestId })
+  const jsonHeaders = withRequestIdHeader({ ...corsHeaders, 'Content-Type': 'application/json' }, requestId)
+
   // Handle CORS
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: withRequestIdHeader(corsHeaders, requestId) })
   }
 
   // Custom Authentication: Verify the webhook secret.
@@ -26,9 +31,9 @@ Deno.serve(async (req) => {
   const expectedSecret = Deno.env.get('STRAVA_WEBHOOK_SHARED_SECRET')
   
   if (!webhookSecret || webhookSecret !== expectedSecret) {
-    console.error('[WEBHOOK] Unauthorized request')
+    logger.error('webhook.unauthorized_request')
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: jsonHeaders,
       status: 401,
     })
   }
@@ -46,11 +51,11 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    console.log(`[WEBHOOK] Processing: ${object_type}.${aspect_type} (ID: ${object_id})`)
+    logger.info('webhook.processing', { objectType: object_type, aspectType: aspect_type, objectId: object_id })
 
     // CASE 1: ATHLETE DEAUTHORIZATION
     if (object_type === 'athlete' && updates?.authorized === false) {
-      console.log(`[WEBHOOK] User ${owner_id} revoked access.`)
+      logger.info('webhook.athlete_revoked_access', { ownerId: owner_id })
 
       const { data: revokedConnection, error: revokedConnError } = await supabase
         .from('strava_connections')
@@ -97,14 +102,14 @@ Deno.serve(async (req) => {
       if (deleteError) throw deleteError
       
       return new Response(JSON.stringify({ success: true, message: 'Access revoked' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: jsonHeaders,
         status: 200,
       })
     }
 
     // CASE 2: ACTIVITY DELETE
     if (object_type === 'activity' && aspect_type === 'delete') {
-      console.log(`[WEBHOOK] Deleting activity ${object_id}`)
+      logger.info('webhook.deleting_activity', { objectId: object_id })
 
       const { data: deleteConnection, error: deleteConnError } = await supabase
         .from('strava_connections')
@@ -113,9 +118,9 @@ Deno.serve(async (req) => {
         .maybeSingle()
 
       if (deleteConnError || !deleteConnection?.user_id) {
-        console.warn(`[WEBHOOK] Unable to resolve user for delete event ${object_id}`)
+        logger.warn('webhook.delete_user_not_resolved', { objectId: object_id, error: deleteConnError })
         return new Response(JSON.stringify({ success: true, message: 'No matching user for delete event' }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: jsonHeaders,
           status: 200,
         })
       }
@@ -129,7 +134,7 @@ Deno.serve(async (req) => {
       if (deleteError) throw deleteError
 
       return new Response(JSON.stringify({ success: true, message: 'Activity deleted' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: jsonHeaders,
         status: 200,
       })
     }
@@ -154,7 +159,7 @@ Deno.serve(async (req) => {
       const now = Math.floor(Date.now() / 1000)
 
       if (expires_at <= now + 60) {
-        console.log('[WEBHOOK] Refreshing Strava token...')
+        logger.info('webhook.refreshing_token', { userId: user_id })
         const refreshResponse = await fetch('https://www.strava.com/oauth/token', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -226,7 +231,7 @@ Deno.serve(async (req) => {
 
       if (insertError) throw insertError
 
-      console.log(`[WEBHOOK] Synced activity ${object_id} for user ${user_id}`)
+      logger.info('webhook.activity_synced', { objectId: object_id, userId: user_id })
 
       // 5. Trigger Matching Engine
       try {
@@ -302,24 +307,24 @@ Deno.serve(async (req) => {
           }
         }
       } catch (matchError) {
-        console.error('[WEBHOOK] Matching engine error:', matchError);
+        logger.error('webhook.matching_engine_error', { error: matchError, objectId: object_id, userId: user_id })
       }
 
       return new Response(JSON.stringify({ success: true, activity_id: upsertData.id }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: jsonHeaders,
         status: 200,
       })
     }
 
     return new Response(JSON.stringify({ success: true, message: 'Event ignored' }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: jsonHeaders,
       status: 200,
     })
 
-  } catch {
-    console.error('[WEBHOOK] Error while processing event')
+  } catch (error) {
+    logger.error('webhook.unhandled_error', { error })
     return new Response(JSON.stringify({ error: 'Webhook processing failed' }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: jsonHeaders,
       status: 400,
     })
   }

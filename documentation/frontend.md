@@ -26,12 +26,31 @@ Current UI data access is primarily:
 
 The app does not rely exclusively on direct Server Component Supabase queries.
 
+## Analytics
+
+GA4 product analytics is integrated client-side:
+
+- Provider bootstrap: `src/components/analytics/GoogleAnalytics.tsx`
+- Event mapping/helpers: `src/lib/analytics/events.ts`
+- Measurement env var: `NEXT_PUBLIC_GA_MEASUREMENT_ID`
+
+Tracked funnels include signup, onboarding, and retention proxies.
+See `documentation/analytics.md` for the canonical event catalog.
+
 ## Role-based UI behavior
 
 - Main dashboard delegates by role in `src/app/(dashboard)/dashboard/page.tsx`
   - `ADMIN` -> AdminDashboard
   - `ATHLETE` -> AthleteDashboard
   - default -> CoachDashboard
+
+Navigation now includes admin audit log access:
+
+- `ADMIN` sees `/settings/audit-logs` entry in primary and mobile nav
+- settings shortcut resolves by role:
+  - `ADMIN` -> `/settings/team`
+  - `COACH` -> `/settings/coach`
+  - `ATHLETE` -> `/profile`
 
 ## i18n model
 
@@ -56,3 +75,11 @@ Key screens/components:
 - `src/app/(dashboard)/activities/components/ZoneComplianceCard.tsx`
 
 These are running-first but already include initial sport-aware formatting (pace vs speed in parts of the UI).
+
+## Settings and audit UI
+
+- Coach settings page: `src/app/(dashboard)/settings/coach/page.tsx`
+- Team settings page: `src/app/(dashboard)/settings/team/page.tsx`
+- Admin audit log page: `src/app/(dashboard)/settings/audit-logs/page.tsx`
+
+Settings pages are client-driven and persist through v2 APIs under `/api/v2/settings/*`.

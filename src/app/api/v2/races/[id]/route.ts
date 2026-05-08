@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
+import { appLogger } from '@/lib/app-logger';
+import { apiError } from '@/lib/api/error-response';
+import { appendAdminActionLog } from '@/lib/audit/admin-action-log';
 
 /**
  * PATCH /v2/races/[id]
@@ -23,13 +26,12 @@ export async function PATCH(
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('team_id')
+      .select('team_id, role')
       .eq('id', user!.id)
       .single();
 
     if (!profile?.team_id) {
-      return NextResponse.json(
-        { error: 'User must belong to a team' },
+      return NextResponse.json(apiError('AUTH_FORBIDDEN', 'User must belong to a team'),
         { status: 403 }
       );
     }
@@ -41,15 +43,13 @@ export async function PATCH(
       .single();
 
     if (raceError || !existingRace) {
-      return NextResponse.json(
-        { error: 'Race not found' },
+      return NextResponse.json(apiError('RACE_NOT_FOUND', 'Race not found'),
         { status: 404 }
       );
     }
 
     if (existingRace.team_id !== profile.team_id) {
-      return NextResponse.json(
-        { error: 'Not authorized to update this race' },
+      return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized to update this race'),
         { status: 403 }
       );
     }
@@ -69,19 +69,27 @@ export async function PATCH(
       .single();
 
     if (error) {
-      console.error('Update race error:', error);
-      return NextResponse.json(
-        { error: 'Failed to update race' },
+      appLogger.error('Update race error:', error);
+      return NextResponse.json(apiError('FAILED_TO_UPDATE_RACE', 'Failed to update race'),
         { status: 500 }
       );
     }
 
+    if (profile.role === 'ADMIN') {
+      await appendAdminActionLog({
+        actorId: user!.id,
+        actorRole: 'ADMIN',
+        teamId: profile.team_id,
+        action: 'race.updated',
+        targetType: 'race',
+        targetId: id,
+      });
+    }
+
     return NextResponse.json(race);
   } catch (error: unknown) {
-    console.error('PATCH /v2/races/[id] error:', error);
-    const message = error instanceof Error ? error.message : 'Internal server error';
-    return NextResponse.json(
-      { error: message },
+    appLogger.error('PATCH /v2/races/[id] error:', error);
+    return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
       { status: 500 }
     );
   }
@@ -107,13 +115,12 @@ export async function DELETE(
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('team_id')
+      .select('team_id, role')
       .eq('id', user!.id)
       .single();
 
     if (!profile?.team_id) {
-      return NextResponse.json(
-        { error: 'User must belong to a team' },
+      return NextResponse.json(apiError('AUTH_FORBIDDEN', 'User must belong to a team'),
         { status: 403 }
       );
     }
@@ -125,15 +132,13 @@ export async function DELETE(
       .single();
 
     if (raceError || !existingRace) {
-      return NextResponse.json(
-        { error: 'Race not found' },
+      return NextResponse.json(apiError('RACE_NOT_FOUND', 'Race not found'),
         { status: 404 }
       );
     }
 
     if (existingRace.team_id !== profile.team_id) {
-      return NextResponse.json(
-        { error: 'Not authorized to delete this race' },
+      return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized to delete this race'),
         { status: 403 }
       );
     }
@@ -144,19 +149,27 @@ export async function DELETE(
       .eq('id', id);
 
     if (error) {
-      console.error('Delete race error:', error);
-      return NextResponse.json(
-        { error: 'Failed to delete race' },
+      appLogger.error('Delete race error:', error);
+      return NextResponse.json(apiError('FAILED_TO_DELETE_RACE', 'Failed to delete race'),
         { status: 500 }
       );
     }
 
+    if (profile.role === 'ADMIN') {
+      await appendAdminActionLog({
+        actorId: user!.id,
+        actorRole: 'ADMIN',
+        teamId: profile.team_id,
+        action: 'race.deleted',
+        targetType: 'race',
+        targetId: id,
+      });
+    }
+
     return new Response(null, { status: 204 });
   } catch (error: unknown) {
-    console.error('DELETE /v2/races/[id] error:', error);
-    const message = error instanceof Error ? error.message : 'Internal server error';
-    return NextResponse.json(
-      { error: message },
+    appLogger.error('DELETE /v2/races/[id] error:', error);
+    return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
       { status: 500 }
     );
   }

@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1"
+import { createEdgeLogger, getEdgeRequestId, withRequestIdHeader } from "../_shared/logger.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -22,8 +23,13 @@ const isCacheFresh = (createdAt: unknown): boolean => {
 }
 
 Deno.serve(async (req) => {
+  const requestId = getEdgeRequestId(req)
+  const logger = createEdgeLogger({ route: 'fetch-strava-streams', requestId })
+
+  const jsonHeaders = withRequestIdHeader({ ...corsHeaders, 'Content-Type': 'application/json' }, requestId)
+
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: withRequestIdHeader(corsHeaders, requestId) })
   }
 
   try {
@@ -36,7 +42,7 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
         return new Response(JSON.stringify({ error: 'No authorization header' }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: jsonHeaders,
             status: 401,
         })
     }
@@ -45,9 +51,9 @@ Deno.serve(async (req) => {
     const { data: { user }, error: authError } = await supabase.auth.getUser(token)
     
     if (authError || !user) {
-        console.error('[STREAMS] Auth error:', authError)
+        logger.error('streams.auth_error', { error: authError })
         return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: jsonHeaders,
             status: 401,
         })
     }
@@ -57,12 +63,12 @@ Deno.serve(async (req) => {
     const activityUuid = url.searchParams.get('uuid')
     if (!activityUuid) {
         return new Response(JSON.stringify({ error: 'Missing activity UUID' }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: jsonHeaders,
             status: 400,
         })
     }
 
-    console.log(`[STREAMS] Processing request for activity UUID: ${activityUuid} (User: ${user.id})`)
+    logger.info('streams.request_received', { activityId: activityUuid, userId: user.id })
 
     // 4. Check Cache by UUID
     const { data: cachedStream, error: cacheError } = await supabase
@@ -72,19 +78,19 @@ Deno.serve(async (req) => {
       .maybeSingle()
 
     if (cacheError) {
-        console.error('[STREAMS] Cache lookup error:', cacheError)
+        logger.error('streams.cache_lookup_error', { activityId: activityUuid, error: cacheError })
     }
 
     if (cachedStream && isCacheFresh(cachedStream.created_at)) {
-      console.log(`[STREAMS] Cache hit for activity UUID: ${activityUuid}`)
+      logger.debug('streams.cache_hit', { activityId: activityUuid })
       return new Response(JSON.stringify(cachedStream.stream_data), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: jsonHeaders,
         status: 200,
       })
     }
 
     if (cachedStream && !isCacheFresh(cachedStream.created_at)) {
-      console.log(`[STREAMS] Cache expired for activity UUID: ${activityUuid}. Refreshing from Strava...`)
+      logger.info('streams.cache_expired', { activityId: activityUuid })
       await supabase
         .from('activity_streams')
         .delete()
@@ -92,7 +98,7 @@ Deno.serve(async (req) => {
     }
 
     // 5. Cache Miss - Fetch from Strava
-    console.log(`[STREAMS] Cache miss for UUID: ${activityUuid}. Fetching from Strava...`)
+    logger.info('streams.cache_miss', { activityId: activityUuid })
     
     // First, find the activity by UUID to get external_id (for Strava API) and verify permissions
     const { data: activity, error: activityError } = await supabase
@@ -102,9 +108,9 @@ Deno.serve(async (req) => {
       .single()
 
     if (activityError || !activity) {
-        console.error('[STREAMS] Activity not found in DB:', activityUuid, activityError)
+        logger.error('streams.activity_not_found', { activityId: activityUuid, error: activityError })
         return new Response(JSON.stringify({ error: 'Activity not found in system' }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: jsonHeaders,
             status: 404,
         })
     }
@@ -124,12 +130,12 @@ Deno.serve(async (req) => {
         .single()
 
       if (viewerProfileError || athleteProfileError || !viewerProfile || !athleteProfile) {
-        console.error('[STREAMS] Profile lookup error:', {
+        logger.error('streams.profile_lookup_error', {
           viewerProfileError,
           athleteProfileError,
         })
         return new Response(JSON.stringify({ error: 'Forbidden' }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: jsonHeaders,
           status: 403,
         })
       }
@@ -141,7 +147,7 @@ Deno.serve(async (req) => {
 
       if (!isTeamCoach) {
         return new Response(JSON.stringify({ error: 'Forbidden' }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: jsonHeaders,
           status: 403,
         })
       }
@@ -155,9 +161,9 @@ Deno.serve(async (req) => {
       .single()
 
     if (connError || !connection) {
-        console.error('[STREAMS] Strava connection not found for user:', activity.user_id)
+        logger.error('streams.connection_not_found', { userId: activity.user_id, error: connError })
         return new Response(JSON.stringify({ error: 'Strava connection not found' }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: jsonHeaders,
             status: 404,
         })
     }
@@ -167,7 +173,7 @@ Deno.serve(async (req) => {
 
     // Refresh token if expired
     if (connection.expires_at <= now + 60) {
-      console.log('[STREAMS] Refreshing Strava token...')
+      logger.info('streams.refreshing_token', { userId: activity.user_id })
       const refreshResponse = await fetch('https://www.strava.com/oauth/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -180,9 +186,9 @@ Deno.serve(async (req) => {
       })
 
       if (!refreshResponse.ok) {
-          console.error('[STREAMS] Token refresh failed')
+          logger.error('streams.token_refresh_failed', { status: refreshResponse.status, userId: activity.user_id })
           return new Response(JSON.stringify({ error: 'Failed to refresh Strava token' }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: jsonHeaders,
             status: refreshResponse.status === 401 ? 401 : 502,
           })
       }
@@ -205,19 +211,23 @@ Deno.serve(async (req) => {
     const streamKeys = 'time,distance,latlng,altitude,heartrate,cadence,watts,velocity_smooth,grade_smooth'
     const stravaUrl = `https://www.strava.com/api/v3/activities/${activity.external_id}/streams?keys=${streamKeys}&key_by_type=true`
     
-    console.log(`[STREAMS] Fetching from Strava: ${stravaUrl}`)
+    logger.debug('streams.fetching_from_strava', { activityId: activityUuid })
     
     const stravaResponse = await fetch(stravaUrl, { 
         headers: { 'Authorization': `Bearer ${accessToken}` } 
     })
 
     if (!stravaResponse.ok) {
-        console.error(`[STREAMS] Strava API error: ${stravaResponse.status} ${stravaResponse.statusText}`)
+        logger.error('streams.strava_api_error', {
+          status: stravaResponse.status,
+          statusText: stravaResponse.statusText,
+          activityId: activityUuid,
+        })
         return new Response(JSON.stringify({ 
             error: 'Strava API error', 
             status: stravaResponse.status
         }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: jsonHeaders,
             status: stravaResponse.status === 429 ? 429 : 502,
         })
     }
@@ -225,7 +235,7 @@ Deno.serve(async (req) => {
     const streamsData = await stravaResponse.json()
 
     // 6. Persist to Cache
-    console.log(`[STREAMS] Persisting streams to cache for UUID: ${activityUuid}`)
+    logger.debug('streams.persisting_cache', { activityId: activityUuid })
     const { error: persistError } = await supabase
       .from('activity_streams')
       .upsert({
@@ -235,19 +245,19 @@ Deno.serve(async (req) => {
         created_at: new Date().toISOString()
       }, { onConflict: 'activity_id' })
     
-    if (persistError) console.error('[STREAMS] Error caching data:', persistError)
+    if (persistError) logger.error('streams.cache_persist_error', { activityId: activityUuid, error: persistError })
 
     await supabase.rpc('purge_expired_activity_streams')
 
     return new Response(JSON.stringify(streamsData), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: jsonHeaders,
       status: 200,
     })
 
   } catch (error) {
-    console.error('[STREAMS] Uncaught error', error)
+    logger.error('streams.unhandled_error', { error })
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: jsonHeaders,
       status: 500,
     })
   }

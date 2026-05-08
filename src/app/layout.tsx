@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
+import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 
 const manrope = Manrope({
   variable: "--font-manrope",
@@ -34,6 +35,7 @@ export default async function RootLayout({
       >
         <NextIntlClientProvider messages={messages}>
           <Providers>
+            <GoogleAnalytics />
             {children}
           </Providers>
         </NextIntlClientProvider>

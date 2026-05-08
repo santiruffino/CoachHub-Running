@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { computeAlertScore, extractRiskKeywords, SmartAlertType } from '@/lib/alerts/scoring';
 import * as Sentry from '@sentry/nextjs';
 import { createRequestLogger, withRequestId } from '@/lib/logger';
+import { apiError } from '@/lib/api/error-response';
 
 interface AlertAthleteRelation {
     name?: string;
@@ -102,7 +103,7 @@ export async function GET(request: NextRequest) {
 
         if (authError || !user) {
             logger.warn('coach_dashboard.unauthorized');
-            return respond({ error: 'Unauthorized' }, { status: 401 });
+            return respond(apiError('AUTH_UNAUTHORIZED', 'Unauthorized'), { status: 401 });
         }
 
         const { data: profile } = await supabase
@@ -113,12 +114,12 @@ export async function GET(request: NextRequest) {
 
         if (profile?.role !== 'COACH' && profile?.role !== 'ADMIN') {
             logger.warn('coach_dashboard.forbidden_role', { userId: user.id, role: profile?.role });
-            return respond({ error: 'Forbidden' }, { status: 403 });
+            return respond(apiError('AUTH_FORBIDDEN', 'Forbidden'), { status: 403 });
         }
 
         if (!profile?.team_id) {
             logger.warn('coach_dashboard.missing_team', { userId: user.id, role: profile.role });
-            return respond({ error: 'Coach must belong to a team' }, { status: 403 });
+            return respond(apiError('TEAM_REQUIRED', 'Coach must belong to a team'), { status: 403 });
         }
 
         const scopeParam = new URL(request.url).searchParams.get('scope');
@@ -695,7 +696,7 @@ export async function GET(request: NextRequest) {
             tags: { route: '/api/v2/dashboard/coach', requestId },
         });
         return respond(
-            { error: error instanceof Error ? error.message : 'Internal server error' },
+            apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
             { status: 500 }
         );
     }

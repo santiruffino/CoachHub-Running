@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -53,7 +55,7 @@ export default function AthleteDetailPage() {
             const res = await racesService.findByUser(id);
             setAssignedRaces(res.data);
         } catch (error) {
-            console.error('Failed to fetch races:', error);
+            appLogger.error('Failed to fetch races:', error);
         }
     };
 
@@ -73,10 +75,10 @@ export default function AthleteDetailPage() {
                 const calendarData = calendarRes.status === 'fulfilled' ? calendarRes.value.data : [];
                 const racesData = racesRes.status === 'fulfilled' ? racesRes.value.data : [];
 
-                if (detailsRes.status === 'rejected') console.error('Failed to fetch athlete details:', detailsRes.reason);
-                if (activitiesRes.status === 'rejected') console.error('Failed to fetch activities:', activitiesRes.reason);
-                if (calendarRes.status === 'rejected') console.error('Failed to fetch calendar assignments:', calendarRes.reason);
-                if (racesRes.status === 'rejected') console.error('Failed to fetch races:', racesRes.reason);
+                if (detailsRes.status === 'rejected') appLogger.error('Failed to fetch athlete details:', detailsRes.reason);
+                if (activitiesRes.status === 'rejected') appLogger.error('Failed to fetch activities:', activitiesRes.reason);
+                if (calendarRes.status === 'rejected') appLogger.error('Failed to fetch calendar assignments:', calendarRes.reason);
+                if (racesRes.status === 'rejected') appLogger.error('Failed to fetch races:', racesRes.reason);
 
                 setAthlete(detailsData);
                 setActivities(activitiesData);
@@ -156,7 +158,7 @@ export default function AthleteDetailPage() {
                 }
                 setPerformanceData(performanceWeeks);
             } catch (error) {
-                console.error('Failed to fetch athlete data:', error);
+                appLogger.error('Failed to fetch athlete data:', error);
             } finally {
                 setLoading(false);
             }
@@ -176,7 +178,7 @@ export default function AthleteDetailPage() {
                 }
             } : null);
         } catch (error) {
-            console.error('Failed to save notes:', error);
+            appLogger.error('Failed to save notes:', error);
             showAlert('error', t('profile.errorUpdate'));
         }
     };
@@ -187,7 +189,7 @@ export default function AthleteDetailPage() {
             await trainingsService.deleteAssignment(pendingDeleteAssignment);
             setAssignments(prev => prev.filter(a => a.id !== pendingDeleteAssignment));
         } catch (error) {
-            console.error('Failed to delete assignment:', error);
+            appLogger.error('Failed to delete assignment:', error);
             showAlert('error', tAthlete('deleteAssignmentError'));
         } finally {
             setPendingDeleteAssignment(null);
@@ -205,7 +207,7 @@ export default function AthleteDetailPage() {
                 }
             } : null);
         } catch (error) {
-            console.error('Failed to update VAM:', error);
+            appLogger.error('Failed to update VAM:', error);
             showAlert('error', tAthlete('updateVAMError'));
         }
     };

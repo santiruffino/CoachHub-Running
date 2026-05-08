@@ -11,8 +11,11 @@
         "progress": "Progreso",
         "profile": "Perfil",
         "settings": "Ajustes",
+        "auditLogs": "Auditoría",
         "logout": "Cerrar sesión",
-        "athleteManagement": "Gestión de Atletas"
+        "athleteManagement": "Gestión de Atletas",
+        "coachSettings": "Ajustes Coach",
+        "teamSettings": "Ajustes Equipo"
     },
     "dashboard": {
         "title": "Coach Dashboard",
@@ -1298,12 +1301,7 @@
             "viewDetails": "Ver Detalles",
             "activeRaces": "Carreras Próximas",
             "finishedRaces": "Historial de Carreras",
-            "createFirstTemplate": "Crear tu primera carrera",
-            "searchPlaceholder": "Buscar carreras...",
-            "title": "Biblioteca de Carreras",
-            "subtitle": "Gestiona plantillas de carreras para asignar a tus atletas.",
-            "createTemplate": "Crear Plantilla",
-            "noRaces": "No se encontraron carreras."
+            "createFirstTemplate": "Crear tu primera carrera"
         },
         "dialog": {
             "createTitle": "Crear Plantilla de Carrera",

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { appLogger } from '@/lib/app-logger';
 
 export async function POST(request: NextRequest) {
     try {
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
         });
 
         if (authError || !authData.user) {
-            console.error('Auth error:', authError);
+            appLogger.error('Auth error:', authError);
             return NextResponse.json(
                 { error: 'Failed to create user account' },
                 { status: 500 }
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest) {
             .eq('id', authData.user.id);
 
         if (profileError) {
-            console.error('Profile update error:', profileError);
+            appLogger.error('Profile update error:', profileError);
             // User created but profile update failed - still proceed
         }
 
@@ -89,7 +90,7 @@ export async function POST(request: NextRequest) {
             .eq('id', invitation.id);
 
         if (updateError) {
-            console.error('Invitation update error:', updateError);
+            appLogger.error('Invitation update error:', updateError);
         }
 
         // Create specific profile based on role
@@ -101,7 +102,7 @@ export async function POST(request: NextRequest) {
                 });
 
             if (coachProfileError && !coachProfileError.message.includes('duplicate')) {
-                console.error('Coach profile creation error:', coachProfileError);
+                appLogger.error('Coach profile creation error:', coachProfileError);
             }
         } else {
             // Default to creating an athlete profile
@@ -112,7 +113,7 @@ export async function POST(request: NextRequest) {
                 });
 
             if (athleteProfileError && !athleteProfileError.message.includes('duplicate')) {
-                console.error('Athlete profile creation error:', athleteProfileError);
+                appLogger.error('Athlete profile creation error:', athleteProfileError);
             }
         }
 
@@ -122,7 +123,7 @@ export async function POST(request: NextRequest) {
             email: invitation.email,
         });
     } catch (error: unknown) {
-        console.error('Accept invitation error:', error);
+        appLogger.error('Accept invitation error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
             { status: 500 }

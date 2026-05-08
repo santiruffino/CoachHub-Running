@@ -17,6 +17,8 @@ Coach Hub Running is currently optimized for running coaching workflows.
 3. Assign trainings to athletes and groups
 4. Review dashboards, compliance signals, and activity analysis
 5. Manage athlete feedback and assignment linkage
+6. Configure coach/team settings (thresholds, branding, default models)
+7. Review append-only admin audit logs for critical writes
 
 ## Athlete workflows
 
@@ -32,6 +34,7 @@ Coach Hub Running is currently optimized for running coaching workflows.
 - UUID-first activity routes in v2
 - Strava ingestion and stream fetching through Edge Functions
 - Spanish locale enabled (`es`)
+- Persisted coach/team settings and first-cut admin audit logging are active
 
 ## Cycling roadmap status
 

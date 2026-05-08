@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -28,7 +30,7 @@ export default function GroupsPage() {
             setActiveGroups(activeList);
             setFinishedGroups(archivedList);
         } catch (e) {
-            console.error(e);
+            appLogger.error(e);
         } finally {
             setLoading(false);
         }
@@ -66,7 +68,7 @@ export default function GroupsPage() {
             setEditingGroupId(null);
             setEditingName('');
         } catch (error) {
-            console.error('Error updating group name:', error);
+            appLogger.error('Error updating group name:', error);
         }
     };
 

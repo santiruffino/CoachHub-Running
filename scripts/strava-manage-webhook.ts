@@ -9,7 +9,7 @@ const {
   STRAVA_CLIENT_ID,
   STRAVA_CLIENT_SECRET,
   STRAVA_WEBHOOK_VERIFY_TOKEN,
-  NEXT_PUBLIC_APP_URL,
+  APP_URL,
 } = process.env;
 
 type ApiResponse = Record<string, unknown>;
@@ -68,7 +68,12 @@ async function createSubscription() {
     return;
   }
 
-  const callbackUrl = `${NEXT_PUBLIC_APP_URL}/api/v2/strava/webhook`;
+  if (!APP_URL) {
+    console.error('Error: APP_URL is not defined in .env.local');
+    return;
+  }
+
+  const callbackUrl = `${APP_URL}/api/v2/strava/webhook`;
   console.log(`Creating subscription for ${callbackUrl}...`);
 
   // IMPORTANT: Strava requires form-data/urlencoded for creation, NOT JSON

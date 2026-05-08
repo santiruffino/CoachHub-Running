@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/api-helpers';
+import { appLogger } from '@/lib/app-logger';
+import { apiError } from '@/lib/api/error-response';
+import { appendAdminActionLog } from '@/lib/audit/admin-action-log';
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const authResult = await requireAuth();
@@ -16,7 +19,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       .single();
 
     if (profile?.role !== 'ADMIN' && profile?.role !== 'COACH') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Forbidden'), { status: 403 });
     }
 
     const { data: targetUser } = await supabase
@@ -26,12 +29,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       .single();
         
     if (!targetUser) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json(apiError('USER_NOT_FOUND', 'User not found'), { status: 404 });
     }
 
     // Both Admins and Coaches can edit athletes within their team
     if (targetUser.team_id !== profile.team_id) {
-      return NextResponse.json({ error: 'Cannot edit an athlete outside your team' }, { status: 403 });
+      return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Cannot edit an athlete outside your team'), { status: 403 });
     }
 
     const body = (await request.json()) as {
@@ -46,7 +49,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     }
 
     if (Object.keys(updateData).length === 0) {
-      return NextResponse.json({ error: 'No data to update' }, { status: 400 });
+      return NextResponse.json(apiError('VALIDATION_NO_DATA_TO_UPDATE', 'No data to update'), { status: 400 });
     }
 
     const { error: updateError } = await supabase
@@ -56,10 +59,24 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     if (updateError) throw updateError;
 
+    if (profile.role === 'ADMIN') {
+      await appendAdminActionLog({
+        actorId: authResult.user.id,
+        actorRole: 'ADMIN',
+        teamId: profile.team_id,
+        action: 'user.updated',
+        targetType: 'profile',
+        targetId: userId,
+        metadata: {
+          fields: Object.keys(updateData),
+        },
+      });
+    }
+
     return NextResponse.json({ message: 'User updated successfully' });
   } catch (error: unknown) {
-    console.error('PATCH user Error:', error instanceof Error ? error.message : error);
-    return NextResponse.json({ error: 'Failed to update user' }, { status: 500 });
+    appLogger.error('PATCH user Error:', error instanceof Error ? error.message : error);
+    return NextResponse.json(apiError('FAILED_TO_UPDATE_USER', 'Failed to update user'), { status: 500 });
   }
 }
 
@@ -78,7 +95,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
       .single();
 
     if (profile?.role !== 'ADMIN' && profile?.role !== 'COACH') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Forbidden'), { status: 403 });
     }
 
     const { data: targetUser } = await supabase
@@ -88,12 +105,12 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
       .single();
         
     if (!targetUser) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json(apiError('USER_NOT_FOUND', 'User not found'), { status: 404 });
     }
 
     // Both Admins and Coaches can delete athletes within their team
     if (targetUser.team_id !== profile.team_id) {
-      return NextResponse.json({ error: 'Cannot delete an athlete outside your team' }, { status: 403 });
+      return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Cannot delete an athlete outside your team'), { status: 403 });
     }
 
     // Supabase auth.users can only be deleted by the service role.
@@ -112,13 +129,24 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     if (deleteError) {
        // If RLS prevents deletion from profiles (it sometimes happens because it's tied to auth.users in a 1:1), 
        // fallback to setting 'coach_id' = null to orphan them if COACH deletes them.
-       console.error("Failed to delete profile, possibly RLS:", deleteError);
+       appLogger.error("Failed to delete profile, possibly RLS:", deleteError);
        throw deleteError;
+    }
+
+    if (profile.role === 'ADMIN') {
+      await appendAdminActionLog({
+        actorId: authResult.user.id,
+        actorRole: 'ADMIN',
+        teamId: profile.team_id,
+        action: 'user.deleted',
+        targetType: 'profile',
+        targetId: userId,
+      });
     }
 
     return NextResponse.json({ message: 'User deleted successfully' });
   } catch (error: unknown) {
-    console.error('DELETE user Error:', error instanceof Error ? error.message : error);
-    return NextResponse.json({ error: 'Failed to delete user' }, { status: 500 });
+    appLogger.error('DELETE user Error:', error instanceof Error ? error.message : error);
+    return NextResponse.json(apiError('FAILED_TO_DELETE_USER', 'Failed to delete user'), { status: 500 });
   }
 }

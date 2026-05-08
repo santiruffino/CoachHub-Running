@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
@@ -57,7 +59,7 @@ export function RecordRaceResultModal({ open, onOpenChange, race, onSuccess }: R
       onSuccess();
       onOpenChange(false);
     } catch (error) {
-      console.error('Error updating race result:', error);
+      appLogger.error('Error updating race result:', error);
     } finally {
       setLoading(false);
     }

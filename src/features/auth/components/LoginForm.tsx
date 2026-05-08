@@ -15,6 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { isAxiosError } from 'axios';
+import { trackLoginSuccess } from '@/lib/analytics/events';
 
 export default function LoginForm() {
     const [error, setError] = useState('');
@@ -44,6 +45,7 @@ export default function LoginForm() {
         try {
             setError('');
             await login(data.email, data.password);
+            trackLoginSuccess();
         } catch (err: unknown) {
             setError(isAxiosError(err) ? err.message : t('invalidCredentials'));
         }

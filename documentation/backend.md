@@ -20,6 +20,7 @@ Most feature routes are under `src/app/api/v2/**`:
 - Trainings, assignments, matching, calendar
 - Activities (detail, streams, feedback, compliance)
 - Strava auth + webhook
+- Settings (coach/team) and admin audit logs
 - Dashboard/admin/coach data
 
 ### Compatibility/legacy routes
@@ -29,6 +30,34 @@ Some non-v2 routes remain active (mainly invitation/auth compatibility):
 - `src/app/api/auth/**`
 - `src/app/api/invitations/**`
 - a few old `src/app/api/users/**` and `src/app/api/groups/**`
+
+## Legacy to v2 migration map
+
+The canonical API surface is `src/app/api/v2/**`.
+
+Compatibility routes currently in place:
+
+- `GET /api/users/profile` -> `GET /api/v2/users/profile`
+- `PATCH /api/users/profile` -> `PATCH /api/v2/users/profile`
+- `GET /api/users/athletes` -> `GET /api/v2/users/athletes`
+- `GET /api/groups` -> `GET /api/v2/groups`
+- `POST /api/groups` -> `POST /api/v2/groups`
+
+Generic aliasing is also active for unversioned endpoints:
+
+- `src/app/api/[...path]/route.ts`
+- Any request to `/api/<path>` (except `/api/v2/**`) is proxied to `/api/v2/<path>`
+- Alias responses include header `x-api-alias: v2`
+- Alias hits emit telemetry event `legacy.api.alias.hit`
+
+## Deprecation plan
+
+1. Keep `v2` as the only endpoint where behavior changes are implemented.
+2. Keep legacy compatibility routes as thin pass-throughs only (re-export or proxy), no duplicated business logic.
+3. Monitor alias telemetry (`legacy.api.alias.hit`) to identify active unversioned consumers.
+4. Update all remaining clients/integrations to call `/api/v2/**` directly.
+5. Announce deprecation window for `/api/**` unversioned aliasing.
+6. Remove `src/app/api/[...path]/route.ts` after legacy traffic reaches zero for the agreed period.
 
 ## Authentication and authorization
 
@@ -47,6 +76,23 @@ Some non-v2 routes remain active (mainly invitation/auth compatibility):
 - `ATHLETE`
 
 `ADMIN` is treated as a super-role by `requireRole`.
+
+## Settings and audit APIs
+
+New platform hardening/configuration surface includes:
+
+- `GET/PATCH /api/v2/settings/coach`
+  - coach-scoped persisted thresholds/default models
+  - table: `coach_settings`
+- `GET/PATCH /api/v2/settings/team`
+  - team-scoped persisted thresholds/branding/default models
+  - `PATCH` restricted to `ADMIN`
+  - table: `team_settings`
+- `GET /api/v2/admin/audit-logs`
+  - admin-only paginated/filterable access to append-only critical-write history
+  - table: `admin_action_logs`
+
+Critical admin writes emit audit events through `appendAdminActionLog()`.
 
 ### Team boundary
 
@@ -72,12 +118,24 @@ Authorization is team-centric (`team_id`).
 - Exchange code: `POST /api/v2/strava/auth/exchange`
 - Sync status/manual sync/disconnect: `/api/v2/strava/auth/*`
 
+OAuth state is now signed + expiring + user-bound (state cookie includes HMAC signature and expiry, validated on exchange).
+
 ### Webhook + async processing
 
 - Webhook endpoint: `POST /api/v2/strava/webhook`
 - Processing is delegated to Edge Function `process-strava-activity`
 - Streams retrieval/caching delegated to Edge Function `fetch-strava-streams`
 - Compliance calculations delegated to `evaluate-compliance`
+
+Webhook flow is hardened with stricter payload/content-type checks, body-size guardrails, subscription id verification, and route-level throttling.
+
+## API hardening contract
+
+V2 routes now standardize error payloads via `apiError()`:
+
+- shape: `{ success: false, code, error, message }`
+- middleware-level v2 throttling returns `429` with rate-limit headers
+- request tracing continues to use `x-request-id`
 
 ### Edge Functions in repo
 

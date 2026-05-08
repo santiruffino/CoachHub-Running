@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -37,7 +39,7 @@ export default function ForgotPasswordForm() {
             await authService.resetPassword(data.email);
             setSuccess(true);
         } catch (err: unknown) {
-            console.error('❌ [ForgotPasswordForm] Failed to send reset email:', err);
+            appLogger.error('❌ [ForgotPasswordForm] Failed to send reset email:', err);
             setError(isAxiosError(err) ? err.message : t('errorMessage'));
         }
     };

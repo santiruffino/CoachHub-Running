@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -17,6 +19,7 @@ import api from '@/lib/axios';
 import { Check, Copy, MessageCircle } from 'lucide-react';
 import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
 import { AxiosError } from 'axios';
+import { trackInvitationCreated } from '@/lib/analytics/events';
 
 interface InviteCoachModalProps {
     open: boolean;
@@ -48,11 +51,13 @@ export function InviteCoachModal({ open, onClose }: InviteCoachModalProps) {
                 role: 'COACH',
             });
 
+            trackInvitationCreated({ role: 'COACH' });
+
             // Generate invitation link
             const link = `${window.location.origin}/accept-invitation?token=${response.data.token}`;
             setInvitationLink(link);
         } catch (error: unknown) {
-            console.error('Failed to create invitation:', error);
+            appLogger.error('Failed to create invitation:', error);
             const errorMessage = (error as AxiosError<InvitationApiError>)?.response?.data?.error || tCommon('createError');
             showAlert('error', errorMessage);
         } finally {

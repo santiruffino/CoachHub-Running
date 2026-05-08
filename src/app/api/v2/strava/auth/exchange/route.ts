@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
+import { appLogger } from '@/lib/app-logger';
+import { apiError } from '@/lib/api/error-response';
+import { verifySignedStravaOauthState } from '@/lib/strava/oauth-state';
 
 interface ExchangeRequestBody {
     code?: string;
@@ -38,16 +41,28 @@ export async function POST(request: NextRequest) {
         const { code, state } = (await request.json()) as ExchangeRequestBody;
 
         if (!code) {
-            return NextResponse.json(
-                { error: 'Authorization code is required' },
+            return NextResponse.json(apiError('VALIDATION_AUTHORIZATION_CODE_IS_REQUIRED', 'Authorization code is required'),
                 { status: 400 }
             );
         }
 
-        const expectedState = request.cookies.get('strava_oauth_state')?.value;
-        if (!state || !expectedState || state !== expectedState) {
-            return NextResponse.json(
-                { error: 'Invalid OAuth state' },
+        const oauthStateSecret = process.env.STRAVA_OAUTH_STATE_SECRET || process.env.STRAVA_CLIENT_SECRET;
+        if (!oauthStateSecret) {
+            return NextResponse.json(apiError('STRAVA_OAUTH_NOT_CONFIGURED', 'Strava OAuth not configured'),
+                { status: 500 }
+            );
+        }
+
+        const verification = verifySignedStravaOauthState({
+            state: state || '',
+            cookieValue: request.cookies.get('strava_oauth_state')?.value,
+            userId: user!.id,
+            secret: oauthStateSecret,
+        });
+
+        if (!state || !verification.isValid) {
+            appLogger.warn('strava_oauth.invalid_state', { reason: verification.reason, userId: user!.id });
+            return NextResponse.json(apiError('VALIDATION_INVALID_OAUTH_STATE', 'Invalid OAuth state'),
                 { status: 400 }
             );
         }
@@ -56,8 +71,7 @@ export async function POST(request: NextRequest) {
         const clientSecret = process.env.STRAVA_CLIENT_SECRET;
 
         if (!clientId || !clientSecret) {
-            return NextResponse.json(
-                { error: 'Strava OAuth not configured' },
+            return NextResponse.json(apiError('STRAVA_OAUTH_NOT_CONFIGURED', 'Strava OAuth not configured'),
                 { status: 500 }
             );
         }
@@ -78,9 +92,8 @@ export async function POST(request: NextRequest) {
 
         if (!tokenResponse.ok) {
             const error = await tokenResponse.json();
-            console.error('Strava token exchange error:', error);
-            return NextResponse.json(
-                { error: 'Failed to exchange authorization code' },
+            appLogger.error('Strava token exchange error:', error);
+            return NextResponse.json(apiError('VALIDATION_FAILED_TO_EXCHANGE_AUTHORIZATION_CODE', 'Failed to exchange authorization code'),
                 { status: 400 }
             );
         }
@@ -103,9 +116,8 @@ export async function POST(request: NextRequest) {
             });
 
         if (upsertError) {
-            console.error('Failed to store Strava connection:', upsertError);
-            return NextResponse.json(
-                { error: 'Failed to save connection' },
+            appLogger.error('Failed to store Strava connection:', upsertError);
+            return NextResponse.json(apiError('FAILED_TO_SAVE_CONNECTION', 'Failed to save connection'),
                 { status: 500 }
             );
         }
@@ -122,7 +134,7 @@ export async function POST(request: NextRequest) {
         if (zonesResult.success) {
             // Zones synced successfully
         } else {
-            console.warn('Failed to sync heart rate zones:', zonesResult.error);
+            appLogger.warn('Failed to sync heart rate zones:', zonesResult.error);
             // Don't fail the connection if zones sync fails
         }
 
@@ -146,9 +158,8 @@ export async function POST(request: NextRequest) {
 
         return response;
     } catch (error: unknown) {
-        console.error('Exchange Strava code error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
+        appLogger.error('Exchange Strava code error:', error);
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
             { status: 500 }
         );
     }

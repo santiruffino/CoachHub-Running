@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { appLogger } from '@/lib/app-logger';
+import { apiError } from '@/lib/api/error-response';
 
 interface AthleteGroup {
   id: string;
@@ -23,8 +25,7 @@ export async function GET(request: Request) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
+      return NextResponse.json(apiError('AUTH_UNAUTHORIZED', 'Unauthorized'),
         { status: 401 }
       );
     }
@@ -37,8 +38,7 @@ export async function GET(request: Request) {
       .single();
 
     if (profile?.role !== 'COACH' && profile?.role !== 'ADMIN') {
-      return NextResponse.json(
-        { error: 'Only coaches or admins can access this endpoint' },
+      return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Only coaches or admins can access this endpoint'),
         { status: 403 }
       );
     }
@@ -79,9 +79,8 @@ export async function GET(request: Request) {
     const { data: athletes, error } = await query;
 
     if (error) {
-      console.error('Failed to fetch athletes:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch athletes' },
+      appLogger.error('Failed to fetch athletes:', error);
+      return NextResponse.json(apiError('FAILED_TO_FETCH_ATHLETES', 'Failed to fetch athletes'),
         { status: 500 }
       );
     }
@@ -98,9 +97,8 @@ export async function GET(request: Request) {
       .in('user_id', athleteIds);
 
     if (assignmentsError) {
-      console.error('Failed to fetch assignments:', assignmentsError);
-      return NextResponse.json(
-        { error: 'Failed to fetch assignments' },
+      appLogger.error('Failed to fetch assignments:', assignmentsError);
+      return NextResponse.json(apiError('FAILED_TO_FETCH_ASSIGNMENTS', 'Failed to fetch assignments'),
         { status: 500 }
       );
     }
@@ -172,9 +170,8 @@ export async function GET(request: Request) {
     });
 
     return NextResponse.json(athletesWithData);
-  } catch (error: unknown) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Internal server error' },
+  } catch {
+    return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
       { status: 500 }
     );
   }

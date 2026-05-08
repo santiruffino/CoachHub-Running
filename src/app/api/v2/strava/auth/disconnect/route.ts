@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
+import { appLogger } from '@/lib/app-logger';
+import { apiError } from '@/lib/api/error-response';
 
 /**
  * Disconnect from Strava
@@ -27,9 +29,8 @@ export async function POST(request: NextRequest) {
             .not('external_id', 'is', null);
 
         if (activitiesError) {
-            console.error('Disconnect Strava activities purge error:', activitiesError);
-            return NextResponse.json(
-                { error: 'Failed to purge Strava activities' },
+            appLogger.error('Disconnect Strava activities purge error:', activitiesError);
+            return NextResponse.json(apiError('FAILED_TO_PURGE_STRAVA_ACTIVITIES', 'Failed to purge Strava activities'),
                 { status: 500 }
             );
         }
@@ -43,9 +44,8 @@ export async function POST(request: NextRequest) {
             .eq('user_id', user!.id);
 
         if (zonesError) {
-            console.error('Disconnect Strava zones purge error:', zonesError);
-            return NextResponse.json(
-                { error: 'Failed to purge Strava zones' },
+            appLogger.error('Disconnect Strava zones purge error:', zonesError);
+            return NextResponse.json(apiError('FAILED_TO_PURGE_STRAVA_ZONES', 'Failed to purge Strava zones'),
                 { status: 500 }
             );
         }
@@ -56,9 +56,8 @@ export async function POST(request: NextRequest) {
             .eq('user_id', user!.id);
 
         if (logsError) {
-            console.error('Disconnect Strava logs purge error:', logsError);
-            return NextResponse.json(
-                { error: 'Failed to purge Strava sync logs' },
+            appLogger.error('Disconnect Strava logs purge error:', logsError);
+            return NextResponse.json(apiError('FAILED_TO_PURGE_STRAVA_SYNC_LOGS', 'Failed to purge Strava sync logs'),
                 { status: 500 }
             );
         }
@@ -70,9 +69,8 @@ export async function POST(request: NextRequest) {
             .eq('user_id', user!.id);
 
         if (error) {
-            console.error('Disconnect Strava error:', error);
-            return NextResponse.json(
-                { error: 'Failed to disconnect' },
+            appLogger.error('Disconnect Strava error:', error);
+            return NextResponse.json(apiError('FAILED_TO_DISCONNECT', 'Failed to disconnect'),
                 { status: 500 }
             );
         }
@@ -82,9 +80,8 @@ export async function POST(request: NextRequest) {
             message: 'Successfully disconnected from Strava and deleted Strava data',
         });
     } catch (error: unknown) {
-        console.error('Disconnect Strava error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
+        appLogger.error('Disconnect Strava error:', error);
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
             { status: 500 }
         );
     }

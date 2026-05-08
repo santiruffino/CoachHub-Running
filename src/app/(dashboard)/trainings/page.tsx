@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -29,7 +31,7 @@ export default function TrainingsPage() {
             const res = await trainingsService.findAll();
             setTrainings(res.data.filter(training => training.isTemplate));
         } catch (e) {
-            console.error(e);
+            appLogger.error(e);
         } finally {
             setLoading(false);
         }
@@ -61,7 +63,7 @@ export default function TrainingsPage() {
             // Optimistically update the UI instead of re-fetching
             setTrainings(prev => prev.filter(t => t.id !== pendingDelete.id));
         } catch (error) {
-            console.error('Failed to delete training:', error);
+            appLogger.error('Failed to delete training:', error);
             showAlert('error', t('deleteError'));
         } finally {
             setIsDeleting(false);

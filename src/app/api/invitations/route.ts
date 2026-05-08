@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
 import { randomBytes } from 'crypto';
 import { createServiceRoleClient } from '@/lib/supabase/server';
+import { appLogger } from '@/lib/app-logger';
 
 export async function POST(request: NextRequest) {
     try {
@@ -114,7 +115,7 @@ export async function POST(request: NextRequest) {
             .single();
 
         if (error) {
-            console.error('Error creating invitation:', error);
+            appLogger.error('Error creating invitation:', error);
             return NextResponse.json(
                 { error: 'Failed to create invitation' },
                 { status: 500 }
@@ -129,7 +130,7 @@ export async function POST(request: NextRequest) {
             accepted: invitation.accepted,
         });
     } catch (error: unknown) {
-        console.error('Create invitation error:', error);
+        appLogger.error('Create invitation error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
             { status: 500 }

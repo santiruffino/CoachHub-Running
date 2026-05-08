@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { apiError } from '@/lib/api/error-response';
 import { NextResponse } from 'next/server';
 
 export type AppRole = 'COACH' | 'ATHLETE' | 'ADMIN';
@@ -30,7 +31,7 @@ export async function requireAuth() {
     return {
       user: null,
       supabase,
-      response: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }),
+      response: NextResponse.json(apiError('AUTH_UNAUTHORIZED', 'Unauthorized'), { status: 401 }),
     };
   }
 
@@ -63,13 +64,17 @@ export async function requireRole(role: 'COACH' | 'ATHLETE' | 'ADMIN' | ('COACH'
       user: null,
       supabase: authResult.supabase,
       response: NextResponse.json(
-        { error: `Only ${roleString}s can access this endpoint` },
+        apiError('AUTH_FORBIDDEN', `Only ${roleString}s can access this endpoint`),
         { status: 403 }
       ),
     };
   }
 
   return { user: authResult.user, supabase: authResult.supabase, response: null };
+}
+
+export function getApiV2UserIdFromAuthResult(authResult: { user: { id: string } | null }): string | null {
+  return authResult.user?.id ?? null;
 }
 
 export async function getRequesterProfile(userId: string) {

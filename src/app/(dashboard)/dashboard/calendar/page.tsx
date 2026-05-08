@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
@@ -77,7 +79,7 @@ export default function CalendarPage() {
                 setSelectedStudentIds(studentList.map(s => s.id));
                 setSelectedGroupIds(groupsData.map((group) => group.id));
             } catch (error) {
-                console.error('Failed to fetch data', error);
+                appLogger.error('Failed to fetch data', error);
             }
         };
         fetchData();
@@ -112,7 +114,7 @@ export default function CalendarPage() {
             }));
             setEvents(newEvents);
         } catch (error) {
-            console.error('Failed to fetch assignments', error);
+            appLogger.error('Failed to fetch assignments', error);
         }
     }, [currentRange, selectedStudentIds, selectedGroupIds]);
 
@@ -162,7 +164,7 @@ export default function CalendarPage() {
                 });
                 fetchAssignments();
             } catch (error) {
-                console.error('Failed to reschedule', error);
+                appLogger.error('Failed to reschedule', error);
                 showAlert('error', t('rescheduleError'));
             }
         };

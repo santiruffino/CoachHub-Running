@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
@@ -60,7 +62,7 @@ export function RaceDialog({ open, onOpenChange, race, onSuccess }: RaceDialogPr
       onSuccess();
       onOpenChange(false);
     } catch (error) {
-      console.error('Error saving race:', error);
+      appLogger.error('Error saving race:', error);
     } finally {
       setLoading(false);
     }

@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
@@ -70,7 +72,7 @@ export function NewActivityFeedbackModal({
             onSubmitted();
             onOpenChange(false);
         } catch (error) {
-            console.error('Failed to save quick activity feedback:', error);
+            appLogger.error('Failed to save quick activity feedback:', error);
         } finally {
             setSaving(false);
         }

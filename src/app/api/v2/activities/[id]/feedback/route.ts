@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/api-helpers';
 import { createServiceRoleClient } from '@/lib/supabase/server';
+import { appLogger } from '@/lib/app-logger';
+import { apiError } from '@/lib/api/error-response';
 
 /**
  * Get Activity Feedback
@@ -32,7 +34,7 @@ export async function GET(
 
         if (activityError || !activity) {
             return NextResponse.json(
-                { error: 'Activity not found' },
+                apiError('ACTIVITY_NOT_FOUND', 'Activity not found'),
                 { status: 404 }
             );
         }
@@ -59,7 +61,7 @@ export async function GET(
 
             if (!isTeamMember) {
                 return NextResponse.json(
-                    { error: 'Not authorized to view this feedback' },
+                    apiError('FEEDBACK_VIEW_FORBIDDEN', 'Not authorized to view this feedback'),
                     { status: 403 }
                 );
             }
@@ -74,18 +76,18 @@ export async function GET(
             .maybeSingle();
 
         if (feedbackError) {
-            console.error('Feedback fetch error:', feedbackError);
+            appLogger.error('Feedback fetch error:', feedbackError);
             return NextResponse.json(
-                { error: 'Failed to fetch feedback' },
+                apiError('FEEDBACK_FETCH_FAILED', 'Failed to fetch feedback'),
                 { status: 500 }
             );
         }
 
         return NextResponse.json(feedback || null);
     } catch (error: unknown) {
-        console.error('Get activity feedback error:', error);
+        appLogger.error('Get activity feedback error:', error);
         return NextResponse.json(
-            { error: 'Internal server error' },
+            apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
             { status: 500 }
         );
     }
@@ -122,14 +124,14 @@ export async function POST(
         // Validate RPE if provided
         if (rpe !== undefined && (rpe < 1 || rpe > 10)) {
             return NextResponse.json(
-                { error: 'RPE must be between 1 and 10' },
+                apiError('RPE_OUT_OF_RANGE', 'RPE must be between 1 and 10'),
                 { status: 400 }
             );
         }
 
         if (sensations !== undefined && (sensations < 1 || sensations > 10)) {
             return NextResponse.json(
-                { error: 'Sensations must be between 1 and 10' },
+                apiError('SENSATIONS_OUT_OF_RANGE', 'Sensations must be between 1 and 10'),
                 { status: 400 }
             );
         }
@@ -143,7 +145,7 @@ export async function POST(
 
         if (activityError || !activity) {
             return NextResponse.json(
-                { error: 'Activity not found' },
+                apiError('ACTIVITY_NOT_FOUND', 'Activity not found'),
                 { status: 404 }
             );
         }
@@ -151,7 +153,7 @@ export async function POST(
         // Verify user owns this activity
         if (activity.user_id !== user!.id) {
             return NextResponse.json(
-                { error: 'Only the athlete can submit feedback on their own activities' },
+                apiError('FEEDBACK_SUBMIT_FORBIDDEN', 'Only the athlete can submit feedback on their own activities'),
                 { status: 403 }
             );
         }
@@ -191,18 +193,18 @@ export async function POST(
             .single();
 
         if (feedbackError) {
-            console.error('Feedback upsert error:', feedbackError);
+            appLogger.error('Feedback upsert error:', feedbackError);
             return NextResponse.json(
-                { error: 'Failed to save feedback' },
+                apiError('FEEDBACK_SAVE_FAILED', 'Failed to save feedback'),
                 { status: 500 }
             );
         }
 
         return NextResponse.json(feedback);
     } catch (error: unknown) {
-        console.error('Submit activity feedback error:', error);
+        appLogger.error('Submit activity feedback error:', error);
         return NextResponse.json(
-            { error: 'Internal server error' },
+            apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
             { status: 500 }
         );
     }

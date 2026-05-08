@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { createContext, useEffect, useState } from 'react';
 import { User } from '@/interfaces/auth';
@@ -6,6 +8,7 @@ import { authService } from '../services/auth.service';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
+import { trackAuthenticatedSession } from '@/lib/analytics/events';
 
 interface AuthContextType {
     user: User | null;
@@ -26,12 +29,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         // Get initial session
         const initializeAuth = async () => {
-            try {
-                const currentUser = await authService.getCurrentUser();
-                setUser(currentUser);
-            } catch (error) {
-                console.error('Failed to get current user', error);
-                setUser(null);
+                try {
+                    const currentUser = await authService.getCurrentUser();
+                    setUser(currentUser);
+                    if (currentUser) {
+                        trackAuthenticatedSession({
+                            role: currentUser.role,
+                            onboardingCompleted: currentUser.isOnboardingCompleted,
+                        });
+                    }
+                } catch (error) {
+                    appLogger.error('Failed to get current user', error);
+                    setUser(null);
             } finally {
                 setLoading(false);
             }
@@ -54,8 +63,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 try {
                     const currentUser = await authService.getCurrentUser();
                     setUser(currentUser);
+                    if (currentUser) {
+                        trackAuthenticatedSession({
+                            role: currentUser.role,
+                            onboardingCompleted: currentUser.isOnboardingCompleted,
+                        });
+                    }
                 } catch (error) {
-                    console.error('Failed to fetch user profile', error);
+                    appLogger.error('Failed to fetch user profile', error);
                     setUser(null);
                 }
             } else if (event === 'SIGNED_OUT') {
@@ -83,6 +98,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     }, [user, loading, router]);
 
+    // Effect to enforce onboarding completion for coaches
+    useEffect(() => {
+        if (!loading && user?.role === 'COACH' && user?.isOnboardingCompleted === false && window.location.pathname !== '/onboarding/coach') {
+            router.push('/onboarding/coach');
+        }
+    }, [user, loading, router]);
+
     const login = async (email: string, password: string) => {
     const res = await fetch('/api/auth/login', {
         method: 'POST',
@@ -100,7 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
         await fetch('/api/auth/logout', { method: 'POST' });
     } catch (e) {
-        console.error('❌ [AuthContext] Logout failed', e);
+        appLogger.error('❌ [AuthContext] Logout failed', e);
     } finally {
         setUser(null);
         window.location.href = '/login';

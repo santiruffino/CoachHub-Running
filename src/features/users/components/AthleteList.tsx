@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useEffect, useState } from 'react';
 import axios from 'axios';
@@ -35,7 +37,7 @@ export function AthleteList() {
                 const response = await axios.get('/api/v2/users/athletes/stats');
                 setAthletes(response.data);
             } catch (error) {
-                console.error('Failed to fetch athletes', error);
+                appLogger.error('Failed to fetch athletes', error);
             } finally {
                 setLoading(false);
             }

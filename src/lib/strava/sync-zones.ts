@@ -1,4 +1,5 @@
 import { SupabaseClient } from '@supabase/supabase-js';
+import { appLogger } from '@/lib/app-logger';
 
 type StravaZone = {
     min: number;
@@ -47,7 +48,7 @@ export async function syncHeartRateZonesFromStrava(
         );
 
         if (!zonesResponse.ok) {
-            console.error('Failed to fetch zones from Strava:', zonesResponse.status);
+            appLogger.error('Failed to fetch zones from Strava:', zonesResponse.status);
             return {
                 success: false,
                 error: 'Failed to fetch zones from Strava'
@@ -85,7 +86,7 @@ export async function syncHeartRateZonesFromStrava(
             });
 
         if (updateError) {
-            console.error('Failed to update zones in profile:', updateError);
+            appLogger.error('Failed to update zones in profile:', updateError);
             return {
                 success: false,
                 error: 'Failed to update zones in database'
@@ -98,7 +99,7 @@ export async function syncHeartRateZonesFromStrava(
             };
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Unknown error';
-        console.error('Error syncing heart rate zones:', error);
+        appLogger.error('Error syncing heart rate zones:', error);
         return {
             success: false,
             error: message

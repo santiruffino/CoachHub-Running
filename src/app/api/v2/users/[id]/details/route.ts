@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/api-helpers';
 import { createServiceRoleClient } from '@/lib/supabase/server';
+import { appLogger } from '@/lib/app-logger';
+import { apiError } from '@/lib/api/error-response';
 
 type AssignmentWithTraining = {
     id: string;
@@ -45,16 +47,14 @@ export async function GET(
             .single();
 
         if (requesterProfileError || !requesterProfile) {
-            return NextResponse.json(
-                { error: 'Unable to resolve requester profile' },
+            return NextResponse.json(apiError('UNABLE_TO_RESOLVE_REQUESTER_PROFILE', 'Unable to resolve requester profile'),
                 { status: 403 }
             );
         }
 
         // Athletes can only view their own data
         if (requesterProfile.role === 'ATHLETE' && requesterProfile.id !== athleteId) {
-            return NextResponse.json(
-                { error: 'You can only view your own data' },
+            return NextResponse.json(apiError('YOU_CAN_ONLY_VIEW_YOUR_OWN_DATA', 'You can only view your own data'),
                 { status: 403 }
             );
         }
@@ -69,16 +69,14 @@ export async function GET(
                 .single();
 
             if (athleteError || !athleteProfile) {
-                return NextResponse.json(
-                    { error: 'Athlete not found' },
+                return NextResponse.json(apiError('ATHLETE_NOT_FOUND', 'Athlete not found'),
                     { status: 404 }
                 );
             }
 
             // Check if this athlete belongs to the same team as the coach
             if (!requesterProfile.team_id || athleteProfile.team_id !== requesterProfile.team_id) {
-                return NextResponse.json(
-                    { error: 'You do not have permission to view this athlete' },
+                return NextResponse.json(apiError('AUTH_FORBIDDEN', 'You do not have permission to view this athlete'),
                     { status: 403 }
                 );
             }
@@ -93,17 +91,15 @@ export async function GET(
             .single();
 
         if (profileError) {
-            console.error('Profile fetch error:', profileError);
-            return NextResponse.json(
-                { error: `Athlete not found: ${profileError.message}` },
+            appLogger.error('Profile fetch error:', profileError);
+            return NextResponse.json(apiError('REQUEST_FAILED', 'Request failed'),
                 { status: 404 }
             );
         }
 
         if (!profile) {
-            console.error('Profile is null for athlete ID:', athleteId);
-            return NextResponse.json(
-                { error: 'Athlete not found' },
+            appLogger.error('Profile is null for athlete ID:', athleteId);
+            return NextResponse.json(apiError('ATHLETE_NOT_FOUND', 'Athlete not found'),
                 { status: 404 }
             );
         }
@@ -222,9 +218,8 @@ export async function GET(
 
         return NextResponse.json(athleteDetails);
     } catch (error: unknown) {
-        console.error('Get athlete details error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
+        appLogger.error('Get athlete details error:', error);
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
             { status: 500 }
         );
     }
@@ -264,8 +259,7 @@ export async function PATCH(
 
         // Only coaches and admins can update athlete details
         if (user!.role !== 'COACH' && user!.role !== 'ADMIN') {
-            return NextResponse.json(
-                { error: 'Only coaches can update athlete details' },
+            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Only coaches can update athlete details'),
                 { status: 403 }
             );
         }
@@ -285,15 +279,13 @@ export async function PATCH(
             .single();
 
         if (athleteError || !athleteProfile) {
-            return NextResponse.json(
-                { error: 'Athlete not found' },
+            return NextResponse.json(apiError('ATHLETE_NOT_FOUND', 'Athlete not found'),
                 { status: 404 }
             );
         }
 
         if (!coachProfile?.team_id || athleteProfile.team_id !== coachProfile.team_id) {
-            return NextResponse.json(
-                { error: 'You do not have permission to update this athlete' },
+            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'You do not have permission to update this athlete'),
                 { status: 403 }
             );
         }
@@ -319,18 +311,16 @@ export async function PATCH(
             .eq('user_id', athleteId);
 
         if (updateError) {
-            console.error('Update athlete profile error:', updateError);
-            return NextResponse.json(
-                { error: 'Failed to update athlete profile' },
+            appLogger.error('Update athlete profile error:', updateError);
+            return NextResponse.json(apiError('FAILED_TO_UPDATE_ATHLETE_PROFILE', 'Failed to update athlete profile'),
                 { status: 500 }
             );
         }
 
         return NextResponse.json({ success: true });
     } catch (error: unknown) {
-        console.error('Update athlete details error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
+        appLogger.error('Update athlete details error:', error);
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
             { status: 500 }
         );
     }

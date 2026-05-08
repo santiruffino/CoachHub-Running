@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/api-helpers';
+import { appLogger } from '@/lib/app-logger';
+import { apiError } from '@/lib/api/error-response';
 
 /**
  * Get Activity Details with Streams
@@ -42,8 +44,7 @@ export async function GET(
             .single();
 
         if (activityError || !activity) {
-            return NextResponse.json(
-                { error: 'Activity not found' },
+            return NextResponse.json(apiError('ACTIVITY_NOT_FOUND', 'Activity not found'),
                 { status: 404 }
             );
         }
@@ -65,14 +66,12 @@ export async function GET(
                     .single();
 
                 if (!athleteProfile || !profile.team_id || athleteProfile.team_id !== profile.team_id) {
-                    return NextResponse.json(
-                        { error: 'Not authorized to view this activity' },
+                    return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized to view this activity'),
                         { status: 403 }
                     );
                 }
             } else {
-                return NextResponse.json(
-                    { error: 'Not authorized to view this activity' },
+                return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized to view this activity'),
                     { status: 403 }
                 );
             }
@@ -80,9 +79,8 @@ export async function GET(
 
         return NextResponse.json(activity);
     } catch (error: unknown) {
-        console.error('Get activity details error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
+        appLogger.error('Get activity details error:', error);
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
             { status: 500 }
         );
     }

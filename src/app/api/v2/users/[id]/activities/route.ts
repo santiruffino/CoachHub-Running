@@ -3,6 +3,7 @@ import { requireAuth } from '@/lib/supabase/api-helpers';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import * as Sentry from '@sentry/nextjs';
 import { createRequestLogger, withRequestId } from '@/lib/logger';
+import { apiError } from '@/lib/api/error-response';
 
 /**
  * Get User Activities
@@ -53,15 +54,13 @@ export async function GET(
 
                 if (!athleteProfile || !profile.team_id || athleteProfile.team_id !== profile.team_id) {
                     logger.warn('user_activities.forbidden_cross_team_access', { userId: user!.id, targetUserId });
-                    return respond(
-                        { error: 'Not authorized to view this user\'s activities' },
+                    return respond(apiError('AUTH_FORBIDDEN', 'Not authorized to view this user\'s activities'),
                         { status: 403 }
                     );
                 }
             } else {
                 logger.warn('user_activities.forbidden_role_access', { userId: user!.id, targetUserId });
-                return respond(
-                    { error: 'Not authorized to view this user\'s activities' },
+                return respond(apiError('AUTH_FORBIDDEN', 'Not authorized to view this user\'s activities'),
                     { status: 403 }
                 );
             }
@@ -92,8 +91,7 @@ export async function GET(
 
         if (error) {
             logger.error('user_activities.fetch_failed', { userId: user!.id, targetUserId, error });
-            return respond(
-                { error: 'Failed to fetch activities' },
+            return respond(apiError('FAILED_TO_FETCH_ACTIVITIES', 'Failed to fetch activities'),
                 { status: 500 }
             );
         }
@@ -133,8 +131,7 @@ export async function GET(
         Sentry.captureException(error, {
             tags: { route: '/api/v2/users/[id]/activities', requestId },
         });
-        return respond(
-            { error: 'Internal server error' },
+        return respond(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
             { status: 500 }
         );
     }

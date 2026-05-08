@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -42,7 +44,7 @@ export default function CreateGroupPage() {
                 const res = await racesService.findAll();
                 setRaceLibrary(res.data);
             } catch (e) {
-                console.error('Failed to fetch races', e);
+                appLogger.error('Failed to fetch races', e);
             }
         };
         fetchRaces();
@@ -79,7 +81,7 @@ export default function CreateGroupPage() {
             router.push('/groups');
             router.refresh();
         } catch (error) {
-            console.error('Failed to create group', error);
+            appLogger.error('Failed to create group', error);
         } finally {
             setLoading(false);
         }

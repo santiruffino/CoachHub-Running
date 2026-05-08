@@ -11,6 +11,7 @@ import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useTranslations } from 'next-intl';
+import { appLogger } from '@/lib/app-logger';
 
 interface AssignTrainingModalProps {
     athleteId?: string;
@@ -104,7 +105,7 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
             setAthletes(athletesRes.data);
             setGroups(groupsRes.data);
         } catch (e) {
-            console.error('Failed to load data', e);
+            appLogger.error('Failed to load data', e);
         }
     };
 
@@ -117,7 +118,7 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                 setExpectedRpe(res.data.expectedRpe);
             }
         } catch (e) {
-            console.error('Failed to load training', e);
+            appLogger.error('Failed to load training', e);
         }
     };
 
@@ -126,7 +127,7 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
             const res = await trainingsService.findAll();
             setAvailableTemplates(res.data.filter(t => t.isTemplate));
         } catch (e) {
-            console.error('Failed to load templates', e);
+            appLogger.error('Failed to load templates', e);
         }
     };
 
@@ -177,7 +178,7 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                 else window.location.reload();
                 onClose();
             } catch (e) {
-                console.error(e);
+                appLogger.error(e);
                 setError(t('errorCreate'));
             } finally {
                 setLoading(false);
@@ -221,7 +222,7 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                 else window.location.reload();
                 onClose();
             } catch (e) {
-                console.error(e);
+                appLogger.error(e);
                 setError(t('errorAssign'));
             } finally {
                 setLoading(false);
@@ -270,7 +271,7 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
             else window.location.reload();
             onClose();
         } catch (e) {
-            console.error(e);
+            appLogger.error(e);
             setError(t('errorAssign'));
         } finally {
             setLoading(false);

@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useForm } from 'react-hook-form';
 import { UpdateProfileDto, ProfileDetails } from '../types';
@@ -225,7 +227,7 @@ export function ProfileForm({ profile }: { profile: ProfileDetails }) {
             await profileService.updateProfile(data);
             setMessage('success');
         } catch (e: unknown) {
-            console.error(e);
+            appLogger.error(e);
             setMessage('error');
         }
     };

@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { appLogger } from '@/lib/app-logger';
+import { apiError } from '@/lib/api/error-response';
 
 interface ProfileRequestBody {
   name?: string;
@@ -25,8 +27,7 @@ export async function GET() {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
+      return NextResponse.json(apiError('AUTH_UNAUTHORIZED', 'Unauthorized'),
         { status: 401 }
       );
     }
@@ -43,8 +44,7 @@ export async function GET() {
       .single();
 
     if (profileError) {
-      return NextResponse.json(
-        { error: 'Failed to fetch profile' },
+      return NextResponse.json(apiError('FAILED_TO_FETCH_PROFILE', 'Failed to fetch profile'),
         { status: 500 }
       );
     }
@@ -80,9 +80,8 @@ export async function GET() {
     };
 
     return NextResponse.json(transformedProfile);
-  } catch (error: unknown) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Internal server error' },
+  } catch {
+    return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
       { status: 500 }
     );
   }
@@ -98,8 +97,7 @@ export async function PATCH(request: Request) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
+      return NextResponse.json(apiError('AUTH_UNAUTHORIZED', 'Unauthorized'),
         { status: 401 }
       );
     }
@@ -122,8 +120,7 @@ export async function PATCH(request: Request) {
       .eq('id', user.id);
 
     if (updateError) {
-      return NextResponse.json(
-        { error: 'Failed to update profile' },
+      return NextResponse.json(apiError('FAILED_TO_UPDATE_PROFILE', 'Failed to update profile'),
         { status: 500 }
       );
     }
@@ -171,11 +168,10 @@ export async function PATCH(request: Request) {
         });
 
       if (roleProfileError) {
-        console.error('Supabase error updating profile:', roleProfileError);
-        console.error('Profile table:', profileTable);
-        console.error('Filtered data:', filteredData);
-        return NextResponse.json(
-          { error: 'Failed to update role profile', details: roleProfileError.message },
+        appLogger.error('Supabase error updating profile:', roleProfileError);
+        appLogger.error('Profile table:', profileTable);
+        appLogger.error('Filtered data:', filteredData);
+        return NextResponse.json(apiError('FAILED_TO_UPDATE_ROLE_PROFILE', 'Failed to update role profile'),
           { status: 500 }
         );
       }
@@ -193,9 +189,8 @@ export async function PATCH(request: Request) {
       .single();
 
     return NextResponse.json(updatedProfile);
-    } catch (error: unknown) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Internal server error' },
+    } catch {
+    return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
       { status: 500 }
     );
   }

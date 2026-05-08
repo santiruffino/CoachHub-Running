@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { stravaService, StravaConnectionStatus } from '../services/strava.service';
 import { useRouter } from 'next/navigation';
 import { AxiosError } from 'axios';
+import { appLogger } from '@/lib/app-logger';
 
 interface ApiErrorResponse {
     error?: string;
@@ -21,7 +22,7 @@ export function useStravaAuth(options?: { enabled?: boolean }) {
             setStatus(data);
             setError(null);
         } catch (err: unknown) {
-            console.error(err);
+            appLogger.error(err);
             const message = (err as AxiosError<ApiErrorResponse>)?.response?.data?.error;
             setError(message || 'Failed to fetch Strava status');
         } finally {
@@ -43,7 +44,7 @@ export function useStravaAuth(options?: { enabled?: boolean }) {
             // Redirect to Strava
             window.location.href = url;
         } catch (err: unknown) {
-            console.error(err);
+            appLogger.error(err);
             const message = (err as AxiosError<ApiErrorResponse>)?.response?.data?.error;
             setError(message || 'Failed to initiate connection');
             setLoading(false);
@@ -56,7 +57,7 @@ export function useStravaAuth(options?: { enabled?: boolean }) {
             await stravaService.disconnect();
             await fetchStatus(); // Refresh status
         } catch (err: unknown) {
-            console.error(err);
+            appLogger.error(err);
             const message = (err as AxiosError<ApiErrorResponse>)?.response?.data?.error;
             setError(message || 'Failed to disconnect');
             setLoading(false);
@@ -69,7 +70,7 @@ export function useStravaAuth(options?: { enabled?: boolean }) {
             await stravaService.exchangeCode(code);
             router.push('/profile'); // Redirect back to profile page
         } catch (err: unknown) {
-            console.error(err);
+            appLogger.error(err);
             const message = (err as AxiosError<ApiErrorResponse>)?.response?.data?.error;
             setError(message || 'Failed to complete connection');
         } finally {
@@ -85,7 +86,7 @@ export function useStravaAuth(options?: { enabled?: boolean }) {
             await fetchStatus();
             return result;
         } catch (err: unknown) {
-            console.error(err);
+            appLogger.error(err);
             const message = (err as AxiosError<ApiErrorResponse>)?.response?.data?.error;
             setError(message || 'Failed to sync activities');
             setLoading(false);

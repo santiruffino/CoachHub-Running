@@ -1,8 +1,35 @@
 import { updateSession } from '@/lib/supabase/middleware';
+import { apiError } from '@/lib/api/error-response';
+import { buildRateLimitKey, consumeRateLimit, getClientIpFromHeaders } from '@/lib/api/rate-limit';
 import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+
+const API_RATE_LIMIT_WINDOW_MS = Number.parseInt(process.env.API_RATE_LIMIT_WINDOW_MS || '60000', 10);
+const API_RATE_LIMIT_MAX_REQUESTS = Number.parseInt(process.env.API_RATE_LIMIT_MAX_REQUESTS || '120', 10);
 
 export async function proxy(request: NextRequest) {
-  // Debug log forauth-related paths or root
+  if (request.nextUrl.pathname.startsWith('/api/v2/')) {
+    const clientIp = getClientIpFromHeaders(request.headers);
+    const key = buildRateLimitKey(request.nextUrl.pathname, clientIp, null);
+    const result = consumeRateLimit({
+      key,
+      limit: API_RATE_LIMIT_MAX_REQUESTS,
+      windowMs: API_RATE_LIMIT_WINDOW_MS,
+    });
+
+    if (!result.allowed) {
+      return NextResponse.json(apiError('RATE_LIMIT_EXCEEDED', 'Too many requests'), {
+        status: 429,
+        headers: {
+          'x-ratelimit-limit': String(result.limit),
+          'x-ratelimit-remaining': String(result.remaining),
+          'x-ratelimit-reset': String(Math.floor(result.resetAt / 1000)),
+          'retry-after': String(result.retryAfterSeconds),
+        },
+      });
+    }
+  }
+
   return await updateSession(request);
 }
 

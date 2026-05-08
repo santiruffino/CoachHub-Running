@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
+import { appLogger } from '@/lib/app-logger';
+import { apiError } from '@/lib/api/error-response';
 
 export async function GET() {
   const authResult = await requireRole('ADMIN');
@@ -15,7 +17,7 @@ export async function GET() {
       .single();
 
     if (!adminProfile?.team_id) {
-      return NextResponse.json({ error: 'Admin must belong to a team' }, { status: 403 });
+      return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Admin must belong to a team'), { status: 403 });
     }
 
     // Total Athletes
@@ -93,9 +95,8 @@ export async function GET() {
       coaches: coachesWithActivity
     });
   } catch (error: unknown) {
-    console.error('Admin Dashboard Error:', error instanceof Error ? error.message : error);
-    return NextResponse.json(
-      { error: 'Failed to fetch admin dashboard data' },
+    appLogger.error('Admin Dashboard Error:', error instanceof Error ? error.message : error);
+    return NextResponse.json(apiError('FAILED_TO_FETCH_ADMIN_DASHBOARD_DATA', 'Failed to fetch admin dashboard data'),
       { status: 500 }
     );
   }

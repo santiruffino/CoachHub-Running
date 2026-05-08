@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useState, useEffect, useCallback } from 'react';
 import {
@@ -51,7 +53,7 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
             const data = await matchingService.getMatch(assignmentId, activityId);
             setMatch(data);
         } catch (err: unknown) {
-            console.error('Failed to fetch match:', err);
+            appLogger.error('Failed to fetch match:', err);
             setError(t('errorLoad'));
         } finally {
             setLoading(false);
@@ -71,7 +73,7 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
             setCandidates(data);
             setShowCandidates(true);
         } catch (err) {
-            console.error('Failed to load candidates', err);
+            appLogger.error('Failed to load candidates', err);
         } finally {
             setLoadingCandidates(false);
         }
@@ -84,7 +86,7 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
             await fetchMatch(); // Allow backend to pick up the new link
             setShowCandidates(false);
         } catch (err) {
-            console.error('Failed to link activity:', err);
+            appLogger.error('Failed to link activity:', err);
             setError(t('errorLink'));
             setLoading(false);
         }
@@ -97,7 +99,7 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
             await matchingService.unlinkActivity(assignmentId);
             await fetchMatch(); // Revert to auto-match
         } catch (err) {
-            console.error('Failed to unlink activity:', err);
+            appLogger.error('Failed to unlink activity:', err);
             setError(t('errorUnlink'));
             setLoading(false);
         }

@@ -52,19 +52,27 @@ SUPABASE_SECRET_KEY=
 
 # App URL
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_GA_MEASUREMENT_ID=
 
 # Strava OAuth
 STRAVA_CLIENT_ID=
 STRAVA_CLIENT_SECRET=
+STRAVA_OAUTH_STATE_SECRET=
 STRAVA_REDIRECT_URI=http://localhost:3000/strava/callback
 
 # Strava webhook
 STRAVA_WEBHOOK_VERIFY_TOKEN=
 STRAVA_SUBSCRIPTION_ID=
 STRAVA_WEBHOOK_SHARED_SECRET=
+STRAVA_WEBHOOK_RATE_LIMIT_WINDOW_MS=60000
+STRAVA_WEBHOOK_RATE_LIMIT_MAX_REQUESTS=60
 
 # Logging
 LOG_LEVEL=debug
+
+# API hardening
+API_RATE_LIMIT_WINDOW_MS=60000
+API_RATE_LIMIT_MAX_REQUESTS=120
 
 # Sentry (server)
 SENTRY_DSN=
@@ -129,6 +137,22 @@ This creates an `ADMIN` user and assigns/creates a running team.
   - `process-strava-activity`
   - `fetch-strava-streams`
   - `evaluate-compliance`
+
+### Settings and audit logs
+
+- Coach settings: `/settings/coach` <-> `GET/PATCH /api/v2/settings/coach`
+- Team settings (admin): `/settings/team` <-> `GET/PATCH /api/v2/settings/team`
+- Admin audit logs: `/settings/audit-logs` <-> `GET /api/v2/admin/audit-logs`
+
+Audit logs are append-only at DB level and capture first-cut critical admin writes.
+
+## Migrations
+
+Apply latest Supabase migrations before running new settings/audit features:
+
+- includes `20260507113000_settings_and_admin_audit.sql`
+- creates `team_settings`, `coach_settings`, `admin_action_logs`
+- applies RLS policies and append-only triggers for admin logs
 
 ## Documentation map
 

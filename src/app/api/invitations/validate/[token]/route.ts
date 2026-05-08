@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { appLogger } from '@/lib/app-logger';
 
 export async function GET(
     request: NextRequest,
@@ -20,7 +21,7 @@ export async function GET(
         // Validate invitation token
         const { data: invitation, error } = await supabase
             .from('invitations')
-            .select('email, expires_at, accepted')
+            .select('email, role, expires_at, accepted')
             .eq('token', token)
             .single();
 
@@ -48,9 +49,10 @@ export async function GET(
         return NextResponse.json({
             valid: true,
             email: invitation.email,
+            role: invitation.role || 'ATHLETE',
         });
     } catch (error) {
-        console.error('Validate invitation error:', error);
+        appLogger.error('Validate invitation error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
             { status: 500 }

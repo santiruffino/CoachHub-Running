@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/client';
 import { User, Role } from '@/interfaces/auth';
+import { appLogger } from '@/lib/app-logger';
 
 interface SignOutResult {
     error: Error | null;
@@ -108,13 +109,13 @@ export const authService = {
             ]) as SignOutResult;
 
             if (error) {
-                console.error('❌ [AuthService] signOut failed:', error);
+                appLogger.error('❌ [AuthService] signOut failed:', error);
             }
         } catch (error: unknown) {
             if (error instanceof Error && error.message === 'SignOut timeout') {
-                console.warn('⚠️ [AuthService] signOut timed out - proceeding with local cleanup');
+                appLogger.warn('⚠️ [AuthService] signOut timed out - proceeding with local cleanup');
             } else {
-                console.error('❌ [AuthService] signOut error:', error);
+                appLogger.error('❌ [AuthService] signOut error:', error);
             }
         }
     },
@@ -127,7 +128,7 @@ export const authService = {
         });
 
         if (error) {
-            console.error('❌ [AuthService] updateUser failed:', error);
+            appLogger.error('❌ [AuthService] updateUser failed:', error);
             throw new Error(error.message);
         }
 
@@ -142,11 +143,11 @@ export const authService = {
                 .eq('id', user.id);
 
             if (updateError) {
-                console.error('❌ [AuthService] Profile update failed:', updateError);
+                appLogger.error('❌ [AuthService] Profile update failed:', updateError);
                 throw new Error('Failed to update profile');
             }
         } else {
-            console.warn('⚠️ [AuthService] No user found after password update');
+            appLogger.warn('⚠️ [AuthService] No user found after password update');
         }
 
     },
@@ -159,7 +160,7 @@ export const authService = {
         });
 
         if (error) {
-            console.error('❌ [AuthService] resetPasswordForEmail failed:', error);
+            appLogger.error('❌ [AuthService] resetPasswordForEmail failed:', error);
             throw new Error(error.message);
         }
 
@@ -182,12 +183,12 @@ export const authService = {
             .single();
 
         if (profileError) {
-            console.error('getCurrentUser profile error:', profileError);
+            appLogger.error('getCurrentUser profile error:', profileError);
             return null;
         }
 
         if (!profile) {
-            console.error('getCurrentUser: Profile is null for user ID:', authUser.id);
+            appLogger.error('getCurrentUser: Profile is null for user ID:', authUser.id);
             return null;
         }
 

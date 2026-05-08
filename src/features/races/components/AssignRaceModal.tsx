@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
@@ -102,7 +104,7 @@ export function AssignRaceModal({ open, onOpenChange, athleteId, onSuccess }: As
       onSuccess();
       onOpenChange(false);
     } catch (error) {
-      console.error('Error assigning race:', error);
+      appLogger.error('Error assigning race:', error);
     } finally {
       setLoading(false);
     }

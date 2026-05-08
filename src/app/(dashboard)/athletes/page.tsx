@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -133,7 +135,7 @@ export default function AthletesPage() {
         setCoaches(coachesRes.data.map((c) => ({ id: c.id, name: c.name })));
       }
     } catch (error) {
-      console.error('Failed to fetch athletes', error);
+      appLogger.error('Failed to fetch athletes', error);
     } finally {
       setLoading(false);
     }
@@ -152,7 +154,7 @@ export default function AthletesPage() {
       setAthletes(prev => prev.filter(a => a.id !== deleteId));
       setDeleteId(null);
     } catch (error) {
-      console.error('Failed to delete athlete', error);
+      appLogger.error('Failed to delete athlete', error);
       alert(t('deleteFailed'));
     } finally {
       setIsDeleting(false);

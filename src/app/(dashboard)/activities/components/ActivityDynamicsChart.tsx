@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -229,7 +231,7 @@ export function ActivityDynamicsChart({ activityId, laps }: ActivityDynamicsChar
                 const response = await api.get(`/v2/activities/${activityId}/streams`);
                 setStreams(response.data);
             } catch (error) {
-                console.error('Failed to fetch streams:', error);
+                appLogger.error('Failed to fetch streams:', error);
                 setStreams(null);
             } finally {
                 setLoading(false);

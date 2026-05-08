@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useState, useEffect, useMemo } from 'react';
 import ReactECharts from 'echarts-for-react';
@@ -138,7 +140,7 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
                 const response = await api.get(`/v2/activities/${activityId}/streams`);
                 setStreams(response.data);
             } catch (error) {
-                console.error('Failed to fetch streams:', error);
+                appLogger.error('Failed to fetch streams:', error);
                 setStreams(null);
             } finally {
                 setLoading(false);

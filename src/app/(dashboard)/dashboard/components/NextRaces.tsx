@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useEffect, useState } from 'react';
 import { groupsService } from '@/features/groups/services/groups.service';
@@ -42,7 +44,7 @@ export function NextRaces({ athleteRaces, onSuccess }: NextRacesProps) {
                     .sort((a, b) => new Date(a.race_date!).getTime() - new Date(b.race_date!).getTime());
                 setGroupRaces(filteredRaces);
             } catch (error) {
-                console.error('Failed to fetch next races', error);
+                appLogger.error('Failed to fetch next races', error);
             } finally {
                 setLoading(false);
             }

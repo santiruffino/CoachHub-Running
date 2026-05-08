@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
+import { appLogger } from '@/lib/app-logger';
+import { apiError } from '@/lib/api/error-response';
 
 /**
  * Get Training by ID
@@ -29,8 +31,7 @@ export async function GET(
             .single();
 
         if (!profile?.team_id) {
-            return NextResponse.json(
-                { error: 'Coach must belong to a team' },
+            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Coach must belong to a team'),
                 { status: 403 }
             );
         }
@@ -43,24 +44,21 @@ export async function GET(
             .single();
 
         if (error || !training) {
-            return NextResponse.json(
-                { error: 'Training not found' },
+            return NextResponse.json(apiError('TRAINING_NOT_FOUND', 'Training not found'),
                 { status: 404 }
             );
         }
 
         if (training.team_id !== profile.team_id) {
-            return NextResponse.json(
-                { error: 'Not authorized to view this training' },
+            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized to view this training'),
                 { status: 403 }
             );
         }
 
         return NextResponse.json(training);
     } catch (error: unknown) {
-        console.error('Get training error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
+        appLogger.error('Get training error:', error);
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
             { status: 500 }
         );
     }
@@ -94,8 +92,7 @@ export async function DELETE(
             .single();
 
         if (!profile?.team_id) {
-            return NextResponse.json(
-                { error: 'Coach must belong to a team' },
+            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Coach must belong to a team'),
                 { status: 403 }
             );
         }
@@ -108,15 +105,13 @@ export async function DELETE(
             .single();
 
         if (fetchError || !training) {
-            return NextResponse.json(
-                { error: 'Training not found' },
+            return NextResponse.json(apiError('TRAINING_NOT_FOUND', 'Training not found'),
                 { status: 404 }
             );
         }
 
         if (training.team_id !== profile.team_id) {
-            return NextResponse.json(
-                { error: 'Not authorized to delete this training' },
+            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized to delete this training'),
                 { status: 403 }
             );
         }
@@ -128,9 +123,8 @@ export async function DELETE(
             .eq('id', id);
 
         if (deleteError) {
-            console.error('Delete training error:', deleteError);
-            return NextResponse.json(
-                { error: 'Failed to delete training' },
+            appLogger.error('Delete training error:', deleteError);
+            return NextResponse.json(apiError('FAILED_TO_DELETE_TRAINING', 'Failed to delete training'),
                 { status: 500 }
             );
         }
@@ -140,9 +134,8 @@ export async function DELETE(
             { status: 200 }
         );
     } catch (error: unknown) {
-        console.error('Delete training error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
+        appLogger.error('Delete training error:', error);
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
             { status: 500 }
         );
     }
@@ -175,8 +168,7 @@ export async function PATCH(
             .single();
 
         if (!profile?.team_id) {
-            return NextResponse.json(
-                { error: 'Coach must belong to a team' },
+            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Coach must belong to a team'),
                 { status: 403 }
             );
         }
@@ -191,11 +183,11 @@ export async function PATCH(
             .single();
 
         if (fetchError || !existing) {
-            return NextResponse.json({ error: 'Training not found' }, { status: 404 });
+            return NextResponse.json(apiError('TRAINING_NOT_FOUND', 'Training not found'), { status: 404 });
         }
 
         if (existing.team_id !== profile.team_id) {
-            return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized'), { status: 403 });
         }
 
         const { data: training, error } = await supabase
@@ -213,13 +205,13 @@ export async function PATCH(
             .single();
 
         if (error) {
-            console.error('Update training error:', error);
-            return NextResponse.json({ error: 'Failed to update training' }, { status: 500 });
+            appLogger.error('Update training error:', error);
+            return NextResponse.json(apiError('FAILED_TO_UPDATE_TRAINING', 'Failed to update training'), { status: 500 });
         }
 
         return NextResponse.json(training);
     } catch (error: unknown) {
-        console.error('Update training error:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        appLogger.error('Update training error:', error);
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'), { status: 500 });
     }
 }

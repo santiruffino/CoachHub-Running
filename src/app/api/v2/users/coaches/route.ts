@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
+import { appLogger } from '@/lib/app-logger';
+import { apiError } from '@/lib/api/error-response';
 
 export async function GET() {
   const authResult = await requireRole('ADMIN');
@@ -15,7 +17,7 @@ export async function GET() {
       .single();
 
     if (!profile?.team_id) {
-      return NextResponse.json({ error: 'Admin must belong to a team' }, { status: 403 });
+      return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Admin must belong to a team'), { status: 403 });
     }
 
     const coachesQuery = supabase
@@ -47,7 +49,7 @@ export async function GET() {
 
     return NextResponse.json(enhancedCoaches);
   } catch (error: unknown) {
-    console.error('Failed to fetch coaches:', error instanceof Error ? error.message : error);
-    return NextResponse.json({ error: 'Failed to fetch coaches' }, { status: 500 });
+    appLogger.error('Failed to fetch coaches:', error instanceof Error ? error.message : error);
+    return NextResponse.json(apiError('FAILED_TO_FETCH_COACHES', 'Failed to fetch coaches'), { status: 500 });
   }
 }

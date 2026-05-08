@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { createContext, useContext, useEffect, useCallback, useRef } from 'react';
 
@@ -51,12 +53,12 @@ export function CacheProvider({ children }: { children: React.ReactNode }) {
                             sessionStorage.removeItem(storageKey);
                         }
                     } catch (e) {
-                        console.warn(`Failed to parse cache entry for ${key}`, e);
+                        appLogger.warn(`Failed to parse cache entry for ${key}`, e);
                     }
                 }
             });
         } catch (e) {
-            console.warn('Failed to load cache from session storage', e);
+            appLogger.warn('Failed to load cache from session storage', e);
         }
     }, []);
 
@@ -69,7 +71,7 @@ export function CacheProvider({ children }: { children: React.ReactNode }) {
                 JSON.stringify(entry)
             );
         } catch (e) {
-            console.warn(`Failed to persist cache entry for ${key}`, e);
+            appLogger.warn(`Failed to persist cache entry for ${key}`, e);
         }
     }, []);
 
@@ -106,7 +108,7 @@ export function CacheProvider({ children }: { children: React.ReactNode }) {
             try {
                 sessionStorage.removeItem(`${STORAGE_KEY_PREFIX}${key}`);
             } catch (e) {
-                console.warn(`Failed to remove cache entry for ${key}`, e);
+                appLogger.warn(`Failed to remove cache entry for ${key}`, e);
             }
         }
     }, []);
@@ -133,7 +135,7 @@ export function CacheProvider({ children }: { children: React.ReactNode }) {
                 const cacheKeys = keys.filter(k => k.startsWith(STORAGE_KEY_PREFIX));
                 cacheKeys.forEach(k => sessionStorage.removeItem(k));
             } catch (e) {
-                console.warn('Failed to clear cache from session storage', e);
+                appLogger.warn('Failed to clear cache from session storage', e);
             }
         }
     }, []);

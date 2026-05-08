@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api/error-response';
+import { appendAdminActionLog } from '@/lib/audit/admin-action-log';
 
 export async function GET() {
   try {
@@ -11,8 +13,7 @@ export async function GET() {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
+      return NextResponse.json(apiError('AUTH_UNAUTHORIZED', 'Unauthorized'),
         { status: 401 }
       );
     }
@@ -25,8 +26,7 @@ export async function GET() {
       .single();
 
     if (profile?.role !== 'COACH' && profile?.role !== 'ADMIN') {
-      return NextResponse.json(
-        { error: 'Only coaches or admins can access this endpoint' },
+      return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Only coaches or admins can access this endpoint'),
         { status: 403 }
       );
     }
@@ -48,16 +48,14 @@ export async function GET() {
     const { data: groups, error } = await groupsQuery;
 
     if (error) {
-      return NextResponse.json(
-        { error: 'Failed to fetch groups' },
+      return NextResponse.json(apiError('FAILED_TO_FETCH_GROUPS', 'Failed to fetch groups'),
         { status: 500 }
       );
     }
 
     return NextResponse.json(groups);
-  } catch (error: unknown) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Internal server error' },
+  } catch {
+    return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
       { status: 500 }
     );
   }
@@ -73,8 +71,7 @@ export async function POST(request: Request) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
+      return NextResponse.json(apiError('AUTH_UNAUTHORIZED', 'Unauthorized'),
         { status: 401 }
       );
     }
@@ -87,8 +84,7 @@ export async function POST(request: Request) {
       .single();
 
     if (profile?.role !== 'COACH' && profile?.role !== 'ADMIN') {
-      return NextResponse.json(
-        { error: 'Only coaches or admins can create groups' },
+      return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Only coaches or admins can create groups'),
         { status: 403 }
       );
     }
@@ -106,8 +102,7 @@ export async function POST(request: Request) {
     } = body;
 
     if (!name) {
-      return NextResponse.json(
-        { error: 'Group name is required' },
+      return NextResponse.json(apiError('VALIDATION_GROUP_NAME_IS_REQUIRED', 'Group name is required'),
         { status: 400 }
       );
     }
@@ -133,16 +128,29 @@ export async function POST(request: Request) {
       .single();
 
     if (error) {
-      return NextResponse.json(
-        { error: 'Failed to create group' },
+      return NextResponse.json(apiError('FAILED_TO_CREATE_GROUP', 'Failed to create group'),
         { status: 500 }
       );
     }
 
+    if (profile.role === 'ADMIN') {
+      await appendAdminActionLog({
+        actorId: user.id,
+        actorRole: 'ADMIN',
+        teamId: profile.team_id,
+        action: 'group.created',
+        targetType: 'group',
+        targetId: group.id,
+        metadata: {
+          groupType: group.group_type,
+          hasRace: !!group.race_id,
+        },
+      });
+    }
+
     return NextResponse.json(group, { status: 201 });
-  } catch (error: unknown) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Internal server error' },
+  } catch {
+    return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
       { status: 500 }
     );
   }

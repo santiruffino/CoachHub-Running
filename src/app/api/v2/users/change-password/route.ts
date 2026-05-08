@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/api-helpers';
+import { appLogger } from '@/lib/app-logger';
+import { apiError } from '@/lib/api/error-response';
 
 /**
  * Change Password Endpoint
@@ -20,15 +22,13 @@ export async function PATCH(request: NextRequest) {
 
         // Validation
         if (!currentPassword || !newPassword) {
-            return NextResponse.json(
-                { error: 'Current password and new password are required' },
+            return NextResponse.json(apiError('VALIDATION_CURRENT_PASSWORD_AND_NEW_PASSWORD_ARE_REQUIRED', 'Current password and new password are required'),
                 { status: 400 }
             );
         }
 
         if (newPassword.length < 6) {
-            return NextResponse.json(
-                { error: 'New password must be at least 6 characters' },
+            return NextResponse.json(apiError('VALIDATION_NEW_PASSWORD_MUST_BE_AT_LEAST_6_CHARACTERS', 'New password must be at least 6 characters'),
                 { status: 400 }
             );
         }
@@ -44,8 +44,7 @@ export async function PATCH(request: NextRequest) {
         });
 
         if (updateError) {
-            return NextResponse.json(
-                { error: 'Failed to update password' },
+            return NextResponse.json(apiError('FAILED_TO_UPDATE_PASSWORD', 'Failed to update password'),
                 { status: 500 }
             );
         }
@@ -57,16 +56,15 @@ export async function PATCH(request: NextRequest) {
             .eq('id', user!.id);
 
         if (profileError) {
-            console.error('Failed to update profile flag:', profileError);
+            appLogger.error('Failed to update profile flag:', profileError);
         }
 
         return NextResponse.json({
             message: 'Password updated successfully',
         });
     } catch (error: unknown) {
-        console.error('Change password error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
+        appLogger.error('Change password error:', error);
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
             { status: 500 }
         );
     }

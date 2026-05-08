@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/api-helpers';
+import { appLogger } from '@/lib/app-logger';
+import { apiError } from '@/lib/api/error-response';
 
 /**
  * Update Assignment Date
@@ -24,8 +26,7 @@ export async function PATCH(
         const { scheduledDate } = (await request.json()) as { scheduledDate?: string };
 
         if (!scheduledDate) {
-            return NextResponse.json(
-                { error: 'scheduledDate is required' },
+            return NextResponse.json(apiError('VALIDATION_SCHEDULEDDATE_IS_REQUIRED', 'scheduledDate is required'),
                 { status: 400 }
             );
         }
@@ -38,15 +39,13 @@ export async function PATCH(
             .single();
 
         if (fetchError || !assignment) {
-            return NextResponse.json(
-                { error: 'Assignment not found' },
+            return NextResponse.json(apiError('ASSIGNMENT_NOT_FOUND', 'Assignment not found'),
                 { status: 404 }
             );
         }
 
         if (assignment.user_id !== user!.id) {
-            return NextResponse.json(
-                { error: 'Not authorized to update this assignment' },
+            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized to update this assignment'),
                 { status: 403 }
             );
         }
@@ -77,18 +76,16 @@ export async function PATCH(
             .single();
 
         if (updateError) {
-            console.error('Update assignment error:', updateError);
-            return NextResponse.json(
-                { error: 'Failed to update assignment' },
+            appLogger.error('Update assignment error:', updateError);
+            return NextResponse.json(apiError('FAILED_TO_UPDATE_ASSIGNMENT', 'Failed to update assignment'),
                 { status: 500 }
             );
         }
 
         return NextResponse.json(updated);
     } catch (error: unknown) {
-        console.error('Update assignment error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
+        appLogger.error('Update assignment error:', error);
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
             { status: 500 }
         );
     }

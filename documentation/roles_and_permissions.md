@@ -9,12 +9,14 @@ Coach Hub Running uses a role model with team-scoped authorization.
 - Super-role inside a running team.
 - Can access coach-restricted endpoints through `requireRole` super-role behavior.
 - Can invite coaches and athletes within team constraints.
+- Can manage team settings (`/api/v2/settings/team`) and read admin audit logs (`/api/v2/admin/audit-logs`).
 
 ## `COACH`
 
 - Manages athletes/groups/trainings/assignments in the same team.
 - Can invite athletes.
 - Cannot invite coaches (admin-only action).
+- Can manage own coach settings (`/api/v2/settings/coach`).
 
 ## `ATHLETE`
 
@@ -39,3 +41,4 @@ Most shared resources are scoped by `team_id`.
 
 - `coach_id` remains for direct responsibility paths (invitation/assignment behavior), not as the primary tenant boundary.
 - Service-role reads/writes are used only in selected endpoints after explicit authorization checks.
+- Critical admin writes are persisted to append-only `admin_action_logs` for auditing.

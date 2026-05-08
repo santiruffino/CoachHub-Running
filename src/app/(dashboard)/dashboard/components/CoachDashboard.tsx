@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useCallback, useEffect, useState } from 'react';
 import { MetricCard } from '@/components/dashboard/MetricCard';
@@ -87,7 +89,7 @@ export default function CoachDashboard({ user }: { user: User }) {
       const res = await api.get('/v2/dashboard/coach', { params: { scope } });
       setData(res.data);
     } catch (error) {
-      console.error('Failed to fetch dashboard data', error);
+      appLogger.error('Failed to fetch dashboard data', error);
     } finally {
       setLoading(false);
     }
@@ -113,7 +115,7 @@ export default function CoachDashboard({ user }: { user: User }) {
       });
       await fetchDashboard();
     } catch (error) {
-      console.error('Failed to mark alerts as read', error);
+      appLogger.error('Failed to mark alerts as read', error);
     } finally {
       setMarkingRead(false);
     }
@@ -179,7 +181,7 @@ export default function CoachDashboard({ user }: { user: User }) {
         };
       });
     } catch (error) {
-      console.error('Failed to mark alert as read', error);
+      appLogger.error('Failed to mark alert as read', error);
     }
   };
 
@@ -194,7 +196,7 @@ export default function CoachDashboard({ user }: { user: User }) {
       });
       await fetchDashboard();
     } catch (error) {
-      console.error('Failed to resolve alert', error);
+      appLogger.error('Failed to resolve alert', error);
     }
   };
 
@@ -210,7 +212,7 @@ export default function CoachDashboard({ user }: { user: User }) {
       });
       await fetchDashboard();
     } catch (error) {
-      console.error('Failed to snooze alert', error);
+      appLogger.error('Failed to snooze alert', error);
     }
   };
 

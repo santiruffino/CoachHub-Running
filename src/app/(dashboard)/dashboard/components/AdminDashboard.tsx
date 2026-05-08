@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,7 +34,7 @@ export default function AdminDashboard({ user }: { user: User }) {
         const res = await api.get('/v2/dashboard/admin');
         setData(res.data);
       } catch (error) {
-        console.error('Failed to fetch admin dashboard data', error);
+        appLogger.error('Failed to fetch admin dashboard data', error);
       } finally {
         setLoading(false);
       }

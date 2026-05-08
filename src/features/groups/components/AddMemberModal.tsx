@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import api from '@/lib/axios';
 import { useTranslations } from 'next-intl';
+import { appLogger } from '@/lib/app-logger';
 
 interface AddMemberModalProps {
     groupId: string;
@@ -47,7 +48,7 @@ export function AddMemberModal({ groupId, currentMemberIds, open, onClose, onAdd
             onAdded();
             onClose();
         } catch (error) {
-            console.error('Failed to add member', error);
+            appLogger.error('Failed to add member', error);
         } finally {
             setSubmitting(false);
         }

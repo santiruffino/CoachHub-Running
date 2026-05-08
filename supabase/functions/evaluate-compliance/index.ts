@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1"
+import { createEdgeLogger, getEdgeRequestId, withRequestIdHeader } from "../_shared/logger.ts"
 
 /**
  * evaluate-compliance
@@ -66,22 +67,26 @@ function scoreToPriority(score: number): 'P1' | 'P2' | 'P3' | 'P4' {
 }
 
 Deno.serve(async (req) => {
+  const requestId = getEdgeRequestId(req)
+  const logger = createEdgeLogger({ route: 'evaluate-compliance', requestId })
+  const jsonHeaders = withRequestIdHeader({ ...corsHeaders, 'Content-Type': 'application/json' }, requestId)
+
   // Handle CORS
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: withRequestIdHeader(corsHeaders, requestId) })
   }
 
   try {
     const payload = await req.json() as WebhookPayload
-    console.log('[COMPLIANCE] Webhook received:', JSON.stringify(payload))
+    logger.debug('compliance.webhook_received', { type: payload.type })
     
     const { record, old_record, type } = payload
 
     // We only care about updates where strava_activity_id was newly added
     if (type !== 'UPDATE' || !record.strava_activity_id || old_record.strava_activity_id) {
-      console.log('[COMPLIANCE] Skipping: not a relevant update.')
+      logger.debug('compliance.skipping_non_relevant_update')
       return new Response(JSON.stringify({ message: 'No action needed' }), { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: jsonHeaders,
         status: 200 
       })
     }
@@ -96,9 +101,9 @@ Deno.serve(async (req) => {
     const workoutSnapshot = record.workout_snapshot
 
     if (!workoutSnapshot) {
-       console.log('[COMPLIANCE] Skipping: No workout snapshot found in assignment.')
+       logger.debug('compliance.skipping_no_workout_snapshot', { activityId, userId })
        return new Response(JSON.stringify({ message: 'No workout snapshot found' }), { 
-         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+         headers: jsonHeaders,
          status: 200 
        })
     }
@@ -119,7 +124,7 @@ Deno.serve(async (req) => {
 
     // Refresh token if expired
     if (connection.expires_at <= now + 60) {
-      console.log('[COMPLIANCE] Refreshing Strava token...')
+      logger.info('compliance.refreshing_token', { userId })
       const refreshResponse = await fetch('https://www.strava.com/oauth/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -152,7 +157,7 @@ Deno.serve(async (req) => {
     
     if (actError || !activity) throw new Error(`Activity ${activityId} not found`)
 
-    console.log(`[COMPLIANCE] Fetching zones for Strava activity ${activity.external_id}`)
+    logger.debug('compliance.fetching_zones', { activityId, externalId: activity.external_id })
     const zonesResponse = await fetch(
       `https://www.strava.com/api/v3/activities/${activity.external_id}/zones`,
       { headers: { 'Authorization': `Bearer ${currentToken}` } }
@@ -225,7 +230,11 @@ Deno.serve(async (req) => {
     }
 
     // 4. Save Compliance Results
-    console.log(`[COMPLIANCE] Result for ${activityId}: Score=${complianceScore.toFixed(1)}%, Violation=${isViolation}`)
+    logger.info('compliance.result', {
+      activityId,
+      complianceScore: Number(complianceScore.toFixed(1)),
+      isViolation,
+    })
     const { error: insertErr } = await supabase.from('activity_compliance').insert({
       activity_id: activityId,
       compliance_score: complianceScore,
@@ -254,7 +263,7 @@ Deno.serve(async (req) => {
               complianceScore < 50 ? 'COMPLIANCE_CRITICAL' : 'COMPLIANCE_LOW',
             ];
 
-            console.log(`[COMPLIANCE] Creating alert for coach ${profile.coach_id}`)
+            logger.info('compliance.creating_alert', { coachId: profile.coach_id, activityId, userId })
             await supabase.from('alerts').insert({
               coach_id: profile.coach_id,
               recipient_coach_id: profile.coach_id,
@@ -274,15 +283,15 @@ Deno.serve(async (req) => {
     }
 
     return new Response(JSON.stringify({ success: true, complianceScore, isViolation }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: jsonHeaders,
       status: 200,
     })
 
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error'
-    console.error(`[COMPLIANCE] Error: ${message}`)
+    logger.error('compliance.unhandled_error', { error, message })
     return new Response(JSON.stringify({ error: message }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: jsonHeaders,
       status: 400,
     })
   }

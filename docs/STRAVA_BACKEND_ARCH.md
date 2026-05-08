@@ -37,12 +37,22 @@ Strava integration is implemented with:
 3. Frontend exchanges code in `/api/v2/strava/auth/exchange`
 4. Tokens stored in `strava_connections`
 
+OAuth state is signed + expiring and validated against the authenticated user context.
+
 ### Webhook
 
 1. Strava sends webhook event to `/api/v2/strava/webhook`
 2. Event is logged
 3. Route triggers `process-strava-activity` edge function
 4. Activity and assignment linkage are updated
+
+Webhook input handling includes stricter validation and defensive controls:
+
+- content-type and JSON parsing checks
+- payload shape checks
+- body-size guardrail
+- subscription id verification
+- endpoint-level rate limiting
 
 ### Streams
 

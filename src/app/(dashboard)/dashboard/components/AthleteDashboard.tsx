@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { format, startOfWeek, endOfWeek, subWeeks, addWeeks } from 'date-fns';
@@ -65,7 +67,7 @@ export default function AthleteDashboard({ user }: { user: User }) {
                     await stravaService.sync();
                     sessionStorage.setItem('strava_synced_this_session', 'true');
                 } catch (e) {
-                    console.error('Strava auto-sync failed', e);
+                    appLogger.error('Strava auto-sync failed', e);
                 }
             }
 
@@ -81,10 +83,10 @@ export default function AthleteDashboard({ user }: { user: User }) {
             const assignmentsData = calendarRes.status === 'fulfilled' ? (calendarRes.value.data as TrainingAssignment[]) : [];
             const racesData = racesRes.status === 'fulfilled' ? (racesRes.value.data as AthleteRace[]) : [];
 
-            if (detailsRes.status === 'rejected') console.error('Failed to fetch athlete details:', detailsRes.reason);
-            if (activitiesRes.status === 'rejected') console.error('Failed to fetch activities:', activitiesRes.reason);
-            if (calendarRes.status === 'rejected') console.error('Failed to fetch calendar assignments:', calendarRes.reason);
-            if (racesRes.status === 'rejected') console.error('Failed to fetch races:', racesRes.reason);
+            if (detailsRes.status === 'rejected') appLogger.error('Failed to fetch athlete details:', detailsRes.reason);
+            if (activitiesRes.status === 'rejected') appLogger.error('Failed to fetch activities:', activitiesRes.reason);
+            if (calendarRes.status === 'rejected') appLogger.error('Failed to fetch calendar assignments:', calendarRes.reason);
+            if (racesRes.status === 'rejected') appLogger.error('Failed to fetch races:', racesRes.reason);
 
             setAthleteDetails(detailsData);
             setActivities(activitiesData);
@@ -121,7 +123,7 @@ export default function AthleteDashboard({ user }: { user: User }) {
             setPerformanceData(trend);
 
         } catch (error) {
-            console.error('Failed to fetch dashboard data', error);
+            appLogger.error('Failed to fetch dashboard data', error);
         } finally {
             setLoading(false);
         }

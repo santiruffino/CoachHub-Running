@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -139,7 +141,7 @@ export default function ActivityDetailPage() {
                 // Set whether the current viewer is the athlete (owner) or a coach
                 setIsAthlete(response.data._viewerIsOwner || false);
             } catch (error: unknown) {
-                console.error('Failed to fetch activity:', error);
+                appLogger.error('Failed to fetch activity:', error);
                 setError(getApiErrorMessage(error, t('errorLoad')));
             } finally {
                 setLoading(false);
@@ -156,7 +158,7 @@ export default function ActivityDetailPage() {
                 const response = await api.get<ComplianceData>(`/v2/activities/${internalId}/compliance`);
                 setCompliance(response.data);
             } catch (err) {
-                console.error('Failed to fetch compliance:', err);
+                appLogger.error('Failed to fetch compliance:', err);
             }
         };
 
@@ -184,7 +186,7 @@ export default function ActivityDetailPage() {
                     setHeartrateZones(data);
                 }
             } catch (err) {
-                console.error('Failed to fetch HR zones:', err);
+                appLogger.error('Failed to fetch HR zones:', err);
             }
         };
 
@@ -224,18 +226,18 @@ export default function ActivityDetailPage() {
                     setWorkoutAssignment(matchingAssignment);
 
                     // Flatten workout and match laps
-                    console.log('Matching workout blocks:', matchingAssignment.workout.blocks);
+                    appLogger.log('Matching workout blocks:', matchingAssignment.workout.blocks);
                     const flatSteps = flattenWorkout(matchingAssignment.workout.blocks);
-                    console.log('Flat steps generated:', flatSteps);
+                    appLogger.log('Flat steps generated:', flatSteps);
                     const matched = matchLapsToWorkout(activity.laps, flatSteps);
-                    console.log('Matched laps result:', matched);
+                    appLogger.log('Matched laps result:', matched);
                     setMatchedLaps(matched);
                 } else {
                     // No workout found for this date
                     setMatchedLaps([]);
                 }
             } catch (err) {
-                console.error('Failed to fetch and match workout:', err);
+                appLogger.error('Failed to fetch and match workout:', err);
                 setMatchedLaps([]);
             }
         };
@@ -260,7 +262,7 @@ export default function ActivityDetailPage() {
                     setFeedback({ rpe: 5, comments: '' });
                 }
             } catch (error: unknown) {
-                console.error('Failed to fetch feedback:', error);
+                appLogger.error('Failed to fetch feedback:', error);
                 // Initialize with default RPE of 5 (moderate)
                 setFeedback({ rpe: 5, comments: '' });
             } finally {
@@ -286,7 +288,7 @@ export default function ActivityDetailPage() {
                 comments: response.data.comments || '',
             });
         } catch (error: unknown) {
-            console.error('Failed to save feedback:', error);
+            appLogger.error('Failed to save feedback:', error);
             showAlert('error', t('errorSaveFeedback'));
         } finally {
             setFeedbackSaving(false);
@@ -399,7 +401,7 @@ export default function ActivityDetailPage() {
 
             await api.patch(`/v2/activities/${activityApiId}`, { lapOverrides: updatedOverrides });
         } catch (error) {
-            console.error('Failed to update lap override:', error);
+            appLogger.error('Failed to update lap override:', error);
             // Revert on failure
             setLapOverrides(lapOverrides);
         }

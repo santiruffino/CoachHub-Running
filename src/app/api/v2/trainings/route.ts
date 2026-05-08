@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
+import { appLogger } from '@/lib/app-logger';
+import { apiError } from '@/lib/api/error-response';
 
 interface TrainingRow {
     created_by: string | null;
@@ -34,8 +36,7 @@ export async function GET(request: NextRequest) {
             .single();
 
         if (!profile?.team_id) {
-            return NextResponse.json(
-                { error: 'Coach must belong to a team' },
+            return NextResponse.json(apiError('COACH_MUST_BELONG_TO_A_TEAM', 'Coach must belong to a team'),
                 { status: 403 }
             );
         }
@@ -50,9 +51,8 @@ export async function GET(request: NextRequest) {
         const { data: trainings, error } = await query;
 
         if (error) {
-            console.error('Fetch trainings error:', error);
-            return NextResponse.json(
-                { error: 'Failed to fetch trainings' },
+            appLogger.error('Fetch trainings error:', error);
+            return NextResponse.json(apiError('FAILED_TO_FETCH_TRAININGS', 'Failed to fetch trainings'),
                 { status: 500 }
             );
         }
@@ -82,9 +82,8 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json(mutableTrainings);
     } catch (error: unknown) {
-        console.error('Get trainings error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
+        appLogger.error('Get trainings error:', error);
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
             { status: 500 }
         );
     }
@@ -117,15 +116,13 @@ export async function POST(request: NextRequest) {
 
         // Validation
         if (!title) {
-            return NextResponse.json(
-                { error: 'Title is required' },
+            return NextResponse.json(apiError('VALIDATION_TITLE_IS_REQUIRED', 'Title is required'),
                 { status: 400 }
             );
         }
 
         if (!type) {
-            return NextResponse.json(
-                { error: 'Training type is required' },
+            return NextResponse.json(apiError('VALIDATION_TRAINING_TYPE_IS_REQUIRED', 'Training type is required'),
                 { status: 400 }
             );
         }
@@ -154,18 +151,16 @@ export async function POST(request: NextRequest) {
             .single();
 
         if (error) {
-            console.error('Create training error:', error);
-            return NextResponse.json(
-                { error: 'Failed to create training' },
+            appLogger.error('Create training error:', error);
+            return NextResponse.json(apiError('FAILED_TO_CREATE_TRAINING', 'Failed to create training'),
                 { status: 500 }
             );
         }
 
         return NextResponse.json(training, { status: 201 });
     } catch (error: unknown) {
-        console.error('Create training error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
+        appLogger.error('Create training error:', error);
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
             { status: 500 }
         );
     }

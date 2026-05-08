@@ -90,6 +90,33 @@ erDiagram
         string role
     }
 
+    TEAM_SETTINGS {
+        uuid team_id PK
+        jsonb thresholds
+        jsonb branding
+        jsonb default_models
+        uuid updated_by
+    }
+
+    COACH_SETTINGS {
+        uuid coach_id PK
+        uuid team_id
+        jsonb thresholds
+        jsonb default_models
+        uuid updated_by
+    }
+
+    ADMIN_ACTION_LOGS {
+        uuid id PK
+        uuid actor_id
+        string actor_role
+        uuid team_id
+        string action
+        string target_type
+        string target_id
+        jsonb metadata
+    }
+
     PROFILES ||--o{ GROUPS : creates
     PROFILES ||--o{ TRAININGS : creates
     PROFILES ||--o{ ACTIVITIES : performs
@@ -99,6 +126,10 @@ erDiagram
     ACTIVITIES ||--o| ACTIVITY_STREAMS : has
     ACTIVITIES ||--o| ACTIVITY_FEEDBACK : has
     RACES ||--o{ ATHLETE_RACES : mapped_to
+    PROFILES ||--o| COACH_SETTINGS : owns
+    PROFILES ||--o{ ADMIN_ACTION_LOGS : emits
+    TEAM_SETTINGS ||--|| PROFILES : updated_by
+    COACH_SETTINGS ||--|| PROFILES : updated_by
 ```
 
 ## Key behavior notes
@@ -107,6 +138,8 @@ erDiagram
 - `coach_id` remains relevant for direct coach-athlete assignment paths.
 - `created_by` tracks ownership metadata for trainings/groups/races.
 - Assignment snapshots (`workout_snapshot`) preserve planned context at assignment time.
+- Team/coaches can persist configurable thresholds/branding/default models.
+- Admin critical writes are captured in append-only `admin_action_logs`.
 
 ## Activity IDs
 

@@ -75,7 +75,14 @@ export function AlertDialog({
     };
 
     return (
-        <Dialog open={open} onOpenChange={onClose}>
+        <Dialog
+            open={open}
+            onOpenChange={(nextOpen) => {
+                if (!nextOpen && !loading && !disabled) {
+                    onClose();
+                }
+            }}
+        >
             <DialogContent className={`sm:max-w-md ${getBorderColor()}`}>
                 <DialogHeader>
                     <div className="flex items-center gap-3">

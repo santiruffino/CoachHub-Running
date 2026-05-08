@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/api-helpers';
+import { appLogger } from '@/lib/app-logger';
+import { apiError } from '@/lib/api/error-response';
 
 interface GroupDetails {
     id: string;
@@ -57,9 +59,8 @@ export async function GET() {
             .order('scheduled_date', { ascending: true });
 
         if (error) {
-            console.error('Fetch assignments error:', error);
-            return NextResponse.json(
-                { error: 'Failed to fetch assignments' },
+            appLogger.error('Fetch assignments error:', error);
+            return NextResponse.json(apiError('FAILED_TO_FETCH_ASSIGNMENTS', 'Failed to fetch assignments'),
                 { status: 500 }
             );
         }
@@ -94,9 +95,8 @@ export async function GET() {
 
         return NextResponse.json(resolvedAssignments);
     } catch (error: unknown) {
-        console.error('Get assignments error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
+        appLogger.error('Get assignments error:', error);
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
             { status: 500 }
         );
     }

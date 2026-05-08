@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/api-helpers';
 import { addDays, subDays } from 'date-fns';
+import { appLogger } from '@/lib/app-logger';
+import { apiError } from '@/lib/api/error-response';
 
 interface AssignmentCandidateRow {
     id: string;
@@ -34,8 +36,7 @@ export async function GET(
             .single();
 
         if (activityError || !activity) {
-            return NextResponse.json(
-                { error: 'Activity not found' },
+            return NextResponse.json(apiError('ACTIVITY_NOT_FOUND', 'Activity not found'),
                 { status: 404 }
             );
         }
@@ -56,14 +57,12 @@ export async function GET(
                     .single();
 
                 if (!athleteProfile || !myProfile.team_id || athleteProfile.team_id !== myProfile.team_id) {
-                    return NextResponse.json(
-                        { error: 'Not authorized' },
+                    return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized'),
                         { status: 403 }
                     );
                 }
             } else {
-                return NextResponse.json(
-                    { error: 'Not authorized' },
+                return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized'),
                     { status: 403 }
                 );
             }
@@ -119,9 +118,8 @@ export async function GET(
         return NextResponse.json(candidates);
 
     } catch (error: unknown) {
-        console.error('Get candidate assignments error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
+        appLogger.error('Get candidate assignments error:', error);
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
             { status: 500 }
         );
     }

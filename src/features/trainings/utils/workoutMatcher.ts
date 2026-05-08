@@ -1,3 +1,4 @@
+import { appLogger } from '@/lib/app-logger';
 /**
  * Workout-to-Activity Lap Matching Utility
  * Automatically matches recorded activity laps to planned workout steps
@@ -50,11 +51,11 @@ const WORKOUT_MATCHER_DEBUG = process.env.NODE_ENV !== 'production';
 function debugLog(message: string, metadata?: unknown) {
     if (!WORKOUT_MATCHER_DEBUG) return;
     if (typeof metadata === 'undefined') {
-        console.log(message);
+        appLogger.log(message);
         return;
     }
 
-    console.log(message, metadata);
+    appLogger.log(message, metadata);
 }
 
 /**

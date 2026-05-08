@@ -1,4 +1,6 @@
 'use client';
+import { appLogger } from '@/lib/app-logger';
+
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
@@ -67,7 +69,7 @@ export default function WorkoutDetailsPage() {
                 setEditedBlocks(response.data.training.blocks || []);
                 setEditedExpectedRpe(response.data.expectedRpe || 5);
             } catch (error: unknown) {
-                console.error('Failed to fetch assignment:', error);
+                appLogger.error('Failed to fetch assignment:', error);
                 setError(getApiErrorMessage(error, t('loadingError')));
             } finally {
                 setLoading(false);
@@ -105,7 +107,7 @@ export default function WorkoutDetailsPage() {
 
             showAlert('success', t('syncSuccess'));
         } catch (error: unknown) {
-            console.error('Failed to save workout:', error);
+            appLogger.error('Failed to save workout:', error);
             setError(getApiErrorMessage(error, t('syncFailed')));
         } finally {
             setSaving(false);
@@ -143,7 +145,7 @@ export default function WorkoutDetailsPage() {
             showAlert('success', t('deleteSuccess'));
             setTimeout(() => router.back(), 1500);
         } catch (error: unknown) {
-            console.error('Failed to delete assignment:', error);
+            appLogger.error('Failed to delete assignment:', error);
             showAlert('error', t('deleteFailed'));
         } finally {
             setDeleting(false);

@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
+import { appLogger } from '@/lib/app-logger';
+import { apiError } from '@/lib/api/error-response';
+import { appendAdminActionLog } from '@/lib/audit/admin-action-log';
 
 /**
  * Get Group Details
@@ -33,7 +36,7 @@ export async function GET(
             .single();
 
         if (profile?.role !== 'COACH' && profile?.role !== 'ADMIN') {
-            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Forbidden'), { status: 403 });
         }
 
         const groupId = id;
@@ -68,22 +71,20 @@ export async function GET(
             .single();
 
         if (groupError || !group) {
-            return NextResponse.json(
-                { error: 'Group not found' },
+            return NextResponse.json(apiError('GROUP_NOT_FOUND', 'Group not found'),
                 { status: 404 }
             );
         }
 
         // Verify access rights (Both ADMIN and COACH can access if in the same team)
         if ((profile.role === 'ADMIN' || profile.role === 'COACH') && group.team_id !== profile.team_id) {
-            return NextResponse.json({ error: 'Not authorized to view this group' }, { status: 403 });
+            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized to view this group'), { status: 403 });
         }
 
         return NextResponse.json(group);
     } catch (error: unknown) {
-        console.error('Get group details error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
+        appLogger.error('Get group details error:', error);
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
             { status: 500 }
         );
     }
@@ -118,7 +119,7 @@ export async function DELETE(
             .single();
 
         if (profile?.role !== 'COACH' && profile?.role !== 'ADMIN') {
-            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Forbidden'), { status: 403 });
         }
 
         const groupId = id;
@@ -131,15 +132,14 @@ export async function DELETE(
             .single();
 
         if (fetchError || !group) {
-            return NextResponse.json(
-                { error: 'Group not found' },
+            return NextResponse.json(apiError('GROUP_NOT_FOUND', 'Group not found'),
                 { status: 404 }
             );
         }
 
         // Verify access rights (Both ADMIN and COACH can access if in the same team)
         if ((profile.role === 'ADMIN' || profile.role === 'COACH') && group.team_id !== profile.team_id) {
-            return NextResponse.json({ error: 'Not authorized to delete this group' }, { status: 403 });
+            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized to delete this group'), { status: 403 });
         }
 
         // Delete group (cascade will delete athlete_groups entries)
@@ -149,20 +149,29 @@ export async function DELETE(
             .eq('id', groupId);
 
         if (deleteError) {
-            console.error('Delete group error:', deleteError);
-            return NextResponse.json(
-                { error: 'Failed to delete group' },
+            appLogger.error('Delete group error:', deleteError);
+            return NextResponse.json(apiError('FAILED_TO_DELETE_GROUP', 'Failed to delete group'),
                 { status: 500 }
             );
+        }
+
+        if (profile.role === 'ADMIN') {
+            await appendAdminActionLog({
+                actorId: user!.id,
+                actorRole: 'ADMIN',
+                teamId: profile.team_id,
+                action: 'group.deleted',
+                targetType: 'group',
+                targetId: groupId,
+            });
         }
 
         return NextResponse.json({
             message: 'Group deleted successfully'
         });
     } catch (error: unknown) {
-        console.error('Delete group error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
+        appLogger.error('Delete group error:', error);
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
             { status: 500 }
         );
     }
@@ -194,7 +203,7 @@ export async function PATCH(
             .single();
 
         if (profile?.role !== 'COACH' && profile?.role !== 'ADMIN') {
-            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Forbidden'), { status: 403 });
         }
 
         const groupId = id;
@@ -207,12 +216,12 @@ export async function PATCH(
             .single();
 
         if (fetchError || !group) {
-            return NextResponse.json({ error: 'Group not found' }, { status: 404 });
+            return NextResponse.json(apiError('GROUP_NOT_FOUND', 'Group not found'), { status: 404 });
         }
 
         // Verify access rights (Both ADMIN and COACH can access if in the same team)
         if ((profile.role === 'ADMIN' || profile.role === 'COACH') && group.team_id !== profile.team_id) {
-            return NextResponse.json({ error: 'Not authorized to edit this group' }, { status: 403 });
+            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized to edit this group'), { status: 403 });
         }
 
         const body = (await request.json()) as {
@@ -233,7 +242,7 @@ export async function PATCH(
         if (body.race_priority !== undefined) updateData.race_priority = body.race_priority;
 
         if (Object.keys(updateData).length === 0) {
-            return NextResponse.json({ error: 'No data to update' }, { status: 400 });
+            return NextResponse.json(apiError('VALIDATION_NO_DATA_TO_UPDATE', 'No data to update'), { status: 400 });
         }
 
         const { data: updatedGroup, error: updateError } = await supabase
@@ -244,13 +253,27 @@ export async function PATCH(
             .single();
 
         if (updateError) {
-            console.error('Update group error:', updateError);
-            return NextResponse.json({ error: 'Failed to update group' }, { status: 500 });
+            appLogger.error('Update group error:', updateError);
+            return NextResponse.json(apiError('FAILED_TO_UPDATE_GROUP', 'Failed to update group'), { status: 500 });
+        }
+
+        if (profile.role === 'ADMIN') {
+            await appendAdminActionLog({
+                actorId: user!.id,
+                actorRole: 'ADMIN',
+                teamId: profile.team_id,
+                action: 'group.updated',
+                targetType: 'group',
+                targetId: groupId,
+                metadata: {
+                    fields: Object.keys(updateData),
+                },
+            });
         }
 
         return NextResponse.json(updatedGroup);
     } catch (error: unknown) {
-        console.error('Update group error:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        appLogger.error('Update group error:', error);
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'), { status: 500 });
     }
 }
