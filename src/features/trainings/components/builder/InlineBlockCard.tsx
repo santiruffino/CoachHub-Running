@@ -219,7 +219,7 @@ export function InlineBlockCard({
                         {getTargetDisplay()}
                     </span>
                     <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-gray-700 dark:text-gray-300">
-                        {block.type === 'rest' ? t('labels.rest') : `${t('intensity').replace(' (%)', '')} ${block.intensity || 50}%`}
+                        {block.type === 'rest' ? t('labels.restWithHint') : `${t('intensity').replace(' (%)', '')} ${block.intensity || 50}%`}
                     </span>
                 </div>
 
@@ -260,8 +260,8 @@ export function InlineBlockCard({
                             >
                                 <option value="warmup">{t('labels.warmup')}</option>
                                 <option value="interval">{t('labels.interval')}</option>
-                                <option value="recovery">{t('labels.recovery')}</option>
-                                <option value="rest">{t('labels.rest')}</option>
+                                <option value="recovery">{t('labels.recoveryWithHint')}</option>
+                                <option value="rest">{t('labels.restWithHint')}</option>
                                 <option value="cooldown">{t('labels.cooldown')}</option>
                             </select>
                         </div>

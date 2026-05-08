@@ -40,7 +40,7 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
     const WORK_TYPES: { value: string; label: string }[] = [
         { value: 'warmup', label: t('labels.warmup') },
         { value: 'interval', label: t('labels.interval') },
-        { value: 'recovery', label: t('labels.recovery') },
+        { value: 'recovery', label: t('labels.recoveryWithHint') },
         { value: 'cooldown', label: t('labels.cooldown') },
     ];
 

@@ -172,8 +172,8 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
                     >
                         <option value="warmup">{t('labels.warmup')}</option>
                         <option value="interval">{t('labels.interval')}</option>
-                        <option value="recovery">{t('labels.recovery')}</option>
-                        <option value="rest">{t('labels.rest')}</option>
+                        <option value="recovery">{t('labels.recoveryWithHint')}</option>
+                        <option value="rest">{t('labels.restWithHint')}</option>
                         <option value="cooldown">{t('labels.cooldown')}</option>
                     </select>
                 </div>

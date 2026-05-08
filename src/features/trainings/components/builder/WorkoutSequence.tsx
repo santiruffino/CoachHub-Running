@@ -365,12 +365,14 @@ export function WorkoutSequence({
                             className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#2b3437]/20 dark:border-white/20 bg-[#c5e0fa]/30 hover:bg-[#c5e0fa]/50 transition-colors"
                         >
                             <span className="text-[10px] uppercase font-bold tracking-widest text-[#2b3437] dark:text-[#f8f9fa]">{t('labels.recovery')}</span>
+                            <span className="mt-1 text-[9px] uppercase font-semibold tracking-wide text-[#4e6073] dark:text-[#b8c3d1]">{t('labels.recoveryHint')}</span>
                         </button>
                         <button
                             onClick={() => onAddStep('rest')}
                             className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#2b3437]/20 dark:border-white/20 bg-[#e2e8f0]/50 hover:bg-[#e2e8f0]/70 transition-colors"
                         >
                             <span className="text-[10px] uppercase font-bold tracking-widest text-[#2b3437] dark:text-[#f8f9fa]">{t('labels.rest')}</span>
+                            <span className="mt-1 text-[9px] uppercase font-semibold tracking-wide text-[#4e6073] dark:text-[#b8c3d1]">{t('labels.restHint')}</span>
                         </button>
                         <button
                             onClick={() => onAddStep('cooldown')}

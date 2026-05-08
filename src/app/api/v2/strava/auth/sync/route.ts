@@ -204,7 +204,13 @@ export async function POST(request: NextRequest) {
                 .upsert(batch, { onConflict: 'user_id,external_id' });
 
             if (upsertError) {
-                logger.error('strava_sync.bulk_upsert_failed', { userId: user!.id, error: upsertError });
+                logger.error('strava_sync.bulk_upsert_failed', {
+                    userId: user!.id,
+                    error: upsertError,
+                    hint: 'Ensure unique index exists on activities(user_id, external_id)',
+                    sampleExternalId: batch[0]?.external_id,
+                    batchSize: batch.length,
+                });
                 return respond(apiError('FAILED_TO_SYNC_ACTIVITIES_TO_DATABASE', 'Failed to sync activities to database'),
                     { status: 500 }
                 );

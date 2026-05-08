@@ -12,8 +12,9 @@ import { Group } from '@/interfaces/group';
 import { Button } from '@/components/ui/button';
 import { trainingsService } from '@/features/trainings/services/trainings.service';
 import api from '@/lib/axios';
-import { ArrowLeft, Search, Check, Sparkles, LayoutTemplate, Clock, X } from 'lucide-react';
+import { ArrowLeft, Search, Check, Sparkles, LayoutTemplate, Clock, X, CalendarDays, Users, Route, Gauge } from 'lucide-react';
 import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
 import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
@@ -268,6 +269,96 @@ function AssignWorkoutContent() {
         return Math.round(total / 60);
     }, [blocks]);
 
+    const workoutSummary = useMemo(() => {
+        const byType: Record<WorkoutBlock['type'], number> = {
+            warmup: 0,
+            interval: 0,
+            recovery: 0,
+            rest: 0,
+            cooldown: 0,
+        };
+
+        let totalDistanceMeters = 0;
+        let totalTimeSeconds = 0;
+
+        for (const block of blocks) {
+            const reps = block.group?.reps || 1;
+            byType[block.type] += reps;
+
+            if (block.duration.type === 'distance') {
+                const rawDistance = block.duration.value;
+                const distanceMeters = block.duration.unit === 'km' ? rawDistance * 1000 : rawDistance;
+                totalDistanceMeters += distanceMeters * reps;
+            }
+
+            if (block.duration.type === 'time') {
+                totalTimeSeconds += block.duration.value * reps;
+            }
+        }
+
+        return {
+            byType,
+            totalDistanceMeters,
+            totalTimeSeconds,
+            totalRecipients: selectedAthleteIds.length + selectedGroupIds.length,
+        };
+    }, [blocks, selectedAthleteIds.length, selectedGroupIds.length]);
+
+    const recipientsSummaryLabel = useMemo(() => {
+        const hasSingleAthlete = selectedAthleteIds.length === 1 && selectedGroupIds.length === 0;
+        if (hasSingleAthlete) {
+            const athlete = athletes.find((a) => a.id === selectedAthleteIds[0]);
+            return athlete?.name || '1 atleta seleccionado';
+        }
+
+        const hasSingleGroup = selectedGroupIds.length === 1 && selectedAthleteIds.length === 0;
+        if (hasSingleGroup) {
+            const group = groups.find((g) => g.id === selectedGroupIds[0]);
+            return group?.name || '1 grupo seleccionado';
+        }
+
+        return `${workoutSummary.totalRecipients} seleccionados`;
+    }, [selectedAthleteIds, selectedGroupIds, athletes, groups, workoutSummary.totalRecipients]);
+
+    const blockTypeLabel: Record<WorkoutBlock['type'], string> = {
+        warmup: 'Calentamiento',
+        interval: 'Intervalo',
+        recovery: 'Recuperación',
+        rest: 'Descanso',
+        cooldown: 'Vuelta a la calma',
+    };
+
+    const formatBlockDuration = (block: WorkoutBlock) => {
+        const reps = block.group?.reps || 1;
+
+        if (block.duration.type === 'time') {
+            const totalSeconds = block.duration.value * reps;
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            if (seconds === 0) return `${minutes} min`;
+            return `${minutes} min ${seconds}s`;
+        }
+
+        const rawDistance = block.duration.value;
+        const meters = block.duration.unit === 'km' ? rawDistance * 1000 : rawDistance;
+        const totalMeters = meters * reps;
+        if (totalMeters >= 1000) {
+            return `${(totalMeters / 1000).toFixed(totalMeters % 1000 === 0 ? 0 : 1)} km`;
+        }
+
+        return `${Math.round(totalMeters)} m`;
+    };
+
+    const formatBlockTarget = (block: WorkoutBlock) => {
+        const min = String(block.target.min);
+        const max = String(block.target.max);
+        const range = min === max ? min : `${min}-${max}`;
+
+        if (block.target.type === 'rpe_target') return `RPE ${range}`;
+        if (block.target.type === 'lthr') return `%LTHR ${range}`;
+        return `Zona VAM ${range}`;
+    };
+
 
     // Step 1: Select source
     if (step === 'select-source') {
@@ -460,36 +551,103 @@ function AssignWorkoutContent() {
                         />
                     </div>
                 ) : (
-                    <div className="flex-1 p-16 flex flex-col items-center justify-center">
-                        <div className="max-w-md text-center">
-                            <Clock className="w-16 h-16 text-accent mx-auto mb-8" />
-                            <h2 className="text-4xl font-display font-extrabold text-foreground mb-4">
-                                {selectedTemplate ? selectedTemplate.title : (workoutName || tAssign('customProtocol'))}
-                            </h2>
-                            <p className="text-lg text-muted-foreground mb-8">
-                                {tAssign('scheduledToExecute')} <strong className="text-primary dark:text-white font-bold">{format(new Date(`${scheduledDate}T00:00:00`), 'EEEE dd/MM/yyyy')}</strong>.{' '}
-                                {tAssign('payloadContains')} <strong className="text-primary dark:text-white font-bold">{blocks.length} {tAssign('structuralComponents')}</strong> {tAssign('estimatedLoad', { minutes: estTimeMinutes })}
-                            </p>
+                    <div className="flex-1 p-10 lg:p-12 overflow-y-auto">
+                        <div className="max-w-4xl mx-auto space-y-8">
+                            <div className="rounded-xl border border-border dark:border-white/10 bg-card dark:bg-muted p-6 lg:p-8">
+                                <p className="text-xs uppercase tracking-[0.08em] font-semibold text-muted-foreground mb-3">Resumen del entrenamiento</p>
+                                <h2 className="text-3xl lg:text-4xl font-display font-extrabold text-foreground mb-5">
+                                    {selectedTemplate ? selectedTemplate.title : (workoutName || tAssign('customProtocol'))}
+                                </h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                    <div className="flex items-center gap-3 rounded-lg bg-background dark:bg-background/60 p-4 border border-border/60 dark:border-white/10">
+                                        <CalendarDays className="w-4 h-4 text-primary" />
+                                        <div>
+                                            <p className="text-xs text-muted-foreground uppercase tracking-wide">Fecha objetivo</p>
+                                            <p className="font-semibold text-foreground">{format(new Date(`${scheduledDate}T00:00:00`), "EEEE dd/MM/yyyy", { locale: es })}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3 rounded-lg bg-background dark:bg-background/60 p-4 border border-border/60 dark:border-white/10">
+                                        <Users className="w-4 h-4 text-primary" />
+                                        <div>
+                                            <p className="text-xs text-muted-foreground uppercase tracking-wide">Destinatarios</p>
+                                            <p className="font-semibold text-foreground">{recipientsSummaryLabel}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3 rounded-lg bg-background dark:bg-background/60 p-4 border border-border/60 dark:border-white/10">
+                                        <Clock className="w-4 h-4 text-primary" />
+                                        <div>
+                                            <p className="text-xs text-muted-foreground uppercase tracking-wide">Duración estimada</p>
+                                            <p className="font-semibold text-foreground">~{estTimeMinutes} min</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3 rounded-lg bg-background dark:bg-background/60 p-4 border border-border/60 dark:border-white/10">
+                                        <Gauge className="w-4 h-4 text-primary" />
+                                        <div>
+                                            <p className="text-xs text-muted-foreground uppercase tracking-wide">RPE objetivo</p>
+                                            <p className="font-semibold text-foreground">{expectedRpe}/10</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-                            {/* Decorative Block Preview */}
-                            <div className="flex flex-wrap justify-center gap-1.5 mb-16 opacity-60">
-                                {blocks.map((b, i) => (
-                                    <div key={i} className={cn(
-                                        "h-8 rounded", 
-                                        b.type === 'warmup' || b.type === 'cooldown' ? 'w-4 bg-emerald-500' :
-                                        b.type === 'interval' ? 'w-12 bg-primary' : 'w-6 bg-border'
-                                    )} />
-                                ))}
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                                <div className="rounded-lg border border-border dark:border-white/10 p-4 bg-card dark:bg-muted">
+                                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Bloques totales</p>
+                                    <p className="text-2xl font-bold text-foreground mt-1">{blocks.length}</p>
+                                </div>
+                                <div className="rounded-lg border border-border dark:border-white/10 p-4 bg-card dark:bg-muted">
+                                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Intervalos</p>
+                                    <p className="text-2xl font-bold text-foreground mt-1">{workoutSummary.byType.interval}</p>
+                                </div>
+                                <div className="rounded-lg border border-border dark:border-white/10 p-4 bg-card dark:bg-muted">
+                                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Recuperación + descanso</p>
+                                    <p className="text-2xl font-bold text-foreground mt-1">{workoutSummary.byType.recovery + workoutSummary.byType.rest}</p>
+                                </div>
+                                <div className="rounded-lg border border-border dark:border-white/10 p-4 bg-card dark:bg-muted">
+                                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Distancia planificada</p>
+                                    <p className="text-2xl font-bold text-foreground mt-1">
+                                        {workoutSummary.totalDistanceMeters > 0
+                                            ? `${(workoutSummary.totalDistanceMeters / 1000).toFixed(1)} km`
+                                            : '—'}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="rounded-xl border border-border dark:border-white/10 bg-card dark:bg-muted p-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-lg font-bold text-foreground">Desglose de bloques</h3>
+                                    <span className="text-xs uppercase tracking-wide text-muted-foreground">Vista rápida</span>
+                                </div>
+                                {blocks.length === 0 ? (
+                                    <p className="text-sm text-muted-foreground">Aun no hay bloques cargados en esta sesión.</p>
+                                ) : (
+                                    <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                                        {blocks.map((block, index) => (
+                                            <div key={block.id || `${block.type}-${index}`} className="flex items-center justify-between rounded-lg border border-border/60 dark:border-white/10 px-3 py-2 bg-background dark:bg-background/60">
+                                                <div className="min-w-0">
+                                                    <p className="text-sm font-semibold text-foreground truncate">{index + 1}. {block.stepName || blockTypeLabel[block.type]}</p>
+                                                    <p className="text-xs text-muted-foreground">{blockTypeLabel[block.type]}{block.group?.reps ? ` · x${block.group.reps}` : ''}</p>
+                                                </div>
+                                                <div className="text-right shrink-0 ml-4">
+                                                    <p className="text-sm font-semibold text-foreground">{formatBlockDuration(block)}</p>
+                                                    <p className="text-xs text-muted-foreground">{formatBlockTarget(block)}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
                             {workoutSource === 'template' && (
-                                <Button 
-                                    variant="outline" 
-                                    onClick={() => setEditingTemplate(true)}
-                                    className="border-gray-200 dark:border-white/10 text-foreground dark:text-white hover:bg-muted dark:hover:bg-white/5 uppercase tracking-wider text-xs font-bold"
-                                >
-                                    {tAssign('overruleBlockStructure')}
-                                </Button>
+                                <div className="pt-1">
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => setEditingTemplate(true)}
+                                        className="border-gray-200 dark:border-white/10 text-foreground dark:text-white hover:bg-muted dark:hover:bg-white/5 uppercase tracking-wider text-xs font-bold"
+                                    >
+                                        {tAssign('overruleBlockStructure')}
+                                    </Button>
+                                </div>
                             )}
                         </div>
                     </div>
@@ -523,7 +681,7 @@ function AssignWorkoutContent() {
                 </Button>
 
                 <h1 className="text-3xl font-extrabold font-display tracking-tight text-foreground mb-12">
-                    {tAssign('actionCalendar')}
+                    Planificación de la sesión
                 </h1>
 
                 <div className="space-y-12 pb-12">
