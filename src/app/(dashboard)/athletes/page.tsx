@@ -196,26 +196,6 @@ export default function AthletesPage() {
           <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">{t('title')} {isAdmin && ' (Global)'}</h1>
         </div>
         <div className="flex items-center gap-2">
-          {!isAdmin && (
-            <div className="flex items-center gap-2 rounded-xl bg-muted p-1">
-              <Button
-                type="button"
-                variant={scope === 'mine' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setScope('mine')}
-              >
-                {tDashboard('alerts.myAthletes')}
-              </Button>
-              <Button
-                type="button"
-                variant={scope === 'team' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setScope('team')}
-              >
-                {tDashboard('alerts.teamView')}
-              </Button>
-            </div>
-          )}
           <Button onClick={() => setInviteModalOpen(true)} size="sm" className="sm:size-default">
             <UserPlus className="h-4 w-4 sm:mr-2" />
             <span className="hidden sm:inline">{t('addAthlete')}</span>
@@ -259,8 +239,20 @@ export default function AthletesPage() {
           />
         </div>
 
+        {!isAdmin && (
+          <Select value={scope} onValueChange={(value) => setScope(value as 'mine' | 'team')}>
+            <SelectTrigger className="w-full sm:w-[220px]">
+              <SelectValue placeholder={tDashboard('alerts.myAthletes')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="mine">{tDashboard('alerts.myAthletes')}</SelectItem>
+              <SelectItem value="team">{tDashboard('alerts.teamView')}</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
+
         <Select value={filterLevel} onValueChange={setFilterLevel}>
-          <SelectTrigger className="w-full sm:w-[150px]">
+          <SelectTrigger className="w-full sm:w-[220px]">
              <SelectValue placeholder={t('filters.level')} />
           </SelectTrigger>
           <SelectContent>
@@ -272,7 +264,7 @@ export default function AthletesPage() {
         </Select>
 
         <Select value={filterGroup} onValueChange={setFilterGroup}>
-          <SelectTrigger className="w-full sm:w-[150px]">
+          <SelectTrigger className="w-full sm:w-[220px]">
              <SelectValue placeholder={t('filters.group')} />
           </SelectTrigger>
           <SelectContent>
@@ -285,7 +277,7 @@ export default function AthletesPage() {
 
         {isAdmin && (
           <Select value={filterCoach} onValueChange={setFilterCoach}>
-            <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectTrigger className="w-full sm:w-[220px]">
                <SelectValue placeholder={t('filters.coach')} />
             </SelectTrigger>
             <SelectContent>

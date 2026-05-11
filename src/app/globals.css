@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
   :root {
@@ -115,10 +116,20 @@
   --color-green-dark: #00CC6A;
   --color-gray-light: #A0A8B8;
 
+  /* Endurix Brand Tokens */
+  --color-endurix-orange: #FF6800;
+  --color-endurix-black: #111317;
+  --color-endurix-paper: #F2F2F2;
+  --color-endurix-dark: #1C1207;
+  --color-endurix-stone: #EBE9EC;
+  --color-endurix-lavender: #D9D6FF;
+
   /* Typography */
   --font-sans: var(--font-inter);
   --font-body: var(--font-inter);
   --font-display: var(--font-manrope);
+  --font-exo2: var(--font-exo-2);
+  --font-ibm-mono: var(--font-ibm-plex-mono);
 }
 
 * {
@@ -129,4 +140,23 @@ body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
   font-family: var(--font-sans);
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-new(root) {
+  animation: theme-transition 500ms ease-in-out;
+}
+
+@keyframes theme-transition {
+  0% {
+    clip-path: circle(0px at var(--x, 50%) var(--y, 50%));
+  }
+  100% {
+    clip-path: circle(150vw at var(--x, 50%) var(--y, 50%));
+  }
 }

@@ -1,40 +1,45 @@
 'use client';
 
 import Link from 'next/link';
+import { ChevronsRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 export function Footer() {
   const t = useTranslations('landing.footer');
 
+  const FOOTER_LINKS = [
+    { label: t('privacy'), href: '/privacy' },
+    { label: t('terms'), href: '/terms' },
+    { label: t('docs'), href: '/docs' },
+    { label: t('support'), href: '/support' },
+  ];
+
   return (
-    /* bg-muted closes the page — tonal shift from bg-background CTA above */
-    <footer className="bg-muted dark:bg-[#131b23]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <footer className="bg-endurix-dark dark:bg-background border-t border-white/8 dark:border-border">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           {/* Logo */}
-          <div className="flex items-center gap-2.5">
-            <div
-              className="w-6 h-6 rounded-[0.375rem] flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #4e6073, #425467)' }}
+          <Link href="/" className="flex items-center gap-1.5">
+            <ChevronsRight
+              className="w-5 h-5 text-endurix-orange"
+              strokeWidth={3}
+            />
+            <span
+              className="font-bold text-endurix-orange tracking-widest text-sm uppercase"
+              style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
             >
-              <span className="text-white font-bold text-xs font-display">C</span>
-            </div>
-            <span className="text-foreground font-semibold text-sm font-display tracking-tight">
-              COACH HUB
+              ENDURIX
             </span>
-          </div>
+          </Link>
 
-          {/* Links — tertiary editorial pattern */}
-          <div className="flex items-center gap-6">
-            {[
-              { label: t('privacy'), href: '/privacy' },
-              { label: t('terms'), href: '/terms' },
-              { label: t('contact'), href: '/contact' },
-            ].map((link) => (
+          {/* Links */}
+          <div className="flex items-center flex-wrap justify-center gap-6">
+            {FOOTER_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-muted-foreground hover:text-foreground transition-colors text-xs tracking-[0.01em] underline-offset-4 hover:underline"
+                className="text-white/35 hover:text-white/70 transition-colors text-[10px] tracking-widest"
+                style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
               >
                 {link.label}
               </Link>
@@ -42,7 +47,10 @@ export function Footer() {
           </div>
 
           {/* Copyright */}
-          <p className="text-muted-foreground text-xs tracking-[0.01em]">
+          <p
+            className="text-white/30 text-[10px] tracking-wider text-center md:text-right"
+            style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+          >
             {t('copyright')}
           </p>
         </div>

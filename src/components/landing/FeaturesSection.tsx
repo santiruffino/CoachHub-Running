@@ -1,84 +1,176 @@
 'use client';
 
-import { FileSpreadsheet, AudioWaveform, MessageCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { useEffect, useRef } from 'react';
+import { BarChart2, TrendingUp, Users } from 'lucide-react';
+import { motion, useInView, animate } from 'framer-motion';
 import { useTranslations } from 'next-intl';
+
+function AnimatedPercent({ target }: { target: number }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const isInView = useInView(ref, { once: true, margin: '-60px' });
+  useEffect(() => {
+    if (!isInView) return;
+    const ctrl = animate(0, target, {
+      duration: 1.2,
+      ease: 'easeOut',
+      onUpdate: (v) => {
+        if (ref.current) ref.current.textContent = Math.round(v) + '%';
+      },
+    });
+    return () => ctrl.stop();
+  }, [isInView, target]);
+  return <span ref={ref}>0%</span>;
+}
+
+function ProgressBar({ value }: { value: number }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className="flex-1 h-1.5 bg-endurix-black/15 dark:bg-border relative">
+        <motion.div
+          className="absolute inset-y-0 left-0 bg-endurix-orange"
+          initial={{ width: 0 }}
+          whileInView={{ width: `${value}%` }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.9, ease: 'easeOut', delay: 0.2 }}
+        />
+        <div
+          className="absolute inset-y-0 left-0 right-0 bg-[#111317] dark:bg-white opacity-60 dark:opacity-20"
+          style={{ left: `${value}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+const getFeatures = (t: any) => [
+  {
+    icon: BarChart2,
+    tag: t('tag1'),
+    title: t('title1'),
+    description: t('desc1'),
+    footer: (
+      <div className="mt-5 space-y-2">
+        <div className="flex items-center justify-between">
+          <span
+            className="text-[9px] text-endurix-black/50 dark:text-muted-foreground tracking-widest"
+            style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+          >
+            {t('progreso')}
+          </span>
+          <span
+            className="text-[9px] text-endurix-black/50 dark:text-muted-foreground tracking-widest"
+            style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+          >
+            <AnimatedPercent target={68} />
+          </span>
+        </div>
+        <ProgressBar value={68} />
+      </div>
+    ),
+  },
+  {
+    icon: TrendingUp,
+    tag: t('tag2'),
+    title: t('title2'),
+    description: t('desc2'),
+    footer: (
+      <div className="mt-5 flex items-center gap-2 flex-wrap">
+        <span className="inline-flex items-center gap-1.5 border border-endurix-black/20 dark:border-border px-3 py-1">
+          <span className="w-2 h-2 rounded-full bg-endurix-orange flex-shrink-0" />
+          <span
+            className="text-[9px] text-endurix-black dark:text-foreground font-medium tracking-wider"
+            style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+          >
+            {t('zona4')}
+          </span>
+        </span>
+        <span className="inline-flex items-center border border-endurix-black/20 dark:border-border px-3 py-1">
+          <span
+            className="text-[9px] text-endurix-black dark:text-foreground font-medium tracking-wider"
+            style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+          >
+            {t('bpm')}
+          </span>
+        </span>
+      </div>
+    ),
+  },
+  {
+    icon: Users,
+    tag: t('tag3'),
+    title: t('title3'),
+    description: t('desc3'),
+    footer: (
+      <div className="mt-5 border border-endurix-black/15 dark:border-border p-3">
+        <p
+          className="text-[8px] text-endurix-black/40 dark:text-muted-foreground tracking-widest mb-2"
+          style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+        >
+          {t('inputCampo')}
+        </p>
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-endurix-black/60 dark:text-muted-foreground">{t('distancia')}</span>
+          <span
+            className="text-xl font-bold text-endurix-black dark:text-foreground"
+            style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+          >
+            12.45
+          </span>
+        </div>
+      </div>
+    ),
+  },
+];
 
 export function FeaturesSection() {
   const t = useTranslations('landing.features');
-
-  const features = [
-    {
-      icon: FileSpreadsheet,
-      title: t('card1Title'),
-      description: t('card1Desc'),
-    },
-    {
-      icon: AudioWaveform,
-      title: t('card2Title'),
-      description: t('card2Desc'),
-    },
-    {
-      icon: MessageCircle,
-      title: t('card3Title'),
-      description: t('card3Desc'),
-    },
-  ];
+  const features = getFeatures(t);
 
   return (
-    /* Tonal background shift — No-Line rule */
-    <section id="features" className="py-24 lg:py-36 bg-muted dark:bg-[#131b23]">
+    <section id="features" className="py-24 lg:py-32 bg-white dark:bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="mb-20"
-        >
-          <p className="text-xs text-primary font-semibold uppercase tracking-[0.05em] mb-3">
-            {t('eyebrow')}
-          </p>
-          <h2 className="font-display text-4xl lg:text-5xl font-bold text-foreground tracking-[-0.02em] max-w-xl">
-            {t('title')}
-          </h2>
-        </motion.div>
-
-        {/* Feature cards — "soft lift" layering: white cards on off-white bg */}
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-3 gap-6">
           {features.map((feature, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 32 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              whileHover={{ y: -6 }}
+              viewport={{ once: true, margin: '-60px' }}
+              transition={{ duration: 0.55, delay: index * 0.12, ease: [0.22, 1, 0.36, 1] }}
             >
-              <div
-                className="bg-card dark:bg-[#1a232c] rounded-xl p-8 h-full transition-shadow duration-300 hover:shadow-[0_20px_40px_rgba(43,52,55,0.08)]"
-                style={{
-                  boxShadow: '0 4px 16px rgba(43, 52, 55, 0.05)',
-                  border: '1px solid rgba(171, 179, 183, 0.15)',
-                }}
-              >
-                {/* Icon badge */}
-                <div className="w-12 h-12 bg-accent dark:bg-[#0a0f14] rounded-lg flex items-center justify-center mb-7">
-                  <feature.icon className="w-5 h-5 text-primary" />
+              <div className="border border-endurix-black/12 dark:border-border p-6 h-full flex flex-col bg-white dark:bg-card hover:border-endurix-black/30 dark:hover:border-white/30 transition-colors duration-300">
+                {/* Tag row */}
+                <div className="flex items-center gap-2.5 mb-4">
+                  <feature.icon
+                    className="w-4 h-4 text-endurix-black/60 dark:text-muted-foreground flex-shrink-0"
+                    strokeWidth={1.5}
+                  />
+                  <span
+                    className="text-[9px] text-endurix-black/50 dark:text-muted-foreground tracking-widest font-semibold"
+                    style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                  >
+                    {feature.tag}
+                  </span>
                 </div>
 
-                {/* Card number — editorial detail */}
-                <p className="text-[10px] text-muted-foreground uppercase tracking-[0.05em] mb-2">
-                  0{index + 1}
-                </p>
+                {/* Divider */}
+                <div className="h-px bg-endurix-black/10 dark:bg-border mb-5" />
 
-                <h3 className="font-display text-xl font-semibold text-foreground mb-3 tracking-tight">
+                {/* Title */}
+                <h3
+                  className="text-xl font-bold text-endurix-black dark:text-foreground mb-3 tracking-tight leading-tight"
+                  style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                >
                   {feature.title}
                 </h3>
-                <p className="text-muted-foreground leading-relaxed tracking-[0.01em] text-sm">
+
+                {/* Description */}
+                <p className="text-sm text-endurix-black/55 dark:text-muted-foreground leading-relaxed flex-1">
                   {feature.description}
                 </p>
+
+                {/* Footer widget */}
+                {feature.footer}
               </div>
             </motion.div>
           ))}

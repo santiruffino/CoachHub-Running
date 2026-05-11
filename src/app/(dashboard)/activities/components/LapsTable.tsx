@@ -3,6 +3,7 @@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ChevronDown } from 'lucide-react';
 import { Lap } from '@/interfaces/activity';
 import { MatchedLap } from '@/features/trainings/utils/workoutMatcher';
 
@@ -89,9 +90,10 @@ export function LapsTable({
                             const badgeEl = (
                                 <Badge
                                     variant="outline"
-                                    className={`${displayColorClass} border transition-opacity`}
+                                    className={`${displayColorClass} border transition-opacity flex items-center gap-1 w-fit ml-auto`}
                                 >
                                     {displayLabel}
+                                    {!isAthlete && <ChevronDown className="w-3 h-3 opacity-50" />}
                                 </Badge>
                             );
 

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Manrope, Inter } from "next/font/google";
+import { Manrope, Inter, Exo_2, IBM_Plex_Mono } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
 import { Providers } from "./providers";
@@ -17,6 +17,18 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
+const exo2 = Exo_2({
+  variable: "--font-exo-2",
+  subsets: ["latin"],
+  weight: ["400", "600", "700", "800"],
+});
+
+const ibmPlexMono = IBM_Plex_Mono({
+  variable: "--font-ibm-plex-mono",
+  subsets: ["latin"],
+  weight: ["400", "500"],
+});
+
 export const metadata: Metadata = {
   title: "Coach Hub",
   description: "Plataforma para entrenadores de running",
@@ -32,7 +44,7 @@ export default async function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${manrope.variable} font-sans antialiased`}
+        className={`${inter.variable} ${manrope.variable} ${exo2.variable} ${ibmPlexMono.variable} font-sans antialiased`}
       >
         <NextIntlClientProvider messages={messages}>
           <Providers>

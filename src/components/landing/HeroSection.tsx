@@ -1,24 +1,170 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, ResponsiveContainer, Cell } from 'recharts';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
-const chartData = [
-  { day: 'Lun', value: 45 },
-  { day: 'Mar', value: 52 },
-  { day: 'Mié', value: 38 },
-  { day: 'Jue', value: 65 },
-  { day: 'Vie', value: 73 },
-  { day: 'Sáb', value: 88 },
-  { day: 'Dom', value: 95 },
-  { day: 'Lun', value: 68 },
-  { day: 'Mar', value: 42 },
-  { day: 'Mié', value: 35 },
+const weeklyData = [
+  { day: 'L', value: 38 },
+  { day: 'M', value: 52 },
+  { day: 'M', value: 34 },
+  { day: 'J', value: 85, highlight: true },
+  { day: 'V', value: 60 },
+  { day: 'S', value: 48 },
+  { day: 'D', value: 44 },
 ];
+
+function TrainingLoadRing() {
+  const radius = 36;
+  const circumference = 2 * Math.PI * radius;
+  const progress = 0.78;
+  const dasharray = `${circumference * progress} ${circumference * (1 - progress)}`;
+
+  return (
+    <div className="relative w-20 h-20">
+      <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+        <circle
+          cx="50"
+          cy="50"
+          r={radius}
+          fill="none"
+          className="stroke-[#E0DED9] dark:stroke-border"
+          strokeWidth="10"
+        />
+        <circle
+          cx="50"
+          cy="50"
+          r={radius}
+          fill="none"
+          className="stroke-[#111317] dark:stroke-white"
+          strokeWidth="10"
+          strokeDasharray={dasharray}
+          strokeLinecap="round"
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span
+          className="text-sm font-bold text-endurix-black dark:text-foreground leading-none"
+          style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+        >
+          487
+        </span>
+        <span
+          className="text-[8px] text-endurix-orange font-bold tracking-wide mt-0.5"
+          style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+        >
+          ÓPTIMO
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function DashboardMock({ mounted, t }: { mounted: boolean, t: any }) {
+  return (
+    <div className="relative">
+      {/* Decorative orange offset block */}
+      <div
+        className="absolute -bottom-3 -right-3 w-full h-full bg-endurix-orange"
+        aria-hidden
+      />
+
+      {/* Dashboard card */}
+      <div className="relative bg-white dark:bg-card border border-endurix-black/12 dark:border-border shadow-sm">
+        {/* Header bar */}
+        <div className="flex items-center justify-between px-4 py-2.5 bg-[#FEF9F6] dark:bg-muted border-b border-endurix-black/8 dark:border-border">
+          <span
+            className="text-[9px] text-endurix-black/60 dark:text-muted-foreground tracking-widest"
+            style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+          >
+            {t('dashboardMock')}
+          </span>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-endurix-orange" />
+            <div className="w-2 h-2 rounded-full bg-endurix-black" />
+            <div className="w-2 h-2 rounded-full bg-endurix-stone" />
+          </div>
+        </div>
+
+        {/* Stats row */}
+        <div className="grid grid-cols-2 border-b border-endurix-black/8 dark:border-border">
+          {/* Carga Semanal */}
+          <div className="p-4 border-r border-endurix-black/8 dark:border-border">
+            <p
+              className="text-[8px] text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase mb-1"
+              style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+            >
+              {t('cargaSemanal')}
+            </p>
+            <p
+              className="text-4xl font-bold text-endurix-black dark:text-foreground leading-none"
+              style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+            >
+              487
+            </p>
+            <span
+              className="inline-block bg-endurix-orange text-white text-[7px] font-bold tracking-widest px-2 py-0.5 mt-2"
+              style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+            >
+              {t('optima')}
+            </span>
+          </div>
+
+          {/* Training Load */}
+          <div className="p-4 flex flex-col">
+            <p
+              className="text-[8px] text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase mb-2"
+              style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+            >
+              {t('trainingLoad')}
+            </p>
+            <div className="flex items-center justify-center flex-1">
+              <TrainingLoadRing />
+            </div>
+          </div>
+        </div>
+
+        {/* Weekly summary chart */}
+        <div className="p-4">
+          <p
+            className="text-[8px] text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase mb-3"
+            style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+          >
+            {t('resumenSemanal')}
+          </p>
+          <div className="h-28">
+            {mounted && (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={weeklyData} barCategoryGap="25%">
+                  <XAxis
+                    dataKey="day"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{
+                      fill: '#111317',
+                      fontSize: 9,
+                      fontFamily: 'var(--font-ibm-plex-mono, monospace)',
+                    }}
+                  />
+                  <Bar dataKey="value" radius={[0, 0, 0, 0]}>
+                    {weeklyData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        className={entry.highlight ? 'fill-endurix-orange' : 'fill-endurix-black dark:fill-white'}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function HeroSection() {
   const [mounted, setMounted] = useState(false);
@@ -29,207 +175,94 @@ export function HeroSection() {
     return () => cancelAnimationFrame(frame);
   }, []);
 
-  const athletes = [
-    { name: 'Sarah M.', note: t('athleteNoteForm') },
-    { name: 'Mike R.', note: t('athleteNoteRecovery') },
-    { name: 'Emma T.', note: t('athleteNoteLoad') },
-  ];
-
-  const stats = [
-    { value: '1,240', unit: 'km', label: t('volumeLabel') },
-    { value: '174', unit: 'hrs', label: t('loadDurationLabel') },
-    { value: '+12.4%', unit: '', label: t('recoveryRateLabel') },
-  ];
-
   return (
-    <section className="relative overflow-hidden py-24 lg:py-40 bg-background">
-      {/* Subtle background texture — tonal only, no harsh lines */}
-      <div
-        className="absolute inset-0 pointer-events-none opacity-40"
-        style={{
-          backgroundImage:
-            'radial-gradient(ellipse 80% 50% at 60% 0%, rgba(78,96,115,0.08) 0%, transparent 70%)',
-        }}
-      />
-
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="relative overflow-hidden py-20 lg:py-32 bg-endurix-paper dark:bg-background">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Left Content */}
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 28 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-            className="space-y-10"
+            transition={{ duration: 0.65 }}
+            className="space-y-8"
           >
-            {/* Eyebrow label */}
+            {/* Badge */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.15 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
             >
-              <span className="inline-flex items-center gap-2 bg-accent text-primary text-xs font-semibold uppercase tracking-[0.05em] px-3 py-1.5 rounded-[0.375rem]">
-                {t('eyebrow')}
+              <span
+                className="inline-block bg-endurix-black dark:bg-white text-white dark:text-endurix-black text-[10px] font-bold tracking-widest px-3 py-1.5"
+                style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+              >
+                {t('somosEndurix')}
               </span>
             </motion.div>
 
-            <div className="space-y-6">
+            {/* Headline */}
+            <div>
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.25 }}
-                className="font-display text-[3rem] lg:text-[3.75rem] font-bold text-foreground leading-[1.1] tracking-[-0.02em]"
+                transition={{ duration: 0.65, delay: 0.2 }}
+                className="font-bold leading-[1.0] tracking-tight"
+                style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
               >
-                {t('title1')}{' '}
-                <br className="hidden lg:block" />
-                {t('title2')}{' '}
-                <span className="text-primary">
-                  {t('titleHighlight')}
+                <span className="block text-endurix-black dark:text-foreground text-5xl lg:text-6xl xl:text-7xl uppercase">
+                  {t('title1')}
+                </span>
+                <span className="block text-endurix-orange text-5xl lg:text-6xl xl:text-7xl uppercase">
+                  {t('title2')}
                 </span>
               </motion.h1>
 
               <motion.p
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.35 }}
-                className="text-lg text-muted-foreground tracking-[0.01em] leading-relaxed max-w-xl"
+                className="mt-6 text-endurix-black/60 dark:text-muted-foreground text-base leading-relaxed max-w-md"
               >
                 {t('subtitle')}
               </motion.p>
             </div>
 
+            {/* CTAs */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.45 }}
+              transition={{ duration: 0.55, delay: 0.45 }}
               className="flex flex-col sm:flex-row gap-4"
             >
-              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Link
                   href="/login"
-                  className="inline-flex items-center justify-center h-12 px-8 rounded-[0.375rem] font-medium text-white text-sm transition-all shadow-[0_4px_12px_rgba(78,96,115,0.25)] hover:shadow-[0_6px_20px_rgba(78,96,115,0.35)]"
-                  style={{ background: 'linear-gradient(135deg, #4e6073, #425467)' }}
+                  className="inline-flex items-center justify-center gap-2 bg-endurix-orange text-white text-xs font-bold tracking-widest px-8 py-4 transition-all hover:bg-endurix-orange/90 w-full sm:w-auto"
+                  style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
                 >
-                  {t('startFreeTrial')}
+                  {t('viewTraining')} <span aria-hidden>→</span>
                 </Link>
               </motion.div>
-              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                <Button className="bg-secondary text-secondary-foreground hover:bg-secondary/80 font-medium h-12 px-8 w-full sm:w-auto rounded-[0.375rem] border-0 shadow-none">
-                  {t('viewPricing')}
-                </Button>
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Link
+                  href="#features"
+                  className="inline-flex items-center justify-center gap-2 border border-endurix-black dark:border-white text-endurix-black dark:text-white text-xs font-bold tracking-widest px-8 py-4 transition-all hover:bg-endurix-black dark:hover:bg-white hover:text-white dark:hover:text-endurix-black w-full sm:w-auto"
+                  style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                >
+                  {t('cancel')} <span aria-hidden>+</span>
+                </Link>
               </motion.div>
             </motion.div>
           </motion.div>
 
-          {/* Right Content — Dashboard Preview Card */}
+          {/* Right — Dashboard Preview */}
           <motion.div
-            initial={{ opacity: 0, x: 24 }}
+            initial={{ opacity: 0, x: 32 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.35 }}
-            className="relative"
+            transition={{ duration: 0.75, delay: 0.3 }}
+            className="relative px-4 pb-4"
           >
-            <motion.div
-              whileHover={{ scale: 1.015 }}
-              transition={{ duration: 0.3 }}
-              className="rounded-xl overflow-hidden"
-              style={{
-                background: 'var(--color-card, #ffffff)',
-                boxShadow: '0 20px 40px rgba(43, 52, 55, 0.08)',
-                border: '1px solid rgba(171, 179, 183, 0.15)',
-              }}
-            >
-              <div className="dark:bg-[#1a232c] p-6 space-y-6">
-                {/* Card Header */}
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-[0.05em] font-medium">
-                      {t('analyticsLabel')}
-                    </p>
-                    <h3 className="text-sm font-semibold text-foreground mt-1 tracking-tight font-display">
-                      {t('tsbTitle')}
-                    </h3>
-                  </div>
-                  <div className="flex gap-3">
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-2 h-2 rounded-full bg-primary opacity-80" />
-                      <span className="text-xs text-muted-foreground">{t('formLabel')}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-2 h-2 rounded-full bg-destructive opacity-70" />
-                      <span className="text-xs text-muted-foreground">{t('fatigueLabel')}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Chart */}
-                <div className="h-44">
-                  {mounted && (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={chartData} barCategoryGap="28%">
-                        <XAxis
-                          dataKey="day"
-                          axisLine={false}
-                          tickLine={false}
-                          tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
-                        />
-                        <YAxis hide />
-                        <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                          {chartData.map((_, index) => (
-                            <Cell
-                              key={`cell-${index}`}
-                              fill={index === 6 ? '#4e6073' : 'rgba(78,96,115,0.15)'}
-                            />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
-                  )}
-                </div>
-
-                {/* Stats — tonal background shift instead of border */}
-                <div className="rounded-lg bg-muted dark:bg-[#0a0f14] px-4 py-3 grid grid-cols-3 gap-4">
-                  {stats.map((s) => (
-                    <div key={s.label}>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-[0.05em] mb-1">
-                        {s.label}
-                      </p>
-                      <p className="font-display text-xl font-bold text-foreground leading-none">
-                        {s.value}
-                        {s.unit && (
-                          <span className="text-xs font-normal text-muted-foreground ml-1">
-                            {s.unit}
-                          </span>
-                        )}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Active Athletes */}
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-[0.05em] font-medium">
-                      {t('activeAthletes')}
-                    </p>
-                    <span className="bg-accent text-primary text-[10px] font-semibold uppercase tracking-[0.04em] px-2 py-0.5 rounded">
-                      {t('aiRecommendation')}
-                    </span>
-                  </div>
-                  <div className="space-y-3">
-                    {athletes.map((athlete) => (
-                      <div key={athlete.name} className="flex items-center justify-between">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-7 h-7 rounded-full bg-muted dark:bg-[#0a0f14] flex items-center justify-center text-[10px] font-semibold text-muted-foreground">
-                            {athlete.name[0]}
-                          </div>
-                          <span className="text-sm text-foreground font-medium">{athlete.name}</span>
-                        </div>
-                        <span className="text-[10px] text-muted-foreground">{athlete.note}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </motion.div>
+            <DashboardMock mounted={mounted} t={t} />
           </motion.div>
         </div>
       </div>

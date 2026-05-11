@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { format } from 'date-fns';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useFormatter } from 'next-intl';
 import api from '@/lib/axios';
 import { useCache } from '@/lib/context/CacheContext';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -102,6 +102,8 @@ export default function ActivityDetailPage() {
     const router = useRouter();
     const id = params.id as string;
     const t = useTranslations('activities.detail');
+    const tDashboard = useTranslations('dashboard');
+    const intlFormat = useFormatter();
 
     const [activity, setActivity] = useState<ActivityDetail | null>(null);
     const [loading, setLoading] = useState(true);
@@ -357,6 +359,14 @@ export default function ActivityDetailPage() {
         return ['WeightTraining', 'Workout', 'Crossfit'].includes(sportType);
     };
 
+    const getSportTranslation = (sportType: string): string => {
+        if (isRunning(sportType)) return tDashboard('trainingTypes.RUNNING');
+        if (isWeightTraining(sportType)) return tDashboard('trainingTypes.STRENGTH');
+        if (['Ride', 'VirtualRide', 'EBikeRide'].includes(sportType)) return tDashboard('trainingTypes.CYCLING');
+        if (['Swim'].includes(sportType)) return tDashboard('trainingTypes.SWIMMING');
+        return sportType;
+    };
+
     // Determine HR zone from heart rate value
     const getHRZone = (hr: number): number => {
         if (!heartrateZones?.zones) return 0;
@@ -454,7 +464,7 @@ export default function ActivityDetailPage() {
             {/* Header section */}
             <div className="space-y-4">
                 <p className="text-[10px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-widest">
-                    {activity.sport_type} - {format(new Date(activity.start_date_local), 'MMMM d, yyyy').toUpperCase()}
+                    {getSportTranslation(activity.sport_type)} - {intlFormat.dateTime(new Date(activity.start_date_local), { month: 'long', day: 'numeric', year: 'numeric' }).toUpperCase()}
                 </p>
                 <h1 className="text-4xl sm:text-5xl lg:text-7xl font-display font-medium text-foreground leading-tight max-w-5xl tracking-tight">
                     {activity.name}
@@ -845,7 +855,7 @@ export default function ActivityDetailPage() {
                                             {activity.splits_standard.map((split) => (
                                                 <TableRow key={split.split} className="border-b border-muted hover:bg-transparent">
                                                     <TableCell className="font-medium pl-0">{split.split}</TableCell>
-                                                    <TableCell>{(split.distance / 1609.34).toFixed(2)} mi</TableCell>
+                                                    <TableCell>{(split.distance / 1609.34).toFixed(2)} {t('metrics.units.mi')}</TableCell>
                                                     <TableCell>{formatTime(split.moving_time)}</TableCell>
                                                     <TableCell>{formatPace(split.average_speed)}</TableCell>
                                                     <TableCell className="text-right pr-0">{split.elevation_difference > 0 ? '+' : ''}{split.elevation_difference.toFixed(1)} {t('metrics.units.m')}</TableCell>

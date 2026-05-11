@@ -2,69 +2,116 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { ChevronsRight, Menu, X } from 'lucide-react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 export function Navbar() {
+  const [mobileOpen, setMobileOpen] = useState(false);
   const t = useTranslations('landing.navbar');
+
+  const NAV_LINKS = [
+    { label: t('training'), href: '#training' },
+    { label: t('metrics'), href: '#metrics' },
+    { label: t('coaching'), href: '#coaching' },
+    { label: t('pricing'), href: '#pricing' },
+  ];
 
   return (
     <motion.nav
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="sticky top-0 z-50 bg-background/80 backdrop-blur-[20px] border-b border-border/15"
+      initial={{ y: -80, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.45 }}
+      className="sticky top-0 z-50 bg-endurix-paper dark:bg-background border-b border-endurix-black/10 dark:border-border"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-[0.375rem] flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #4e6073, #425467)' }}
+          <Link href="/" className="flex items-center gap-1.5 group">
+            <ChevronsRight
+              className="w-6 h-6 text-endurix-orange"
+              strokeWidth={3}
+            />
+            <span
+              className="font-bold text-endurix-black dark:text-foreground tracking-widest text-sm uppercase"
+              style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
             >
-              <span className="text-white font-bold text-base font-display">C</span>
-            </div>
-            <span className="text-foreground font-semibold text-base tracking-tight font-display">
-              COACH HUB
+              ENDURIX
             </span>
-          </div>
+          </Link>
 
-          {/* Navigation Links */}
-          <div className="hidden md:flex items-center gap-8">
-            {[
-              { label: t('features'), href: '#features' },
-              { label: t('roadmap'), href: '#roadmap' },
-              { label: t('pricing'), href: '#pricing' },
-            ].map((item) => (
+          {/* Desktop Navigation Links */}
+          <div className="hidden md:flex items-center gap-10">
+            {NAV_LINKS.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-muted-foreground hover:text-foreground transition-colors text-sm tracking-[0.01em]"
+                className="text-endurix-black/70 dark:text-muted-foreground hover:text-endurix-black dark:hover:text-foreground text-xs font-semibold tracking-widest transition-colors"
+                style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
               >
                 {item.label}
               </Link>
             ))}
           </div>
 
-          {/* CTA Buttons */}
-          <div className="flex items-center gap-4">
-            <Link
-              href="/login"
-              className="text-primary text-sm underline underline-offset-4 decoration-primary/30 hover:decoration-primary transition-all hidden md:block tracking-[0.01em]"
-            >
-              {t('login')}
-            </Link>
+          {/* Desktop CTA & Theme Toggle */}
+          <div className="hidden md:flex items-center gap-4">
+            <ThemeToggle />
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
               <Link
                 href="/login"
-                className="inline-flex items-center h-9 px-5 rounded-[0.375rem] text-sm font-medium text-white transition-all"
-                style={{ background: 'linear-gradient(135deg, #4e6073, #425467)' }}
+                className="inline-flex items-center gap-2 bg-endurix-orange text-white text-xs font-bold tracking-widest px-5 py-2.5 transition-all hover:bg-endurix-orange/90"
+                style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
               >
-                {t('startFreeTrial')}
+                {t('startTraining')} <span aria-hidden>→</span>
               </Link>
             </motion.div>
           </div>
+
+          {/* Mobile Theme Toggle & Menu button */}
+          <div className="md:hidden flex items-center gap-2">
+            <ThemeToggle />
+            <button
+              className="text-endurix-black dark:text-foreground p-1"
+              onClick={() => setMobileOpen((v) => !v)}
+              aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+            >
+              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Mobile menu */}
+      {mobileOpen && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="md:hidden bg-endurix-paper dark:bg-background border-t border-endurix-black/10 dark:border-border px-4 pb-4 pt-2"
+        >
+          <div className="flex flex-col gap-4 mt-2">
+            {NAV_LINKS.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setMobileOpen(false)}
+                className="text-endurix-black dark:text-foreground text-xs font-semibold tracking-widest"
+                style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+              >
+                {item.label}
+              </Link>
+            ))}
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-2 bg-endurix-orange text-white text-xs font-bold tracking-widest px-5 py-2.5 self-start"
+              style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+            >
+              {t('startTraining')} →
+            </Link>
+          </div>
+        </motion.div>
+      )}
     </motion.nav>
   );
 }
