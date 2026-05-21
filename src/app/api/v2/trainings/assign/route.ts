@@ -65,19 +65,19 @@ export async function POST(request: NextRequest) {
 
         // Validation
         if (!trainingId) {
-            return respond(apiError('VALIDATION_TRAININGID_IS_REQUIRED', 'trainingId is required'),
+            return respond(apiError('VALIDATION_TRAININGID_IS_REQUIRED'),
                 { status: 400 }
             );
         }
 
         if (!scheduledDate) {
-            return respond(apiError('VALIDATION_SCHEDULEDDATE_IS_REQUIRED', 'scheduledDate is required'),
+            return respond(apiError('VALIDATION_SCHEDULEDDATE_IS_REQUIRED'),
                 { status: 400 }
             );
         }
 
         if ((!athleteIds || athleteIds.length === 0) && (!groupIds || groupIds.length === 0)) {
-            return respond(apiError('VALIDATION_AT_LEAST_ONE_ATHLETEID_OR_GROUPID_IS_REQUIRED', 'At least one athleteId or groupId is required'),
+            return respond(apiError('VALIDATION_AT_LEAST_ONE_ATHLETEID_OR_GROUPID_IS_REQUIRED'),
                 { status: 400 }
             );
         }
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
 
         if (!profile?.team_id) {
             logger.warn('assign_training.missing_team', { userId: user!.id });
-            return respond(apiError('AUTH_FORBIDDEN', 'Coach must belong to a team'),
+            return respond(apiError('AUTH_FORBIDDEN'),
                 { status: 403 }
             );
         }
@@ -104,14 +104,14 @@ export async function POST(request: NextRequest) {
 
         if (trainingError || !training) {
             logger.warn('assign_training.training_not_found', { userId: user!.id, trainingId, error: trainingError });
-            return respond(apiError('TRAINING_NOT_FOUND', 'Training not found'),
+            return respond(apiError('TRAINING_NOT_FOUND'),
                 { status: 404 }
             );
         }
 
         if (training.team_id !== profile.team_id) {
             logger.warn('assign_training.forbidden_training', { userId: user!.id, trainingId });
-            return respond(apiError('AUTH_FORBIDDEN', 'Not authorized to assign this training'),
+            return respond(apiError('AUTH_FORBIDDEN'),
                 { status: 403 }
             );
         }
@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
                     requestedGroups: groupIds.length,
                     resolvedGroups: groups?.length || 0,
                 });
-                return respond(apiError('GROUP_NOT_FOUND', 'One or more groups not found or not owned by you'),
+                return respond(apiError('GROUP_NOT_FOUND'),
                     { status: 404 }
                 );
             }
@@ -189,7 +189,7 @@ export async function POST(request: NextRequest) {
         }
 
         if (assignmentsToCreate.length === 0) {
-            return respond(apiError('VALIDATION_NO_ATHLETES_FOUND_TO_ASSIGN_TRAINING_TO', 'No athletes found to assign training to'),
+            return respond(apiError('VALIDATION_NO_ATHLETES_FOUND_TO_ASSIGN_TRAINING_TO'),
                 { status: 400 }
             );
         }
@@ -207,7 +207,7 @@ export async function POST(request: NextRequest) {
                 assignmentCount: assignmentsToCreate.length,
                 error: insertError,
             });
-            return respond(apiError('FAILED_TO_ASSIGN_TRAINING', 'Failed to assign training'),
+            return respond(apiError('FAILED_TO_ASSIGN_TRAINING'),
                 { status: 500 }
             );
         }
@@ -268,7 +268,7 @@ export async function POST(request: NextRequest) {
         Sentry.captureException(error, {
             tags: { route: '/api/v2/trainings/assign', requestId },
         });
-        return respond(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+        return respond(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
     }

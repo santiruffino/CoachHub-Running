@@ -15,7 +15,7 @@ export async function GET() {
     .single();
 
   if (error || !profile) {
-    return NextResponse.json(apiError('FAILED_TO_FETCH_ONBOARDING_STATUS', 'Failed to fetch onboarding status'), {
+    return NextResponse.json(apiError('FAILED_TO_FETCH_ONBOARDING_STATUS'), {
       status: 500,
     });
   }
@@ -44,11 +44,11 @@ export async function POST(request: Request) {
     .single();
 
   if (profileError || !profile) {
-    return NextResponse.json(apiError('FAILED_TO_FETCH_PROFILE', 'Failed to fetch profile'), { status: 500 });
+    return NextResponse.json(apiError('FAILED_TO_FETCH_PROFILE'), { status: 500 });
   }
 
   if (!profile.team_id) {
-    return NextResponse.json(apiError('TEAM_REQUIRED', 'Coach must belong to a team'), { status: 403 });
+    return NextResponse.json(apiError('TEAM_REQUIRED'), { status: 403 });
   }
 
   const { error: coachProfileError } = await supabase
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
     );
 
   if (coachProfileError) {
-    return NextResponse.json(apiError('FAILED_TO_UPDATE_COACH_PROFILE', 'Failed to update coach profile'), { status: 500 });
+    return NextResponse.json(apiError('FAILED_TO_UPDATE_COACH_PROFILE'), { status: 500 });
   }
 
   const { error: onboardingError } = await supabase
@@ -77,7 +77,7 @@ export async function POST(request: Request) {
     .eq('id', user!.id);
 
   if (onboardingError) {
-    return NextResponse.json(apiError('FAILED_TO_COMPLETE_ONBOARDING', 'Failed to complete onboarding'), { status: 500 });
+    return NextResponse.json(apiError('FAILED_TO_COMPLETE_ONBOARDING'), { status: 500 });
   }
 
   await ensureCoachStarterTemplates(user!.id, profile.team_id);

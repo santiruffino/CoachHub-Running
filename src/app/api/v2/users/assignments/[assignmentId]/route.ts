@@ -26,7 +26,7 @@ export async function PATCH(
         const { scheduledDate } = (await request.json()) as { scheduledDate?: string };
 
         if (!scheduledDate) {
-            return NextResponse.json(apiError('VALIDATION_SCHEDULEDDATE_IS_REQUIRED', 'scheduledDate is required'),
+            return NextResponse.json(apiError('VALIDATION_SCHEDULEDDATE_IS_REQUIRED'),
                 { status: 400 }
             );
         }
@@ -39,13 +39,13 @@ export async function PATCH(
             .single();
 
         if (fetchError || !assignment) {
-            return NextResponse.json(apiError('ASSIGNMENT_NOT_FOUND', 'Assignment not found'),
+            return NextResponse.json(apiError('ASSIGNMENT_NOT_FOUND'),
                 { status: 404 }
             );
         }
 
         if (assignment.user_id !== user!.id) {
-            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized to update this assignment'),
+            return NextResponse.json(apiError('AUTH_FORBIDDEN'),
                 { status: 403 }
             );
         }
@@ -77,7 +77,7 @@ export async function PATCH(
 
         if (updateError) {
             appLogger.error('Update assignment error:', updateError);
-            return NextResponse.json(apiError('FAILED_TO_UPDATE_ASSIGNMENT', 'Failed to update assignment'),
+            return NextResponse.json(apiError('FAILED_TO_UPDATE_ASSIGNMENT'),
                 { status: 500 }
             );
         }
@@ -85,7 +85,7 @@ export async function PATCH(
         return NextResponse.json(updated);
     } catch (error: unknown) {
         appLogger.error('Update assignment error:', error);
-        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
     }

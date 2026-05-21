@@ -16,7 +16,7 @@ export async function GET() {
     .single();
 
   if (!profile?.team_id) {
-    return NextResponse.json(apiError('TEAM_REQUIRED', 'Coach must belong to a team'), { status: 403 });
+    return NextResponse.json(apiError('TEAM_REQUIRED'), { status: 403 });
   }
 
   const { data, error } = await supabase
@@ -27,7 +27,7 @@ export async function GET() {
     .maybeSingle();
 
   if (error) {
-    return NextResponse.json(apiError('FAILED_TO_FETCH_COACH_SETTINGS', 'Failed to fetch coach settings'), { status: 500 });
+    return NextResponse.json(apiError('FAILED_TO_FETCH_COACH_SETTINGS'), { status: 500 });
   }
 
   return NextResponse.json(
@@ -51,7 +51,7 @@ export async function PATCH(request: Request) {
     .single();
 
   if (!profile?.team_id) {
-    return NextResponse.json(apiError('TEAM_REQUIRED', 'Coach must belong to a team'), { status: 403 });
+    return NextResponse.json(apiError('TEAM_REQUIRED'), { status: 403 });
   }
 
   const body = (await request.json()) as {
@@ -79,7 +79,7 @@ export async function PATCH(request: Request) {
     );
 
   if (error) {
-    return NextResponse.json(apiError('FAILED_TO_UPDATE_COACH_SETTINGS', 'Failed to update coach settings'), { status: 500 });
+    return NextResponse.json(apiError('FAILED_TO_UPDATE_COACH_SETTINGS'), { status: 500 });
   }
 
   return NextResponse.json(normalized);

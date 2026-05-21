@@ -13,7 +13,7 @@ export async function GET() {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json(apiError('AUTH_UNAUTHORIZED', 'Unauthorized'),
+      return NextResponse.json(apiError('AUTH_UNAUTHORIZED'),
         { status: 401 }
       );
     }
@@ -26,7 +26,7 @@ export async function GET() {
       .single();
 
     if (profile?.role !== 'COACH' && profile?.role !== 'ADMIN') {
-      return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Only coaches or admins can access this endpoint'),
+      return NextResponse.json(apiError('AUTH_COACH_OR_ADMIN_ONLY'),
         { status: 403 }
       );
     }
@@ -48,14 +48,14 @@ export async function GET() {
     const { data: groups, error } = await groupsQuery;
 
     if (error) {
-      return NextResponse.json(apiError('FAILED_TO_FETCH_GROUPS', 'Failed to fetch groups'),
+      return NextResponse.json(apiError('FAILED_TO_FETCH_GROUPS'),
         { status: 500 }
       );
     }
 
     return NextResponse.json(groups);
   } catch {
-    return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+    return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
       { status: 500 }
     );
   }
@@ -71,7 +71,7 @@ export async function POST(request: Request) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json(apiError('AUTH_UNAUTHORIZED', 'Unauthorized'),
+      return NextResponse.json(apiError('AUTH_UNAUTHORIZED'),
         { status: 401 }
       );
     }
@@ -84,7 +84,7 @@ export async function POST(request: Request) {
       .single();
 
     if (profile?.role !== 'COACH' && profile?.role !== 'ADMIN') {
-      return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Only coaches or admins can create groups'),
+      return NextResponse.json(apiError('AUTH_COACH_OR_ADMIN_ONLY'),
         { status: 403 }
       );
     }
@@ -102,7 +102,7 @@ export async function POST(request: Request) {
     } = body;
 
     if (!name) {
-      return NextResponse.json(apiError('VALIDATION_GROUP_NAME_IS_REQUIRED', 'Group name is required'),
+      return NextResponse.json(apiError('VALIDATION_GROUP_NAME_IS_REQUIRED'),
         { status: 400 }
       );
     }
@@ -128,7 +128,7 @@ export async function POST(request: Request) {
       .single();
 
     if (error) {
-      return NextResponse.json(apiError('FAILED_TO_CREATE_GROUP', 'Failed to create group'),
+      return NextResponse.json(apiError('FAILED_TO_CREATE_GROUP'),
         { status: 500 }
       );
     }
@@ -150,7 +150,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(group, { status: 201 });
   } catch {
-    return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+    return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
       { status: 500 }
     );
   }

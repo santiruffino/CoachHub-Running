@@ -32,6 +32,11 @@ const ibmPlexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "Coach Hub",
   description: "Plataforma para entrenadores de running",
+  // favicon.ico, apple-icon.png, icon0.svg, icon1.png and manifest.json
+  // are all co-located in src/app/ and auto-discovered by Next.js App Router.
+  appleWebApp: {
+    title: "Endurix",
+  },
 };
 
 export default async function RootLayout({

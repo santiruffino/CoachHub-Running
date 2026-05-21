@@ -27,7 +27,7 @@ export async function GET() {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json(apiError('AUTH_UNAUTHORIZED', 'Unauthorized'),
+      return NextResponse.json(apiError('AUTH_UNAUTHORIZED'),
         { status: 401 }
       );
     }
@@ -44,7 +44,7 @@ export async function GET() {
       .single();
 
     if (profileError) {
-      return NextResponse.json(apiError('FAILED_TO_FETCH_PROFILE', 'Failed to fetch profile'),
+      return NextResponse.json(apiError('FAILED_TO_FETCH_PROFILE'),
         { status: 500 }
       );
     }
@@ -68,27 +68,33 @@ export async function GET() {
     void unusedCoachProfileSnake;
     void unusedAthleteProfileSnake;
 
-    const transformedProfile = {
-      ...profileWithoutSnake,
-      coachProfile: coachProfileData || null,
-      athleteProfile: athleteProfileRecord ? {
-        ...athleteProfileRecord,
-        restHR: athleteProfileRecord.rest_hr,
-        maxHR: athleteProfileRecord.max_hr,
-        hrZones: athleteProfileRecord.hr_zones,
+    const transformProfile = (p: Record<string, unknown>, cp: unknown, ap: Record<string, unknown> | null) => ({
+      ...p,
+      firstName: p.first_name,
+      lastName: p.last_name,
+      isOnboardingCompleted: p.is_onboarding_completed,
+      mustChangePassword: p.must_change_password,
+      coachProfile: cp || null,
+      athleteProfile: ap ? {
+        ...ap,
+        restHR: ap.rest_hr,
+        maxHR: ap.max_hr,
+        lthr: ap.lthr,
+        hrZones: ap.hr_zones,
+        ftp: ap.ftp,
       } : null,
-    };
+    });
 
-    return NextResponse.json(transformedProfile);
-  } catch {
-    return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+    return NextResponse.json(transformProfile(profileWithoutSnake, coachProfileData, athleteProfileRecord));
+    } catch {
+    return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
       { status: 500 }
     );
-  }
-}
+    }
+    }
 
-export async function PATCH(request: Request) {
-  try {
+    export async function PATCH(request: Request) {
+    try {
     const supabase = await createClient();
 
     const {
@@ -97,7 +103,7 @@ export async function PATCH(request: Request) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json(apiError('AUTH_UNAUTHORIZED', 'Unauthorized'),
+      return NextResponse.json(apiError('AUTH_UNAUTHORIZED'),
         { status: 401 }
       );
     }
@@ -114,20 +120,22 @@ export async function PATCH(request: Request) {
     if (gender !== undefined) updates.gender = gender;
     if (isOnboardingCompleted !== undefined) updates.is_onboarding_completed = isOnboardingCompleted;
 
-    const { error: updateError } = await supabase
+    const { data: profileUpdate, error: updateError } = await supabase
       .from('profiles')
       .update(updates)
-      .eq('id', user.id);
+      .eq('id', user.id)
+      .select('role')
+      .single();
 
-    if (updateError) {
-      return NextResponse.json(apiError('FAILED_TO_UPDATE_PROFILE', 'Failed to update profile'),
+    if (updateError || !profileUpdate) {
+      return NextResponse.json(apiError('FAILED_TO_UPDATE_PROFILE'),
         { status: 500 }
       );
     }
 
     // Update role-specific profile
     if (profileData && Object.keys(profileData).length > 0) {
-      const isCoach = user.user_metadata?.role === 'COACH';
+      const isCoach = profileUpdate.role === 'COACH';
       const profileTable = isCoach ? 'coach_profiles' : 'athlete_profiles';
 
       // Filter fields based on role
@@ -142,7 +150,7 @@ export async function PATCH(request: Request) {
       } else {
         // Only allow athlete-specific fields
         // Accept both camelCase (from frontend) and snake_case, convert to snake_case for DB
-        const { height, weight, injuries, rest_hr, max_hr, vam, uan, dob, restHR, maxHR, hrZones } = profileData;
+        const { height, weight, injuries, rest_hr, max_hr, vam, uan, dob, restHR, maxHR, lthr, hrZones, ftp } = profileData;
         if (height !== undefined) filteredData.height = height;
         if (weight !== undefined) filteredData.weight = weight;
         if (injuries !== undefined) filteredData.injuries = injuries;
@@ -151,8 +159,10 @@ export async function PATCH(request: Request) {
         if (restHR !== undefined) filteredData.rest_hr = restHR;
         if (max_hr !== undefined) filteredData.max_hr = max_hr;
         if (maxHR !== undefined) filteredData.max_hr = maxHR;
+        if (lthr !== undefined) filteredData.lthr = lthr;
         if (vam !== undefined) filteredData.vam = vam;
         if (uan !== undefined) filteredData.uan = uan;
+        if (ftp !== undefined) filteredData.ftp = ftp;
         if (dob !== undefined) filteredData.dob = dob;
         if (hrZones !== undefined) filteredData.hr_zones = hrZones;
       }
@@ -169,16 +179,14 @@ export async function PATCH(request: Request) {
 
       if (roleProfileError) {
         appLogger.error('Supabase error updating profile:', roleProfileError);
-        appLogger.error('Profile table:', profileTable);
-        appLogger.error('Filtered data:', filteredData);
-        return NextResponse.json(apiError('FAILED_TO_UPDATE_ROLE_PROFILE', 'Failed to update role profile'),
+        return NextResponse.json(apiError('FAILED_TO_UPDATE_ROLE_PROFILE'),
           { status: 500 }
         );
       }
     }
 
     // Fetch updated profile
-    const { data: updatedProfile } = await supabase
+    const { data: updatedProfile, error: fetchError } = await supabase
       .from('profiles')
       .select(`
         *,
@@ -188,9 +196,42 @@ export async function PATCH(request: Request) {
       .eq('id', user.id)
       .single();
 
-    return NextResponse.json(updatedProfile);
-    } catch {
-    return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+    if (fetchError || !updatedProfile) {
+      return NextResponse.json(apiError('FAILED_TO_FETCH_UPDATED_PROFILE'),
+        { status: 500 }
+      );
+    }
+
+    // Transform updated profile before returning
+    const profileRecord = updatedProfile as Record<string, unknown>;
+    const coachProfileRaw = profileRecord.coach_profile;
+    const athleteProfileRaw = profileRecord.athlete_profile;
+
+    const coachProfileData = Array.isArray(coachProfileRaw) ? coachProfileRaw[0] : coachProfileRaw;
+    const athleteProfileData = Array.isArray(athleteProfileRaw) ? athleteProfileRaw[0] : athleteProfileRaw;
+    const athleteProfileRecord = isRecord(athleteProfileData) ? athleteProfileData : null;
+
+    const { coach_profile: cp, athlete_profile: ap, ...p } = profileRecord;
+    void cp; void ap;
+
+    const transformProfile = (p: Record<string, unknown>, cp: unknown, ap: Record<string, unknown> | null) => ({
+      ...p,
+      firstName: p.first_name,
+      lastName: p.last_name,
+      isOnboardingCompleted: p.is_onboarding_completed,
+      mustChangePassword: p.must_change_password,
+      coachProfile: cp || null,
+      athleteProfile: ap ? {
+        ...ap,
+        restHR: ap.rest_hr,
+        maxHR: ap.max_hr,
+        hrZones: ap.hr_zones,
+        ftp: ap.ftp,
+      } : null,
+    });
+
+    return NextResponse.json(transformProfile(p, coachProfileData, athleteProfileRecord));
+    } catch {    return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
       { status: 500 }
     );
   }

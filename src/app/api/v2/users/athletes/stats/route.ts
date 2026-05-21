@@ -13,7 +13,7 @@ export async function GET() {
         } = await supabase.auth.getUser();
 
         if (authError || !user) {
-            return NextResponse.json(apiError('AUTH_UNAUTHORIZED', 'Unauthorized'),
+            return NextResponse.json(apiError('AUTH_UNAUTHORIZED'),
                 { status: 401 }
             );
         }
@@ -26,13 +26,13 @@ export async function GET() {
             .single();
 
         if (profile?.role !== 'COACH') {
-            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Only coaches can access this endpoint'),
+            return NextResponse.json(apiError('AUTH_FORBIDDEN'),
                 { status: 403 }
             );
         }
 
         if (!profile?.team_id) {
-            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Coach must belong to a team'),
+            return NextResponse.json(apiError('AUTH_FORBIDDEN'),
                 { status: 403 }
             );
         }
@@ -58,7 +58,7 @@ export async function GET() {
 
         if (athletesError) {
             appLogger.error('Failed to fetch athletes:', athletesError);
-            return NextResponse.json(apiError('FAILED_TO_FETCH_ATHLETES', 'Failed to fetch athletes'),
+            return NextResponse.json(apiError('FAILED_TO_FETCH_ATHLETES'),
                 { status: 500 }
             );
         }
@@ -79,7 +79,7 @@ export async function GET() {
 
         if (assignmentsError) {
             appLogger.error('Failed to fetch assignments:', assignmentsError);
-            return NextResponse.json(apiError('FAILED_TO_FETCH_ASSIGNMENTS', 'Failed to fetch assignments'),
+            return NextResponse.json(apiError('FAILED_TO_FETCH_ASSIGNMENTS'),
                 { status: 500 }
             );
         }
@@ -116,7 +116,7 @@ export async function GET() {
         return NextResponse.json(athletesWithStats);
     } catch (error: unknown) {
         appLogger.error('Error in athletes/stats route:', error);
-        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
     }

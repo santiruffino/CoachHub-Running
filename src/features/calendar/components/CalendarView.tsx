@@ -6,14 +6,17 @@ import { parse } from 'date-fns/parse';
 import { startOfWeek } from 'date-fns/startOfWeek';
 import { getDay } from 'date-fns/getDay';
 import { enUS } from 'date-fns/locale/en-US';
+import { es } from 'date-fns/locale/es';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { useState } from 'react';
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
 import { Trophy } from 'lucide-react';
+import { useLocale } from 'next-intl';
 
 const locales = {
     'en-US': enUS,
+    'es': es,
 };
 
 const localizer = dateFnsLocalizer({
@@ -62,6 +65,7 @@ const CustomEvent = ({ event }: EventProps<CalendarEvent>) => {
 };
 
 export function CalendarView({ events, onDateChange, onEventDrop, onSelectEvent }: CalendarViewProps) {
+    const locale = useLocale();
     const [view, setView] = useState<View>('week');
     const [date, setDate] = useState(new Date());
 
@@ -109,6 +113,7 @@ export function CalendarView({ events, onDateChange, onEventDrop, onSelectEvent 
                 style={{ height: '100%' }}
                 view={view}
                 date={date}
+                culture={locale}
                 onNavigate={handleNavigate}
                 onView={handleViewChange}
                 views={['month', 'week', 'day']}

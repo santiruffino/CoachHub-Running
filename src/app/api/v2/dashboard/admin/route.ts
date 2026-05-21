@@ -17,7 +17,7 @@ export async function GET() {
       .single();
 
     if (!adminProfile?.team_id) {
-      return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Admin must belong to a team'), { status: 403 });
+      return NextResponse.json(apiError('AUTH_FORBIDDEN'), { status: 403 });
     }
 
     // Total Athletes
@@ -96,7 +96,7 @@ export async function GET() {
     });
   } catch (error: unknown) {
     appLogger.error('Admin Dashboard Error:', error instanceof Error ? error.message : error);
-    return NextResponse.json(apiError('FAILED_TO_FETCH_ADMIN_DASHBOARD_DATA', 'Failed to fetch admin dashboard data'),
+    return NextResponse.json(apiError('FAILED_TO_FETCH_ADMIN_DASHBOARD_DATA'),
       { status: 500 }
     );
   }

@@ -1,177 +1,57 @@
-'use client';
-
-import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/features/auth/hooks/useAuth';
-import { settingsService } from '@/features/settings/services/settings.service';
+import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
+import { CoachSettingsForm } from '@/features/settings/components/CoachSettingsForm';
 import { CoachSettings } from '@/features/settings/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { appLogger } from '@/lib/app-logger';
 
-const EMPTY_SETTINGS: CoachSettings = {
-  thresholds: {
-    rpeMismatchThreshold: 2,
-    lowComplianceThreshold: 50,
-  },
-  defaultModels: {
-    workoutMatcherModel: 'baseline-v1',
-    complianceModel: 'baseline-v1',
-  },
-};
+export const dynamic = 'force-dynamic';
 
-export default function CoachSettingsPage() {
-  const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
-  const [settings, setSettings] = useState<CoachSettings>(EMPTY_SETTINGS);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+export default async function CoachSettingsPage() {
+    const supabase = await createClient();
 
-  useEffect(() => {
-    if (!authLoading && user?.role !== 'COACH') {
-      router.push('/dashboard');
+    const {
+        data: { user },
+        error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+        redirect('/login');
     }
-  }, [authLoading, user, router]);
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const response = await settingsService.getCoachSettings();
-        setSettings(response.data);
-      } catch (error) {
-        appLogger.error('coach_settings.load_failed', { error });
-      } finally {
-        setLoading(false);
-      }
+    // Check if user is coach
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (!profile || profile.role !== 'COACH') {
+        redirect('/dashboard');
+    }
+
+    // Fetch coach settings
+    const { data: settingsData } = await supabase
+        .from('coach_settings')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+    const initialSettings: CoachSettings = settingsData ? {
+        thresholds: {
+            rpeMismatchThreshold: settingsData.rpe_mismatch_threshold,
+            lowComplianceThreshold: settingsData.low_compliance_threshold,
+        },
+        defaultModels: {
+            workoutMatcherModel: settingsData.workout_matcher_model,
+            complianceModel: settingsData.compliance_model,
+        },
+    } : {
+        thresholds: { rpeMismatchThreshold: 2, lowComplianceThreshold: 50 },
+        defaultModels: { workoutMatcherModel: 'baseline-v1', complianceModel: 'baseline-v1' },
     };
 
-    if (user?.role === 'COACH') {
-      void load();
-    }
-  }, [user?.role]);
-
-  const canRender = useMemo(() => !authLoading && user?.role === 'COACH', [authLoading, user?.role]);
-
-  if (!canRender) return null;
-
-  return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold font-display tracking-tight">Coach Settings</h1>
-        <p className="text-muted-foreground mt-1">Thresholds and model defaults for your coaching workflow.</p>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Thresholds</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-5 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="rpeMismatchThreshold">RPE mismatch threshold</Label>
-            <Input
-              id="rpeMismatchThreshold"
-              type="number"
-              min={1}
-              max={10}
-              value={settings.thresholds.rpeMismatchThreshold}
-              onChange={(e) =>
-                setSettings((current) => ({
-                  ...current,
-                  thresholds: {
-                    ...current.thresholds,
-                    rpeMismatchThreshold: Number(e.target.value),
-                  },
-                }))
-              }
-              disabled={loading || saving}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="lowComplianceThreshold">Low compliance threshold (%)</Label>
-            <Input
-              id="lowComplianceThreshold"
-              type="number"
-              min={1}
-              max={100}
-              value={settings.thresholds.lowComplianceThreshold}
-              onChange={(e) =>
-                setSettings((current) => ({
-                  ...current,
-                  thresholds: {
-                    ...current.thresholds,
-                    lowComplianceThreshold: Number(e.target.value),
-                  },
-                }))
-              }
-              disabled={loading || saving}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Default Models</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-5 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="workoutMatcherModel">Workout matcher model</Label>
-            <Input
-              id="workoutMatcherModel"
-              value={settings.defaultModels.workoutMatcherModel}
-              onChange={(e) =>
-                setSettings((current) => ({
-                  ...current,
-                  defaultModels: {
-                    ...current.defaultModels,
-                    workoutMatcherModel: e.target.value,
-                  },
-                }))
-              }
-              disabled={loading || saving}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="complianceModel">Compliance model</Label>
-            <Input
-              id="complianceModel"
-              value={settings.defaultModels.complianceModel}
-              onChange={(e) =>
-                setSettings((current) => ({
-                  ...current,
-                  defaultModels: {
-                    ...current.defaultModels,
-                    complianceModel: e.target.value,
-                  },
-                }))
-              }
-              disabled={loading || saving}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="flex justify-end">
-        <Button
-          disabled={loading || saving}
-          onClick={async () => {
-            try {
-              setSaving(true);
-              await settingsService.updateCoachSettings(settings);
-            } catch (error) {
-              appLogger.error('coach_settings.save_failed', { error });
-            } finally {
-              setSaving(false);
-            }
-          }}
-        >
-          {saving ? 'Saving...' : 'Save Coach Settings'}
-        </Button>
-      </div>
-    </div>
-  );
+    return (
+        <div className="p-4 sm:p-6 lg:p-8">
+            <CoachSettingsForm initialSettings={initialSettings} />
+        </div>
+    );
 }

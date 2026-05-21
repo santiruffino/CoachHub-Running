@@ -41,14 +41,14 @@ export async function POST(request: NextRequest) {
         const { code, state } = (await request.json()) as ExchangeRequestBody;
 
         if (!code) {
-            return NextResponse.json(apiError('VALIDATION_AUTHORIZATION_CODE_IS_REQUIRED', 'Authorization code is required'),
+            return NextResponse.json(apiError('VALIDATION_AUTHORIZATION_CODE_IS_REQUIRED'),
                 { status: 400 }
             );
         }
 
         const oauthStateSecret = process.env.STRAVA_OAUTH_STATE_SECRET || process.env.STRAVA_CLIENT_SECRET;
         if (!oauthStateSecret) {
-            return NextResponse.json(apiError('STRAVA_OAUTH_NOT_CONFIGURED', 'Strava OAuth not configured'),
+            return NextResponse.json(apiError('STRAVA_OAUTH_NOT_CONFIGURED'),
                 { status: 500 }
             );
         }
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
 
         if (!state || !verification.isValid) {
             appLogger.warn('strava_oauth.invalid_state', { reason: verification.reason, userId: user!.id });
-            return NextResponse.json(apiError('VALIDATION_INVALID_OAUTH_STATE', 'Invalid OAuth state'),
+            return NextResponse.json(apiError('VALIDATION_INVALID_OAUTH_STATE'),
                 { status: 400 }
             );
         }
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
         const clientSecret = process.env.STRAVA_CLIENT_SECRET;
 
         if (!clientId || !clientSecret) {
-            return NextResponse.json(apiError('STRAVA_OAUTH_NOT_CONFIGURED', 'Strava OAuth not configured'),
+            return NextResponse.json(apiError('STRAVA_OAUTH_NOT_CONFIGURED'),
                 { status: 500 }
             );
         }
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
         if (!tokenResponse.ok) {
             const error = await tokenResponse.json();
             appLogger.error('Strava token exchange error:', error);
-            return NextResponse.json(apiError('VALIDATION_FAILED_TO_EXCHANGE_AUTHORIZATION_CODE', 'Failed to exchange authorization code'),
+            return NextResponse.json(apiError('VALIDATION_FAILED_TO_EXCHANGE_AUTHORIZATION_CODE'),
                 { status: 400 }
             );
         }
@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
 
         if (upsertError) {
             appLogger.error('Failed to store Strava connection:', upsertError);
-            return NextResponse.json(apiError('FAILED_TO_SAVE_CONNECTION', 'Failed to save connection'),
+            return NextResponse.json(apiError('FAILED_TO_SAVE_CONNECTION'),
                 { status: 500 }
             );
         }
@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
         return response;
     } catch (error: unknown) {
         appLogger.error('Exchange Strava code error:', error);
-        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
     }

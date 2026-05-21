@@ -24,13 +24,11 @@ interface NewActivityFeedbackModalProps {
 
 interface FeedbackFormState {
     rpe: number;
-    sensations: number;
     comments: string;
 }
 
 const DEFAULT_VALUES: FeedbackFormState = {
     rpe: 5,
-    sensations: 5,
     comments: '',
 };
 
@@ -65,7 +63,6 @@ export function NewActivityFeedbackModal({
             setSaving(true);
             await api.post(`/v2/activities/${activity.id}/feedback`, {
                 rpe: form.rpe,
-                sensations: form.sensations,
                 comments: form.comments.trim() || null,
             });
 
@@ -117,26 +114,6 @@ export function NewActivityFeedbackModal({
                         </div>
                     </div>
 
-                    <div className="space-y-3">
-                        <Label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                            {t('sensationsLabel')}
-                        </Label>
-                        <div className="space-y-3 rounded-2xl bg-surface-container-low px-4 py-4 dark:bg-[#131b23]">
-                            <div className="flex items-center gap-4">
-                                <Slider
-                                    min={1}
-                                    max={10}
-                                    step={1}
-                                    value={[form.sensations]}
-                                    onValueChange={(value) => setForm((prev) => ({ ...prev, sensations: value[0] }))}
-                                />
-                                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white text-xl font-display font-medium text-foreground dark:bg-[#1a232c] dark:border dark:border-white/5">
-                                    {form.sensations}
-                                </div>
-                            </div>
-                            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-primary">{getScaleLabel(form.sensations)}</p>
-                        </div>
-                    </div>
 
                     <div className="space-y-3">
                         <Label htmlFor="quick-feedback-comments" className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">

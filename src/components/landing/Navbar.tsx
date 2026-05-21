@@ -29,10 +29,6 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-1.5 group">
-            <ChevronsRight
-              className="w-6 h-6 text-endurix-orange"
-              strokeWidth={3}
-            />
             <span
               className="font-bold text-endurix-black dark:text-foreground tracking-widest text-sm uppercase"
               style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}

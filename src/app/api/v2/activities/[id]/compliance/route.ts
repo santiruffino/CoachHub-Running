@@ -26,7 +26,7 @@ export async function GET(
         return NextResponse.json(data);
     } catch (error: unknown) {
         appLogger.error('Get activity compliance error:', error);
-        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
     }

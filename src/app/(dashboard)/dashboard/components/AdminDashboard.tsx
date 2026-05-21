@@ -2,7 +2,7 @@
 import { appLogger } from '@/lib/app-logger';
 
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Users, Building2, UserCircle2, Activity } from 'lucide-react';
@@ -21,26 +21,35 @@ interface AdminData {
   coaches: Coach[];
 }
 
-export default function AdminDashboard({ user }: { user: User }) {
+interface AdminDashboardProps {
+  user: User;
+  initialData?: AdminData | null;
+}
+
+export default function AdminDashboard({ user, initialData = null }: AdminDashboardProps) {
   void user;
-  const [data, setData] = useState<AdminData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<AdminData | null>(initialData);
+  const [loading, setLoading] = useState(!initialData);
   const t = useTranslations();
   const locale = useLocale();
 
-  useEffect(() => {
-    const fetchDashboard = async () => {
-      try {
-        const res = await api.get('/v2/dashboard/admin');
-        setData(res.data);
-      } catch (error) {
-        appLogger.error('Failed to fetch admin dashboard data', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchDashboard();
+  const fetchDashboard = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await api.get('/v2/dashboard/admin');
+      setData(res.data);
+    } catch (error) {
+      appLogger.error('Failed to fetch admin dashboard data', error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    if (!initialData) {
+      void fetchDashboard();
+    }
+  }, [fetchDashboard, initialData]);
 
   if (loading || !data) {
     return (

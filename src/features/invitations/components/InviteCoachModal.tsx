@@ -18,8 +18,8 @@ import { Label } from '@/components/ui/label';
 import api from '@/lib/axios';
 import { Check, Copy, MessageCircle } from 'lucide-react';
 import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
-import { AxiosError } from 'axios';
 import { trackInvitationCreated } from '@/lib/analytics/events';
+import { useApiError } from '@/hooks/useApiError';
 
 interface InviteCoachModalProps {
     open: boolean;
@@ -30,14 +30,11 @@ interface InviteFormData {
     email: string;
 }
 
-interface InvitationApiError {
-    error?: string;
-}
-
 export function InviteCoachModal({ open, onClose }: InviteCoachModalProps) {
     const tCoach = useTranslations('invitations.modals.coach');
     const tCommon = useTranslations('invitations.modals.common');
     const { register, handleSubmit, reset, formState: { errors } } = useForm<InviteFormData>();
+    const { translateError } = useApiError();
     const [creating, setCreating] = useState(false);
     const [invitationLink, setInvitationLink] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
@@ -46,7 +43,7 @@ export function InviteCoachModal({ open, onClose }: InviteCoachModalProps) {
     const onSubmit = async (data: InviteFormData) => {
         setCreating(true);
         try {
-            const response = await api.post('/invitations', {
+            const response = await api.post('/v2/invitations', {
                 email: data.email,
                 role: 'COACH',
             });
@@ -58,8 +55,7 @@ export function InviteCoachModal({ open, onClose }: InviteCoachModalProps) {
             setInvitationLink(link);
         } catch (error: unknown) {
             appLogger.error('Failed to create invitation:', error);
-            const errorMessage = (error as AxiosError<InvitationApiError>)?.response?.data?.error || tCommon('createError');
-            showAlert('error', errorMessage);
+            showAlert('error', translateError(error));
         } finally {
             setCreating(false);
         }

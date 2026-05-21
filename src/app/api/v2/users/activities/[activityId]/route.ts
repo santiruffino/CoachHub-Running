@@ -44,7 +44,7 @@ export async function GET(
             .single();
 
         if (activityError || !activity) {
-            return NextResponse.json(apiError('ACTIVITY_NOT_FOUND', 'Activity not found'),
+            return NextResponse.json(apiError('ACTIVITY_NOT_FOUND'),
                 { status: 404 }
             );
         }
@@ -66,12 +66,12 @@ export async function GET(
                     .single();
 
                 if (!athleteProfile || !profile.team_id || athleteProfile.team_id !== profile.team_id) {
-                    return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized to view this activity'),
+                    return NextResponse.json(apiError('AUTH_FORBIDDEN'),
                         { status: 403 }
                     );
                 }
             } else {
-                return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized to view this activity'),
+                return NextResponse.json(apiError('AUTH_FORBIDDEN'),
                     { status: 403 }
                 );
             }
@@ -80,7 +80,7 @@ export async function GET(
         return NextResponse.json(activity);
     } catch (error: unknown) {
         appLogger.error('Get activity details error:', error);
-        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
     }

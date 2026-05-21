@@ -166,6 +166,22 @@ export const authService = {
 
     },
 
+    sendMagicLink: async (email: string): Promise<void> => {
+        const supabase = createClient();
+
+        const { error } = await supabase.auth.signInWithOtp({
+            email,
+            options: {
+                emailRedirectTo: `${window.location.origin}/auth/callback`,
+            },
+        });
+
+        if (error) {
+            appLogger.error('❌ [AuthService] signInWithOtp failed:', error);
+            throw new Error(error.message);
+        }
+    },
+
     getCurrentUser: async (): Promise<User | null> => {
         const supabase = createClient();
 

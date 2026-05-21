@@ -11,8 +11,10 @@ export interface AthleteProfile {
     injuries?: string;
     restHR?: number;
     maxHR?: number;
+    lthr?: number;   // Lactate Threshold Heart Rate (bpm)
     vam?: string;
     uan?: string;
+    ftp?: number;
     dob?: string;
     coachNotes?: string;
     hrZones?: HeartRateZones;

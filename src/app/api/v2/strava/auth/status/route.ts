@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 
         if (error && error.code !== 'PGRST116') { // PGRST116 = not found
             appLogger.error('Fetch Strava connection error:', error);
-            return NextResponse.json(apiError('FAILED_TO_FETCH_CONNECTION_STATUS', 'Failed to fetch connection status'),
+            return NextResponse.json(apiError('FAILED_TO_FETCH_CONNECTION_STATUS'),
                 { status: 500 }
             );
         }
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
         });
     } catch (error: unknown) {
         appLogger.error('Get Strava status error:', error);
-        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
     }

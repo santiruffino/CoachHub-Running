@@ -221,9 +221,32 @@ function generateStepLabel(step: FlatStep): string {
  */
 export function matchLapsToWorkout(
     laps: RawLap[],
-    flatSteps: FlatStep[]
+    flatSteps: FlatStep[],
+    activitySport?: string,
+    workoutSport?: string
 ): MatchedLap[] {
     debugLog('=== WORKOUT MATCHER DEBUG ===');
+    
+    // 1. Sport Guard: If sports are provided and don't match, return unmatched immediately
+    if (activitySport && workoutSport) {
+        const normalizedActivity = activitySport.toUpperCase().includes('RUN') ? 'RUNNING' : 
+                                   (activitySport.toUpperCase().includes('CYCL') || activitySport.toUpperCase().includes('RIDE') ? 'CYCLING' : 'OTHER');
+        const normalizedWorkout = workoutSport.toUpperCase();
+
+        if (normalizedActivity !== normalizedWorkout && normalizedActivity !== 'OTHER' && normalizedWorkout !== 'OTHER') {
+            debugLog(`Sport mismatch: ${normalizedActivity} vs ${normalizedWorkout}. Aborting match.`);
+            return laps.map((_, i) => ({
+                lapIndex: i,
+                stepIndex: null,
+                stepLabel: 'Sport Mismatch',
+                stepType: 'other',
+                confidence: 0,
+                variance: 0,
+                matched: false
+            }));
+        }
+    }
+
     debugLog('Total laps to match:', laps.length);
     debugLog('Total flat steps:', flatSteps.length);
     debugLog('Flat steps:', flatSteps.map((s, i) => ({

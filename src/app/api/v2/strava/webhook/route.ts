@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
     });
     if (!rateLimit.allowed) {
       logger.warn('strava_webhook.rate_limit_exceeded');
-      return respond(apiError('RATE_LIMIT_EXCEEDED', 'Too many requests'), {
+      return respond(apiError('RATE_LIMIT_EXCEEDED'), {
         status: 429,
         headers: {
           'x-ratelimit-limit': String(rateLimit.limit),
@@ -89,13 +89,13 @@ export async function POST(req: NextRequest) {
     const contentType = req.headers.get('content-type') || '';
     if (!contentType.toLowerCase().includes('application/json')) {
       logger.warn('strava_webhook.invalid_content_type');
-      return respond(apiError('VALIDATION_INVALID_WEBHOOK_PAYLOAD', 'Invalid webhook payload'), { status: 400 });
+      return respond(apiError('VALIDATION_INVALID_WEBHOOK_PAYLOAD'), { status: 400 });
     }
 
     const rawBody = await req.text();
     if (rawBody.length > MAX_WEBHOOK_BODY_BYTES) {
       logger.warn('strava_webhook.payload_too_large', { size: rawBody.length });
-      return respond(apiError('VALIDATION_INVALID_WEBHOOK_PAYLOAD', 'Invalid webhook payload'), { status: 400 });
+      return respond(apiError('VALIDATION_INVALID_WEBHOOK_PAYLOAD'), { status: 400 });
     }
 
     let payload: StravaWebhookPayload;
@@ -103,12 +103,12 @@ export async function POST(req: NextRequest) {
       payload = JSON.parse(rawBody) as StravaWebhookPayload;
     } catch {
       logger.warn('strava_webhook.invalid_json');
-      return respond(apiError('VALIDATION_INVALID_WEBHOOK_PAYLOAD', 'Invalid webhook payload'), { status: 400 });
+      return respond(apiError('VALIDATION_INVALID_WEBHOOK_PAYLOAD'), { status: 400 });
     }
 
     if (!isValidWebhookPayload(payload)) {
       logger.warn('strava_webhook.invalid_payload');
-      return respond(apiError('VALIDATION_INVALID_WEBHOOK_PAYLOAD', 'Invalid webhook payload'), { status: 400 });
+      return respond(apiError('VALIDATION_INVALID_WEBHOOK_PAYLOAD'), { status: 400 });
     }
     
     // 1. Validate subscription_id if configured
@@ -116,21 +116,26 @@ export async function POST(req: NextRequest) {
     const incomingSubId = payload.subscription_id?.toString();
     if (expectedSubId && incomingSubId !== expectedSubId) {
       logger.warn('strava_webhook.invalid_subscription_id');
-      return respond(apiError('INVALID_SUBSCRIPTION_ID', 'Invalid subscription ID'), { status: 401 });
+      return respond(apiError('INVALID_SUBSCRIPTION_ID'), { status: 401 });
     }
 
     const sharedSecret = process.env.STRAVA_WEBHOOK_SHARED_SECRET;
     if (!sharedSecret) {
       logger.error('strava_webhook.shared_secret_missing');
-      return respond(apiError('WEBHOOK_CONFIGURATION_ERROR', 'Webhook configuration error'), { status: 500 });
+      return respond(apiError('WEBHOOK_CONFIGURATION_ERROR'), { status: 500 });
     }
 
     const supabase = createServiceRoleClient();
 
-    // 2. Log the incoming webhook to webhook_logs
+    // 2. Log the incoming webhook to webhook_logs (Redact sensitive subscription_id)
+    const logPayload = { ...payload };
+    if (logPayload.subscription_id) {
+      logPayload.subscription_id = '[REDACTED]';
+    }
+
     await supabase.from('webhook_logs').insert({
       source: 'strava',
-      payload: payload,
+      payload: logPayload,
     });
 
     // 3. Trigger asynchronous processing via Supabase Edge Function
@@ -166,6 +171,6 @@ export async function POST(req: NextRequest) {
     Sentry.captureException(error, {
       tags: { route: '/api/v2/strava/webhook', requestId },
     });
-    return respond(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'), { status: 500 });
+    return respond(apiError('INTERNAL_SERVER_ERROR'), { status: 500 });
   }
 }

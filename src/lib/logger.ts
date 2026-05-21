@@ -24,7 +24,7 @@ const LEVEL_ORDER: Record<LogLevel, number> = {
   error: 40,
 };
 
-const SENSITIVE_KEY_PATTERN = /authorization|token|secret|password|cookie|apikey|api_key|access_token|refresh_token/i;
+const SENSITIVE_KEY_PATTERN = /authorization|token|secret|password|cookie|apikey|api_key|access_token|refresh_token|code|challenge|state|subscription_id/i;
 
 function getConfiguredLogLevel(): LogLevel {
   const configured = process.env.LOG_LEVEL?.toLowerCase();

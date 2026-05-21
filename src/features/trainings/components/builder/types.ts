@@ -3,7 +3,10 @@ export type DurationType = 'distance' | 'time';
 export type TargetType =
     | 'vam_zone'    // VAM Zones 1-6
     | 'lthr'        // LTHR (% of threshold HR)
-    | 'rpe_target'; // RPE (1-10) as workout target
+    | 'hr_reserve'  // FC de Reserva - Karvonen (% of HR reserve)
+    | 'rpe_target' // RPE (1-10) as workout target
+    | 'power_zone'  // Power Zones 1-7 (Cycling)
+    | 'ftp_percent'; // % of Functional Threshold Power (Cycling)
 
 export interface WorkoutBlock {
     id: string;
@@ -44,6 +47,8 @@ export interface AthleteProfile {
     vam?: string;    // e.g., "4:30" min/km
     lthr?: number;   // e.g., 170 bpm
     maxHR?: number;  // e.g., 190 bpm
+    restHR?: number; // e.g., 45 bpm
+    ftp?: number;    // Functional Threshold Power (Watts)
 }
 
 export type WorkoutBuilderStore = {

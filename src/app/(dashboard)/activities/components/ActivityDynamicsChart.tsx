@@ -425,8 +425,8 @@ export function ActivityDynamicsChart({ activityId, laps }: ActivityDynamicsChar
                         )}
                         {visibleMetrics.grade && data.grade !== null && (
                             <div className="flex items-center justify-between gap-4">
-                                <span className="text-sm text-yellow-400 font-medium">{t('metrics.grade')}</span>
-                                <span className="text-sm text-yellow-300">{data.grade.toFixed(1)}%</span>
+                                <span className="text-sm text-endurix-orange font-medium">{t('metrics.grade')}</span>
+                                <span className="text-sm text-orange-300">{data.grade.toFixed(1)}%</span>
                             </div>
                         )}
                     </div>
@@ -549,7 +549,7 @@ export function ActivityDynamicsChart({ activityId, laps }: ActivityDynamicsChar
                             variant={visibleMetrics.grade ? "default" : "outline"}
                             size="sm"
                             onClick={() => toggleMetric('grade')}
-                            className={`text-xs h-7 ${visibleMetrics.grade ? "bg-yellow-500 hover:bg-yellow-600 text-gray-900 border-transparent" : "border-gray-700 text-gray-400"}`}
+                            className={`text-xs h-7 ${visibleMetrics.grade ? "bg-endurix-orange hover:bg-orange-600 text-white border-transparent" : "border-gray-700 text-gray-400"}`}
                         >
                             {t('metrics.grade')}
                         </Button>
@@ -651,7 +651,7 @@ export function ActivityDynamicsChart({ activityId, laps }: ActivityDynamicsChar
                                 <Bar
                                     yAxisId="left"
                                     dataKey="grade"
-                                    fill="#EAB308"
+                                    fill="#FF6800"
                                     radius={[2, 2, 0, 0]}
                                     opacity={0.6}
                                     isAnimationActive={false}

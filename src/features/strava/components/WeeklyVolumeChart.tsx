@@ -13,6 +13,9 @@ import { startOfWeek, format, subWeeks, isSameWeek } from 'date-fns';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useTranslations } from 'next-intl';
 
+import { calculateTotals } from '@/features/trainings/components/builder/SessionSummary';
+import { AthleteProfile, WorkoutBlock } from '@/features/trainings/components/builder/types';
+
 interface WeeklyActivity {
     startDate: string;
     distance: number;
@@ -26,9 +29,10 @@ interface WeeklyAssignment {
 interface WeeklyVolumeChartProps {
     activities: WeeklyActivity[];
     assignments: WeeklyAssignment[];
+    athleteProfile?: AthleteProfile | null;
 }
 
-export function WeeklyVolumeChart({ activities, assignments }: WeeklyVolumeChartProps) {
+export function WeeklyVolumeChart({ activities, assignments, athleteProfile }: WeeklyVolumeChartProps) {
     const t = useTranslations('strava.weeklyVolume');
 
     const data = useMemo(() => {
@@ -68,15 +72,16 @@ export function WeeklyVolumeChart({ activities, assignments }: WeeklyVolumeChart
 
             const weekData = volumeMap.find(d => isSameWeek(d.weekStart, weekStart, { weekStartsOn: 1 }));
             if (weekData) {
-                // Approximate distance for planned workouts if not explicit?
-                // For MVP, if we have blocks we could sum them, but for now assuming 
-                // we might need a stored metadata field or just simple estimate.
-                // Looking at AthleteDashboard it uses simplified stats:
-                // distance: 10000 (hardcoded in one place) or session.stats?.distance
-
-                // Let's assume for now 10km per session if not defined, 
-                // OR ideally we should pull this from training metadata.
-                const dist = 10; // Default placeholder 10km if undefined
+                const training = assign.training as any;
+                let dist = 0;
+                
+                if (training.stats?.distance) {
+                    dist = training.stats.distance / 1000;
+                } else if (Array.isArray(training.blocks)) {
+                    const totals = calculateTotals(training.blocks as WorkoutBlock[], athleteProfile);
+                    dist = totals.distance;
+                }
+                
                 weekData.planned += dist;
             }
         });
@@ -88,7 +93,7 @@ export function WeeklyVolumeChart({ activities, assignments }: WeeklyVolumeChart
             actual: Math.round(d.actual * 10) / 10
         }));
 
-    }, [activities, assignments]);
+    }, [activities, assignments, athleteProfile]);
 
     return (
             <Card>

@@ -56,7 +56,7 @@ function AcceptInvitationContent() {
             }
 
             try {
-                const response = await api.get<ValidateInvitationResponse>(`/invitations/validate/${token}`);
+                const response = await api.get<ValidateInvitationResponse>(`/v2/invitations/validate/${token}`);
                 setInvitationValid(true);
                 setInvitationEmail(response.data.email);
                 setInvitationRole(response.data.role || 'ATHLETE');

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/supabase/api-helpers';
+import { requireRole } from '@/lib/supabase/api-helpers';
 import { appLogger } from '@/lib/app-logger';
 import { apiError } from '@/lib/api/error-response';
 
@@ -30,28 +30,10 @@ interface AssignmentWithGroup {
  */
 export async function GET(request: NextRequest) {
     try {
-        const authResult = await requireAuth();
+        const { user, supabase, profile, response } = await requireRole(['COACH', 'ADMIN']);
 
-        if (authResult.response) {
-            return authResult.response;
-        }
-
-        const { supabase, user } = authResult;
-
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('role, team_id')
-            .eq('id', user!.id)
-            .single();
-
-        if (profile?.role !== 'COACH' && profile?.role !== 'ADMIN') {
-            appLogger.warn('[TRAININGS_CALENDAR] Forbidden role access attempt', {
-                userId: user!.id,
-                role: profile?.role || null,
-            });
-            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Only coach or admin users can access calendar assignments'),
-                { status: 403 }
-            );
+        if (response) {
+            return response;
         }
 
         if (!profile?.team_id) {
@@ -59,7 +41,7 @@ export async function GET(request: NextRequest) {
                 userId: user!.id,
                 role: profile?.role,
             });
-            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Coach must belong to a team'),
+            return NextResponse.json(apiError('AUTH_FORBIDDEN'),
                 { status: 403 }
             );
         }
@@ -74,7 +56,7 @@ export async function GET(request: NextRequest) {
 
         // Validation
         if (!startDate || !endDate) {
-            return NextResponse.json(apiError('VALIDATION_STARTDATE_AND_ENDDATE_ARE_REQUIRED', 'startDate and endDate are required'),
+            return NextResponse.json(apiError('VALIDATION_STARTDATE_AND_ENDDATE_ARE_REQUIRED'),
                 { status: 400 }
             );
         }
@@ -103,12 +85,12 @@ export async function GET(request: NextRequest) {
             const { data: groups } = await groupsQuery;
 
             if (!groups || groups.length === 0) {
-                return NextResponse.json(apiError('NO_VALID_GROUPS_FOUND', 'No valid groups found'),
+                return NextResponse.json(apiError('NO_VALID_GROUPS_FOUND'),
                     { status: 404 }
                 );
             }
 
-            const validGroupIds = groups.map(g => g.id);
+            const validGroupIds = groups.map((g: { id: string }) => g.id);
 
             // Get athletes in these groups
             const { data: memberships } = await supabase
@@ -116,7 +98,7 @@ export async function GET(request: NextRequest) {
                 .select('athlete_id')
                 .in('group_id', validGroupIds);
 
-            const groupAthleteIds = new Set(memberships?.map(m => m.athlete_id) || []);
+            const groupAthleteIds = new Set<string>(memberships?.map((m: { athlete_id: string }) => m.athlete_id) || []);
 
             // Combine with studentIds if provided
             if (studentIds && studentIds.length > 0) {
@@ -170,7 +152,7 @@ export async function GET(request: NextRequest) {
 
         if (error) {
             appLogger.error('Fetch calendar assignments error:', error);
-            return NextResponse.json(apiError('FAILED_TO_FETCH_ASSIGNMENTS', 'Failed to fetch assignments'),
+            return NextResponse.json(apiError('FAILED_TO_FETCH_ASSIGNMENTS'),
                 { status: 500 }
             );
         }
@@ -191,7 +173,7 @@ export async function GET(request: NextRequest) {
                 .select('id, group_type, race_priority')
                 .in('id', sgIds);
 
-            const groupMap = new Map((groupsData || []).map(g => [g.id, g]));
+            const groupMap = new Map((groupsData || []).map((g: any) => [g.id, g]));
             mutableAssignments.forEach((assignment) => {
                 if (assignment.source_group_id) {
                     assignment.group = groupMap.get(assignment.source_group_id);
@@ -206,7 +188,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json(resolvedAssignments);
     } catch (error: unknown) {
         appLogger.error('Get calendar assignments error:', error);
-        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
     }

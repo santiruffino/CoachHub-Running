@@ -34,7 +34,7 @@ export async function GET(
 
         if (activityError || !activity) {
             return NextResponse.json(
-                apiError('ACTIVITY_NOT_FOUND', 'Activity not found'),
+                apiError('ACTIVITY_NOT_FOUND'),
                 { status: 404 }
             );
         }
@@ -61,7 +61,7 @@ export async function GET(
 
             if (!isTeamMember) {
                 return NextResponse.json(
-                    apiError('FEEDBACK_VIEW_FORBIDDEN', 'Not authorized to view this feedback'),
+                    apiError('FEEDBACK_VIEW_FORBIDDEN'),
                     { status: 403 }
                 );
             }
@@ -78,7 +78,7 @@ export async function GET(
         if (feedbackError) {
             appLogger.error('Feedback fetch error:', feedbackError);
             return NextResponse.json(
-                apiError('FEEDBACK_FETCH_FAILED', 'Failed to fetch feedback'),
+                apiError('FEEDBACK_FETCH_FAILED'),
                 { status: 500 }
             );
         }
@@ -87,7 +87,7 @@ export async function GET(
     } catch (error: unknown) {
         appLogger.error('Get activity feedback error:', error);
         return NextResponse.json(
-            apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+            apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
     }
@@ -114,24 +114,16 @@ export async function POST(
         const serviceSupabase = createServiceRoleClient();
         const body = (await request.json()) as {
             rpe?: number;
-            sensations?: number;
             comments?: string;
             training_assignment_id?: string;
         };
 
-        const { rpe, sensations, comments, training_assignment_id } = body;
+        const { rpe, comments, training_assignment_id } = body;
 
         // Validate RPE if provided
         if (rpe !== undefined && (rpe < 1 || rpe > 10)) {
             return NextResponse.json(
-                apiError('RPE_OUT_OF_RANGE', 'RPE must be between 1 and 10'),
-                { status: 400 }
-            );
-        }
-
-        if (sensations !== undefined && (sensations < 1 || sensations > 10)) {
-            return NextResponse.json(
-                apiError('SENSATIONS_OUT_OF_RANGE', 'Sensations must be between 1 and 10'),
+                apiError('RPE_OUT_OF_RANGE'),
                 { status: 400 }
             );
         }
@@ -145,7 +137,7 @@ export async function POST(
 
         if (activityError || !activity) {
             return NextResponse.json(
-                apiError('ACTIVITY_NOT_FOUND', 'Activity not found'),
+                apiError('ACTIVITY_NOT_FOUND'),
                 { status: 404 }
             );
         }
@@ -153,7 +145,7 @@ export async function POST(
         // Verify user owns this activity
         if (activity.user_id !== user!.id) {
             return NextResponse.json(
-                apiError('FEEDBACK_SUBMIT_FORBIDDEN', 'Only the athlete can submit feedback on their own activities'),
+                apiError('FEEDBACK_SUBMIT_FORBIDDEN'),
                 { status: 403 }
             );
         }
@@ -164,7 +156,6 @@ export async function POST(
             user_id: string;
             training_assignment_id: string | null;
             rpe?: number | null;
-            sensations?: number | null;
             comments?: string | null;
         } = {
             activity_id: activity.id,
@@ -174,10 +165,6 @@ export async function POST(
 
         if (rpe !== undefined) {
             payload.rpe = rpe || null;
-        }
-
-        if (sensations !== undefined) {
-            payload.sensations = sensations || null;
         }
 
         if (comments !== undefined) {
@@ -195,7 +182,7 @@ export async function POST(
         if (feedbackError) {
             appLogger.error('Feedback upsert error:', feedbackError);
             return NextResponse.json(
-                apiError('FEEDBACK_SAVE_FAILED', 'Failed to save feedback'),
+                apiError('FEEDBACK_SAVE_FAILED'),
                 { status: 500 }
             );
         }
@@ -204,7 +191,7 @@ export async function POST(
     } catch (error: unknown) {
         appLogger.error('Submit activity feedback error:', error);
         return NextResponse.json(
-            apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+            apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
     }

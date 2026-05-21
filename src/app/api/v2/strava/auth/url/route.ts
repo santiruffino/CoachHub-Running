@@ -24,7 +24,7 @@ export async function GET() {
         const oauthStateSecret = process.env.STRAVA_OAUTH_STATE_SECRET || process.env.STRAVA_CLIENT_SECRET;
 
         if (!clientId || !redirectUri || !oauthStateSecret) {
-            return NextResponse.json(apiError('STRAVA_OAUTH_NOT_CONFIGURED', 'Strava OAuth not configured'),
+            return NextResponse.json(apiError('STRAVA_OAUTH_NOT_CONFIGURED'),
                 { status: 500 }
             );
         }
@@ -59,7 +59,7 @@ export async function GET() {
         return response;
     } catch (error: unknown) {
         appLogger.error('Get Strava auth URL error:', error);
-        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
     }

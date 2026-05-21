@@ -102,12 +102,14 @@
   --color-error-foreground: hsl(var(--error-foreground));
   --radius: var(--radius);
 
-  /* Brand Palette from docs/ui_ux_prompt.md - used sparingly for branding details */
-  --color-brand-primary: #FFCC00;
-  --color-brand-secondary: #FF5733;
-  --color-brand-accent: #C70039;
-  --color-brand-deep: #900C3F;
-  --color-brand-dark: #581845;
+  /* Brand Palette — Endurix Brand Kit */
+  --color-brand-primary: #FF6800;      /* Energy Orange */
+  --color-brand-primary-dark: #CC5200; /* Darker orange for hover states */
+  --color-brand-primary-light: #FF8A3D;/* Lighter orange for dark mode accents */
+  --color-brand-secondary: #F2F2F2;   /* Paper */
+  --color-brand-accent: #EBE9EC;       /* Stone */
+  --color-brand-deep: #111317;         /* Onyx Black */
+  --color-brand-dark: #0A0A0A;         /* Near-black */
 
   /* Landing Page Colors */
   --color-dark-navy: #0A0E27;

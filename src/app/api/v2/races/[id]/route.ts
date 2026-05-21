@@ -31,25 +31,32 @@ export async function PATCH(
       .single();
 
     if (!profile?.team_id) {
-      return NextResponse.json(apiError('AUTH_FORBIDDEN', 'User must belong to a team'),
+      return NextResponse.json(apiError('AUTH_FORBIDDEN'),
         { status: 403 }
       );
     }
 
     const { data: existingRace, error: raceError } = await supabase
       .from('races')
-      .select('id, team_id')
+      .select('id, coach_id')
       .eq('id', id)
       .single();
 
     if (raceError || !existingRace) {
-      return NextResponse.json(apiError('RACE_NOT_FOUND', 'Race not found'),
+      return NextResponse.json(apiError('RACE_NOT_FOUND'),
         { status: 404 }
       );
     }
 
-    if (existingRace.team_id !== profile.team_id) {
-      return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized to update this race'),
+    const { data: teamMembers } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('team_id', profile.team_id);
+      
+    const teamMemberIds = teamMembers?.map(m => m.id) || [user.id];
+
+    if (!existingRace.coach_id || !teamMemberIds.includes(existingRace.coach_id)) {
+      return NextResponse.json(apiError('AUTH_FORBIDDEN'),
         { status: 403 }
       );
     }
@@ -60,7 +67,6 @@ export async function PATCH(
         name,
         description,
         distance,
-        date,
         elevation_gain,
         location,
       })
@@ -70,7 +76,7 @@ export async function PATCH(
 
     if (error) {
       appLogger.error('Update race error:', error);
-      return NextResponse.json(apiError('FAILED_TO_UPDATE_RACE', 'Failed to update race'),
+      return NextResponse.json(apiError('FAILED_TO_UPDATE_RACE'),
         { status: 500 }
       );
     }
@@ -89,7 +95,7 @@ export async function PATCH(
     return NextResponse.json(race);
   } catch (error: unknown) {
     appLogger.error('PATCH /v2/races/[id] error:', error);
-    return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+    return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
       { status: 500 }
     );
   }
@@ -120,25 +126,32 @@ export async function DELETE(
       .single();
 
     if (!profile?.team_id) {
-      return NextResponse.json(apiError('AUTH_FORBIDDEN', 'User must belong to a team'),
+      return NextResponse.json(apiError('AUTH_FORBIDDEN'),
         { status: 403 }
       );
     }
 
     const { data: existingRace, error: raceError } = await supabase
       .from('races')
-      .select('id, team_id')
+      .select('id, coach_id')
       .eq('id', id)
       .single();
 
     if (raceError || !existingRace) {
-      return NextResponse.json(apiError('RACE_NOT_FOUND', 'Race not found'),
+      return NextResponse.json(apiError('RACE_NOT_FOUND'),
         { status: 404 }
       );
     }
 
-    if (existingRace.team_id !== profile.team_id) {
-      return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized to delete this race'),
+    const { data: teamMembers } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('team_id', profile.team_id);
+      
+    const teamMemberIds = teamMembers?.map(m => m.id) || [user.id];
+
+    if (!existingRace.coach_id || !teamMemberIds.includes(existingRace.coach_id)) {
+      return NextResponse.json(apiError('AUTH_FORBIDDEN'),
         { status: 403 }
       );
     }
@@ -150,7 +163,7 @@ export async function DELETE(
 
     if (error) {
       appLogger.error('Delete race error:', error);
-      return NextResponse.json(apiError('FAILED_TO_DELETE_RACE', 'Failed to delete race'),
+      return NextResponse.json(apiError('FAILED_TO_DELETE_RACE'),
         { status: 500 }
       );
     }
@@ -169,7 +182,7 @@ export async function DELETE(
     return new Response(null, { status: 204 });
   } catch (error: unknown) {
     appLogger.error('DELETE /v2/races/[id] error:', error);
-    return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+    return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
       { status: 500 }
     );
   }

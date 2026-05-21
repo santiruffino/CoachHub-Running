@@ -24,7 +24,7 @@ interface InvitationErrorResponse {
 
 export const invitationService = {
     create: async (email: string) => {
-        const response = await fetch('/api/invitations', {
+        const response = await fetch('/api/v2/invitations', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -41,7 +41,7 @@ export const invitationService = {
     },
 
     validate: async (token: string) => {
-        const response = await fetch(`/api/invitations/validate/${token}`);
+        const response = await fetch(`/api/v2/invitations/validate/${token}`);
         if (!response.ok) {
             const error = (await response.json()) as InvitationErrorResponse;
             throw new Error(error.error || 'Failed to validate invitation');

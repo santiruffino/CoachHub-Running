@@ -1,33 +1,40 @@
 'use client';
 
-import { Watch, Activity, Brain } from 'lucide-react';
+import { Watch, Bike, Brain } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 
-const getRoadmapItems = (t: any) => [
+const getRoadmapItems = (t: any): Array<{
+  icon: any;
+  number: string;
+  title: string;
+  description: string;
+  status: string;
+  statusType: 'active' | 'future' | 'planned';
+}> => [
   {
-    icon: Activity,
+    icon: Bike,
     number: '01',
     title: t('item1Title'),
     description: t('item1Desc'),
     status: t('item1Status'),
-    statusType: 'active' as const,
+    statusType: 'future',
   },
   {
-    icon: Watch,
+    icon: Brain,
     number: '02',
     title: t('item2Title'),
     description: t('item2Desc'),
     status: t('item2Status'),
-    statusType: 'future' as const,
+    statusType: 'future',
   },
   {
-    icon: Brain,
+    icon: Watch,
     number: '03',
     title: t('item3Title'),
     description: t('item3Desc'),
     status: t('item3Status'),
-    statusType: 'planned' as const,
+    statusType: 'planned',
   },
 ];
 

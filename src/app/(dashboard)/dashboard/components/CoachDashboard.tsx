@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import api from '@/lib/axios';
 import { DashboardStats, LowCompliance, MissingWorkout, RPEMismatch, SmartAlert, TimelineEvent } from '../types';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useFormatter } from 'next-intl';
 import { User } from '@/interfaces/auth';
 
 interface DashboardAlertItem {
@@ -75,17 +75,23 @@ function TimelineItem({ time, content, isSystem = false }: RecentTimelineItemPro
   );
 }
 
-export default function CoachDashboard({ user }: { user: User }) {
-  const [data, setData] = useState<DashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
+interface CoachDashboardProps {
+  user: User;
+  initialData?: DashboardData | null;
+}
+
+export default function CoachDashboard({ user, initialData = null }: CoachDashboardProps) {
+  const [data, setData] = useState<DashboardData | null>(initialData);
+  const [loading, setLoading] = useState(!initialData);
   const [markingRead, setMarkingRead] = useState(false);
   const [scope, setScope] = useState<'mine' | 'team'>('mine');
   const t = useTranslations();
+  const format = useFormatter();
   const userDisplayName = user.firstName || user.name?.split(' ')[0] || user.email.split('@')[0];
 
-  const fetchDashboard = useCallback(async () => {
+  const fetchDashboard = useCallback(async (isInitial = false) => {
     try {
-      setLoading(true);
+      if (!isInitial) setLoading(true);
       const res = await api.get('/v2/dashboard/coach', { params: { scope } });
       setData(res.data);
     } catch (error) {
@@ -96,8 +102,10 @@ export default function CoachDashboard({ user }: { user: User }) {
   }, [scope]);
 
   useEffect(() => {
-    void fetchDashboard();
-  }, [fetchDashboard]);
+    if (!initialData || scope !== 'mine') {
+      void fetchDashboard();
+    }
+  }, [fetchDashboard, initialData, scope]);
 
   const handleMarkAsRead = async () => {
     try {
@@ -226,7 +234,7 @@ export default function CoachDashboard({ user }: { user: User }) {
             {t("dashboard.messages.hi", { name: userDisplayName })}
           </h1>
           <p className="text-sm text-muted-foreground font-medium">
-            {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).replace(/^\w/, c => c.toUpperCase())}
+            {format.dateTime(new Date(), { weekday: 'long', day: 'numeric', month: 'long' }).replace(/^\w/, c => c.toUpperCase())}
           </p>
         </div>
         <div className="mt-4 sm:mt-0 flex items-center gap-2 rounded-xl bg-muted p-1">

@@ -20,10 +20,10 @@ Use this file as a lightweight product/engineering backlog.
 | SAN-94 Onboarding (Coach flow + completion tracker + starter templates) | done | P0 | Added `/onboarding/coach`, tracker UI, completion endpoint, and starter template bootstrap |
 | SAN-93 Analytics (GA4 signup/onboarding/retention funnels) | done | P0 | Added GA4 integration + event taxonomy for signup, onboarding, auth, dashboard retention |
 | SAN-97 Accessibility/UI refinement (critical primitives + tests) | done | P1 | Added WCAG-focused dialog behavior and component tests (`button`, `input`, `alert-dialog`) |
-| i18n normalization for API/user-visible errors | todo | P0 | Large hardcoded string surface |
-| Remove stale legacy docs/prompts | in_progress | P1 | Ongoing cleanup |
-| Running-first assumptions for cycling readiness | todo | P1 | Estimators/compliance/matching |
-| Dead/orphaned component cleanup pass | todo | P2 | Needs confirmation per feature owner |
+| i18n normalization for API/user-visible errors | done | P0 | Standardized code registry implemented |
+| Remove stale legacy docs/prompts | done | P1 | Archived to docs/legacy |
+| Running-first assumptions for cycling readiness | done | P1 | Added Power/FTP support + Sport Guards |
+| Dead/orphaned component cleanup pass | done | P2 | Legacy API aliases removed |
 
 ## Notes
 

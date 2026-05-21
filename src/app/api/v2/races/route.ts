@@ -22,7 +22,7 @@ export async function GET() {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json(apiError('AUTH_UNAUTHORIZED', 'Unauthorized'),
+      return NextResponse.json(apiError('AUTH_UNAUTHORIZED'),
         { status: 401 }
       );
     }
@@ -41,10 +41,15 @@ export async function GET() {
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (profile?.role === 'ADMIN') {
-      racesQuery = racesQuery.eq('team_id', profile.team_id);
-    } else if (profile?.role === 'COACH') {
-      racesQuery = racesQuery.eq('team_id', profile.team_id);
+    if (profile?.role === 'ADMIN' || profile?.role === 'COACH') {
+      // Get all coaches in the same team
+      const { data: teamMembers } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('team_id', profile.team_id);
+        
+      const teamMemberIds = teamMembers?.map(m => m.id) || [user.id];
+      racesQuery = racesQuery.in('coach_id', teamMemberIds);
     }
     // Athletes will see races assigned to them via RLS SELECT policy
 
@@ -52,14 +57,14 @@ export async function GET() {
 
     if (error) {
       appLogger.error('Fetch races error:', error);
-      return NextResponse.json(apiError('FAILED_TO_FETCH_RACES', 'Failed to fetch races'),
+      return NextResponse.json(apiError('FAILED_TO_FETCH_RACES'),
         { status: 500 }
       );
     }
 
     return NextResponse.json(races || []);
   } catch {
-    return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+    return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
       { status: 500 }
     );
   }
@@ -88,7 +93,7 @@ export async function POST(request: Request) {
       .single();
 
     if (!profile?.team_id) {
-      return NextResponse.json(apiError('USER_MUST_BELONG_TO_A_TEAM', 'User must belong to a team'),
+      return NextResponse.json(apiError('USER_MUST_BELONG_TO_A_TEAM'),
         { status: 403 }
       );
     }
@@ -104,7 +109,7 @@ export async function POST(request: Request) {
     } = body;
 
     if (!name) {
-      return NextResponse.json(apiError('VALIDATION_RACE_NAME_IS_REQUIRED', 'Race name is required'),
+      return NextResponse.json(apiError('VALIDATION_RACE_NAME_IS_REQUIRED'),
         { status: 400 }
       );
     }
@@ -113,20 +118,19 @@ export async function POST(request: Request) {
       .from('races')
       .insert({
         name,
-        description,
-        distance,
-        date,
-        elevation_gain,
-        location,
-        created_by: user!.id,
-        team_id: profile.team_id,
+        description: description || null,
+        distance: distance || null,
+        elevation_gain: elevation_gain ?? null,
+        location: location || null,
+        coach_id: user!.id,
+        team_id: null, // Workaround for DB migration bug where team_id references groups(id)
       })
       .select()
       .single();
 
     if (error) {
-      appLogger.error('Create race error:', error);
-      return NextResponse.json(apiError('FAILED_TO_CREATE_RACE', 'Failed to create race'),
+      appLogger.error('Create race error:', { message: error.message, code: error.code, details: error.details, hint: error.hint });
+      return NextResponse.json(apiError('FAILED_TO_CREATE_RACE'),
         { status: 500 }
       );
     }
@@ -145,7 +149,7 @@ export async function POST(request: Request) {
     return NextResponse.json(race, { status: 201 });
   } catch (error: unknown) {
     appLogger.error('POST /v2/races error:', error);
-    return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+    return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
       { status: 500 }
     );
   }

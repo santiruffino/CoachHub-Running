@@ -14,6 +14,7 @@ export interface UpdateProfileDto {
     injuries?: string;
     restHR?: number | string;
     maxHR?: number | string;
+    lthr?: number | string;
     vam?: string;
     uan?: string;
     dob?: string;

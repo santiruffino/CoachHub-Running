@@ -20,7 +20,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
       .single();
 
     if (!adminProfile?.team_id) {
-      return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Admin must belong to a team'), { status: 403 });
+      return NextResponse.json(apiError('AUTH_FORBIDDEN'), { status: 403 });
     }
 
     const { data: targetCoach } = await supabase
@@ -31,11 +31,11 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
       .single();
 
     if (!targetCoach) {
-      return NextResponse.json(apiError('COACH_NOT_FOUND', 'Coach not found'), { status: 404 });
+      return NextResponse.json(apiError('COACH_NOT_FOUND'), { status: 404 });
     }
 
     if (targetCoach.team_id !== adminProfile.team_id) {
-      return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Cannot delete a coach outside your team'), { status: 403 });
+      return NextResponse.json(apiError('AUTH_FORBIDDEN'), { status: 403 });
     }
 
     // 1. Reassign athletes in the same team to the admin
@@ -79,6 +79,6 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     return NextResponse.json({ message: 'Coach deleted and athletes reassigned successfully' });
   } catch (error: unknown) {
     appLogger.error('DELETE coach process error:', error instanceof Error ? error.message : error);
-    return NextResponse.json(apiError('FAILED_TO_DELETE_COACH_AND_REASSIGN_ATHLETES', 'Failed to delete coach and reassign athletes'), { status: 500 });
+    return NextResponse.json(apiError('FAILED_TO_DELETE_COACH_AND_REASSIGN_ATHLETES'), { status: 500 });
   }
 }

@@ -5,6 +5,7 @@ import { Loader2 } from 'lucide-react';
 import api from '@/lib/axios';
 import { useTranslations } from 'next-intl';
 import { appLogger } from '@/lib/app-logger';
+import { useApiError } from '@/hooks/useApiError';
 
 interface AddMemberModalProps {
     groupId: string;
@@ -26,6 +27,7 @@ export function AddMemberModal({ groupId, currentMemberIds, open, onClose, onAdd
     const [submitting, setSubmitting] = useState(false);
     const [selectedId, setSelectedId] = useState<string>('');
     const t = useTranslations();
+    const { translateError } = useApiError();
 
     useEffect(() => {
         if (open) {
@@ -49,6 +51,7 @@ export function AddMemberModal({ groupId, currentMemberIds, open, onClose, onAdd
             onClose();
         } catch (error) {
             appLogger.error('Failed to add member', error);
+            alert(translateError(error));
         } finally {
             setSubmitting(false);
         }

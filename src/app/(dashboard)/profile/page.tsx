@@ -1,162 +1,67 @@
-'use client';
-import { appLogger } from '@/lib/app-logger';
-
-
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
+import { ProfileView } from '@/features/profiles/components/ProfileView';
 import { ProfileDetails } from '@/interfaces/athlete';
-import { profileService } from '@/features/profiles/services/profile.service';
-import { ProfileForm } from '@/features/profiles/components/ProfileForm';
-import { HeartRateZones } from '@/features/profiles/components/HeartRateZones';
-import { StravaStatusCard } from '@/features/strava/components/StravaStatusCard';
-import { useStravaAuth } from '@/features/strava/hooks/useStravaAuth';
-import { useAuth } from '@/features/auth/hooks/useAuth';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
-import { SectionLayout, FieldGroup } from '@/components/layout/EditorialLayout';
-import { ArrowLeft } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { User } from '@/interfaces/auth';
 
-export default function ProfilePage() {
-    const t = useTranslations('profile.page');
-    const tCommon = useTranslations('common');
-    const router = useRouter();
-    const { user, loading: authLoading } = useAuth();
-    const [profile, setProfile] = useState<ProfileDetails | null>(null);
-    const [loading, setLoading] = useState(true);
+export const dynamic = 'force-dynamic';
+
+export default async function ProfilePage() {
+    const supabase = await createClient();
 
     const {
-        status: stravaStatus,
-        loading: stravaLoading,
-        connect: connectStrava,
-        disconnect: disconnectStrava,
-        sync: refreshStrava,
-    } = useStravaAuth({ enabled: user?.role === 'ATHLETE' });
+        data: { user: authUser },
+        error: authError,
+    } = await supabase.auth.getUser();
 
-    useEffect(() => {
-        profileService
-            .getProfile()
-            .then((res) => setProfile(res.data))
-            .catch((e) => appLogger.error(e))
-            .finally(() => setLoading(false));
-    }, []);
-
-    // ── Loading skeleton ─────────────────────────────────────────────────────
-    if (authLoading || loading) {
-        return (
-            <div className="max-w-6xl mx-auto px-6 md:px-10 pt-10 space-y-10 pb-28">
-                <div className="flex items-center gap-4">
-                    <Skeleton className="h-14 w-14 rounded-full" />
-                    <div className="space-y-2">
-                        <Skeleton className="h-6 w-40" />
-                        <Skeleton className="h-4 w-52" />
-                    </div>
-                </div>
-                <div className="space-y-6">
-                    {[...Array(4)].map((_, i) => (
-                        <Skeleton key={i} className="h-12 w-full" />
-                    ))}
-                </div>
-            </div>
-        );
+    if (authError || !authUser) {
+        redirect('/login');
     }
 
-    // ── Page ─────────────────────────────────────────────────────────────────
-    const initials = user?.firstName
-        ? `${user.firstName.charAt(0)}${user.lastName?.charAt(0) ?? ''}`
-        : user?.name?.charAt(0) ?? 'U';
+    // Fetch full profile data
+    const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select(`
+            *,
+            coachProfile:coach_profiles(*),
+            athleteProfile:athlete_profiles(*)
+        `)
+        .eq('id', authUser.id)
+        .single();
 
-    const displayName =
-        user?.firstName && user?.lastName
-            ? `${user.firstName} ${user.lastName}`
-            : user?.name ?? user?.email ?? '';
+    if (profileError || !profile) {
+        redirect('/dashboard');
+    }
+
+    // Transform to frontend structure
+    const mappedProfile: ProfileDetails = {
+        ...profile,
+        firstName: profile.first_name,
+        lastName: profile.last_name,
+        isOnboardingCompleted: profile.is_onboarding_completed,
+        mustChangePassword: profile.must_change_password,
+        coachProfile: profile.coachProfile || null,
+        athleteProfile: profile.athleteProfile ? {
+            ...profile.athleteProfile,
+            restHR: profile.athleteProfile.rest_hr,
+            maxHR: profile.athleteProfile.max_hr,
+            hrZones: profile.athleteProfile.hr_zones,
+        } : null,
+    } as unknown as ProfileDetails;
+
+    const user: User = {
+        id: profile.id,
+        email: profile.email,
+        name: profile.name,
+        firstName: profile.first_name,
+        lastName: profile.last_name,
+        role: profile.role,
+        isOnboardingCompleted: profile.is_onboarding_completed
+    };
 
     return (
-        <div className="flex flex-col">
-            {/* ── Scrollable content ── */}
-            <div className="flex-1 overflow-y-auto pb-28">
-                <div className="max-w-6xl mx-auto px-6 md:px-10 pt-8">
-
-                    {/* ── Page header ── */}
-                    <div className="flex items-center gap-2 mb-2">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => router.back()}
-                            className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                        >
-                            <ArrowLeft className="h-4 w-4" />
-                        </Button>
-                    </div>
-                    <div className="flex items-center gap-5 mb-8">
-                        <Avatar className="h-14 w-14 shrink-0">
-                            <AvatarFallback className="text-xl font-bold bg-muted text-foreground">
-                                {initials}
-                            </AvatarFallback>
-                        </Avatar>
-                        <div>
-                            <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground mb-0.5">
-                                {t('headerTag')}
-                            </p>
-                            <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">
-                                {displayName}
-                            </h1>
-                            <p className="text-sm text-muted-foreground">{user?.email}</p>
-                        </div>
-                    </div>
-
-                    {/* ── Editable form sections ── */}
-                    {profile && <ProfileForm profile={profile} />}
-
-                    {/* ── Strava section (athletes only) ── */}
-                    {user?.role === 'ATHLETE' && (
-                        <SectionLayout
-                            tag={t('integrations.tag')}
-                            title={t('integrations.title')}
-                            description={t('integrations.description')}
-                        >
-                            <StravaStatusCard
-                                status={stravaStatus}
-                                loading={stravaLoading}
-                                onConnect={connectStrava}
-                                onDisconnect={disconnectStrava}
-                                onRefresh={refreshStrava}
-                            />
-                        </SectionLayout>
-                    )}
-
-                    {/* ── HR Zones section (athletes only) ── */}
-                    {user?.role === 'ATHLETE' && profile?.athleteProfile && (
-                        <SectionLayout
-                            tag={t('hrZones.tag')}
-                            title={t('hrZones.title')}
-                            description={t('hrZones.description')}
-                        >
-                            <FieldGroup>
-                                <HeartRateZones zones={profile.athleteProfile.hrZones} />
-                            </FieldGroup>
-                        </SectionLayout>
-                    )}
-
-                </div>
-            </div>
-
-            {/* ── Sticky bottom save bar ── */}
-            <div className="fixed bottom-16 md:bottom-0 inset-x-0 bg-background/80 backdrop-blur-md border-t border-border/20 z-40">
-                <div className="max-w-6xl mx-auto px-6 md:px-10 py-4 flex items-center justify-between">
-                    <p className="text-xs text-muted-foreground hidden sm:block">
-                        {t('saveHint')}
-                    </p>
-                    <Button
-                        type="submit"
-                        form="profile-form"
-                        className="ml-auto h-10 px-8 rounded-full font-medium text-sm"
-                    >
-                        {tCommon('save')}
-                    </Button>
-                </div>
-            </div>
+        <div className="p-0">
+            <ProfileView initialProfile={mappedProfile} user={user} />
         </div>
     );
 }

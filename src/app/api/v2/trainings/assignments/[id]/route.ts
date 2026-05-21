@@ -39,13 +39,12 @@ export async function GET(
     try {
         void request;
         const { id } = await params;
-        const authResult = await requireAuth();
+        const { user, supabase, profile, response } = await requireRole(['ATHLETE', 'COACH', 'ADMIN']);
 
-        if (authResult.response) {
-            return authResult.response;
+        if (response) {
+            return response;
         }
 
-        const { supabase, user } = authResult;
         const assignmentId = id;
 
         // Fetch assignment with training details
@@ -77,7 +76,7 @@ export async function GET(
             .single();
 
         if (fetchError || !assignment) {
-            return NextResponse.json(apiError('ASSIGNMENT_NOT_FOUND', 'Assignment not found'),
+            return NextResponse.json(apiError('ASSIGNMENT_NOT_FOUND'),
                 { status: 404 }
             );
         }
@@ -93,24 +92,17 @@ export async function GET(
         };
         const assignedUser = assignment.user as unknown as AssignedUser;
 
-        // Fetch user's profile to get the correct role
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('role, team_id')
-            .eq('id', user!.id)
-            .single();
-
-        const userRole = profile?.role || 'ATHLETE';
+        const userRole = profile!.role;
 
         // Authorization check: must be the assigned athlete OR a coach
         if (userRole === 'ATHLETE' && assignedUser.id !== user!.id) {
-            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized to view this assignment'),
+            return NextResponse.json(apiError('AUTH_VIEW_ASSIGNMENT_FORBIDDEN'),
                 { status: 403 }
             );
         }
 
         // Coaches can view any assignment, but can only edit if they own the training or are on the same team
-        const canEdit = userRole === 'COACH' && !!profile?.team_id && training.team_id === profile.team_id;
+        const canEdit = (userRole === 'COACH' || userRole === 'ADMIN') && !!profile?.team_id && training.team_id === profile.team_id;
         const groupRelation = (assignment as unknown as { group?: AssignmentGroup | AssignmentGroup[] | null }).group;
         const groupName = Array.isArray(groupRelation) ? groupRelation[0]?.name : groupRelation?.name;
 
@@ -137,7 +129,7 @@ export async function GET(
         });
     } catch (error: unknown) {
         appLogger.error('Get assignment error:', error);
-        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
     }
@@ -157,22 +149,14 @@ export async function PATCH(
 ) {
     try {
         const { id } = await params;
-        const authResult = await requireRole('COACH');
+        const { user, supabase, profile, response } = await requireRole('COACH');
 
-        if (authResult.response) {
-            return authResult.response;
+        if (response) {
+            return response;
         }
 
-        const { supabase, user } = authResult;
-        
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('team_id')
-            .eq('id', user!.id)
-            .single();
-
         if (!profile?.team_id) {
-            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Coach must belong to a team'),
+            return NextResponse.json(apiError('AUTH_COACH_TEAM_REQUIRED'),
                 { status: 403 }
             );
         }
@@ -202,7 +186,7 @@ export async function PATCH(
             .single();
 
         if (fetchError || !assignment) {
-            return NextResponse.json(apiError('ASSIGNMENT_NOT_FOUND', 'Assignment not found'),
+            return NextResponse.json(apiError('ASSIGNMENT_NOT_FOUND'),
                 { status: 404 }
             );
         }
@@ -211,7 +195,7 @@ export async function PATCH(
 
         // Verify training belongs to coach team
         if (training.team_id !== profile.team_id) {
-            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized to update this assignment'),
+            return NextResponse.json(apiError('AUTH_UPDATE_ASSIGNMENT_FORBIDDEN'),
                 { status: 403 }
             );
         }
@@ -241,7 +225,7 @@ export async function PATCH(
 
             if (createError || !newTraining) {
                 appLogger.error('Create training error:', createError);
-                return NextResponse.json(apiError('FAILED_TO_CREATE_UPDATED_TRAINING', 'Failed to create updated training'),
+                return NextResponse.json(apiError('FAILED_TO_CREATE_UPDATED_TRAINING'),
                     { status: 500 }
                 );
             }
@@ -282,7 +266,7 @@ export async function PATCH(
 
             if (updateError) {
                 appLogger.error('Update group assignments error:', updateError);
-                return NextResponse.json(apiError('FAILED_TO_UPDATE_GROUP_ASSIGNMENTS', 'Failed to update group assignments'),
+                return NextResponse.json(apiError('FAILED_TO_UPDATE_GROUP_ASSIGNMENTS'),
                     { status: 500 }
                 );
             }
@@ -300,22 +284,16 @@ export async function PATCH(
 
             if (updateError) {
                 appLogger.error('Update assignment error:', updateError);
-                return NextResponse.json(apiError('FAILED_TO_UPDATE_ASSIGNMENT', 'Failed to update assignment'),
+                return NextResponse.json(apiError('FAILED_TO_UPDATE_ASSIGNMENT'),
                     { status: 500 }
                 );
             }
 
-            const { data: actorProfile } = await supabase
-                .from('profiles')
-                .select('role, team_id')
-                .eq('id', user!.id)
-                .single();
-
-            if (actorProfile?.role === 'ADMIN') {
+            if (profile!.role === 'ADMIN') {
                 await appendAdminActionLog({
                     actorId: user!.id,
                     actorRole: 'ADMIN',
-                    teamId: actorProfile.team_id,
+                    teamId: profile!.team_id!,
                     action: 'training_assignment.updated',
                     targetType: 'training_assignment',
                     targetId: assignmentId,
@@ -333,7 +311,7 @@ export async function PATCH(
         }
     } catch (error: unknown) {
         appLogger.error('Update assignment error:', error);
-        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
     }
@@ -352,22 +330,14 @@ export async function DELETE(
 ) {
     try {
         const { id } = await params;
-        const authResult = await requireRole('COACH');
+        const { user, supabase, profile, response } = await requireRole('COACH');
 
-        if (authResult.response) {
-            return authResult.response;
+        if (response) {
+            return response;
         }
 
-        const { supabase, user } = authResult;
-        
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('team_id')
-            .eq('id', user!.id)
-            .single();
-
         if (!profile?.team_id) {
-            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Coach must belong to a team'),
+            return NextResponse.json(apiError('AUTH_COACH_TEAM_REQUIRED'),
                 { status: 403 }
             );
         }
@@ -397,7 +367,7 @@ export async function DELETE(
             .single();
 
         if (fetchError || !assignment) {
-            return NextResponse.json(apiError('ASSIGNMENT_NOT_FOUND', 'Assignment not found'),
+            return NextResponse.json(apiError('ASSIGNMENT_NOT_FOUND'),
                 { status: 404 }
             );
         }
@@ -405,7 +375,7 @@ export async function DELETE(
         // Verify training belongs to coach team
         const training = assignment.training as unknown as { team_id: string | null };
         if (training.team_id !== profile.team_id) {
-            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized to delete this assignment'),
+            return NextResponse.json(apiError('AUTH_DELETE_ASSIGNMENT_FORBIDDEN'),
                 { status: 403 }
             );
         }
@@ -420,7 +390,7 @@ export async function DELETE(
 
             if (deleteError) {
                 appLogger.error('Delete group assignments error:', deleteError);
-                return NextResponse.json(apiError('FAILED_TO_DELETE_GROUP_ASSIGNMENTS', 'Failed to delete group assignments'),
+                return NextResponse.json(apiError('FAILED_TO_DELETE_GROUP_ASSIGNMENTS'),
                     { status: 500 }
                 );
             }
@@ -437,22 +407,16 @@ export async function DELETE(
 
             if (deleteError) {
                 appLogger.error('Delete assignment error:', deleteError);
-                return NextResponse.json(apiError('FAILED_TO_DELETE_ASSIGNMENT', 'Failed to delete assignment'),
+                return NextResponse.json(apiError('FAILED_TO_DELETE_ASSIGNMENT'),
                     { status: 500 }
                 );
             }
 
-            const { data: actorProfile } = await supabase
-                .from('profiles')
-                .select('role, team_id')
-                .eq('id', user!.id)
-                .single();
-
-            if (actorProfile?.role === 'ADMIN') {
+            if (profile!.role === 'ADMIN') {
                 await appendAdminActionLog({
                     actorId: user!.id,
                     actorRole: 'ADMIN',
-                    teamId: actorProfile.team_id,
+                    teamId: profile!.team_id!,
                     action: 'training_assignment.deleted',
                     targetType: 'training_assignment',
                     targetId: assignmentId,
@@ -468,7 +432,7 @@ export async function DELETE(
         }
     } catch (error: unknown) {
         appLogger.error('Delete assignment error:', error);
-        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
     }

@@ -22,13 +22,13 @@ export async function PATCH(request: NextRequest) {
 
         // Validation
         if (!currentPassword || !newPassword) {
-            return NextResponse.json(apiError('VALIDATION_CURRENT_PASSWORD_AND_NEW_PASSWORD_ARE_REQUIRED', 'Current password and new password are required'),
+            return NextResponse.json(apiError('VALIDATION_CURRENT_PASSWORD_AND_NEW_PASSWORD_ARE_REQUIRED'),
                 { status: 400 }
             );
         }
 
         if (newPassword.length < 6) {
-            return NextResponse.json(apiError('VALIDATION_NEW_PASSWORD_MUST_BE_AT_LEAST_6_CHARACTERS', 'New password must be at least 6 characters'),
+            return NextResponse.json(apiError('VALIDATION_NEW_PASSWORD_MUST_BE_AT_LEAST_6_CHARACTERS'),
                 { status: 400 }
             );
         }
@@ -44,7 +44,7 @@ export async function PATCH(request: NextRequest) {
         });
 
         if (updateError) {
-            return NextResponse.json(apiError('FAILED_TO_UPDATE_PASSWORD', 'Failed to update password'),
+            return NextResponse.json(apiError('FAILED_TO_UPDATE_PASSWORD'),
                 { status: 500 }
             );
         }
@@ -64,7 +64,7 @@ export async function PATCH(request: NextRequest) {
         });
     } catch (error: unknown) {
         appLogger.error('Change password error:', error);
-        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
     }

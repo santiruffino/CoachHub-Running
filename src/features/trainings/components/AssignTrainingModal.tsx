@@ -99,7 +99,7 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
     const loadData = async () => {
         try {
             const [athletesRes, groupsRes] = await Promise.all([
-                api.get<Athlete[]>('/v2/users/athletes'),
+                api.get<Athlete[]>('/v2/users/athletes?scope=team'),
                 api.get<Group[]>('/v2/groups'),
             ]);
             setAthletes(athletesRes.data);

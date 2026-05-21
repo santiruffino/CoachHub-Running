@@ -5,7 +5,6 @@ import { appLogger } from '@/lib/app-logger';
 import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
-import { isAxiosError } from 'axios';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { profileService } from '@/features/profiles/services/profile.service';
 import { Input } from '@/components/ui/input';
@@ -23,6 +22,7 @@ import {
 } from '@/components/layout/EditorialLayout';
 import { useTranslations } from 'next-intl';
 import { trackOnboardingCompleted, trackOnboardingFailed, trackOnboardingStarted } from '@/lib/analytics/events';
+import { useApiError } from '@/hooks/useApiError';
 
 interface OnboardingFormValues {
     firstName: string;
@@ -32,6 +32,7 @@ interface OnboardingFormValues {
     gender: string;
     height: string;
     weight: string;
+    vam?: string;
 }
 
 export default function OnboardingForm() {
@@ -39,6 +40,7 @@ export default function OnboardingForm() {
     const router = useRouter();
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
+    const { translateError } = useApiError();
     const [selectedGender, setSelectedGender] = useState('');
     const hasTrackedStartRef = useRef(false);
     const t = useTranslations('onboarding');
@@ -47,6 +49,7 @@ export default function OnboardingForm() {
         register,
         handleSubmit,
         setValue,
+        watch,
         formState: { errors },
     } = useForm<OnboardingFormValues>({
         defaultValues: {
@@ -57,6 +60,7 @@ export default function OnboardingForm() {
             gender: '',
             height: '',
             weight: '',
+            vam: '',
         },
     });
 
@@ -91,24 +95,20 @@ export default function OnboardingForm() {
                 gender: data.gender,
                 height: Number(data.height) || undefined,
                 weight: Number(data.weight) || undefined,
+                vam: data.vam,
                 isOnboardingCompleted: true,
             });
             trackOnboardingCompleted({ role: 'ATHLETE', flow: 'athlete_dedicated' });
             router.replace('/dashboard');
         } catch (err: unknown) {
             appLogger.error('Onboarding save error:', err);
-            if (isAxiosError(err) && err.response && typeof err.response.data === 'object' && err.response.data !== null) {
-                const responseData = err.response.data as { message?: string };
-                setError(responseData.message || t('errorSave'));
-                trackOnboardingFailed({
-                    role: 'ATHLETE',
-                    flow: 'athlete_dedicated',
-                    reason: responseData.message || 'request_failed',
-                });
-            } else {
-                setError(t('errorSave'));
-                trackOnboardingFailed({ role: 'ATHLETE', flow: 'athlete_dedicated', reason: 'request_failed' });
-            }
+            const errorMessage = translateError(err);
+            setError(errorMessage);
+            trackOnboardingFailed({
+                role: 'ATHLETE',
+                flow: 'athlete_dedicated',
+                reason: errorMessage,
+            });
             setSubmitting(false);
         }
     };
@@ -252,6 +252,54 @@ export default function OnboardingForm() {
                                         />
                                     </Field>
                                 </FieldRow>
+                            </FieldGroup>
+                        </SectionLayout>
+
+                        {/* ── Section 3: Performance Profile ── */}
+                        <SectionLayout
+                            tag={t('sections.performance.tag')}
+                            title={t('sections.performance.title')}
+                            description={t('sections.performance.description')}
+                        >
+                            <FieldGroup>
+                                <Field label={t('fields.vam')} error={errors.vam?.message as string}>
+                                    <Input
+                                        id="vam"
+                                        placeholder={t('fields.vamPlaceholder')}
+                                        className={underlineInput}
+                                        {...register('vam')}
+                                    />
+                                    
+                                    <div className="mt-6">
+                                        <p className="text-sm text-muted-foreground mb-3">{t('fields.level')}</p>
+                                        <div className="flex flex-col gap-2">
+                                            <Button 
+                                                type="button" 
+                                                variant={watch('vam') === '6:30' ? 'default' : 'outline'}
+                                                onClick={() => setValue('vam', '6:30', { shouldValidate: true })}
+                                                className="justify-start"
+                                            >
+                                                {t('levels.beginner')}
+                                            </Button>
+                                            <Button 
+                                                type="button" 
+                                                variant={watch('vam') === '5:30' ? 'default' : 'outline'}
+                                                onClick={() => setValue('vam', '5:30', { shouldValidate: true })}
+                                                className="justify-start"
+                                            >
+                                                {t('levels.intermediate')}
+                                            </Button>
+                                            <Button 
+                                                type="button" 
+                                                variant={watch('vam') === '4:30' ? 'default' : 'outline'}
+                                                onClick={() => setValue('vam', '4:30', { shouldValidate: true })}
+                                                className="justify-start"
+                                            >
+                                                {t('levels.expert')}
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </Field>
                             </FieldGroup>
                         </SectionLayout>
                     </form>

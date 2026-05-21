@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
 
         if (activitiesError) {
             appLogger.error('Disconnect Strava activities purge error:', activitiesError);
-            return NextResponse.json(apiError('FAILED_TO_PURGE_STRAVA_ACTIVITIES', 'Failed to purge Strava activities'),
+            return NextResponse.json(apiError('FAILED_TO_PURGE_STRAVA_ACTIVITIES'),
                 { status: 500 }
             );
         }
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
 
         if (zonesError) {
             appLogger.error('Disconnect Strava zones purge error:', zonesError);
-            return NextResponse.json(apiError('FAILED_TO_PURGE_STRAVA_ZONES', 'Failed to purge Strava zones'),
+            return NextResponse.json(apiError('FAILED_TO_PURGE_STRAVA_ZONES'),
                 { status: 500 }
             );
         }
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
 
         if (logsError) {
             appLogger.error('Disconnect Strava logs purge error:', logsError);
-            return NextResponse.json(apiError('FAILED_TO_PURGE_STRAVA_SYNC_LOGS', 'Failed to purge Strava sync logs'),
+            return NextResponse.json(apiError('FAILED_TO_PURGE_STRAVA_SYNC_LOGS'),
                 { status: 500 }
             );
         }
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
 
         if (error) {
             appLogger.error('Disconnect Strava error:', error);
-            return NextResponse.json(apiError('FAILED_TO_DISCONNECT', 'Failed to disconnect'),
+            return NextResponse.json(apiError('FAILED_TO_DISCONNECT'),
                 { status: 500 }
             );
         }
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
         });
     } catch (error: unknown) {
         appLogger.error('Disconnect Strava error:', error);
-        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
     }

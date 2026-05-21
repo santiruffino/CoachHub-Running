@@ -249,7 +249,7 @@ export function HeroSection() {
                   className="inline-flex items-center justify-center gap-2 border border-endurix-black dark:border-white text-endurix-black dark:text-white text-xs font-bold tracking-widest px-8 py-4 transition-all hover:bg-endurix-black dark:hover:bg-white hover:text-white dark:hover:text-endurix-black w-full sm:w-auto"
                   style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
                 >
-                  {t('cancel')} <span aria-hidden>+</span>
+                  {t('discover')} <span aria-hidden>+</span>
                 </Link>
               </motion.div>
             </motion.div>

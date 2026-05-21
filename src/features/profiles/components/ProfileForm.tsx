@@ -28,6 +28,7 @@ import {
     disabledInput,
 } from '@/components/layout/EditorialLayout';
 import { useTranslations } from 'next-intl';
+import { useApiError } from '@/hooks/useApiError';
 
 type LegacyAthleteProfile = NonNullable<ProfileDetails['athleteProfile']> & {
     rest_hr?: number;
@@ -119,6 +120,7 @@ function ChangePasswordSection() {
     const { register, handleSubmit, reset, formState: { errors } } = useHookForm<ChangePasswordFormData>();
     const [msg, setMsg] = useState('');
     const [err, setErr] = useState('');
+    const { translateError } = useApiError();
 
     const onSubmit = async (data: ChangePasswordFormData) => {
         setMsg('');
@@ -134,8 +136,8 @@ function ChangePasswordSection() {
             });
             setMsg(t('success'));
             reset();
-        } catch {
-            setErr(t('error'));
+        } catch (error) {
+            setErr(translateError(error));
         }
     };
 
@@ -187,17 +189,19 @@ function ChangePasswordSection() {
 export function ProfileForm({ profile }: { profile: ProfileDetails }) {
     const { user } = useAuth();
     const [message, setMessage] = useState('');
-    const [selectedGender, setSelectedGender] = useState<string>(user?.gender || '');
+    const [errorMessage, setErrorMessage] = useState('');
+    const { translateError } = useApiError();
+    const [selectedGender, setSelectedGender] = useState<string>(profile.gender || '');
     const t = useTranslations('profile');
     const tOnboarding = useTranslations('onboarding');
     const athleteProfile = profile.athleteProfile as LegacyAthleteProfile | undefined;
 
     const { register, handleSubmit, setValue, watch } = useForm<UpdateProfileDto>({
         defaultValues: {
-            firstName: user?.firstName,
-            lastName: user?.lastName,
-            phone: user?.phone,
-            gender: user?.gender,
+            firstName: profile.firstName,
+            lastName: profile.lastName,
+            phone: profile.phone,
+            gender: profile.gender,
             bio: profile.coachProfile?.bio,
             specialty: profile.coachProfile?.specialty,
             experience: profile.coachProfile?.experience,
@@ -206,6 +210,7 @@ export function ProfileForm({ profile }: { profile: ProfileDetails }) {
             injuries: profile.athleteProfile?.injuries,
             restHR: athleteProfile?.restHR ?? athleteProfile?.rest_hr,
             maxHR: athleteProfile?.maxHR ?? athleteProfile?.max_hr,
+            lthr: athleteProfile?.lthr,
             vam: athleteProfile?.vam,
             uan: athleteProfile?.uan,
             dob: athleteProfile?.dob,
@@ -219,15 +224,19 @@ export function ProfileForm({ profile }: { profile: ProfileDetails }) {
 
     const onSubmit = async (data: UpdateProfileDto) => {
         try {
+            setMessage('');
+            setErrorMessage('');
             if (data.height) data.height = Number(data.height) || undefined;
             if (data.weight) data.weight = Number(data.weight) || undefined;
             if (data.restHR) data.restHR = Number(data.restHR) || undefined;
             if (data.maxHR) data.maxHR = Number(data.maxHR) || undefined;
+            if (data.lthr) data.lthr = Number(data.lthr) || undefined;
 
             await profileService.updateProfile(data);
             setMessage('success');
-        } catch (e: unknown) {
-            appLogger.error(e);
+        } catch (error: unknown) {
+            appLogger.error(error);
+            setErrorMessage(translateError(error));
             setMessage('error');
         }
     };
@@ -246,7 +255,7 @@ export function ProfileForm({ profile }: { profile: ProfileDetails }) {
             )}
             {message === 'error' && (
                 <Alert variant="destructive" className="mb-6 bg-destructive/10 border-destructive/20">
-                    <AlertDescription>{t('errorUpdate')}</AlertDescription>
+                    <AlertDescription>{errorMessage || t('errorUpdate')}</AlertDescription>
                 </Alert>
             )}
 
@@ -354,6 +363,16 @@ export function ProfileForm({ profile }: { profile: ProfileDetails }) {
                                         placeholder={t('fields.maxHRPlaceholder')}
                                         className={underlineInput}
                                         {...register('maxHR')}
+                                    />
+                                </Field>
+                            </FieldRow>
+                            <FieldRow>
+                                <Field label={t('fields.lthr')} hint={t('fields.lthrHint')}>
+                                    <Input
+                                        type="number"
+                                        placeholder={t('fields.lthrPlaceholder')}
+                                        className={underlineInput}
+                                        {...register('lthr')}
                                     />
                                 </Field>
                             </FieldRow>

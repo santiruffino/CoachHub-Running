@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
 
         if (profileError || !profile?.team_id) {
             logger.warn('alerts_read.missing_team', { userId: user!.id, profileError });
-            return respond(apiError('TEAM_REQUIRED', 'Coach must belong to a team'), { status: 403 });
+            return respond(apiError('TEAM_REQUIRED'), { status: 403 });
         }
 
         let scopedAthleteIds: string[] | null = null;
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
 
             if (athletesError) {
                 logger.error('alerts_read.resolve_athletes_failed', { userId: user!.id, error: athletesError });
-                return respond(apiError('ATHLETES_RESOLVE_FAILED', 'Failed to resolve coach athletes'), { status: 500 });
+                return respond(apiError('ATHLETES_RESOLVE_FAILED'), { status: 500 });
             }
 
             scopedAthleteIds = (mineAthletes || []).map((a) => a.id);
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
         const { data, error } = await query.select('id');
         if (error) {
             logger.error('alerts_read.update_failed', { userId: user!.id, action, scope, alertIds, error });
-            return respond(apiError('ALERTS_UPDATE_FAILED', 'Failed to update alerts'), { status: 500 });
+            return respond(apiError('ALERTS_UPDATE_FAILED'), { status: 500 });
         }
 
         logger.info('alerts_read.updated', {
@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
             tags: { route: '/api/v2/dashboard/coach/alerts/read', requestId },
         });
         return respond(
-            apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+            apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
     }

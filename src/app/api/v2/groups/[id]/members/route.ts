@@ -33,13 +33,13 @@ export async function POST(
             .single();
 
         if (!profile?.team_id) {
-            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Coach must belong to a team'),
+            return NextResponse.json(apiError('AUTH_FORBIDDEN'),
                 { status: 403 }
             );
         }
 
         if (!athleteId) {
-            return NextResponse.json(apiError('VALIDATION_ATHLETEID_IS_REQUIRED', 'athleteId is required'),
+            return NextResponse.json(apiError('VALIDATION_ATHLETEID_IS_REQUIRED'),
                 { status: 400 }
             );
         }
@@ -52,13 +52,13 @@ export async function POST(
             .single();
 
         if (groupError || !group) {
-            return NextResponse.json(apiError('GROUP_NOT_FOUND', 'Group not found'),
+            return NextResponse.json(apiError('GROUP_NOT_FOUND'),
                 { status: 404 }
             );
         }
 
         if (group.team_id !== profile.team_id) {
-            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized to modify this group'),
+            return NextResponse.json(apiError('AUTH_FORBIDDEN'),
                 { status: 403 }
             );
         }
@@ -71,13 +71,13 @@ export async function POST(
             .single();
 
         if (athleteError || !athlete) {
-            return NextResponse.json(apiError('ATHLETE_NOT_FOUND', 'Athlete not found'),
+            return NextResponse.json(apiError('ATHLETE_NOT_FOUND'),
                 { status: 404 }
             );
         }
 
         if (athlete.role !== 'ATHLETE') {
-            return NextResponse.json(apiError('VALIDATION_USER_IS_NOT_AN_ATHLETE', 'User is not an athlete'),
+            return NextResponse.json(apiError('VALIDATION_USER_IS_NOT_AN_ATHLETE'),
                 { status: 400 }
             );
         }
@@ -91,7 +91,7 @@ export async function POST(
             .single();
 
         if (existing) {
-            return NextResponse.json(apiError('ATHLETE_IS_ALREADY_A_MEMBER_OF_THIS_GROUP', 'Athlete is already a member of this group'),
+            return NextResponse.json(apiError('ATHLETE_IS_ALREADY_A_MEMBER_OF_THIS_GROUP'),
                 { status: 409 }
             );
         }
@@ -108,15 +108,24 @@ export async function POST(
 
         if (insertError) {
             appLogger.error('Add member error:', insertError);
-            return NextResponse.json(apiError('FAILED_TO_ADD_MEMBER_TO_GROUP', 'Failed to add member to group'),
+            return NextResponse.json(apiError('FAILED_TO_ADD_MEMBER_TO_GROUP'),
                 { status: 500 }
             );
         }
 
+        // Update athlete profile to match group team if they don't have one
+        // We use the same supabase client as the coach has permission to update team members 
+        // per RLS "Users can update own profile" (or team staff can update team members)
+        await supabase
+            .from('profiles')
+            .update({ team_id: group.team_id })
+            .eq('id', athleteId)
+            .is('team_id', null);
+
         return NextResponse.json(membership, { status: 201 });
     } catch (error: unknown) {
         appLogger.error('Add member error:', error);
-        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
     }
@@ -153,13 +162,13 @@ export async function DELETE(
             .single();
 
         if (!profile?.team_id) {
-            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Coach must belong to a team'),
+            return NextResponse.json(apiError('AUTH_FORBIDDEN'),
                 { status: 403 }
             );
         }
 
         if (!athleteId) {
-            return NextResponse.json(apiError('VALIDATION_ATHLETEID_IS_REQUIRED', 'athleteId is required'),
+            return NextResponse.json(apiError('VALIDATION_ATHLETEID_IS_REQUIRED'),
                 { status: 400 }
             );
         }
@@ -172,13 +181,13 @@ export async function DELETE(
             .single();
 
         if (groupError || !group) {
-            return NextResponse.json(apiError('GROUP_NOT_FOUND', 'Group not found'),
+            return NextResponse.json(apiError('GROUP_NOT_FOUND'),
                 { status: 404 }
             );
         }
 
         if (group.team_id !== profile.team_id) {
-            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized to modify this group'),
+            return NextResponse.json(apiError('AUTH_FORBIDDEN'),
                 { status: 403 }
             );
         }
@@ -192,7 +201,7 @@ export async function DELETE(
 
         if (deleteError) {
             appLogger.error('Remove member error:', deleteError);
-            return NextResponse.json(apiError('FAILED_TO_REMOVE_MEMBER_FROM_GROUP', 'Failed to remove member from group'),
+            return NextResponse.json(apiError('FAILED_TO_REMOVE_MEMBER_FROM_GROUP'),
                 { status: 500 }
             );
         }
@@ -202,7 +211,7 @@ export async function DELETE(
         });
     } catch (error: unknown) {
         appLogger.error('Remove member error:', error);
-        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
     }

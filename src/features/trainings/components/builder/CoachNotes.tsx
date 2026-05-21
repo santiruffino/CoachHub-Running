@@ -15,8 +15,7 @@ export function CoachNotes() {
             
             <textarea 
                 placeholder={t('notesPlaceholder')}
-                className="w-full bg-transparent border-none outline-none resize-none text-sm text-[#4e6073] dark:text-[#8b9bb4] placeholder:text-[#8b9bb4]/50 min-h-[120px] focus:ring-0 p-0 font-inter italic"
-                defaultValue={"Focus on maintaining a cadence of 95-105 RPM during the 2-minute work intervals.\n\nThe recovery is short for a reason; we want to keep the oxygen uptake elevated between sets. If you feel the power dropping more than 5% by the 4th repeat, extend the recovery by 30 seconds."}
+                className="w-full bg-transparent border-none outline-none resize-none text-sm text-[#4e6073] dark:text-[#8b9bb4] placeholder:text-[#8b9bb4]/50 min-h-30 focus:ring-0 p-0 font-inter italic"
             />
         </div>
     );

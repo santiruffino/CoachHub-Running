@@ -17,7 +17,7 @@ export async function GET() {
       .single();
 
     if (!profile?.team_id) {
-      return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Admin must belong to a team'), { status: 403 });
+      return NextResponse.json(apiError('AUTH_FORBIDDEN'), { status: 403 });
     }
 
     const coachesQuery = supabase
@@ -50,6 +50,6 @@ export async function GET() {
     return NextResponse.json(enhancedCoaches);
   } catch (error: unknown) {
     appLogger.error('Failed to fetch coaches:', error instanceof Error ? error.message : error);
-    return NextResponse.json(apiError('FAILED_TO_FETCH_COACHES', 'Failed to fetch coaches'), { status: 500 });
+    return NextResponse.json(apiError('FAILED_TO_FETCH_COACHES'), { status: 500 });
   }
 }

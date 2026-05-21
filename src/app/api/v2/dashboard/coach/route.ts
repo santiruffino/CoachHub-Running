@@ -103,7 +103,7 @@ export async function GET(request: NextRequest) {
 
         if (authError || !user) {
             logger.warn('coach_dashboard.unauthorized');
-            return respond(apiError('AUTH_UNAUTHORIZED', 'Unauthorized'), { status: 401 });
+            return respond(apiError('AUTH_UNAUTHORIZED'), { status: 401 });
         }
 
         const { data: profile } = await supabase
@@ -114,12 +114,12 @@ export async function GET(request: NextRequest) {
 
         if (profile?.role !== 'COACH' && profile?.role !== 'ADMIN') {
             logger.warn('coach_dashboard.forbidden_role', { userId: user.id, role: profile?.role });
-            return respond(apiError('AUTH_FORBIDDEN', 'Forbidden'), { status: 403 });
+            return respond(apiError('AUTH_FORBIDDEN'), { status: 403 });
         }
 
         if (!profile?.team_id) {
             logger.warn('coach_dashboard.missing_team', { userId: user.id, role: profile.role });
-            return respond(apiError('TEAM_REQUIRED', 'Coach must belong to a team'), { status: 403 });
+            return respond(apiError('TEAM_REQUIRED'), { status: 403 });
         }
 
         const scopeParam = new URL(request.url).searchParams.get('scope');
@@ -696,7 +696,7 @@ export async function GET(request: NextRequest) {
             tags: { route: '/api/v2/dashboard/coach', requestId },
         });
         return respond(
-            apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+            apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
     }

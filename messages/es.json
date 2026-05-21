@@ -27,6 +27,8 @@
                 "totalGroups": "Equipos / Grupos",
                 "activeCoaches": "Coaches Activos"
             },
+            "globalScope": "Global",
+
             "coachesActivity": "Coaches & Actividad",
             "noName": "Sin nombre",
             "athletesCount": "{count} Atletas",
@@ -200,8 +202,10 @@
             "height": "Altura",
             "weight": "Peso",
             "restHR": "FC Reposo",
-            "maxHR": "FC Max",
+            "maxHR": "FC Máxima",
+            "lthr": "FC Umbral Lactato",
             "testVAM": "Test VAM",
+
             "assignLevel": "Asignar nivel",
             "testUAN": "Test UAN",
             "totalTrainings": "Total Entrenamientos",
@@ -417,7 +421,7 @@
         "login": {
             "title": "Bienvenido",
             "emailLabel": "Email",
-            "emailPlaceholder": "coach@ejemplo.com",
+            "emailPlaceholder": "atleta@ejemplo.com",
             "passwordLabel": "Contraseña",
             "passwordPlaceholder": "••••••",
             "submitButton": "Ingresar",
@@ -425,7 +429,11 @@
             "forgotPassword": "¿Olvidaste tu contraseña?",
             "invalidCredentials": "Credenciales inválidas",
             "emailInvalid": "Email inválido",
-            "passwordTooShort": "La contraseña debe tener al menos 6 caracteres"
+            "passwordTooShort": "La contraseña debe tener al menos 6 caracteres",
+            "magicLink": "O ingresar con un enlace mágico",
+            "sendMagicLink": "Enviar Enlace",
+            "magicLinkSent": "¡Enviado! Revisa tu email para ingresar.",
+            "backToPassword": "Volver a contraseña"
         },
         "forgotPassword": {
             "title": "Restablecer contraseña",
@@ -830,7 +838,10 @@
         "tss": "TSS (Est.)",
         "if": "IF (Factor de Intensidad)",
         "estimatedLoad": "Carga Estimada",
+        "low": "Baja",
+        "medium": "Media",
         "high": "Alta",
+        "veryHigh": "Muy Alta",
         "projectedProfile": "Perfil de Entrenamiento Proyectado",
         "workoutProfile": "Perfil del Entrenamiento",
         "intensity": "Intensidad",
@@ -840,15 +851,13 @@
             "warmup": "Calentamiento",
             "interval": "Activo",
             "recovery": "Recuperación",
-            "recoveryHint": "Recuperación activa",
-            "recoveryWithHint": "Recuperación (activa)",
+            "recoveryWithHint": "Recuperación",
             "rest": "Descanso",
-            "restHint": "Descanso estático",
-            "restWithHint": "Descanso (estático)",
+            "restWithHint": "Descanso",
             "cooldown": "Enfriamiento",
             "hard": "Fuerte",
             "easy": "Suave",
-            "repeat": "Repeticion"
+            "repeat": "Repetición"
         },
         "stepDetails": "Detalles del Paso",
         "removeStep": "Eliminar Paso",
@@ -860,7 +869,11 @@
         "time": "Tiempo",
         "paceSpeed": "Ritmo / Velocidad",
         "vamZone": "Zona VAM",
+        "powerZone": "Zona Potencia",
+        "ftpPercent": "% FTP",
         "lthr": "LTHR (%)",
+        "hrReserve": "FC Reserva (%)",
+        "hrReserveShort": "FC Res.",
         "rpeTarget": "RPE Objetivo",
         "expectedPace": "Ritmo Esperado:",
         "estimatedPaceDefault": "Ritmo Estimado (Default):",
@@ -891,8 +904,10 @@
         "cadenceRange": "Rango de cadencia",
         "intervalRpeOptional": "RPE del Intervalo (Opcional)",
         "noRpeSet": "Sin RPE definido",
-        "noAthleteSelectedLthr": "No se seleccionó atleta - LTHR no disponible",
+        "noAthleteSelectedLthr": "Atleta sin LTHR configurado",
+        "noAthleteHrReserveData": "Atleta sin FC Reposo/Máxima configuradas",
         "noAthleteVamData": "VAM no disponible para este atleta",
+        "noAthleteFtpData": "Sin datos de FTP",
         "totalDuration": "Duración Total",
         "estimatedTss": "TSS Estimado",
         "distanceEst": "Distancia Est.",
@@ -922,8 +937,8 @@
         "editorPhase": "Fase de Edición 01",
         "coreDetails": "Detalles Principales",
         "loadError": "Error al cargar el entrenamiento",
-        "workoutTitleLabel": "Título del Entrenamiento",
-        "workoutTitlePlaceholder": "ej. Desarrollo de Umbral",
+        "workoutTitleLabel": "Título del Entrenamiento (*)",
+        "workoutTitlePlaceholder": "ej. Pasadas a Umbral",
         "activityTypeLabel": "Tipo de Actividad",
         "coachNotesLabel": "Notas del Coach",
         "coachNotesPlaceholder": "Objetivo: umbral de lactato...",
@@ -999,6 +1014,11 @@
                 "tag": "PERFIL FÍSICO",
                 "title": "Datos fisiológicos",
                 "description": "Necesarios para calcular zonas de intensidad y cargas metabólicas."
+            },
+            "performance": {
+                "tag": "RENDIMIENTO",
+                "title": "Nivel y Rendimiento",
+                "description": "Estos datos permiten calcular la Carga Estimada (TSS) y establecer ritmos de entrenamiento precisos."
             }
         },
         "fields": {
@@ -1025,11 +1045,19 @@
             "weightPlaceholder": "70.0",
             "weightRequired": "El peso es obligatorio",
             "weightMin": "Mínimo 20 kg",
-            "weightMax": "Máximo 300 kg"
+            "weightMax": "Máximo 300 kg",
+            "vam": "VAM (Velocidad Aeróbica Máxima)",
+            "vamPlaceholder": "ej. 4:30",
+            "level": "O selecciona tu nivel de experiencia:"
         },
         "footer": "Toda la información puede editarse más adelante desde tu perfil.",
         "submit": "Completar perfil",
-        "submitting": "Guardando..."
+        "submitting": "Guardando...",
+        "levels": {
+            "beginner": "Novato (Ritmo 6:30 min/km)",
+            "intermediate": "Intermedio (Ritmo 5:30 min/km)",
+            "expert": "Experto (Ritmo 4:30 min/km)"
+        }
     },
     "profile": {
         "successUpdate": "Perfil actualizado correctamente.",
@@ -1086,6 +1114,10 @@
             "restHRPlaceholder": "55",
             "maxHR": "FC MÁXIMA (BPM)",
             "maxHRPlaceholder": "190",
+            "lthr": "FC UMBRAL DE LACTATO (BPM)",
+            "lthrPlaceholder": "ej. 170",
+            "lthrHint": "FC en el umbral anaeróbico (test de 20-30 min)",
+
             "vam": "TEST VAM (mm:ss)",
             "uan": "TEST UAN (mm:ss)",
             "pacePlaceholder": "00:00",
@@ -1217,7 +1249,7 @@
             "title2": "RINDE POR MÁS TIEMPO.",
             "subtitle": "La plataforma todo en uno para entrenadores y atletas de resistencia. Datos, planes y progreso. Todo en un solo lugar. Sin excusas. Solo datos.",
             "viewTraining": "VER ENTRENAMIENTO",
-            "cancel": "CANCELAR",
+            "discover": "DESCUBRIR MÁS",
             "dashboardMock": "DASHBOARD (EJEMPLO)",
             "cargaSemanal": "CARGA SEMANAL",
             "optima": "ÓPTIMA",
@@ -1246,12 +1278,16 @@
             "titleHighlight": "OBSESIONADO CON DATOS.",
             "feature1Title": "Sync Automático con Strava",
             "feature1Desc": "Actividades en tiempo real vía Webhooks. Tus datos actualizados al segundo, sin recargas ni esperas.",
-            "feature2Title": "Constructor de Series Dinámico",
-            "feature2Desc": "Repeticiones, bloques y fases calibradas con precisión VAM. Protocolos de carga estructurada.",
-            "feature3Title": "Métricas VAM Quirúrgicas",
-            "feature3Desc": "Desnivel acumulado y Velocidad de Ascenso Media por sesión. Datos que nunca mienten.",
-            "feature4Title": "Dashboard de Control Central",
-            "feature4Desc": "Vista unificada de todos tus atletas. Alertas, historial de progreso y comunicación. Todo en una pantalla.",
+            "feature2Title": "Análisis de Actividad Avanzado",
+            "feature2Desc": "Visualiza la distribución de intensidad en zonas (Z1-Z5), perfil de elevación y análisis detallado de vueltas y parciales.",
+            "feature3Title": "Constructor de Series Dinámico",
+            "feature3Desc": "Diseña repeticiones, bloques e intervalos calibrados con precisión VAM y zonas de potencia.",
+            "feature4Title": "Biblioteca de Plantillas",
+            "feature4Desc": "Guarda tus entrenamientos y protocolos más efectivos para reutilizarlos y asignarlos a escala.",
+            "feature5Title": "Gestión de Equipos y Carreras",
+            "feature5Desc": "Organiza atletas en grupos de entrenamiento, asigna calendarios y realiza un seguimiento de carreras con countdowns.",
+            "feature6Title": "Dashboard de Control Central",
+            "feature6Desc": "Vista unificada de todos tus atletas. Alertas de cumplimiento (RPE vs Objetivo), historial de progreso y notas privadas.",
             "weekLabel": "SEMANA 7 — AJUSTE FC",
             "formTrending": "Forma en Ascenso",
             "forma": "FORMA",
@@ -1263,14 +1299,14 @@
             "eyebrow": "HOJA DE RUTA",
             "title1": "EVOLUCIÓN",
             "title2": "CONSTANTE.",
-            "item1Title": "Webhook Strava Sync",
-            "item1Desc": "Integración total con Strava para recepción de datos instantánea. Olvida la sincronización manual.",
-            "item1Status": "DISPONIBLE AHORA",
-            "item2Title": "Push a Dispositivos Garmin",
-            "item2Desc": "Envía tus entrenamientos directamente al reloj de tus atletas. Integración nativa con Garmin Connect API.",
+            "item1Title": "Soporte de Ciclismo",
+            "item1Desc": "Integración de FTP, zonas de potencia y métricas específicas de ciclismo para planificar entrenamientos multideporte.",
+            "item1Status": "PRÓXIMAMENTE",
+            "item2Title": "Asistente IA para Coaches",
+            "item2Desc": "Modelos inteligentes que analizan el feedback y rendimiento del atleta para generar resúmenes automáticos y alertas.",
             "item2Status": "PRÓXIMAMENTE",
-            "item3Title": "Predicción IA de Lesiones",
-            "item3Desc": "Modelos predictivos basados en HRV y carga crónica de entrenamiento. Prevenir antes de que ocurra.",
+            "item3Title": "Push a Dispositivos Garmin",
+            "item3Desc": "Envía entrenamientos estructurados directamente al reloj de tus atletas vía Garmin Connect API.",
             "item3Status": "PRÓXIMAMENTE"
         },
         "cta": {
@@ -1359,6 +1395,7 @@
             "addRace": "Añadir Carrera",
             "priority": "Prioridad {priority}",
             "priorityLabel": "PRIORIDAD {priority}",
+            "priorityBadge": "PRIO {priority}",
             "target": "Objetivo: {time}",
             "defaultRaceName": "Carrera",
             "resultTime": "Tiempo Real",
@@ -1384,11 +1421,34 @@
     "invitations": {
         "modals": {
             "athlete": {
-                "title": "Invitar Atleta",
+                "title": "Añadir Atletas",
                 "descriptionCreated": "Invitación creada. Comparte el enlace con el atleta.",
-                "descriptionCreate": "Ingresa el email del atleta para enviar una invitación.",
+                "descriptionCreate": "Elige cómo quieres añadir a tus atletas.",
                 "emailPlaceholder": "atleta@ejemplo.com",
-                "create": "Crear Invitación"
+                "create": "Crear Invitación",
+                "tabs": {
+                    "single": "Individual",
+                    "bulk": "Carga Masiva (CSV)"
+                },
+                "bulk": {
+                    "description": "Sube un archivo .csv o .txt con una lista de correos electrónicos (uno por línea).",
+                    "dropzone": "Haz clic para subir o arrastra el archivo aquí",
+                    "fileSelected": "Archivo seleccionado: {name}",
+                    "processing": "Procesando {count} correos...",
+                    "success": "Se enviaron {success} invitaciones correctamente.",
+                    "partialSuccess": "Se enviaron {success} invitaciones, pero {failed} fallaron.",
+                    "error": "Error al procesar el archivo.",
+                    "invalidFile": "Tipo de archivo no válido. Usa .csv o .txt",
+                    "noEmails": "No se encontraron correos válidos en el archivo.",
+                    "summary": {
+                        "title": "Resumen de Carga",
+                        "total": "Total procesados",
+                        "success": "Nuevas invitaciones",
+                        "pending": "Ya invitados",
+                        "exists": "Ya registrados",
+                        "failed": "Errores"
+                    }
+                }
             },
             "coach": {
                 "title": "Invitar Coach",
@@ -1693,6 +1753,87 @@
             "returnToProfile": "Volver al perfil",
             "connecting": "Conectando con Strava...",
             "loading": "Cargando..."
+        }
+    },
+    "apiErrors": {
+        "generic": {
+            "INTERNAL_SERVER_ERROR": "Error interno del servidor. Por favor, intenta de nuevo más tarde.",
+            "REQUEST_FAILED": "La solicitud ha fallado.",
+            "RATE_LIMIT_EXCEEDED": "Demasiadas solicitudes. Por favor, espera un momento.",
+            "SERVER_CONFIGURATION_ERROR": "Error de configuración del servidor."
+        },
+        "auth": {
+            "UNAUTHORIZED": "No has iniciado sesión o tu sesión ha expirado.",
+            "FORBIDDEN": "No tienes permiso para realizar esta acción.",
+            "TEAM_REQUIRED": "Debes pertenecer a un equipo para realizar esta acción.",
+            "COACH_ONLY": "Esta acción solo está permitida para entrenadores.",
+            "ADMIN_ONLY": "Esta acción solo está permitida para administradores.",
+            "COACH_OR_ADMIN_ONLY": "Esta acción solo está permitida para entrenadores o administradores.",
+            "NOT_OWNER": "No tienes permiso para ver o modificar datos de otros usuarios.",
+            "INVALID_OAUTH_STATE": "Estado de autenticación inválido. Intenta de nuevo.",
+            "FAILED_TO_UPDATE_PASSWORD": "Error al actualizar la contraseña.",
+            "FAILED_TO_UPDATE_USER": "Error al actualizar los datos de usuario.",
+            "COACH_TEAM_REQUIRED": "Como entrenador, debes estar asignado a un equipo.",
+            "ADMIN_TEAM_REQUIRED": "Como administrador, debes pertenecer a un equipo.",
+            "VIEW_ACTIVITY_FORBIDDEN": "No tienes permiso para ver esta actividad.",
+            "MODIFY_ACTIVITY_FORBIDDEN": "No tienes permiso para modificar esta actividad.",
+            "VIEW_ASSIGNMENT_FORBIDDEN": "No tienes permiso para ver esta asignación.",
+            "UPDATE_ASSIGNMENT_FORBIDDEN": "No tienes permiso para actualizar esta asignación.",
+            "DELETE_ASSIGNMENT_FORBIDDEN": "No tienes permiso para eliminar esta asignación."
+        },
+        "validation": {
+            "REQUIRED_FIELD": "Este campo es obligatorio.",
+            "INVALID_FORMAT": "El formato ingresado no es válido.",
+            "MIN_LENGTH": "Debe tener al menos {min} caracteres.",
+            "OUT_OF_RANGE": "El valor está fuera del rango permitido.",
+            "NO_DATA": "No hay datos para actualizar.",
+            "ACTIVITY_ID_IS_REQUIRED": "El ID de la actividad es obligatorio.",
+            "TITLE_IS_REQUIRED": "El título es obligatorio.",
+            "SCHEDULED_DATE_IS_REQUIRED": "La fecha de ejecución es obligatoria.",
+            "AT_LEAST_ONE_RECIPIENT_REQUIRED": "Debes seleccionar al menos un atleta o grupo.",
+            "PASSWORD_TOO_SHORT": "La contraseña debe tener al menos 6 caracteres.",
+            "INVALID_EMAIL": "El email ingresado no es válido."
+        },
+        "resources": {
+            "ACTIVITY_NOT_FOUND": "Actividad no encontrada.",
+            "ATHLETE_NOT_FOUND": "Atleta no encontrado.",
+            "COACH_NOT_FOUND": "Entrenador no encontrado.",
+            "GROUP_NOT_FOUND": "Grupo no encontrado.",
+            "TRAINING_NOT_FOUND": "Entrenamiento no encontrado.",
+            "ASSIGNMENT_NOT_FOUND": "Asignación no encontrada.",
+            "RACE_NOT_FOUND": "Carrera no encontrada.",
+            "USER_NOT_FOUND": "Usuario no encontrado."
+        },
+        "strava": {
+            "NOT_CONNECTED": "Tu cuenta de Strava no está conectada.",
+            "FAILED_TO_REFRESH_TOKEN": "Error al refrescar la conexión con Strava.",
+            "FAILED_TO_FETCH_DATA": "Error al obtener datos de Strava.",
+            "NO_ZONES_FOUND": "No se encontraron zonas de frecuencia cardíaca en tu perfil de Strava.",
+            "STRAVA_NOT_CONNECTED": "Cuenta de Strava no vinculada.",
+            "FAILED_TO_REFRESH_STRAVA_TOKEN": "Error al renovar el acceso a Strava.",
+            "FAILED_TO_FETCH_ACTIVITY_FROM_STRAVA": "Error al obtener la actividad desde Strava.",
+            "NO_HEART_RATE_ZONES_FOUND_IN_STRAVA_PROFILE": "No se encontraron zonas de pulso en Strava."
+        },
+        "operations": {
+            "FAILED_TO_CREATE": "Error al crear el recurso.",
+            "FAILED_TO_UPDATE": "Error al actualizar la información.",
+            "FAILED_TO_DELETE": "Error al eliminar el recurso.",
+            "FAILED_TO_FETCH": "Error al obtener la información.",
+            "FAILED_TO_SYNC": "Error al sincronizar los datos.",
+            "FAILED_TO_ASSIGN": "Error al asignar el entrenamiento.",
+            "FAILED_TO_LINK": "Error al vincular la actividad.",
+            "ALREADY_MEMBER": "El atleta ya es miembro de este grupo.",
+            "NO_ATHLETES_FOUND": "No se encontraron atletas para asignar el entrenamiento.",
+            "FAILED_TO_CREATE_TRAINING": "Error al crear el nuevo entrenamiento.",
+            "FAILED_TO_UPDATE_ASSIGNMENT": "Error al actualizar la asignación.",
+            "FAILED_TO_DELETE_ASSIGNMENT": "Error al eliminar la asignación.",
+            "FAILED_TO_UPDATE_GROUP": "Error al actualizar el grupo.",
+            "FAILED_TO_DELETE_GROUP": "Error al eliminar el grupo.",
+            "FAILED_TO_UPDATE_PROFILE": "Error al actualizar tu perfil.",
+            "RACES_FETCH_FAILED": "Error al obtener el listado de carreras.",
+            "RACE_ASSIGN_FAILED": "Error al asignar la carrera al atleta.",
+            "RACE_UPDATE_FAILED": "Error al actualizar la carrera.",
+            "RACE_DELETE_FAILED": "Error al eliminar la carrera."
         }
     }
 }

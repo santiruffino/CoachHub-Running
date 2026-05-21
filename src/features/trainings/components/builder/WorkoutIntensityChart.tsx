@@ -254,7 +254,7 @@ export function WorkoutIntensityChart({ blocks, selectedId, onBlockClick, athlet
     return (
         <div className="w-full">
             <div className="flex items-center justify-between mb-8">
-                <h3 className="text-xs font-bold text-[#8b9bb4] uppercase tracking-[0.1em]">{t('projectedProfile')}</h3>
+                <h3 className="text-xs font-bold text-[#8b9bb4] uppercase tracking-widest">{t('projectedProfile')}</h3>
                 <div className="flex gap-4">
                     <div className="flex items-center gap-1.5">
                         <div className="w-3 h-3 rounded-full" style={{ backgroundColor: BLOCK_COLORS.interval }} />

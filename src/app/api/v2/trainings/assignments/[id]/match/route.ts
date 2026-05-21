@@ -108,14 +108,14 @@ export async function GET(
             .single();
 
         if (fetchError || !assignment) {
-            return NextResponse.json(apiError('ASSIGNMENT_NOT_FOUND', 'Assignment not found'),
+            return NextResponse.json(apiError('ASSIGNMENT_NOT_FOUND'),
                 { status: 404 }
             );
         }
 
         const { profile: requesterProfile, error: requesterError } = await getRequesterProfile(user!.id);
         if (requesterError || !requesterProfile) {
-            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized'),
+            return NextResponse.json(apiError('AUTH_FORBIDDEN'),
                 { status: 403 }
             );
         }
@@ -127,7 +127,7 @@ export async function GET(
 
         // Authorization check
         if (requesterProfile.role === 'ATHLETE' && assignment.user_id !== requesterProfile.id) {
-            return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized to view this assignment'),
+            return NextResponse.json(apiError('AUTH_FORBIDDEN'),
                 { status: 403 }
             );
         }
@@ -145,7 +145,7 @@ export async function GET(
                 !requesterProfile.team_id ||
                 athleteProfile.team_id !== requesterProfile.team_id
             ) {
-                return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized to view this assignment'),
+                return NextResponse.json(apiError('AUTH_FORBIDDEN'),
                     { status: 403 }
                 );
             }
@@ -248,7 +248,7 @@ export async function GET(
         });
     } catch (error: unknown) {
         appLogger.error('Get workout match error:', error);
-        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
     }

@@ -213,7 +213,7 @@ export function RepeatWizard({ onAdd, onClose }: RepeatWizardProps) {
                     </button>
                     <button
                         onClick={handleGenerate}
-                        className="px-6 py-2 bg-brand-primary text-brand-deep font-bold rounded-lg shadow-sm hover:bg-yellow-400 hover:shadow transition-all text-sm"
+                        className="px-6 py-2 bg-brand-primary text-white font-bold rounded-lg shadow-sm hover:bg-brand-primary-dark hover:shadow transition-all text-sm"
                     >
                         {t('addRepeats', { reps })}
                     </button>

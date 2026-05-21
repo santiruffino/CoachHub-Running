@@ -1,6 +1,7 @@
 'use client';
 
 import { WorkoutBlock, AthleteProfile } from './types';
+import { TrainingType } from '@/interfaces/training';
 import { GripVertical, Repeat } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { VAM_ZONES } from '@/features/profiles/constants/vam';
@@ -17,6 +18,7 @@ interface WorkoutSequenceProps {
     onUpdateGroupReps?: (groupId: string, reps: number) => void;
     onRemoveBlock: (id: string) => void;
     athleteProfile?: AthleteProfile | null;
+    trainingType?: TrainingType;
     onAddStep: (type: 'warmup' | 'interval' | 'recovery' | 'rest' | 'cooldown' | 'repeat') => void;
 }
 
@@ -28,6 +30,7 @@ export function WorkoutSequence({
     onUpdateGroupReps,
     onRemoveBlock,
     athleteProfile,
+    trainingType = TrainingType.RUNNING,
     onAddStep
 }: WorkoutSequenceProps) {
     const t = useTranslations('builder');
@@ -45,8 +48,19 @@ export function WorkoutSequence({
         if (block.target.type === 'lthr') {
             return `${block.target.min}-${block.target.max}% LTHR`;
         }
+        if (block.target.type === 'hr_reserve') {
+            return `${block.target.min}-${block.target.max}% ${t('hrReserveShort')}`;
+        }
         if (block.target.type === 'vam_zone') {
             return `${t('vamZone')} ${block.target.min}`;
+        }
+        if (block.target.type === 'power_zone') {
+            return `Zona ${block.target.min} (Potencia)`;
+        }
+        if (block.target.type === 'ftp_percent') {
+            const min = block.target.min;
+            const max = block.target.max;
+            return min === max ? `${min}% FTP` : `${min}-${max}% FTP`;
         }
         if (block.intensity) return `${block.intensity}%`;
 
@@ -223,6 +237,7 @@ export function WorkoutSequence({
                                                             onRemove={() => onRemoveBlock(block.id)}
                                                             isInRepeat={true}
                                                             athleteProfile={athleteProfile}
+                                                            trainingType={trainingType}
                                                         />
                                                     </div>
                                                 );
@@ -290,6 +305,7 @@ export function WorkoutSequence({
                                         onUpdate={(updates) => onUpdateBlock(block.id, updates)}
                                         onRemove={() => onRemoveBlock(block.id)}
                                         athleteProfile={athleteProfile}
+                                        trainingType={trainingType}
                                     />
                                 </div>
                             </div>
@@ -365,14 +381,14 @@ export function WorkoutSequence({
                             className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#2b3437]/20 dark:border-white/20 bg-[#c5e0fa]/30 hover:bg-[#c5e0fa]/50 transition-colors"
                         >
                             <span className="text-[10px] uppercase font-bold tracking-widest text-[#2b3437] dark:text-[#f8f9fa]">{t('labels.recovery')}</span>
-                            <span className="mt-1 text-[9px] uppercase font-semibold tracking-wide text-[#4e6073] dark:text-[#b8c3d1]">{t('labels.recoveryHint')}</span>
+                            <span className="mt-1 text-[9px] uppercase font-semibold tracking-wide text-[#4e6073] dark:text-[#b8c3d1]">{t('labels.recoveryWithHint')}</span>
                         </button>
                         <button
                             onClick={() => onAddStep('rest')}
                             className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#2b3437]/20 dark:border-white/20 bg-[#e2e8f0]/50 hover:bg-[#e2e8f0]/70 transition-colors"
                         >
                             <span className="text-[10px] uppercase font-bold tracking-widest text-[#2b3437] dark:text-[#f8f9fa]">{t('labels.rest')}</span>
-                            <span className="mt-1 text-[9px] uppercase font-semibold tracking-wide text-[#4e6073] dark:text-[#b8c3d1]">{t('labels.restHint')}</span>
+                            <span className="mt-1 text-[9px] uppercase font-semibold tracking-wide text-[#4e6073] dark:text-[#b8c3d1]">{t('labels.restWithHint')}</span>
                         </button>
                         <button
                             onClick={() => onAddStep('cooldown')}

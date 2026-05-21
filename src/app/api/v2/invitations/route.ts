@@ -7,10 +7,10 @@ import { appLogger } from '@/lib/app-logger';
 export async function POST(request: NextRequest) {
     try {
         // Only coaches can create invitations
-        const authResult = await requireRole('COACH');
+        const { user, supabase, profile, response } = await requireRole('COACH');
 
-        if (authResult.response) {
-            return authResult.response;
+        if (response) {
+            return response;
         }
 
         const { email, role = 'ATHLETE' } = await request.json();
@@ -29,24 +29,16 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const { supabase, user } = authResult;
         const adminClient = createServiceRoleClient();
 
-        // In order to send invitations to the same club, we need the inviter's team_id
-        const { data: inviterProfile } = await supabase
-            .from('profiles')
-            .select('role, team_id')
-            .eq('id', user!.id)
-            .single();
-
-        if (!inviterProfile?.team_id) {
+        if (!profile?.team_id) {
             return NextResponse.json(
                 { error: 'You must belong to a running team to invite users.' },
                 { status: 400 }
             );
         }
 
-        if (role === 'COACH' && inviterProfile.role !== 'ADMIN') {
+        if (role === 'COACH' && profile.role !== 'ADMIN') {
             return NextResponse.json(
                 { error: 'Only administrators can invite other coaches.' },
                 { status: 403 }
@@ -97,7 +89,7 @@ export async function POST(request: NextRequest) {
 
         // Determine if we should hard-assign a coach. If SUPER COACH (ADMIN), we assign to team but no specific coach by default.
         // If the invited user is a COACH, they don't get a coach.
-        const coachIdToAssign = (inviterProfile.role === 'ADMIN' || role === 'COACH') ? null : user!.id;
+        const coachIdToAssign = (profile.role === 'ADMIN' || role === 'COACH') ? null : user!.id;
 
         // Create invitation
         const { data: invitation, error } = await adminClient
@@ -107,7 +99,7 @@ export async function POST(request: NextRequest) {
                 token,
                 expires_at: expiresAt.toISOString(),
                 coach_id: coachIdToAssign,
-                team_id: inviterProfile.team_id,
+                team_id: profile.team_id,
                 accepted: false,
                 role,
             })

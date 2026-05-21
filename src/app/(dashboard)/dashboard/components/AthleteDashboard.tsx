@@ -41,19 +41,66 @@ interface PerformancePoint {
     value: number;
 }
 
-export default function AthleteDashboard({ user }: { user: User }) {
+interface AthleteDashboardProps {
+    user: User;
+    initialData?: {
+        details: AthleteDetails | null;
+        activities: Activity[];
+        assignments: TrainingAssignment[];
+        races: AthleteRace[];
+    } | null;
+}
+
+export default function AthleteDashboard({ user, initialData = null }: AthleteDashboardProps) {
     const t = useTranslations();
     const userDisplayName = user.firstName || user.name?.split(' ')[0] || user.email.split('@')[0];
-    const [loading, setLoading] = useState(true);
-    const [activities, setActivities] = useState<Activity[]>([]);
-    const [assignments, setAssignments] = useState<TrainingAssignment[]>([]);
-    const [races, setRaces] = useState<AthleteRace[]>([]);
-    const [athleteDetails, setAthleteDetails] = useState<AthleteDetails | null>(null);
+    const [loading, setLoading] = useState(!initialData);
+    const [activities, setActivities] = useState<Activity[]>(initialData?.activities || []);
+    const [assignments, setAssignments] = useState<TrainingAssignment[]>(initialData?.assignments || []);
+    const [races, setRaces] = useState<AthleteRace[]>(initialData?.races || []);
+    const [athleteDetails, setAthleteDetails] = useState<AthleteDetails | null>(initialData?.details || null);
     const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
     const [performanceData, setPerformanceData] = useState<PerformancePoint[]>([]);
     const [isAssignRaceModalOpen, setIsAssignRaceModalOpen] = useState(false);
     const [pendingFeedbackActivity, setPendingFeedbackActivity] = useState<Activity | null>(null);
     const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+
+    const calculatePerformanceTrend = useCallback((assignmentsData: TrainingAssignment[], activitiesData: Activity[]) => {
+        const trend = [];
+        for (let i = 5; i >= 0; i--) {
+            const week = subWeeks(new Date(), i);
+            const wStart = startOfWeek(week, { weekStartsOn: 1 });
+            const wEnd = endOfWeek(week, { weekStartsOn: 1 });
+            
+            const weekAssignments = assignmentsData.filter((assignment) => {
+                const dateValue = assignment.scheduled_date || assignment.scheduledDate;
+                const d = dateValue.split('T')[0];
+                return d >= format(wStart, 'yyyy-MM-dd') && d <= format(wEnd, 'yyyy-MM-dd');
+            });
+
+            const completed = weekAssignments.filter((assignment) => {
+                if (assignment.completed) return true;
+                const dateValue = assignment.scheduled_date || assignment.scheduledDate;
+                return activitiesData.some((activity) => 
+                    format(new Date(activity.start_date), 'yyyy-MM-dd') === dateValue.split('T')[0] &&
+                    normalizeActivityType(activity.type) === assignment.training.type
+                );
+            }).length;
+
+            trend.push({
+                week: format(wStart, 'dd/MM'),
+                value: weekAssignments.length > 0 ? Math.round((completed / weekAssignments.length) * 100) : 0
+            });
+        }
+        return trend;
+    }, []);
+
+    // Set initial trend if data exists
+    useEffect(() => {
+        if (initialData?.assignments && initialData?.activities) {
+            setPerformanceData(calculatePerformanceTrend(initialData.assignments, initialData.activities));
+        }
+    }, [initialData, calculatePerformanceTrend]);
 
     const fetchData = useCallback(async () => {
         if (!user) return;
@@ -93,45 +140,20 @@ export default function AthleteDashboard({ user }: { user: User }) {
             setAssignments(assignmentsData);
             setRaces(racesData);
 
-            // Calculate Performance Trend (Last 6 weeks)
-            const trend = [];
-            for (let i = 5; i >= 0; i--) {
-                const week = subWeeks(new Date(), i);
-                const wStart = startOfWeek(week, { weekStartsOn: 1 });
-                const wEnd = endOfWeek(week, { weekStartsOn: 1 });
-                
-                const weekAssignments = assignmentsData.filter((assignment) => {
-                    const dateValue = assignment.scheduled_date || assignment.scheduledDate;
-                    const d = dateValue.split('T')[0];
-                    return d >= format(wStart, 'yyyy-MM-dd') && d <= format(wEnd, 'yyyy-MM-dd');
-                });
-
-                const completed = weekAssignments.filter((assignment) => {
-                    if (assignment.completed) return true;
-                    const dateValue = assignment.scheduled_date || assignment.scheduledDate;
-                    return activitiesData.some((activity) => 
-                        format(new Date(activity.start_date), 'yyyy-MM-dd') === dateValue.split('T')[0] &&
-                        normalizeActivityType(activity.type) === assignment.training.type
-                    );
-                }).length;
-
-                trend.push({
-                    week: format(wStart, 'dd/MM'),
-                    value: weekAssignments.length > 0 ? Math.round((completed / weekAssignments.length) * 100) : 0
-                });
-            }
-            setPerformanceData(trend);
+            setPerformanceData(calculatePerformanceTrend(assignmentsData, activitiesData));
 
         } catch (error) {
             appLogger.error('Failed to fetch dashboard data', error);
         } finally {
             setLoading(false);
         }
-    }, [user]);
+    }, [user, calculatePerformanceTrend]);
 
     useEffect(() => {
-        void fetchData();
-    }, [fetchData]);
+        if (!initialData) {
+            void fetchData();
+        }
+    }, [fetchData, initialData]);
 
     useEffect(() => {
         if (!activities.length) {

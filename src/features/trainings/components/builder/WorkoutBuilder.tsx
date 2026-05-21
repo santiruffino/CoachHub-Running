@@ -2,15 +2,14 @@
 import { appLogger } from '@/lib/app-logger';
 
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, ReactNode } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { WorkoutBlock, BlockType, AthleteProfile } from './types';
+import { TrainingType } from '@/interfaces/training';
 import { WorkoutSequence } from './WorkoutSequence';
 import { EstimatedTotals } from './EstimatedTotals';
 import { WorkoutIntensityChart } from './WorkoutIntensityChart';
 import { SessionSummary } from './SessionSummary';
-import { CoachNotes } from './CoachNotes';
-import { LinkedDrills } from './LinkedDrills';
 import { useTranslations } from 'next-intl';
 import api from '@/lib/axios';
 
@@ -19,7 +18,8 @@ interface WorkoutBuilderProps {
     onChange?: (blocks: WorkoutBlock[]) => void;
     athleteId?: string;
     readOnly?: boolean;
-    footerContent?: React.ReactNode;
+    trainingType?: TrainingType;
+    footerContent?: ReactNode;
 }
 
 export function WorkoutBuilder({
@@ -27,6 +27,7 @@ export function WorkoutBuilder({
     onChange,
     athleteId,
     readOnly = false,
+    trainingType = TrainingType.RUNNING,
     footerContent
 }: WorkoutBuilderProps) {
     const [localBlocks, setLocalBlocks] = useState<WorkoutBlock[] | null>(null);
@@ -51,7 +52,18 @@ export function WorkoutBuilder({
             }
             try {
                 const response = await api.get(`/v2/users/${athleteId}/details`);
-                setAthleteProfile(response.data.athleteProfile || null);
+                const ap = response.data.athleteProfile;
+                if (ap) {
+                    setAthleteProfile({
+                        vam: ap.vam,
+                        lthr: ap.lthr,
+                        maxHR: ap.maxHR,
+                        restHR: ap.restHR,
+                        ftp: ap.ftp,
+                    });
+                } else {
+                    setAthleteProfile(null);
+                }
             } catch (error) {
                 appLogger.error('Failed to fetch athlete profile:', error);
                 setAthleteProfile(null);
@@ -168,11 +180,16 @@ export function WorkoutBuilder({
     return (
         <div className="h-full w-full bg-[#f8f9fa] dark:bg-[#0a0f14] flex font-inter overflow-hidden relative">
             {/* Main Content Area */}
-            <div className="flex-1 flex flex-col h-full border-r border-[#e1e5e8] dark:border-white/10 overflow-hidden bg-white dark:bg-transparent">
+            <div className="flex-1 flex flex-col h-full overflow-hidden bg-white dark:bg-transparent">
                 
                 {/* Scrollable Form Content */}
                 <div className="flex-1 overflow-y-auto px-8 py-8 w-full">
                     <div className="max-w-4xl mx-auto space-y-12 pb-24">
+                        {/* Session Summary at the top */}
+                        <div className="w-full">
+                            <SessionSummary blocks={blocks} athleteProfile={athleteProfile} trainingType={trainingType} />
+                        </div>
+
                         {/* Projected Training Profile Chart */}
                         <div className="w-full">
                             <WorkoutIntensityChart 
@@ -193,6 +210,7 @@ export function WorkoutBuilder({
                                 onUpdateGroupReps={updateGroupReps}
                                 onRemoveBlock={removeBlock}
                                 athleteProfile={athleteProfile}
+                                trainingType={trainingType}
                                 onAddStep={(type) => {
                                     if (type === 'repeat') addRepeatBlock();
                                     else addBlock(type);
@@ -201,20 +219,7 @@ export function WorkoutBuilder({
                         </div>
                     </div>
                 </div>
-
-                {/* Sticky Footer Area anchored perfectly to flex bottom */}
-                {footerContent && (
-                    <div className="flex-none h-24 bg-[#2b3437] text-white flex items-center shadow-[0_-4px_20px_rgba(0,0,0,0.1)] relative z-30 ring-1 ring-black/5 dark:ring-white/10">
-                        {footerContent}
-                    </div>
-                )}
-            </div>
-
-            {/* Right Sidebar Area */}
-            <div className="w-[340px] flex-shrink-0 bg-[#4e6073] dark:bg-[#131b23] border-l border-[#f1f4f6] dark:border-white/5 flex flex-col overflow-y-auto p-6 space-y-8">
-                <SessionSummary blocks={blocks} athleteProfile={athleteProfile} />
-                <CoachNotes />
-                <LinkedDrills />
+                {footerContent}
             </div>
         </div>
     );

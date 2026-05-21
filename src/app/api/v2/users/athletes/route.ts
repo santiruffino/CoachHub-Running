@@ -25,7 +25,7 @@ export async function GET(request: Request) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json(apiError('AUTH_UNAUTHORIZED', 'Unauthorized'),
+      return NextResponse.json(apiError('AUTH_UNAUTHORIZED'),
         { status: 401 }
       );
     }
@@ -38,7 +38,7 @@ export async function GET(request: Request) {
       .single();
 
     if (profile?.role !== 'COACH' && profile?.role !== 'ADMIN') {
-      return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Only coaches or admins can access this endpoint'),
+      return NextResponse.json(apiError('AUTH_COACH_OR_ADMIN_ONLY'),
         { status: 403 }
       );
     }
@@ -67,11 +67,12 @@ export async function GET(request: Request) {
       `)
       .eq('role', 'ATHLETE');
 
-    // Both COACH and ADMIN can see all athletes in their team
-    if (profile.role === 'COACH' || profile.role === 'ADMIN') {
+    // Always scope to the coach's team as the outer boundary
+    if (profile.team_id) {
       query = query.eq('team_id', profile.team_id);
     }
 
+    // For COACHes with scope='mine', further narrow to only their directly assigned athletes
     if (profile.role === 'COACH' && scope === 'mine') {
       query = query.eq('coach_id', user.id);
     }
@@ -80,7 +81,7 @@ export async function GET(request: Request) {
 
     if (error) {
       appLogger.error('Failed to fetch athletes:', error);
-      return NextResponse.json(apiError('FAILED_TO_FETCH_ATHLETES', 'Failed to fetch athletes'),
+      return NextResponse.json(apiError('FAILED_TO_FETCH_ATHLETES'),
         { status: 500 }
       );
     }
@@ -98,7 +99,7 @@ export async function GET(request: Request) {
 
     if (assignmentsError) {
       appLogger.error('Failed to fetch assignments:', assignmentsError);
-      return NextResponse.json(apiError('FAILED_TO_FETCH_ASSIGNMENTS', 'Failed to fetch assignments'),
+      return NextResponse.json(apiError('FAILED_TO_FETCH_ASSIGNMENTS'),
         { status: 500 }
       );
     }
@@ -171,7 +172,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json(athletesWithData);
   } catch {
-    return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+    return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
       { status: 500 }
     );
   }

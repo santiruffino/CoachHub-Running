@@ -101,9 +101,12 @@ export function RaceDialog({ open, onOpenChange, race, onSuccess }: RaceDialogPr
               <Label htmlFor="distance">{t('distanceLabel')}</Label>
               <Input
                 id="distance"
+                type="number"
+                min="0"
+                step="0.01"
                 value={formData.distance}
                 onChange={(e) => setFormData({ ...formData, distance: e.target.value })}
-                placeholder={t('distancePlaceholder')}
+                placeholder="e.g. 10 (in km)"
               />
             </div>
             <div className="space-y-2">

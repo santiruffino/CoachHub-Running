@@ -26,7 +26,7 @@ export async function GET(
 
         if (!session) {
             logger.warn('streams.unauthorized');
-            return respond(apiError('AUTH_UNAUTHORIZED', 'Unauthorized'), { status: 401 });
+            return respond(apiError('AUTH_UNAUTHORIZED'), { status: 401 });
         }
 
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -34,7 +34,7 @@ export async function GET(
 
         if (!supabaseUrl || !supabaseAnonKey) {
             logger.error('streams.missing_supabase_env');
-            return respond(apiError('SERVER_CONFIGURATION_ERROR', 'Server configuration error'),
+            return respond(apiError('SERVER_CONFIGURATION_ERROR'),
                 { status: 500 }
             );
         }
@@ -71,7 +71,7 @@ export async function GET(
                 activityId: activityUuid,
                 status: response.status,
             });
-            return respond(apiError('FAILED_TO_LOAD_ACTIVITY_STREAMS', 'Failed to load activity streams'),
+            return respond(apiError('FAILED_TO_LOAD_ACTIVITY_STREAMS'),
                 { status: response.status }
             );
         }
@@ -83,7 +83,7 @@ export async function GET(
         Sentry.captureException(error, {
             tags: { route: '/api/v2/activities/[id]/streams', requestId },
         });
-        return respond(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+        return respond(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
     }

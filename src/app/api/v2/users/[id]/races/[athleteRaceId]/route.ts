@@ -49,14 +49,14 @@ export async function PATCH(
                 if (!athleteProfile || !profile.team_id || athleteProfile.team_id !== profile.team_id) {
                     logger.warn('user_race_update.forbidden_cross_team_access', { userId: user!.id, targetUserId });
                     return respond(
-                        apiError('RACES_UPDATE_FORBIDDEN', 'Not authorized to update this user\'s races'),
+                        apiError('RACES_UPDATE_FORBIDDEN'),
                         { status: 403 }
                     );
                 }
             } else {
                 logger.warn('user_race_update.forbidden_role_access', { userId: user!.id, targetUserId });
                 return respond(
-                    apiError('RACES_UPDATE_FORBIDDEN', 'Not authorized to update this user\'s races'),
+                    apiError('RACES_UPDATE_FORBIDDEN'),
                     { status: 403 }
                 );
             }
@@ -80,7 +80,7 @@ export async function PATCH(
             const parsedTarget = parseDurationInput(target_time);
             if (parsedTarget === null || parsedTarget <= 0) {
                 return respond(
-                    apiError('TARGET_TIME_INVALID_FORMAT', 'Invalid target_time format. Use HH:MM:SS, MM:SS, or 1h20m'),
+                    apiError('TARGET_TIME_INVALID_FORMAT'),
                     { status: 400 }
                 );
             }
@@ -94,7 +94,7 @@ export async function PATCH(
             const parsedResult = parseDurationInput(result_time);
             if (parsedResult === null || parsedResult <= 0) {
                 return respond(
-                    apiError('RESULT_TIME_INVALID_FORMAT', 'Invalid result_time format. Use HH:MM:SS, MM:SS, or 1h20m'),
+                    apiError('RESULT_TIME_INVALID_FORMAT'),
                     { status: 400 }
                 );
             }
@@ -123,7 +123,7 @@ export async function PATCH(
         if (error) {
             logger.error('user_race_update.failed', { userId: user!.id, targetUserId, athleteRaceId, error });
             return respond(
-                apiError('RACE_UPDATE_FAILED', 'Failed to update race assignment'),
+                apiError('RACE_UPDATE_FAILED'),
                 { status: 500 }
             );
         }
@@ -136,7 +136,7 @@ export async function PATCH(
             tags: { route: '/api/v2/users/[id]/races/[athleteRaceId]', requestId, method: 'PATCH' },
         });
         return respond(
-            apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+            apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
     }
@@ -184,7 +184,7 @@ export async function DELETE(
             if (!athleteProfile || !profile.team_id || athleteProfile.team_id !== profile.team_id) {
                 logger.warn('user_race_delete.forbidden_cross_team_access', { userId: user!.id, targetUserId });
                 return respond(
-                    apiError('RACES_DELETE_FORBIDDEN', 'Not authorized to delete this user\'s races'),
+                    apiError('RACES_DELETE_FORBIDDEN'),
                     { status: 403 }
                 );
             }
@@ -192,7 +192,7 @@ export async function DELETE(
             // Athletes cannot delete assignments
             logger.warn('user_race_delete.forbidden_role_access', { userId: user!.id, role: profile?.role });
             return respond(
-                apiError('RACES_DELETE_FORBIDDEN', 'Not authorized to delete race assignments'),
+                apiError('RACES_DELETE_FORBIDDEN'),
                 { status: 403 }
             );
         }
@@ -206,7 +206,7 @@ export async function DELETE(
         if (error) {
             logger.error('user_race_delete.failed', { userId: user!.id, targetUserId, athleteRaceId, error });
             return respond(
-                apiError('RACE_DELETE_FAILED', 'Failed to delete race assignment'),
+                apiError('RACE_DELETE_FAILED'),
                 { status: 500 }
             );
         }
@@ -219,7 +219,7 @@ export async function DELETE(
             tags: { route: '/api/v2/users/[id]/races/[athleteRaceId]', requestId, method: 'DELETE' },
         });
         return respond(
-            apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+            apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
     }

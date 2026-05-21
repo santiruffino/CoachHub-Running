@@ -3,7 +3,7 @@ export type RaceStatus = 'PLANNED' | 'COMPLETED' | 'DNR';
 
 export interface Race {
   id: string;
-  created_by: string | null;
+  coach_id: string | null;
   team_id: string | null;
   name: string;
   description: string | null;

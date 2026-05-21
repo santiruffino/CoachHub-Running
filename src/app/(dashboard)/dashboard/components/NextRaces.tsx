@@ -7,12 +7,11 @@ import { groupsService } from '@/features/groups/services/groups.service';
 import { Group } from '@/interfaces/group';
 import { AthleteRace } from '@/interfaces/race';
 import { isRaceRelevant } from '@/features/groups/utils/groupUtils';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useFormatter } from 'next-intl';
 import { Trophy, Calendar, MapPin, ChevronRight, CheckCircle2, Clock, Award } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { differenceInDays, format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { differenceInDays } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { RecordRaceResultModal } from '@/features/races/components/RecordRaceResultModal';
 import { motion } from 'framer-motion';
@@ -24,6 +23,7 @@ interface NextRacesProps {
 
 export function NextRaces({ athleteRaces, onSuccess }: NextRacesProps) {
     const t = useTranslations();
+    const format = useFormatter();
     const isAthleteMode = athleteRaces !== undefined;
     const [groupRaces, setGroupRaces] = useState<Group[]>([]);
     const [loading, setLoading] = useState(!isAthleteMode);
@@ -141,7 +141,7 @@ export function NextRaces({ athleteRaces, onSuccess }: NextRacesProps) {
                                         <div className="flex items-center gap-1.5 text-[12px] text-muted-foreground">
                                             <Calendar className="h-3 w-3" />
                                             <span>
-                                                {format(raceDate, 'd MMM', { locale: es })}
+                                                {format.dateTime(raceDate, { day: 'numeric', month: 'short' })}
                                             </span>
                                         </div>
                                         
@@ -153,7 +153,7 @@ export function NextRaces({ athleteRaces, onSuccess }: NextRacesProps) {
                                                     race.priority === 'B' ? 'bg-orange-500/10 text-orange-500' :
                                                     'bg-blue-500/10 text-blue-500'
                                                 )}>
-                                                    PRIO {race.priority}
+                                                    {t('races.athlete.priorityBadge', { priority: race.priority })}
                                                 </span>
                                             </div>
                                         )}
@@ -226,7 +226,7 @@ export function NextRaces({ athleteRaces, onSuccess }: NextRacesProps) {
                                             <div className="flex items-center gap-1.5 text-[12px] text-muted-foreground">
                                                 <Calendar className="h-3 w-3" />
                                                 <span>
-                                                    {new Date(race.race_date!).toLocaleDateString('es-ES', { 
+                                                    {format.dateTime(new Date(race.race_date!), { 
                                                         day: 'numeric', 
                                                         month: 'short' 
                                                     })}

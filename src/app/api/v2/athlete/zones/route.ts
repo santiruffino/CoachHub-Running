@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
             .single();
 
         if (connError || !connection) {
-            return NextResponse.json(apiError('STRAVA_NOT_CONNECTED', 'Strava not connected'),
+            return NextResponse.json(apiError('STRAVA_NOT_CONNECTED'),
                 { status: 404 }
             );
         }
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
             });
 
             if (!refreshResponse.ok) {
-                return NextResponse.json(apiError('FAILED_TO_REFRESH_STRAVA_TOKEN', 'Failed to refresh Strava token'),
+                return NextResponse.json(apiError('FAILED_TO_REFRESH_STRAVA_TOKEN'),
                     { status: 401 }
                 );
             }
@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
         if (!zonesResponse.ok) {
             const errorText = await zonesResponse.text();
             appLogger.error('Strava zones API error:', errorText);
-            return NextResponse.json(apiError('FAILED_TO_FETCH_ZONES_FROM_STRAVA', 'Failed to fetch zones from Strava'),
+            return NextResponse.json(apiError('FAILED_TO_FETCH_ZONES_FROM_STRAVA'),
                 { status: zonesResponse.status }
             );
         }
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
         const heartRateZones = zonesData.heart_rate;
 
         if (!heartRateZones || !heartRateZones.zones) {
-            return NextResponse.json(apiError('NO_HEART_RATE_ZONES_FOUND_IN_STRAVA_PROFILE', 'No heart rate zones found in Strava profile'),
+            return NextResponse.json(apiError('NO_HEART_RATE_ZONES_FOUND_IN_STRAVA_PROFILE'),
                 { status: 404 }
             );
         }
@@ -148,7 +148,7 @@ export async function POST(request: NextRequest) {
 
         if (updateError) {
             appLogger.error('Supabase error updating zones:', updateError);
-            return NextResponse.json(apiError('FAILED_TO_UPDATE_ZONES_IN_PROFILE', 'Failed to update zones in profile'),
+            return NextResponse.json(apiError('FAILED_TO_UPDATE_ZONES_IN_PROFILE'),
                 { status: 500 }
             );
         }
@@ -160,7 +160,7 @@ export async function POST(request: NextRequest) {
         });
     } catch (error: unknown) {
         appLogger.error('Zones sync error:', error);
-        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
     }

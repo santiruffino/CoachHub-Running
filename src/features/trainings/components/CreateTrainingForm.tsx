@@ -59,7 +59,7 @@ export function CreateTrainingForm({ onSuccess }: { onSuccess?: () => void }) {
                 {error && <p className="text-red-500 text-sm">{error}</p>}
                 <button
                     type="submit"
-                    className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-brand-primary hover:bg-yellow-500"
+                    className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-brand-primary hover:bg-brand-primary-dark"
                 >
                     {t('new.save')}
                 </button>

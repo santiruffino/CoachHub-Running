@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     .single();
 
   if (!profile?.team_id) {
-    return NextResponse.json(apiError('TEAM_REQUIRED', 'Admin must belong to a team'), { status: 403 });
+    return NextResponse.json(apiError('TEAM_REQUIRED'), { status: 403 });
   }
 
   let query = supabase
@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
   const { data, error, count } = await query.range(offset, offset + limit - 1);
 
   if (error) {
-    return NextResponse.json(apiError('FAILED_TO_FETCH_AUDIT_LOGS', 'Failed to fetch audit logs'), { status: 500 });
+    return NextResponse.json(apiError('FAILED_TO_FETCH_AUDIT_LOGS'), { status: 500 });
   }
 
   return NextResponse.json({

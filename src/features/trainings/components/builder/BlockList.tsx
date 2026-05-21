@@ -71,6 +71,9 @@ export function BlockList({
         if (block.target.type === 'lthr' && (block.target.min || block.target.max)) {
             return `${block.target.min}-${block.target.max}% LTHR`;
         }
+        if (block.target.type === 'hr_reserve' && (block.target.min || block.target.max)) {
+            return `${block.target.min}-${block.target.max}% FC Reserva`;
+        }
         if (block.target.type === 'rpe_target' && (block.target.min || block.target.max)) {
             return `RPE ${block.target.min}-${block.target.max}`;
         }

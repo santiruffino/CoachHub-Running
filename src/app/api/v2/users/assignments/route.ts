@@ -60,7 +60,7 @@ export async function GET() {
 
         if (error) {
             appLogger.error('Fetch assignments error:', error);
-            return NextResponse.json(apiError('FAILED_TO_FETCH_ASSIGNMENTS', 'Failed to fetch assignments'),
+            return NextResponse.json(apiError('FAILED_TO_FETCH_ASSIGNMENTS'),
                 { status: 500 }
             );
         }
@@ -96,7 +96,7 @@ export async function GET() {
         return NextResponse.json(resolvedAssignments);
     } catch (error: unknown) {
         appLogger.error('Get assignments error:', error);
-        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
     }

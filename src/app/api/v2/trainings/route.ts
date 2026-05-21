@@ -21,22 +21,14 @@ interface TrainingRow {
 export async function GET(request: NextRequest) {
     try {
         void request;
-        const authResult = await requireRole('COACH');
+        const { user, supabase, profile, response } = await requireRole('COACH');
 
-        if (authResult.response) {
-            return authResult.response;
+        if (response) {
+            return response;
         }
 
-        const { supabase, user } = authResult;
-
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('team_id')
-            .eq('id', user!.id)
-            .single();
-
         if (!profile?.team_id) {
-            return NextResponse.json(apiError('COACH_MUST_BELONG_TO_A_TEAM', 'Coach must belong to a team'),
+            return NextResponse.json(apiError('AUTH_COACH_TEAM_REQUIRED'),
                 { status: 403 }
             );
         }
@@ -52,7 +44,7 @@ export async function GET(request: NextRequest) {
 
         if (error) {
             appLogger.error('Fetch trainings error:', error);
-            return NextResponse.json(apiError('FAILED_TO_FETCH_TRAININGS', 'Failed to fetch trainings'),
+            return NextResponse.json(apiError('FAILED_TO_FETCH_TRAININGS'),
                 { status: 500 }
             );
         }
@@ -83,7 +75,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json(mutableTrainings);
     } catch (error: unknown) {
         appLogger.error('Get trainings error:', error);
-        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
     }
@@ -98,13 +90,12 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
     try {
-        const authResult = await requireRole('COACH');
+        const { user, supabase, profile, response } = await requireRole('COACH');
 
-        if (authResult.response) {
-            return authResult.response;
+        if (response) {
+            return response;
         }
 
-        const { supabase, user } = authResult;
         const body = (await request.json()) as {
             title?: string;
             description?: string;
@@ -116,23 +107,16 @@ export async function POST(request: NextRequest) {
 
         // Validation
         if (!title) {
-            return NextResponse.json(apiError('VALIDATION_TITLE_IS_REQUIRED', 'Title is required'),
+            return NextResponse.json(apiError('VALIDATION_TITLE_IS_REQUIRED'),
                 { status: 400 }
             );
         }
 
         if (!type) {
-            return NextResponse.json(apiError('VALIDATION_TRAINING_TYPE_IS_REQUIRED', 'Training type is required'),
+            return NextResponse.json(apiError('VALIDATION_TRAINING_TYPE_IS_REQUIRED'),
                 { status: 400 }
             );
         }
-
-        // Fetch Coach Profile to get team_id
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('team_id')
-            .eq('id', user!.id)
-            .single();
 
         // Create training
         const { data: training, error } = await supabase
@@ -152,7 +136,7 @@ export async function POST(request: NextRequest) {
 
         if (error) {
             appLogger.error('Create training error:', error);
-            return NextResponse.json(apiError('FAILED_TO_CREATE_TRAINING', 'Failed to create training'),
+            return NextResponse.json(apiError('FAILED_TO_CREATE_TRAINING'),
                 { status: 500 }
             );
         }
@@ -160,7 +144,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(training, { status: 201 });
     } catch (error: unknown) {
         appLogger.error('Create training error:', error);
-        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
     }

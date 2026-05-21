@@ -1,6 +1,7 @@
 'use client';
 
 import { WorkoutBlock, TargetType, DurationType, AthleteProfile } from './types';
+import { TrainingType } from '@/interfaces/training';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
@@ -21,9 +22,18 @@ interface StepEditorProps {
     onRemove: () => void;
     isInRepeat?: boolean;
     athleteProfile?: AthleteProfile | null;
+    trainingType?: TrainingType;
 }
 
-export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = false, athleteProfile = null }: StepEditorProps) {
+export function StepEditor({
+    step,
+    stepNumber,
+    onUpdate,
+    onRemove,
+    isInRepeat = false,
+    athleteProfile = null,
+    trainingType = TrainingType.RUNNING
+}: StepEditorProps) {
     void isInRepeat;
     const t = useTranslations('builder');
     const [showCadence, setShowCadence] = useState(!!step.cadenceRange);
@@ -32,8 +42,13 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
     const tVamZoneName = (zone: string) => t(`vamZoneFullNames.${zone}`);
 
     const TARGET_TYPES: { value: TargetType; label: string }[] = [
-        { value: 'vam_zone', label: t('vamZone') },
+        ...(trainingType === TrainingType.RUNNING ? [{ value: 'vam_zone' as const, label: t('vamZone') }] : []),
+        ...(trainingType === TrainingType.CYCLING ? [
+            { value: 'power_zone' as const, label: t('powerZone') || 'Zona de Potencia' },
+            { value: 'ftp_percent' as const, label: t('ftpPercent') || '% FTP' }
+        ] : []),
         { value: 'lthr', label: t('lthr') },
+        { value: 'hr_reserve', label: t('hrReserve') },
         { value: 'rpe_target', label: t('rpeTarget') },
     ];
 
@@ -78,8 +93,14 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
         switch (type) {
             case 'lthr':
                 return { min: 85, max: 95 }; // 85-95% of LTHR
+            case 'hr_reserve':
+                return { min: 70, max: 80 }; // 70-80% of HR reserve (Karvonen)
             case 'vam_zone':
                 return { min: 2, max: 2 }; // Zone 2 by default
+            case 'power_zone':
+                return { min: 2, max: 2 };
+            case 'ftp_percent':
+                return { min: 90, max: 100 };
             case 'rpe_target':
                 return { min: 5, max: 7 }; // RPE 5-7
             default:
@@ -104,6 +125,18 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                 const maxHR = Math.round((athleteProfile.lthr * max) / 100);
                 return `${minHR} — ${maxHR} ${t('units.bpm')}`;
             }
+            case 'hr_reserve': {
+                // Karvonen: FCobj = FCreposo + % × (FCmax - FCreposo)
+                if (!athleteProfile?.restHR || !athleteProfile?.maxHR) {
+                    return t('noAthleteHrReserveData');
+                }
+                if (!min || !max) return null;
+
+                const hrReserve = athleteProfile.maxHR - athleteProfile.restHR;
+                const minHR = Math.round(athleteProfile.restHR + (min / 100) * hrReserve);
+                const maxHR = Math.round(athleteProfile.restHR + (max / 100) * hrReserve);
+                return `${minHR} — ${maxHR} ${t('units.bpm')} (Karvonen)`;
+            }
             case 'vam_zone': {
                 // VAM zones are defined in VAM_ZONES
                 const zoneNumber = String(min);
@@ -120,6 +153,34 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
 
                 return `${t('zone')} ${min} (${zone.min}-${zone.max}% VAM | ${minPace} - ${maxPace} ${t('units.minPerKm')})`;
             }
+            case 'power_zone': {
+                if (!athleteProfile?.ftp) {
+                    return `Zona ${min} - ${t('noAthleteFtpData') || 'Sin datos de FTP'}`;
+                }
+                // Standard cycling power zones (simplified)
+                const zones = [
+                    { min: 0, max: 55 },
+                    { min: 56, max: 75 },
+                    { min: 76, max: 90 },
+                    { min: 91, max: 105 },
+                    { min: 106, max: 120 },
+                    { min: 121, max: 150 },
+                    { min: 151, max: 1000 },
+                ];
+                const z = zones[Number(min) - 1];
+                if (!z) return null;
+                const minW = Math.round((athleteProfile.ftp * z.min) / 100);
+                const maxW = Math.round((athleteProfile.ftp * z.max) / 100);
+                return `Zona ${min} (${z.min}-${z.max}% FTP | ${minW}W - ${maxW}W)`;
+            }
+            case 'ftp_percent': {
+                if (!athleteProfile?.ftp) {
+                    return `${min}% — ${max}% FTP`;
+                }
+                const minW = Math.round((athleteProfile.ftp * min) / 100);
+                const maxW = Math.round((athleteProfile.ftp * max) / 100);
+                return `${minW}W — ${maxW}W (${min}% - ${max}% FTP)`;
+            }
             case 'rpe_target': {
                 // RPE target: no calculation needed, just display the range
                 if (!min || !max) return null;
@@ -134,7 +195,7 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
     };
 
     return (
-        <div 
+        <div
             className="bg-white dark:bg-[#1a232c] rounded shadow-[0_4px_12px_rgba(43,52,55,0.04)] p-6 relative overflow-visible mt-2 mb-4 border-l-[3px]"
             style={{ borderLeftColor: BLOCK_COLORS[step.type as keyof typeof BLOCK_COLORS] || '#abb3b7' }}
         >
@@ -168,18 +229,17 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                     </Select>
                     <Select
                         value={step.duration.type}
-                        onValueChange={(value: DurationType) =>
-                            {
-                                setTimeInput('');
-                                setTimeInputError(false);
-                                onUpdate({
-                                    duration: {
-                                        ...step.duration,
-                                        type: value,
-                                        value: value === 'distance' ? 1000 : 120
-                                    }
-                                });
-                            }
+                        onValueChange={(value: DurationType) => {
+                            setTimeInput('');
+                            setTimeInputError(false);
+                            onUpdate({
+                                duration: {
+                                    ...step.duration,
+                                    type: value,
+                                    value: value === 'distance' ? 1000 : 120
+                                }
+                            });
+                        }
                         }
                     >
                         <SelectTrigger className="w-[120px] bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-2 rounded-t-md focus:ring-0 text-[#2b3437] dark:text-[#f8f9fa] text-sm font-semibold transition-colors">
@@ -299,6 +359,46 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                             </>
                         )}
 
+                        {/* HR Reserve (Karvonen): Percentage Inputs */}
+                        {step.target.type === 'hr_reserve' && (
+                            <>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    max="100"
+                                    value={step.target.min ?? ''}
+                                    onChange={(e) => onUpdate({
+                                        target: { ...step.target, min: e.target.value }
+                                    })}
+                                    onBlur={(e) => {
+                                        const val = parseFloat(e.target.value);
+                                        onUpdate({
+                                            target: { ...step.target, min: isNaN(val) ? 0 : val }
+                                        });
+                                    }}
+                                    className="w-16 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-1 py-1 rounded-t-md text-[#2b3437] dark:text-[#f8f9fa] text-2xl font-extrabold font-display text-center focus:ring-0 focus:border-[#4e6073] transition-colors outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                />
+                                <span className="text-[#8b9bb4] font-semibold">—</span>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    max="100"
+                                    value={step.target.max ?? ''}
+                                    onChange={(e) => onUpdate({
+                                        target: { ...step.target, max: e.target.value }
+                                    })}
+                                    onBlur={(e) => {
+                                        const val = parseFloat(e.target.value);
+                                        onUpdate({
+                                            target: { ...step.target, max: isNaN(val) ? 0 : val }
+                                        });
+                                    }}
+                                    className="w-16 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-1 py-1 rounded-t-md text-[#2b3437] dark:text-[#f8f9fa] text-2xl font-extrabold font-display text-center focus:ring-0 focus:border-[#4e6073] transition-colors outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                />
+                                <span className="text-[#8b9bb4] text-sm font-semibold">%</span>
+                            </>
+                        )}
+
                         {/* RPE Target: Range Selector */}
                         {step.target.type === 'rpe_target' && (
                             <>
@@ -359,6 +459,65 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
                             </Select>
                         )}
 
+                        {/* Power Zone Selection - Inline */}
+                        {step.target.type === 'power_zone' && (
+                            <Select
+                                value={String(step.target.min || '2')}
+                                onValueChange={(value) => onUpdate({
+                                    target: { ...step.target, min: value, max: value }
+                                })}
+                            >
+                                <SelectTrigger className="flex-1 min-w-0 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-2 rounded-t-md focus:ring-0 text-[#2b3437] dark:text-[#f8f9fa] font-semibold text-sm transition-colors truncate">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="1">Zona 1 (Recuperación)</SelectItem>
+                                    <SelectItem value="2">Zona 2 (Resistencia)</SelectItem>
+                                    <SelectItem value="3">Zona 3 (Tempo)</SelectItem>
+                                    <SelectItem value="4">Zona 4 (Umbral)</SelectItem>
+                                    <SelectItem value="5">Zona 5 (VO2 Max)</SelectItem>
+                                    <SelectItem value="6">Zona 6 (Anaeróbico)</SelectItem>
+                                    <SelectItem value="7">Zona 7 (Neuromuscular)</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        )}
+
+                        {/* FTP Percent: Range Selector */}
+                        {step.target.type === 'ftp_percent' && (
+                            <>
+                                <input
+                                    type="number"
+                                    value={step.target.min ?? ''}
+                                    onChange={(e) => onUpdate({
+                                        target: { ...step.target, min: e.target.value }
+                                    })}
+                                    onBlur={(e) => {
+                                        const val = parseFloat(e.target.value);
+                                        onUpdate({
+                                            target: { ...step.target, min: isNaN(val) ? 0 : val }
+                                        });
+                                    }}
+                                    className="w-16 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-1 py-1 rounded-t-md text-[#2b3437] dark:text-[#f8f9fa] text-2xl font-extrabold font-display text-center focus:ring-0 focus:border-[#4e6073] transition-colors outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                />
+                                <span className="text-[#8b9bb4] font-semibold">—</span>
+                                <input
+                                    type="number"
+                                    value={step.target.max ?? ''}
+                                    onChange={(e) => onUpdate({
+                                        target: { ...step.target, max: e.target.value }
+                                    })}
+                                    onBlur={(e) => {
+                                        const val = parseFloat(e.target.value);
+                                        onUpdate({
+                                            target: { ...step.target, max: isNaN(val) ? 0 : val }
+                                        });
+                                    }}
+                                    className="w-16 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-1 py-1 rounded-t-md text-[#2b3437] dark:text-[#f8f9fa] text-2xl font-extrabold font-display text-center focus:ring-0 focus:border-[#4e6073] transition-colors outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                />
+                                <span className="text-[#8b9bb4] text-sm font-semibold">%</span>
+                            </>
+                        )}
+
                         {/* Target Type Selector */}
                         <Select
                             value={step.target.type}
@@ -390,16 +549,6 @@ export function StepEditor({ step, stepNumber, onUpdate, onRemove, isInRepeat = 
             {/* Options */}
             <div className="flex items-center justify-between mt-6 pt-6 border-t border-[#e1e5e8] dark:border-white/5">
                 <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-2">
-                        <Switch
-                            checked={step.endOnLapButton || false}
-                            onCheckedChange={(checked: boolean) => onUpdate({ endOnLapButton: checked })}
-                            className="data-[state=checked]:bg-[#4e6073]"
-                        />
-                        <Label className="text-xs font-semibold text-[#8b9bb4] uppercase tracking-wider cursor-pointer">
-                            {t('endStepOnLap')}
-                        </Label>
-                    </div>
                     <Button
                         type="button"
                         variant="ghost"

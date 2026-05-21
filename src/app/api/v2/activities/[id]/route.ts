@@ -44,7 +44,7 @@ export async function GET(
             .single();
 
         if (activityError || !activity) {
-            return NextResponse.json(apiError('ACTIVITY_NOT_FOUND', 'Activity not found'),
+            return NextResponse.json(apiError('ACTIVITY_NOT_FOUND'),
                 { status: 404 }
             );
         }
@@ -69,12 +69,12 @@ export async function GET(
                     .single();
 
                 if (!athleteProfile || !profile.team_id || athleteProfile.team_id !== profile.team_id) {
-                    return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized to view this activity'),
+                    return NextResponse.json(apiError('AUTH_VIEW_ACTIVITY_FORBIDDEN'),
                         { status: 403 }
                     );
                 }
             } else {
-                return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized to view this activity'),
+                return NextResponse.json(apiError('AUTH_VIEW_ACTIVITY_FORBIDDEN'),
                     { status: 403 }
                 );
             }
@@ -91,7 +91,7 @@ export async function GET(
         if (connError || !connection) {
             const isNotFound = connError?.code === 'PGRST116';
 
-            return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+            return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
                 { status: isNotFound ? 404 : 500 }
             );
         }
@@ -117,7 +117,7 @@ export async function GET(
             });
 
             if (!refreshResponse.ok) {
-                return NextResponse.json(apiError('FAILED_TO_REFRESH_STRAVA_TOKEN', 'Failed to refresh Strava token'),
+                return NextResponse.json(apiError('FAILED_TO_REFRESH_STRAVA_TOKEN'),
                     { status: 401 }
                 );
             }
@@ -149,7 +149,7 @@ export async function GET(
 
         if (!stravaResponse.ok) {
             appLogger.error('Strava API error:', await stravaResponse.text());
-            return NextResponse.json(apiError('FAILED_TO_FETCH_ACTIVITY_FROM_STRAVA', 'Failed to fetch activity from Strava'),
+            return NextResponse.json(apiError('FAILED_TO_FETCH_ACTIVITY_FROM_STRAVA'),
                 { status: 500 }
             );
         }
@@ -168,7 +168,7 @@ export async function GET(
         });
     } catch (error: unknown) {
         appLogger.error('Get activity detail error:', error);
-        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
     }
@@ -202,7 +202,7 @@ export async function PATCH(
             .single();
 
         if (activityError || !activity) {
-            return NextResponse.json(apiError('ACTIVITY_NOT_FOUND', 'Activity not found'),
+            return NextResponse.json(apiError('ACTIVITY_NOT_FOUND'),
                 { status: 404 }
             );
         }
@@ -231,7 +231,7 @@ export async function PATCH(
             }
             
             if (!isTeamMember) {
-                return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Not authorized to modify this activity'),
+                return NextResponse.json(apiError('AUTH_MODIFY_ACTIVITY_FORBIDDEN'),
                     { status: 403 }
                 );
             }
@@ -245,7 +245,7 @@ export async function PATCH(
 
         if (updateError) {
             appLogger.error('Failed to update lap overrides:', updateError);
-            return NextResponse.json(apiError('FAILED_TO_UPDATE_OVERRIDES', 'Failed to update overrides'),
+            return NextResponse.json(apiError('FAILED_TO_UPDATE_OVERRIDES'),
                 { status: 500 }
             );
         }
@@ -254,7 +254,7 @@ export async function PATCH(
 
     } catch (error: unknown) {
         appLogger.error('Update activity detail error:', error);
-        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR', 'Internal server error'),
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
     }

@@ -42,12 +42,12 @@ export async function requireRole(role: 'COACH' | 'ATHLETE' | 'ADMIN' | ('COACH'
   const authResult = await requireAuth();
   
   if (authResult.response) {
-    return authResult;
+    return { ...authResult, profile: null };
   }
 
   const { data: profile } = await authResult.supabase
     .from('profiles')
-    .select('role')
+    .select('id, role, team_id')
     .eq('id', authResult.user!.id)
     .single();
 
@@ -63,6 +63,7 @@ export async function requireRole(role: 'COACH' | 'ATHLETE' | 'ADMIN' | ('COACH'
     return {
       user: null,
       supabase: authResult.supabase,
+      profile: null,
       response: NextResponse.json(
         apiError('AUTH_FORBIDDEN', `Only ${roleString}s can access this endpoint`),
         { status: 403 }
@@ -70,7 +71,12 @@ export async function requireRole(role: 'COACH' | 'ATHLETE' | 'ADMIN' | ('COACH'
     };
   }
 
-  return { user: authResult.user, supabase: authResult.supabase, response: null };
+  return { 
+    user: authResult.user, 
+    supabase: authResult.supabase, 
+    profile: profile as RequesterProfile,
+    response: null 
+  };
 }
 
 export function getApiV2UserIdFromAuthResult(authResult: { user: { id: string } | null }): string | null {
