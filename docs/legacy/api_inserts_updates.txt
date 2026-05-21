@@ -1,0 +1,118 @@
+[src/app/api/auth/accept-invitation/route.ts] update: {
+                name: name,
+                must_change_password: false, // User already set their own password
+                role: 'ATHLETE', // Default role for invited users
+                coach_id: invitation.coach_id, // Link athlete to coach (null if invited directly by Super Coach)
+                team_id: invitation.team_id,   // Link athlete directly to the Running Team
+            }
+[src/app/api/auth/accept-invitation/route.ts] update: { accepted: true }
+[src/app/api/auth/accept-invitation/route.ts] insert: {
+                user_id: authData.user.id,
+            }
+[src/app/api/groups/route.ts] insert: {
+        name,
+        description,
+        coach_id: profile.role === 'ADMIN' ? null : user.id,
+        team_id: profile.team_id,
+      }
+[src/app/api/v2/trainings/route.ts] insert: {
+                title,
+                description,
+                type,
+                blocks,
+                is_template: isTemplate,
+                coach_id: user!.id,
+                team_id: profile?.team_id || null, // Lock to Running Team
+            }
+[src/app/api/v2/trainings/assignments/[id]/route.ts] insert: {
+                title: training.title,
+                type: training.type,
+                description: training.description || 'Modified workout',
+                blocks: blocks,
+                is_template: false,
+                coach_id: user!.id,
+                // We don't necessarily copy expected_rpe here because the assignment
+                // has its own expected_rpe field which overrides it.
+            }
+[src/app/api/v2/trainings/assignments/[id]/link/route.ts] update: { activity_id: resolvedActivityId }
+[src/app/api/v2/trainings/assignments/[id]/link/route.ts] update: { activity_id: null }
+[src/app/api/v2/strava/auth/sync/route.ts] update: {
+                    access_token: tokenData.access_token,
+                    refresh_token: tokenData.refresh_token,
+                    expires_at: tokenData.expires_at,
+                    updated_at: new Date().toISOString(),
+                }
+[src/app/api/v2/strava/auth/sync/route.ts] insert: {
+                    user_id: user!.id,
+                    external_id: activity.id.toString(),
+                    title: activity.name,
+                    type: activity.type,
+                    distance: activity.distance,
+                    duration: activity.moving_time,
+                    start_date: activity.start_date,
+                    elapsed_time: activity.elapsed_time,
+                    elevation_gain: activity.total_elevation_gain,
+                    avg_hr: activity.average_heartrate,
+                    max_hr: activity.max_heartrate,
+                    is_private: activity.private,
+                    metadata: activity,
+                }
+[src/app/api/v2/strava/auth/sync/route.ts] insert: {
+                user_id: user!.id,
+                status: 'SUCCESS',
+                message: `Synced ${syncedCount} activities, skipped ${skippedCount} existing`,
+                items_processed: stravaActivities.length,
+                completed_at: new Date().toISOString(),
+            }
+[src/app/api/v2/strava/auth/sync/route.ts] insert: {
+                    user_id: user.id,
+                    status: 'FAILED',
+                    message: error.message || 'Sync failed',
+                    completed_at: new Date().toISOString(),
+                }
+[src/app/api/v2/groups/route.ts] insert: {
+        name,
+        description,
+        group_type: group_type || 'REGULAR',
+        race_name: race_name || null,
+        race_date: race_date || null,
+        race_distance: race_distance || null,
+        race_priority: race_priority || null,
+        coach_id: profile.role === 'ADMIN' ? null : user.id,
+        team_id: profile.team_id,
+      }
+[src/app/api/v2/groups/[id]/members/route.ts] insert: {
+                group_id: groupId,
+                athlete_id: athleteId,
+            }
+[src/app/api/v2/users/assignments/[assignmentId]/route.ts] update: {
+                scheduled_date: scheduledDate,
+                updated_at: new Date().toISOString(),
+            }
+[src/app/api/v2/users/coaches/[id]/route.ts] update: { coach_id: adminId }
+[src/app/api/v2/users/change-password/route.ts] update: { must_change_password: false }
+[src/app/api/v2/activities/[id]/route.ts] update: {
+                    access_token: tokenData.access_token,
+                    refresh_token: tokenData.refresh_token,
+                    expires_at: tokenData.expires_at,
+                    updated_at: new Date().toISOString(),
+                }
+[src/app/api/v2/activities/[id]/streams/route.ts] update: {
+                    access_token: refreshData.access_token,
+                    refresh_token: refreshData.refresh_token,
+                    expires_at: refreshData.expires_at,
+                }
+[src/app/api/v2/athlete/zones/route.ts] update: {
+                    access_token: tokenData.access_token,
+                    refresh_token: tokenData.refresh_token,
+                    expires_at: tokenData.expires_at,
+                    updated_at: new Date().toISOString(),
+                }
+[src/app/api/invitations/route.ts] insert: {
+                email,
+                token,
+                expires_at: expiresAt.toISOString(),
+                coach_id: coachIdToAssign,
+                team_id: inviterProfile.team_id,
+                accepted: false,
+            }
