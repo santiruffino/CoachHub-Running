@@ -205,7 +205,6 @@
             "maxHR": "FC Máxima",
             "lthr": "FC Umbral Lactato",
             "testVAM": "Test VAM",
-
             "assignLevel": "Asignar nivel",
             "testUAN": "Test UAN",
             "totalTrainings": "Total Entrenamientos",
@@ -229,7 +228,26 @@
             "noRecentActivity": "No hay actividad reciente",
             "week": "Sem {n}",
             "coachComments": "Comentarios del coach",
-            "performanceAndZones": "Rendimiento y Zonas"
+            "performanceAndZones": "Rendimiento y Zonas",
+            "loadMonitoringTitle": "Monitoreo de Carga",
+            "loadMonitoringSubtitle": "Estado de carga interna y riesgo de fatiga",
+            "todayLoad": "Carga Hoy",
+            "last7DaysAvg": "Prom. 7 dias",
+            "loadPoints": "pts",
+            "loadRisk": {
+                "insufficientData": "Datos Insuficientes",
+                "high": "Riesgo Alto",
+                "moderate": "Riesgo Moderado",
+                "balanced": "Balanceado",
+                "lowStimulus": "Estimulo Bajo"
+            },
+            "loadRiskHint": "Referencia rapida: TSB {tsb}, ATL {atl}, CTL {ctl}, ACWR {acwr}. TSB muy negativo suele indicar acumulacion de fatiga; ACWR > 1.3 puede indicar aumento brusco de carga.",
+            "loadStatus": {
+                "loading": "Cargando metricas de carga...",
+                "syncing": "Sincronizando historial de Strava (90 dias)...",
+                "partial": "Historial parcial ({days} dias).",
+                "ready": "Metricas de carga actualizadas"
+            }
         },
         "editModal": {
             "title": "Editar atleta",
@@ -843,6 +861,13 @@
         "high": "Alta",
         "veryHigh": "Muy Alta",
         "projectedProfile": "Perfil de Entrenamiento Proyectado",
+        "workoutVisualization": "Visualización del Entrenamiento",
+        "total": "Total",
+        "estTssShort": "TSS Est.",
+        "steps": "Pasos",
+        "stepDurationBlocks": "Bloques por duración estimada",
+        "zoneDistribution": "Distribución por tipo",
+        "stepSummaryTitle": "Resumen de pasos",
         "workoutProfile": "Perfil del Entrenamiento",
         "intensity": "Intensidad",
         "heartRate": "Frecuencia Cardíaca",

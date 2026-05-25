@@ -11,6 +11,9 @@
     --popover: 0 0% 100%;
     --popover-foreground: 195 12% 19%;
     --muted: 204 18% 95%; /* #f1f4f6 surface-container-low */
+    --surface: 210 17% 98%; /* same as background */
+    --surface-container-low: 204 18% 95%; /* same as muted */
+    --surface-container-lowest: 0 0% 100%; /* #ffffff */
     --muted-foreground: 215 16% 47%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
@@ -48,7 +51,10 @@
     --card-foreground: 210 40% 98%;
     --popover: 210 22% 14%;
     --popover-foreground: 210 40% 98%;
-    --muted: 213 24% 11%;             /* #131b23 secondary content zone */
+    --muted: 213 24% 11%; /* #131b23 secondary content zone */
+    --surface: 210 33.3% 5.9%; /* same as background dark */
+    --surface-container-low: 213 24% 11%; /* same as muted */
+    --surface-container-lowest: 210 22% 14%; /* #1a232c */
     --muted-foreground: 215 20% 55%;  /* #8b9bb4 secondary text */
     --destructive: 0 62.8% 50%;
     --destructive-foreground: 0 0% 98%;
@@ -132,6 +138,9 @@
   --font-display: var(--font-manrope);
   --font-exo2: var(--font-exo-2);
   --font-ibm-mono: var(--font-ibm-plex-mono);
+    --color-surface: hsl(var(--surface));
+    --color-surface-container-low: hsl(var(--surface-container-low));
+    --color-surface-container-lowest: hsl(var(--surface-container-lowest));
 }
 
 * {

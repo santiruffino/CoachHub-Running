@@ -1,7 +1,7 @@
 'use client';
 import { appLogger } from '@/lib/app-logger';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { format, startOfWeek, endOfWeek, subWeeks, startOfDay, differenceInDays, parseISO, addWeeks } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -11,12 +11,13 @@ import { AthleteDetails } from '@/interfaces/athlete';
 import { AthleteRace } from '@/interfaces/race';
 import { Plus, Zap, ChevronLeft, ChevronRight, MessageSquare, Trophy, ArrowLeft } from 'lucide-react';
 import { trainingsService } from '@/features/trainings/services/trainings.service';
-import { athletesService } from '@/features/users/services/athletes.service';
+import { athletesService, LoadMetricsRange, LoadMetricsResponse } from '@/features/users/services/athletes.service';
 import { racesService } from '@/features/races/services/races.service';
 import { AssignRaceModal } from '@/features/races/components/AssignRaceModal';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { PerformanceTrendChart } from '@/components/dashboard/PerformanceTrendChart';
+import { LoadMetricsTrendChart } from '@/components/dashboard/LoadMetricsTrendChart';
 import { HeartRateZones } from '@/features/profiles/components/HeartRateZones';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { VAM_LEVELS } from '@/features/profiles/constants/vam';
@@ -55,7 +56,78 @@ export function AthleteDetailsView({
     const [isAssignRaceModalOpen, setIsAssignRaceModalOpen] = useState(false);
     const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
     const [pendingDeleteAssignment, setPendingDeleteAssignment] = useState<string | null>(null);
+    const [loadRange, setLoadRange] = useState<LoadMetricsRange>(30);
+    const [loadMetricsData, setLoadMetricsData] = useState<LoadMetricsResponse | null>(null);
+    const [loadMetricsLoading, setLoadMetricsLoading] = useState(true);
     const { alertState, showAlert, closeAlert } = useAlertDialog();
+
+    useEffect(() => {
+        let cancelled = false;
+        let pollTimer: ReturnType<typeof setTimeout> | null = null;
+
+        const load = async () => {
+            try {
+                setLoadMetricsLoading(true);
+                const res = await athletesService.getLoadMetrics(id, loadRange);
+                if (cancelled) return;
+                setLoadMetricsData(res.data);
+
+                const status = res.data.meta.backfillStatus;
+                if (status === 'queued' || status === 'running') {
+                    pollTimer = setTimeout(() => {
+                        void load();
+                    }, 20000);
+                }
+            } catch (error) {
+                appLogger.error('Failed to fetch load metrics:', error);
+            } finally {
+                if (!cancelled) setLoadMetricsLoading(false);
+            }
+        };
+
+        void load();
+
+        return () => {
+            cancelled = true;
+            if (pollTimer) clearTimeout(pollTimer);
+        };
+    }, [id, loadRange]);
+
+    const loadMetrics = useMemo(() => {
+        const riskKey = loadMetricsData?.current.risk || 'insufficientData';
+        const riskClassName =
+            riskKey === 'high'
+                ? 'bg-red-500/10 text-red-600 dark:text-red-300'
+                : riskKey === 'moderate'
+                    ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300'
+                    : riskKey === 'lowStimulus'
+                        ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300'
+                        : riskKey === 'balanced'
+                            ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+                            : 'bg-muted text-muted-foreground';
+
+        return {
+            ctl: loadMetricsData?.current.ctl || 0,
+            atl: loadMetricsData?.current.atl || 0,
+            tsb: loadMetricsData?.current.tsb || 0,
+            acwr: loadMetricsData?.current.acwr || 0,
+            todayLoad: loadMetricsData?.current.todayLoad || 0,
+            sevenDayAvg: loadMetricsData?.current.avg7d || 0,
+            riskKey,
+            riskClassName,
+            partial: loadMetricsData?.meta.partial || false,
+            backfillStatus: loadMetricsData?.meta.backfillStatus || 'idle',
+            historyDaysAvailable: loadMetricsData?.meta.historyDaysAvailable || 0,
+        };
+    }, [loadMetricsData]);
+
+    const loadTrendData = useMemo(
+        () => (loadMetricsData?.series || []).map((point) => ({
+            ...point,
+            date: format(parseISO(point.date), 'd MMM', { locale: es }),
+        })),
+        [loadMetricsData]
+    );
 
     const fetchRaces = async () => {
         try {
@@ -285,6 +357,66 @@ export function AthleteDetailsView({
                             {athlete.athleteProfile?.uan && <span className="text-xs font-semibold text-muted-foreground">{tUnits('minPerKm')}</span>}
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <div className="bg-card rounded-2xl shadow-[0_4px_24px_rgba(43,52,55,0.04)] dark:border dark:border-white/5 overflow-hidden">
+                <div className="px-5 pt-5 pb-4 border-b border-border/40 flex items-center justify-between gap-3">
+                    <div>
+                        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">{tAthlete('loadMonitoringTitle')}</p>
+                        <p className="text-sm text-foreground font-medium mt-1">{tAthlete('loadMonitoringSubtitle')}</p>
+                    </div>
+                    <Badge className={`${loadMetrics.riskClassName} border-0 text-[10px] uppercase tracking-wider`}>
+                        {tAthlete(`loadRisk.${loadMetrics.riskKey}`)}
+                    </Badge>
+                </div>
+                <div className="px-5 py-3 border-b border-border/40 flex items-center justify-between gap-3 flex-wrap">
+                    <div className="flex items-center gap-2">
+                        {[7, 30, 90].map((range) => (
+                            <Button
+                                key={range}
+                                type="button"
+                                variant={loadRange === range ? 'default' : 'outline'}
+                                className="h-7 px-3 text-[10px] font-bold tracking-wider"
+                                onClick={() => setLoadRange(range as LoadMetricsRange)}
+                            >
+                                {range}D
+                            </Button>
+                        ))}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                        {loadMetricsLoading
+                            ? tAthlete('loadStatus.loading')
+                            : loadMetrics.backfillStatus === 'queued' || loadMetrics.backfillStatus === 'running'
+                                ? tAthlete('loadStatus.syncing')
+                                : loadMetrics.partial
+                                    ? tAthlete('loadStatus.partial', { days: loadMetrics.historyDaysAvailable })
+                                    : tAthlete('loadStatus.ready')}
+                    </div>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 divide-x divide-y sm:divide-y-0 divide-muted dark:divide-white/5">
+                    {[
+                        { label: 'CTL', value: loadMetrics.ctl },
+                        { label: 'ATL', value: loadMetrics.atl },
+                        { label: 'TSB', value: loadMetrics.tsb },
+                        { label: 'ACWR', value: loadMetrics.acwr, decimals: 2 },
+                        { label: tAthlete('todayLoad'), value: loadMetrics.todayLoad },
+                        { label: tAthlete('last7DaysAvg'), value: loadMetrics.sevenDayAvg },
+                    ].map((metric) => (
+                        <div key={metric.label} className="p-5 flex flex-col gap-2">
+                            <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">{metric.label}</span>
+                            <div className="flex items-baseline gap-1.5">
+                                <span className="text-2xl font-extrabold font-display text-foreground leading-none">{metric.decimals ? metric.value.toFixed(metric.decimals) : Math.round(metric.value)}</span>
+                                <span className="text-xs font-semibold text-muted-foreground">{metric.label === 'ACWR' ? '' : tAthlete('loadPoints')}</span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+                <div className="px-5 py-4 border-t border-border/40">
+                    <LoadMetricsTrendChart data={loadTrendData} />
+                </div>
+                <div className="px-5 py-4 border-t border-border/40">
+                    <p className="text-xs text-muted-foreground leading-relaxed">{tAthlete('loadRiskHint', { tsb: Math.round(loadMetrics.tsb), atl: Math.round(loadMetrics.atl), ctl: Math.round(loadMetrics.ctl), acwr: loadMetrics.acwr.toFixed(2) })}</p>
                 </div>
             </div>
 

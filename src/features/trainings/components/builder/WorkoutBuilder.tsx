@@ -10,6 +10,7 @@ import { WorkoutSequence } from './WorkoutSequence';
 import { EstimatedTotals } from './EstimatedTotals';
 import { WorkoutIntensityChart } from './WorkoutIntensityChart';
 import { SessionSummary } from './SessionSummary';
+import { WorkoutInsightsPanel } from './WorkoutInsightsPanel';
 import { useTranslations } from 'next-intl';
 import api from '@/lib/axios';
 
@@ -215,6 +216,14 @@ export function WorkoutBuilder({
                                     if (type === 'repeat') addRepeatBlock();
                                     else addBlock(type);
                                 }}
+                            />
+                        </div>
+
+                        <div className="w-full">
+                            <WorkoutInsightsPanel
+                                blocks={blocks}
+                                athleteProfile={athleteProfile}
+                                trainingType={trainingType}
                             />
                         </div>
                     </div>

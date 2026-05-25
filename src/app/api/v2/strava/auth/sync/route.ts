@@ -23,6 +23,7 @@ interface StravaActivity {
     max_speed?: number | null;
     average_heartrate: number | null;
     max_heartrate: number | null;
+    suffer_score?: number | null;
     private: boolean;
 }
 
@@ -40,9 +41,22 @@ interface ActivityUpsertRow {
     max_speed: number;
     avg_hr: number | null;
     max_hr: number | null;
+    suffer_score: number | null;
+    load_score: number;
     is_private: boolean;
     metadata: StravaActivity;
     updated_at: string;
+}
+
+function estimateLoadScore(activity: StravaActivity): number {
+    if (typeof activity.suffer_score === 'number' && Number.isFinite(activity.suffer_score)) {
+        return Math.max(0, activity.suffer_score);
+    }
+
+    const durationHours = Math.max(0, activity.moving_time || activity.elapsed_time || 0) / 3600;
+    if (durationHours <= 0) return 0;
+
+    return durationHours * 45;
 }
 
 function chunkArray<T>(items: T[], chunkSize: number): T[][] {
@@ -179,24 +193,29 @@ export async function POST(request: NextRequest) {
             existingExternalIds = new Set((existingRows || []).map((row) => row.external_id));
         }
 
-        const upsertRows: ActivityUpsertRow[] = dedupedActivities.map((activity) => ({
-            user_id: user!.id,
-            external_id: activity.id.toString(),
-            title: activity.name,
-            type: activity.type,
-            distance: activity.distance || 0,
-            duration: activity.moving_time || activity.elapsed_time || 0,
-            start_date: activity.start_date,
-            elapsed_time: activity.elapsed_time || 0,
-            elevation_gain: activity.total_elevation_gain || 0,
-            average_speed: activity.average_speed || 0,
-            max_speed: activity.max_speed || 0,
-            avg_hr: activity.average_heartrate,
-            max_hr: activity.max_heartrate,
-            is_private: activity.private || false,
-            metadata: activity,
-            updated_at: new Date().toISOString(),
-        }));
+        const upsertRows: ActivityUpsertRow[] = dedupedActivities.map((activity) => {
+            const sufferScore = typeof activity.suffer_score === 'number' ? activity.suffer_score : null;
+            return {
+                user_id: user!.id,
+                external_id: activity.id.toString(),
+                title: activity.name,
+                type: activity.type,
+                distance: activity.distance || 0,
+                duration: activity.moving_time || activity.elapsed_time || 0,
+                start_date: activity.start_date,
+                elapsed_time: activity.elapsed_time || 0,
+                elevation_gain: activity.total_elevation_gain || 0,
+                average_speed: activity.average_speed || 0,
+                max_speed: activity.max_speed || 0,
+                avg_hr: activity.average_heartrate,
+                max_hr: activity.max_heartrate,
+                suffer_score: sufferScore,
+                load_score: estimateLoadScore(activity),
+                is_private: activity.private || false,
+                metadata: activity,
+                updated_at: new Date().toISOString(),
+            };
+        });
 
         for (const batch of chunkArray(upsertRows, 100)) {
             const { error: upsertError } = await supabase

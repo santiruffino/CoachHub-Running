@@ -77,7 +77,8 @@ export function NewActivityFeedbackModal({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[560px] border-none bg-surface p-0 overflow-hidden shadow-[0_20px_40px_rgba(43,52,55,0.08)] dark:bg-[#0a0f14]">
+            <DialogOverlay className="fixed inset-0 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+            <DialogContent className="sm:max-w-[560px] max-h-[90vh] overflow-y-auto border-none bg-surface p-0 overflow-hidden shadow-[0_20px_40px_rgba(43,52,55,0.08)] dark:bg-[#0a0f14]">
                 <DialogHeader className="space-y-2 bg-surface-container-low px-6 pb-6 pt-7 text-left dark:bg-[#131b23]">
                     <DialogTitle className="font-display text-2xl font-bold tracking-tight text-foreground">
                         {t('title')}

@@ -514,14 +514,14 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[900px] h-[90vh] flex flex-col">
+            <DialogContent className="sm:max-w-[900px] h-[90vh] flex flex-col overflow-hidden">
                 <DialogHeader>
                     <DialogTitle>
                         {athleteId ? t('titleAthlete') : t('title')}
                     </DialogTitle>
                 </DialogHeader>
 
-                <div className="flex-1 overflow-y-auto pr-2 space-y-4">
+                <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-4">
                     {/* If athleteId is provided, use step-based flow */}
                     {athleteId ? (
                         renderAthleteAssignmentFlow()

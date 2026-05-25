@@ -7,6 +7,9 @@ export interface Activity {
     elevation_gain?: number;
     start_date: string;
     type: string;
+    avg_hr?: number;
+    max_hr?: number;
+    suffer_score?: number;
     hasFeedback?: boolean;
 }
 

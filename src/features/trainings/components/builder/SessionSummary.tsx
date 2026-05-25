@@ -20,6 +20,7 @@ export function calculateTotals(
     let totalDistance = 0;
     let totalDuration = 0;
     let totalTSS = 0;
+    const isFiniteNumber = (value: number) => Number.isFinite(value);
 
     blocks.forEach(block => {
         const multiplier = block.group?.reps || 1;
@@ -39,13 +40,19 @@ export function calculateTotals(
         } else if (block.target?.type === 'ftp_percent') {
             const min = typeof block.target.min === 'number' ? block.target.min : parseFloat(block.target.min);
             const max = typeof block.target.max === 'number' ? block.target.max : parseFloat(block.target.max);
-            intensityFactor = ((min + max) / 2) / 100;
+            if (isFiniteNumber(min) && isFiniteNumber(max)) {
+                intensityFactor = ((min + max) / 2) / 100;
+            }
         } else if (block.target?.type === 'lthr') {
             const minTarget = Number(block.target.min);
             const maxTarget = Number(block.target.max);
             if (!isNaN(minTarget) && !isNaN(maxTarget)) {
                 intensityFactor = ((minTarget + maxTarget) / 2) / 100;
             }
+        }
+
+        if (!isFiniteNumber(intensityFactor) || intensityFactor <= 0) {
+            intensityFactor = (block.intensity || 50) / 100;
         }
 
         if (block.duration.type === 'distance') {
@@ -103,13 +110,15 @@ export function calculateTotals(
         }
 
         const durationHours = (stepDurationSecs * multiplier) / 3600;
-        totalTSS += durationHours * Math.pow(intensityFactor, 2) * 100;
+        if (isFiniteNumber(durationHours) && isFiniteNumber(intensityFactor)) {
+            totalTSS += durationHours * Math.pow(intensityFactor, 2) * 100;
+        }
     });
 
     return {
-        distance: totalDistance,
-        duration: totalDuration,
-        tss: Math.round(totalTSS)
+        distance: isFiniteNumber(totalDistance) ? totalDistance : 0,
+        duration: isFiniteNumber(totalDuration) ? totalDuration : 0,
+        tss: isFiniteNumber(totalTSS) ? Math.round(totalTSS) : 0
     };
 }
 

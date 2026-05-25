@@ -16,6 +16,21 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+function estimateLoadScore(activity: Record<string, unknown>): number {
+  const suffer = activity.suffer_score
+  if (typeof suffer === 'number' && Number.isFinite(suffer)) {
+    return Math.max(0, suffer)
+  }
+
+  const moving = typeof activity.moving_time === 'number' ? activity.moving_time : 0
+  const elapsed = typeof activity.elapsed_time === 'number' ? activity.elapsed_time : 0
+  const duration = moving || elapsed
+  const durationHours = Math.max(0, duration) / 3600
+  if (durationHours <= 0) return 0
+
+  return durationHours * 45
+}
+
 Deno.serve(async (req) => {
   const requestId = getEdgeRequestId(req)
   const logger = createEdgeLogger({ route: 'process-strava-activity', requestId })
@@ -204,6 +219,8 @@ Deno.serve(async (req) => {
       }
 
       const activity = await activityResponse.json()
+      const sufferScore = typeof activity.suffer_score === 'number' ? activity.suffer_score : null
+      const loadScore = estimateLoadScore(activity)
 
       // 4. Persist to activities table
       const { data: upsertData, error: insertError } = await supabase
@@ -222,6 +239,8 @@ Deno.serve(async (req) => {
           max_speed: activity.max_speed || 0,
           avg_hr: activity.average_heartrate || null,
           max_hr: activity.max_heartrate || null,
+          suffer_score: sufferScore,
+          load_score: loadScore,
           is_private: activity.private || false,
           metadata: activity,
           updated_at: new Date().toISOString(),
