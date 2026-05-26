@@ -106,7 +106,8 @@
             "new_feedback": "Nuevo comentario",
             "low_compliance": "Bajo cumplimiento",
             "missing_workout": "Sin entrenamientos",
-            "zone_violation": "Desviación de zona"
+            "zone_violation": "Desviación de zona",
+            "training_load": "Alerta de carga"
         },
         "groupStatus": {
             "activeAthletes": "{count, plural, =1 {1 Atleta Activo} other {# Atletas Activos}}",
@@ -231,6 +232,20 @@
             "performanceAndZones": "Rendimiento y Zonas",
             "loadMonitoringTitle": "Monitoreo de Carga",
             "loadMonitoringSubtitle": "Estado de carga interna y riesgo de fatiga",
+            "overviewTab": "Resumen",
+            "trainingTab": "Entrenamiento",
+            "healthTab": "Salud y Carga",
+            "racesNotesTab": "Carreras y Notas",
+            "athleteProfileTitle": "Perfil del atleta",
+            "athleteProfileSubtitle": "Datos fisiologicos y pruebas de referencia",
+            "showDetails": "Ver detalles",
+            "hideDetails": "Ocultar detalles",
+            "trainingComplianceTrend": "Tendencia de cumplimiento",
+            "nextRace": "Proxima carrera",
+            "daysShort": "dias",
+            "showAdvancedMetrics": "Ver metricas avanzadas",
+            "hideAdvancedMetrics": "Ocultar metricas avanzadas",
+            "noHrZones": "No hay zonas de frecuencia cardiaca cargadas.",
             "todayLoad": "Carga Hoy",
             "last7DaysAvg": "Prom. 7 dias",
             "loadPoints": "pts",
@@ -247,6 +262,14 @@
                 "syncing": "Sincronizando historial de Strava (90 dias)...",
                 "partial": "Historial parcial ({days} dias).",
                 "ready": "Metricas de carga actualizadas"
+            },
+            "metricTooltip": {
+                "ctl": "CTL (Chronic Training Load): promedio de carga a largo plazo. Representa la forma fisica acumulada.",
+                "atl": "ATL (Acute Training Load): promedio de carga reciente. Representa la fatiga de corto plazo.",
+                "tsb": "TSB (Training Stress Balance): diferencia entre CTL y ATL. Valores negativos suelen indicar mayor fatiga.",
+                "acwr": "ACWR (Acute:Chronic Workload Ratio): relacion entre carga reciente y base cronica. Cambios bruscos elevan el riesgo.",
+                "todayLoad": "Carga de hoy: estres acumulado en la jornada actual.",
+                "last7DaysAvg": "Promedio de carga de los ultimos 7 dias para contextualizar la tendencia reciente."
             }
         },
         "editModal": {

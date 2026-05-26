@@ -18,7 +18,7 @@ interface DashboardAlertItem {
   alertId?: string;
   id: string;
   name: string;
-  type: 'zone_violation' | 'new_feedback' | 'rpe_mismatch' | 'low_compliance' | 'missing_workout';
+  type: 'zone_violation' | 'new_feedback' | 'rpe_mismatch' | 'low_compliance' | 'missing_workout' | 'training_load';
   time: string;
   message: string;
   details: string;

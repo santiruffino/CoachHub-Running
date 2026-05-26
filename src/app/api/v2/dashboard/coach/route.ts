@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { computeAlertScore, extractRiskKeywords, SmartAlertType } from '@/lib/alerts/scoring';
+import { ActivityLoadRow, buildDailyLoadSeries, classifyLoadRisk } from '@/lib/training/load';
 import * as Sentry from '@sentry/nextjs';
 import { createRequestLogger, withRequestId } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
@@ -84,6 +85,7 @@ function normalizeAlertType(type: string): SmartAlertType | null {
     if (normalized === 'rpe_mismatch') return 'rpe_mismatch';
     if (normalized === 'low_compliance') return 'low_compliance';
     if (normalized === 'missing_workout') return 'missing_workout';
+    if (normalized === 'training_load') return 'training_load';
 
     return null;
 }
@@ -145,6 +147,9 @@ export async function GET(request: NextRequest) {
         const sevenDaysAgo = new Date(now);
         sevenDaysAgo.setDate(now.getDate() - 6);
         sevenDaysAgo.setHours(0, 0, 0, 0);
+        const loadLookbackStart = new Date(now);
+        loadLookbackStart.setDate(now.getDate() - 71);
+        loadLookbackStart.setHours(0, 0, 0, 0);
         const todayStr = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 
         let athletesQuery = supabase
@@ -177,6 +182,7 @@ export async function GET(request: NextRequest) {
             assignmentsRes,
             nextWeekAssignmentsRes,
             activitiesRes,
+            loadActivitiesRes,
             feedbackRes,
             trainingsCountRes,
             alertsRes,
@@ -206,6 +212,13 @@ export async function GET(request: NextRequest) {
                 })())
                 .lte('start_date', weekEnd.toISOString())
                 .order('start_date', { ascending: false }),
+            supabase
+                .from('activities')
+                .select('user_id, start_date, load_score, suffer_score, duration, avg_hr, max_hr')
+                .in('user_id', athleteIds.length > 0 ? athleteIds : ['__none__'])
+                .gte('start_date', loadLookbackStart.toISOString())
+                .lte('start_date', now.toISOString())
+                .order('start_date', { ascending: true }),
             supabase
                 .from('activity_feedback')
                 .select(`
@@ -248,6 +261,7 @@ export async function GET(request: NextRequest) {
         const assignments = assignmentsRes.data || [];
         const nextWeekAssignments = nextWeekAssignmentsRes.data || [];
         const activities = activitiesRes.data || [];
+        const loadActivities = (loadActivitiesRes.data || []) as Array<ActivityLoadRow & { user_id: string }>;
         const feedbackRows = (feedbackRes.data || []) as ActivityFeedbackRow[];
         const totalPlans = trainingsCountRes.count ?? 0;
         const dbAlerts = (alertsRes.data || []) as DashboardAlert[];
@@ -462,6 +476,58 @@ export async function GET(request: NextRequest) {
                     reasonCodes: alert.reasonCodes,
                 };
             }),
+            ...Array.from(
+                loadActivities.reduce((acc, row) => {
+                    const bucket = acc.get(row.user_id) || [];
+                    bucket.push(row);
+                    acc.set(row.user_id, bucket);
+                    return acc;
+                }, new Map<string, ActivityLoadRow[]>()).entries()
+            )
+                .map(([athleteId, athleteRows]) => {
+                    const loadData = buildDailyLoadSeries(athleteRows, {
+                        rangeDays: 30,
+                        now,
+                    });
+                    const risk = classifyLoadRisk(loadData.current.acwr, loadData.current.tsb);
+
+                    if (risk === 'insufficientData' || risk === 'balanced') {
+                        return null;
+                    }
+
+                    const raceContext = raceContextByAthlete.get(athleteId);
+                    const recurrence = recurrenceByKey.get(`${athleteId}:training_load`) || 0;
+                    const scoring = computeAlertScore({
+                        type: 'training_load',
+                        recurrence7d: recurrence,
+                        racePriority: raceContext?.racePriority,
+                        raceProximityDays: raceContext?.raceProximityDays,
+                        loadRisk: risk,
+                        acwr: loadData.current.acwr,
+                        tsb: loadData.current.tsb,
+                    });
+
+                    const riskLabel =
+                        risk === 'high'
+                            ? 'Riesgo alto'
+                            : risk === 'moderate'
+                                ? 'Riesgo moderado'
+                                : 'Estimulo bajo';
+
+                    return {
+                        id: `load-${athleteId}`,
+                        athleteId,
+                        athleteName: athleteMap.get(athleteId) || 'Unknown',
+                        type: 'training_load' as const,
+                        time: now.toISOString(),
+                        details: `${riskLabel} · ACWR ${loadData.current.acwr.toFixed(2)} · TSB ${Math.round(loadData.current.tsb)}`,
+                        score: scoring.score,
+                        priority: scoring.priority,
+                        recommendedActionKey: scoring.recommendedActionKey,
+                        reasonCodes: scoring.reasonCodes,
+                    };
+                })
+                .filter((item): item is NonNullable<typeof item> => Boolean(item)),
             ...rpeMismatches.map((mismatch) => {
                 const raceContext = raceContextByAthlete.get(mismatch.athleteId);
                 const recurrence = recurrenceByKey.get(`${mismatch.athleteId}:rpe_mismatch`) || 0;

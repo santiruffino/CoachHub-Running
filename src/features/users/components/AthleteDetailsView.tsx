@@ -9,17 +9,19 @@ import { TrainingAssignment } from '@/interfaces/training';
 import { Activity } from '@/interfaces/activity';
 import { AthleteDetails } from '@/interfaces/athlete';
 import { AthleteRace } from '@/interfaces/race';
-import { Plus, Zap, ChevronLeft, ChevronRight, MessageSquare, Trophy, ArrowLeft } from 'lucide-react';
+import { Plus, Zap, ChevronLeft, ChevronRight, MessageSquare, Trophy, ArrowLeft, Info } from 'lucide-react';
 import { trainingsService } from '@/features/trainings/services/trainings.service';
 import { athletesService, LoadMetricsRange, LoadMetricsResponse } from '@/features/users/services/athletes.service';
 import { racesService } from '@/features/races/services/races.service';
 import { AssignRaceModal } from '@/features/races/components/AssignRaceModal';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { PerformanceTrendChart } from '@/components/dashboard/PerformanceTrendChart';
 import { LoadMetricsTrendChart } from '@/components/dashboard/LoadMetricsTrendChart';
 import { HeartRateZones } from '@/features/profiles/components/HeartRateZones';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { VAM_LEVELS } from '@/features/profiles/constants/vam';
 import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
 import { useTranslations } from 'next-intl';
@@ -57,6 +59,8 @@ export function AthleteDetailsView({
     const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
     const [pendingDeleteAssignment, setPendingDeleteAssignment] = useState<string | null>(null);
     const [loadRange, setLoadRange] = useState<LoadMetricsRange>(30);
+    const [isSwitchingLoadRange, setIsSwitchingLoadRange] = useState(false);
+    const [activeSection, setActiveSection] = useState<'overview' | 'training' | 'health' | 'racesNotes'>('training');
     const [loadMetricsData, setLoadMetricsData] = useState<LoadMetricsResponse | null>(null);
     const [loadMetricsLoading, setLoadMetricsLoading] = useState(true);
     const { alertState, showAlert, closeAlert } = useAlertDialog();
@@ -81,7 +85,10 @@ export function AthleteDetailsView({
             } catch (error) {
                 appLogger.error('Failed to fetch load metrics:', error);
             } finally {
-                if (!cancelled) setLoadMetricsLoading(false);
+                if (!cancelled) {
+                    setLoadMetricsLoading(false);
+                    setIsSwitchingLoadRange(false);
+                }
             }
         };
 
@@ -128,6 +135,15 @@ export function AthleteDetailsView({
         })),
         [loadMetricsData]
     );
+
+    const isInitialLoadMetricsLoading = loadMetricsLoading && !loadMetricsData;
+    const showLoadSkeleton = isInitialLoadMetricsLoading || isSwitchingLoadRange;
+
+    const handleLoadRangeChange = (nextRange: LoadMetricsRange) => {
+        if (nextRange === loadRange) return;
+        setIsSwitchingLoadRange(true);
+        setLoadRange(nextRange);
+    };
 
     const fetchRaces = async () => {
         try {
@@ -266,198 +282,287 @@ export function AthleteDetailsView({
         .filter(r => new Date(r.date) >= startOfDay(new Date()))
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
+    const nextRace = upcomingRaces[0] || null;
+    const nextRaceDays = nextRace ? Math.max(0, differenceInDays(parseISO(nextRace.date), startOfDay(new Date()))) : null;
+
     return (
-        <div className="space-y-8 p-4 md:p-8 max-w-[1400px] mx-auto pb-20 bg-background min-h-screen">
-            <div className="flex items-center gap-2 mb-2">
+        <div className="space-y-6 p-4 md:p-8 max-w-[1400px] mx-auto pb-20 bg-background min-h-screen">
+            <div className="flex items-center gap-2">
                 <Button variant="ghost" size="icon" onClick={() => router.back()} className="h-8 w-8 text-muted-foreground hover:text-foreground">
                     <ArrowLeft className="h-4 w-4" />
                 </Button>
             </div>
 
-            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
-                <div className="flex items-center gap-6">
-                    <div className="relative">
-                        <div className="h-24 w-24 rounded-2xl bg-primary/10 overflow-hidden flex items-center justify-center text-3xl font-display font-medium text-primary shadow-sm">
-                            {athlete.name?.charAt(0) || athlete.email.charAt(0)}
+            <div className="bg-card rounded-2xl border border-border/50 p-5 md:p-6 shadow-[0_10px_30px_rgba(43,52,55,0.04)]">
+                <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-5">
+                    <div className="flex items-center gap-4">
+                        <div className="relative">
+                            <div className="h-20 w-20 rounded-2xl bg-primary/10 overflow-hidden flex items-center justify-center text-3xl font-display font-medium text-primary shadow-sm">
+                                {athlete.name?.charAt(0) || athlete.email.charAt(0)}
+                            </div>
+                            <div className="absolute -bottom-2 -right-2 bg-primary p-1.5 rounded-lg text-primary-foreground shadow-md">
+                                <Zap className="h-4 w-4" />
+                            </div>
                         </div>
-                        <div className="absolute -bottom-2 -right-2 bg-primary p-1.5 rounded-lg text-primary-foreground shadow-md">
-                            <Zap className="h-4 w-4" />
-                        </div>
-                    </div>
-                    <div>
-                        <h1 className="text-4xl font-display font-medium text-foreground mb-3">{athlete.name || athlete.email}</h1>
                         <div>
-                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-1">{t("athletes.detail.complianceRate")}</p>
-                            <p className="text-foreground font-medium text-sm">{completionRate}%</p>
+                            <h1 className="text-3xl font-display font-medium text-foreground">{athlete.name || athlete.email}</h1>
+                            <p className="text-sm text-muted-foreground">{athlete.email}</p>
                         </div>
                     </div>
-                </div>
 
-                <div className="flex gap-8 bg-card dark:border dark:border-white/5 p-6 rounded-2xl shadow-[0_20px_40px_rgba(43,52,55,0.02)]">
-                    <div>
-                        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">{t("athletes.detail.weeklyVolume")}</p>
-                        <div className="flex items-baseline gap-1.5">
-                            <p className="text-[40px] leading-none font-display font-light text-foreground">{stats.distance.toFixed(1)}</p>
-                            <span className="text-sm font-medium text-muted-foreground">{tUnits('km')}</span>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full xl:w-auto">
+                        <div>
+                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">{t("athletes.detail.complianceRate")}</p>
+                            <p className="text-2xl font-display mt-1">{completionRate}%</p>
                         </div>
-                    </div>
-                    <div className="w-px bg-border/40 my-2" />
-                    <div>
-                        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-1.5">{t("athletes.detail.weeklyTime")}</p>
-                        <div className="flex items-baseline gap-1.5">
-                            <p className="text-[40px] leading-none font-display font-light text-foreground">{stats.h.toString().padStart(2, '0')}:{stats.m.toString().padStart(2, '0')}</p>
-                            <span className="text-sm font-medium text-muted-foreground">{tUnits('h')}</span>
+                        <div>
+                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">{tAthlete('loadMonitoringTitle')}</p>
+                            <Badge className={`${loadMetrics.riskClassName} border-0 text-[10px] uppercase tracking-wider mt-1`}>{tAthlete(`loadRisk.${loadMetrics.riskKey}`)}</Badge>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <div className="bg-card rounded-2xl shadow-[0_4px_24px_rgba(43,52,55,0.04)] dark:border dark:border-white/5 overflow-hidden mt-2">
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 divide-x divide-y lg:divide-y-0 divide-muted dark:divide-white/5">
-
-                    {[
-                        { label: t("athletes.detail.height"), value: athlete.athleteProfile?.height, unit: tUnits('cm') },
-                        { label: t("athletes.detail.weight"), value: athlete.athleteProfile?.weight, unit: tUnits('kg') },
-                        { label: t("athletes.detail.restHR"), value: athlete.athleteProfile?.restHR, unit: tUnits('bpm') },
-                        { label: t("athletes.detail.maxHR"), value: athlete.athleteProfile?.maxHR, unit: tUnits('bpm') },
-                        { label: t("athletes.detail.lthr"), value: athlete.athleteProfile?.lthr, unit: tUnits('bpm') },
-                    ].map((m, i) => (
-
-                        <div key={i} className="p-5 flex flex-col gap-2">
-                            <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">{m.label}</span>
-                            <div className="flex items-baseline gap-1.5">
-                                <span className="text-2xl font-extrabold font-display text-foreground leading-none">{m.value ?? '—'}</span>
-                                {m.value && <span className="text-xs font-semibold text-muted-foreground">{m.unit}</span>}
-                            </div>
+                        <div>
+                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">{t("athletes.detail.weeklyVolume")}</p>
+                            <p className="text-2xl font-display mt-1">{stats.distance.toFixed(1)} <span className="text-xs text-muted-foreground font-sans">{tUnits('km')}</span></p>
                         </div>
-                    ))}
-                    <div className="p-5 flex flex-col gap-2">
-                        <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">{t("athletes.detail.testVAM")}</span>
-                        <div className="flex items-baseline gap-1.5">
-                            <span className="text-2xl font-extrabold text-foreground leading-none font-mono">{athlete.athleteProfile?.vam ?? '—'}</span>
-                            {athlete.athleteProfile?.vam && <span className="text-xs font-semibold text-muted-foreground">{tUnits('minPerKm')}</span>}
-                        </div>
-                        {!athlete.athleteProfile?.vam && (
-                            <Select onValueChange={handleUpdateVAM}>
-                                <SelectTrigger className="h-6 text-[10px] font-bold uppercase tracking-wider text-primary bg-muted dark:bg-white/5 border-0 rounded px-2 w-fit gap-1 focus:ring-0 mt-1">
-                                     <SelectValue placeholder={tAthlete('assignLevel')} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {VAM_LEVELS.map((level) => (
-                                        <SelectItem key={level.pace} value={level.pace}>{level.name} ({level.pace})</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        )}
-                    </div>
-                    <div className="p-5 flex flex-col gap-2">
-                        <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">{t("athletes.detail.testUAN")}</span>
-                        <div className="flex items-baseline gap-1.5">
-                            <span className="text-2xl font-extrabold text-foreground leading-none font-mono">{athlete.athleteProfile?.uan ?? '—'}</span>
-                            {athlete.athleteProfile?.uan && <span className="text-xs font-semibold text-muted-foreground">{tUnits('minPerKm')}</span>}
+                        <div>
+                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">{tAthlete('nextRace')}</p>
+                            <p className="text-2xl font-display mt-1">{nextRaceDays ?? '-'} <span className="text-xs text-muted-foreground font-sans">{tAthlete('daysShort')}</span></p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div className="bg-card rounded-2xl shadow-[0_4px_24px_rgba(43,52,55,0.04)] dark:border dark:border-white/5 overflow-hidden">
-                <div className="px-5 pt-5 pb-4 border-b border-border/40 flex items-center justify-between gap-3">
-                    <div>
-                        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">{tAthlete('loadMonitoringTitle')}</p>
-                        <p className="text-sm text-foreground font-medium mt-1">{tAthlete('loadMonitoringSubtitle')}</p>
-                    </div>
-                    <Badge className={`${loadMetrics.riskClassName} border-0 text-[10px] uppercase tracking-wider`}>
-                        {tAthlete(`loadRisk.${loadMetrics.riskKey}`)}
-                    </Badge>
-                </div>
-                <div className="px-5 py-3 border-b border-border/40 flex items-center justify-between gap-3 flex-wrap">
-                    <div className="flex items-center gap-2">
-                        {[7, 30, 90].map((range) => (
-                            <Button
-                                key={range}
-                                type="button"
-                                variant={loadRange === range ? 'default' : 'outline'}
-                                className="h-7 px-3 text-[10px] font-bold tracking-wider"
-                                onClick={() => setLoadRange(range as LoadMetricsRange)}
-                            >
-                                {range}D
+            <div className="bg-background/90 border border-border/50 rounded-2xl p-3">
+                <div className="flex flex-col gap-3">
+                    <div className="flex flex-wrap gap-2">
+                        <Link href={'/workouts/assign?athleteId=' + id}>
+                            <Button className="gap-2 text-primary-foreground border-0 font-medium px-4">
+                                <Plus className="h-4 w-4" />
+                                {t("trainings.assign.assignWorkout")}
                             </Button>
-                        ))}
+                        </Link>
+                        <Button variant="outline" className="gap-2" onClick={() => setIsAssignRaceModalOpen(true)}>
+                            <Trophy className="h-4 w-4" />
+                            {t("races.athlete.addRace")}
+                        </Button>
+                        <Button variant="outline" className="gap-2" onClick={() => setActiveSection('racesNotes')}>
+                            <MessageSquare className="h-4 w-4" />
+                            {t("athletes.detail.coachComments")}
+                        </Button>
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                        {loadMetricsLoading
-                            ? tAthlete('loadStatus.loading')
-                            : loadMetrics.backfillStatus === 'queued' || loadMetrics.backfillStatus === 'running'
-                                ? tAthlete('loadStatus.syncing')
-                                : loadMetrics.partial
-                                    ? tAthlete('loadStatus.partial', { days: loadMetrics.historyDaysAvailable })
-                                    : tAthlete('loadStatus.ready')}
-                    </div>
+
+                    <Tabs value={activeSection} onValueChange={(value) => setActiveSection(value as 'training' | 'overview' | 'health' | 'racesNotes')}>
+                        <TabsList className="w-full h-auto grid grid-cols-2 md:grid-cols-4 gap-1 bg-muted/80 p-1 rounded-xl">
+                            <TabsTrigger value="training" className="text-xs font-semibold">{tAthlete('trainingTab')}</TabsTrigger>
+                            <TabsTrigger value="overview" className="text-xs font-semibold">{tAthlete('overviewTab')}</TabsTrigger>
+                            <TabsTrigger value="health" className="text-xs font-semibold">{tAthlete('healthTab')}</TabsTrigger>
+                            <TabsTrigger value="racesNotes" className="text-xs font-semibold">{tAthlete('racesNotesTab')}</TabsTrigger>
+                        </TabsList>
+                    </Tabs>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 divide-x divide-y sm:divide-y-0 divide-muted dark:divide-white/5">
-                    {[
-                        { label: 'CTL', value: loadMetrics.ctl },
-                        { label: 'ATL', value: loadMetrics.atl },
-                        { label: 'TSB', value: loadMetrics.tsb },
-                        { label: 'ACWR', value: loadMetrics.acwr, decimals: 2 },
-                        { label: tAthlete('todayLoad'), value: loadMetrics.todayLoad },
-                        { label: tAthlete('last7DaysAvg'), value: loadMetrics.sevenDayAvg },
-                    ].map((metric) => (
-                        <div key={metric.label} className="p-5 flex flex-col gap-2">
-                            <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">{metric.label}</span>
-                            <div className="flex items-baseline gap-1.5">
-                                <span className="text-2xl font-extrabold font-display text-foreground leading-none">{metric.decimals ? metric.value.toFixed(metric.decimals) : Math.round(metric.value)}</span>
-                                <span className="text-xs font-semibold text-muted-foreground">{metric.label === 'ACWR' ? '' : tAthlete('loadPoints')}</span>
+            </div>
+
+            {activeSection === 'overview' && (
+                <div className="space-y-6">
+                    <div className="bg-card rounded-2xl border border-border/50 overflow-hidden">
+                        <div className="px-5 py-4 border-b border-border/40 flex items-center justify-between gap-2">
+                            <div>
+                                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">{tAthlete('athleteProfileTitle')}</p>
+                                <p className="text-sm text-muted-foreground mt-1">{tAthlete('athleteProfileSubtitle')}</p>
                             </div>
                         </div>
-                    ))}
-                </div>
-                <div className="px-5 py-4 border-t border-border/40">
-                    <LoadMetricsTrendChart data={loadTrendData} />
-                </div>
-                <div className="px-5 py-4 border-t border-border/40">
-                    <p className="text-xs text-muted-foreground leading-relaxed">{tAthlete('loadRiskHint', { tsb: Math.round(loadMetrics.tsb), atl: Math.round(loadMetrics.atl), ctl: Math.round(loadMetrics.ctl), acwr: loadMetrics.acwr.toFixed(2) })}</p>
-                </div>
-            </div>
 
-            <div className="flex flex-col sm:flex-row justify-between items-center bg-transparent mt-10 mb-6 w-full gap-4 sm:gap-0">
-                <div className="flex items-center bg-card dark:border dark:border-white/5 rounded-lg shadow-[0_20px_40px_rgba(43,52,55,0.02)] p-1 md:w-auto w-full justify-between sm:justify-start">
-                    <Button variant="ghost" onClick={() => setCurrentWeekStart(prev => addWeeks(prev, -1))} size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground"><ChevronLeft className="w-4 h-4" /></Button>
-                    <span className="px-5 font-semibold text-[13px] tracking-wide w-40 text-center text-foreground capitalize">{format(currentWeekStart, 'MMMM yyyy', { locale: es })}</span>
-                    <Button variant="ghost" onClick={() => setCurrentWeekStart(prev => addWeeks(prev, 1))} size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground"><ChevronRight className="w-4 h-4" /></Button>
-                    <div className="h-4 w-px bg-border/50 mx-1" />
-                    <Button variant="ghost" onClick={() => setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }))} className="px-3 h-8 text-[11px] font-bold tracking-wider uppercase text-primary">{t("common.today")}</Button>
-                </div>
-                <div className="flex items-center gap-3">
-                    <Link href={'/workouts/assign?athleteId=' + id}>
-                        <Button className="bg-primary hover:bg-primary/90 shadow-[0_10px_20px_rgba(78,96,115,0.15)] gap-2 text-primary-foreground border-0 font-medium px-5">
-                            <Plus className="h-4 w-4" />
-                            {t("trainings.assign.assignWorkout")}
-                        </Button>
-                    </Link>
-                </div>
-            </div>
-
-            <div className="mb-12 w-full">
-                <AthleteWeeklyCalendar weekStart={currentWeekStart} assignments={assignments} activities={activities} />
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 w-full items-stretch relative">
-                <div className="lg:col-span-4 h-full">
-                    <div className="bg-muted dark:bg-muted rounded-3xl p-6 h-full flex flex-col pt-7 pb-6 relative group overflow-hidden">
-                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white to-transparent opacity-50" />
-                        <h3 className="text-xl font-display font-bold tracking-tight mb-6 text-foreground px-2 flex items-center justify-between">
-                            {t("athletes.detail.coachComments")}
-                            <MessageSquare className="w-4 h-4 text-muted-foreground/60" />
-                        </h3>
-                        <div className="flex-1 w-full bg-transparent mb-6 overflow-hidden [&_.bg-card]:bg-transparent [&_.bg-card]:border-0 [&_.bg-card]:shadow-none [&_.p-6]:px-0 pl-0 [&_.p-6]:py-0 [&_h3]:hidden">
-                            <CoachNotes athleteId={id} initialNotes={athlete.athleteProfile?.coachNotes || ''} onSave={handleSaveNotes} />
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 divide-x divide-y lg:divide-y-0 divide-muted dark:divide-white/5">
+                            {[
+                                { label: t("athletes.detail.height"), value: athlete.athleteProfile?.height, unit: tUnits('cm') },
+                                { label: t("athletes.detail.weight"), value: athlete.athleteProfile?.weight, unit: tUnits('kg') },
+                                { label: t("athletes.detail.restHR"), value: athlete.athleteProfile?.restHR, unit: tUnits('bpm') },
+                                { label: t("athletes.detail.maxHR"), value: athlete.athleteProfile?.maxHR, unit: tUnits('bpm') },
+                                { label: t("athletes.detail.lthr"), value: athlete.athleteProfile?.lthr, unit: tUnits('bpm') },
+                            ].map((m, i) => (
+                                <div key={i} className="p-5 flex flex-col gap-2">
+                                    <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">{m.label}</span>
+                                    <div className="flex items-baseline gap-1.5">
+                                        <span className="text-2xl font-extrabold font-display text-foreground leading-none">{m.value ?? '—'}</span>
+                                        {m.value && <span className="text-xs font-semibold text-muted-foreground">{m.unit}</span>}
+                                    </div>
+                                </div>
+                            ))}
+                            <div className="p-5 flex flex-col gap-2">
+                                <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">{t("athletes.detail.testVAM")}</span>
+                                <div className="flex items-baseline gap-1.5">
+                                    <span className="text-2xl font-extrabold text-foreground leading-none font-mono">{athlete.athleteProfile?.vam ?? '—'}</span>
+                                    {athlete.athleteProfile?.vam && <span className="text-xs font-semibold text-muted-foreground">{tUnits('minPerKm')}</span>}
+                                </div>
+                                {!athlete.athleteProfile?.vam && (
+                                    <Select onValueChange={handleUpdateVAM}>
+                                        <SelectTrigger className="h-6 text-[10px] font-bold uppercase tracking-wider text-primary bg-muted dark:bg-white/5 border-0 rounded px-2 w-fit gap-1 focus:ring-0 mt-1">
+                                            <SelectValue placeholder={tAthlete('assignLevel')} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {VAM_LEVELS.map((level) => (
+                                                <SelectItem key={level.pace} value={level.pace}>{level.name} ({level.pace})</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                            </div>
+                            <div className="p-5 flex flex-col gap-2">
+                                <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">{t("athletes.detail.testUAN")}</span>
+                                <div className="flex items-baseline gap-1.5">
+                                    <span className="text-2xl font-extrabold text-foreground leading-none font-mono">{athlete.athleteProfile?.uan ?? '—'}</span>
+                                    {athlete.athleteProfile?.uan && <span className="text-xs font-semibold text-muted-foreground">{tUnits('minPerKm')}</span>}
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div className="lg:col-span-8 h-full">
-                    <div className="flex flex-col gap-4 h-full">
+                    <div className="bg-card dark:border dark:border-white/5 p-8 rounded-2xl shadow-[0_12px_30px_rgba(43,52,55,0.03)] border border-muted">
+                        <h3 className="text-xl font-display font-bold tracking-tight mb-6 text-foreground">{tAthlete('performanceAndZones')}</h3>
+                        <PerformanceTrendChart data={performanceData} />
+                    </div>
+                </div>
+            )}
+
+            {activeSection === 'training' && (
+                <div className="space-y-6">
+                    <div className="flex items-center bg-card dark:border dark:border-white/5 rounded-lg p-1 w-full sm:w-fit">
+                        <Button variant="ghost" onClick={() => setCurrentWeekStart(prev => addWeeks(prev, -1))} size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground"><ChevronLeft className="w-4 h-4" /></Button>
+                        <span className="px-5 font-semibold text-[13px] tracking-wide w-40 text-center text-foreground capitalize">{format(currentWeekStart, 'MMMM yyyy', { locale: es })}</span>
+                        <Button variant="ghost" onClick={() => setCurrentWeekStart(prev => addWeeks(prev, 1))} size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground"><ChevronRight className="w-4 h-4" /></Button>
+                        <div className="h-4 w-px bg-border/50 mx-1" />
+                        <Button variant="ghost" onClick={() => setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }))} className="px-3 h-8 text-[11px] font-bold tracking-wider uppercase text-primary">{t("common.today")}</Button>
+                    </div>
+
+                    <AthleteWeeklyCalendar weekStart={currentWeekStart} assignments={assignments} activities={activities} />
+
+                    <div className="bg-card dark:border dark:border-white/5 p-8 rounded-2xl shadow-[0_12px_30px_rgba(43,52,55,0.03)] border border-muted">
+                        <h3 className="text-xl font-display font-bold tracking-tight mb-6 text-foreground">{tAthlete('trainingComplianceTrend')}</h3>
+                        <PerformanceTrendChart data={performanceData} />
+                    </div>
+                </div>
+            )}
+
+            {activeSection === 'health' && (
+                <div className="bg-card rounded-2xl shadow-[0_4px_24px_rgba(43,52,55,0.04)] dark:border dark:border-white/5">
+                    <div className="px-5 pt-5 pb-4 border-b border-border/40 flex items-center justify-between gap-3">
+                        <div>
+                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">{tAthlete('loadMonitoringTitle')}</p>
+                            <p className="text-sm text-foreground font-medium mt-1">{tAthlete('loadMonitoringSubtitle')}</p>
+                        </div>
+                        <Badge className={`${loadMetrics.riskClassName} border-0 text-[10px] uppercase tracking-wider`}>
+                            {tAthlete(`loadRisk.${loadMetrics.riskKey}`)}
+                        </Badge>
+                    </div>
+                    <div className="px-5 py-3 border-b border-border/40 flex items-center justify-between gap-3 flex-wrap">
+                        <div className="flex items-center gap-2">
+                            {[7, 30, 90].map((range) => (
+                                <Button
+                                    key={range}
+                                    type="button"
+                                    variant={loadRange === range ? 'default' : 'outline'}
+                                    className="h-7 px-3 text-[10px] font-bold tracking-wider"
+                                    onClick={() => handleLoadRangeChange(range as LoadMetricsRange)}
+                                    disabled={isSwitchingLoadRange}
+                                >
+                                    {range}D
+                                </Button>
+                            ))}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                            {showLoadSkeleton
+                                ? tAthlete('loadStatus.loading')
+                                : loadMetrics.backfillStatus === 'queued' || loadMetrics.backfillStatus === 'running'
+                                    ? tAthlete('loadStatus.syncing')
+                                    : loadMetrics.partial
+                                        ? tAthlete('loadStatus.partial', { days: loadMetrics.historyDaysAvailable })
+                                        : tAthlete('loadStatus.ready')}
+                        </div>
+                    </div>
+                    {showLoadSkeleton ? (
+                        <div className="px-5 py-4 border-t border-border/40">
+                            <div className="rounded-2xl border border-border/50 bg-muted/20 p-5 sm:p-6">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-5">
+                                    {Array.from({ length: 6 }).map((_, idx) => (
+                                        <div key={`load-skeleton-metric-${idx}`} className="rounded-lg bg-card/60 border border-border/40 p-3">
+                                            <Skeleton className="h-3 w-14 mb-3" />
+                                            <Skeleton className="h-8 w-20" />
+                                        </div>
+                                    ))}
+                                </div>
+                                <Skeleton className="h-72 w-full" />
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 divide-x divide-y sm:divide-y-0 divide-muted dark:divide-white/5">
+                                {[
+                                    { label: 'CTL', value: loadMetrics.ctl, tooltip: tAthlete('metricTooltip.ctl') },
+                                    { label: 'ATL', value: loadMetrics.atl, tooltip: tAthlete('metricTooltip.atl') },
+                                    { label: 'TSB', value: loadMetrics.tsb, tooltip: tAthlete('metricTooltip.tsb') },
+                                    { label: 'ACWR', value: loadMetrics.acwr, decimals: 2, tooltip: tAthlete('metricTooltip.acwr') },
+                                    { label: tAthlete('todayLoad'), value: loadMetrics.todayLoad, tooltip: tAthlete('metricTooltip.todayLoad') },
+                                    { label: tAthlete('last7DaysAvg'), value: loadMetrics.sevenDayAvg, tooltip: tAthlete('metricTooltip.last7DaysAvg') },
+                                ].map((metric, metricIndex, metrics) => (
+                                    <div key={metric.label} className="p-5 flex flex-col gap-2">
+                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
+                                            {metric.label}
+                                            <span className="relative inline-flex items-center group">
+                                                <Info className="h-3 w-3 text-muted-foreground/80 cursor-help" aria-label={metric.tooltip} />
+                                                <span className={`pointer-events-none absolute top-full z-20 mt-2 w-52 rounded-md bg-foreground px-2 py-1.5 text-[10px] font-medium normal-case leading-relaxed text-background opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100 ${
+                                                    metricIndex === 0
+                                                        ? 'left-0'
+                                                        : metricIndex === metrics.length - 1
+                                                            ? 'right-0'
+                                                            : 'left-1/2 -translate-x-1/2'
+                                                }`}>
+                                                    {metric.tooltip}
+                                                </span>
+                                            </span>
+                                        </span>
+                                        <div className="flex items-baseline gap-1.5">
+                                            <span className="text-2xl font-extrabold font-display text-foreground leading-none">{metric.decimals ? metric.value.toFixed(metric.decimals) : Math.round(metric.value)}</span>
+                                            <span className="text-xs font-semibold text-muted-foreground">{metric.label === 'ACWR' ? '' : tAthlete('loadPoints')}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="px-5 py-4 border-t border-border/40">
+                                <LoadMetricsTrendChart data={loadTrendData} />
+                            </div>
+                            <div className="px-5 pb-5">
+                                {athlete.athleteProfile?.hrZones ? (
+                                    <div className="rounded-xl bg-muted/20 p-4">
+                                        <HeartRateZones zones={athlete.athleteProfile.hrZones} />
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-muted-foreground">{tAthlete('noHrZones')}</p>
+                                )}
+                            </div>
+                        </>
+                    )}
+                    <div className="px-5 py-4 border-t border-border/40">
+                        <p className="text-xs text-muted-foreground leading-relaxed">{tAthlete('loadRiskHint', { tsb: Math.round(loadMetrics.tsb), atl: Math.round(loadMetrics.atl), ctl: Math.round(loadMetrics.ctl), acwr: loadMetrics.acwr.toFixed(2) })}</p>
+                    </div>
+                </div>
+            )}
+
+            {activeSection === 'racesNotes' && (
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 w-full items-stretch relative">
+                    <div className="lg:col-span-4 h-full">
+                        <div className="bg-muted dark:bg-muted rounded-3xl p-6 h-full flex flex-col pt-7 pb-6 relative group overflow-hidden">
+                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white to-transparent opacity-50" />
+                            <h3 className="text-xl font-display font-bold tracking-tight mb-6 text-foreground px-2 flex items-center justify-between">
+                                {t("athletes.detail.coachComments")}
+                                <MessageSquare className="w-4 h-4 text-muted-foreground/60" />
+                            </h3>
+                            <div className="flex-1 w-full bg-transparent mb-6 overflow-hidden [&_.bg-card]:bg-transparent [&_.bg-card]:border-0 [&_.bg-card]:shadow-none [&_.p-6]:px-0 pl-0 [&_.p-6]:py-0 [&_h3]:hidden">
+                                <CoachNotes athleteId={id} initialNotes={athlete.athleteProfile?.coachNotes || ''} onSave={handleSaveNotes} />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="lg:col-span-8 h-full">
                         <div className="flex items-center justify-between mb-2">
                             <h3 className="text-xl font-display font-medium text-foreground px-2">{t("races.athlete.upcomingTitle")}</h3>
                             <Button variant="ghost" size="sm" onClick={() => setIsAssignRaceModalOpen(true)} className="text-primary font-bold text-[10px] uppercase tracking-wider gap-1.5"><Plus className="h-3 w-3" />{t("races.athlete.addRace")}</Button>
@@ -465,7 +570,7 @@ export function AthleteDetailsView({
 
                         {upcomingRaces.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {upcomingRaces.slice(0, 2).map((race, index) => {
+                                {upcomingRaces.slice(0, 4).map((race, index) => {
                                     const raceDate = parseISO(race.date);
                                     const daysLeft = differenceInDays(raceDate, startOfDay(new Date()));
                                     return (
@@ -513,17 +618,7 @@ export function AthleteDetailsView({
                         )}
                     </div>
                 </div>
-            </div>
-
-            <div className="mt-20 bg-card dark:border dark:border-white/5 p-8 md:p-12 rounded-[2rem] shadow-[0_20px_40px_rgba(43,52,55,0.02)] border border-muted">
-                <h3 className="text-[22px] font-display font-bold tracking-tight mb-10 text-foreground">{tAthlete('performanceAndZones')}</h3>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                    <PerformanceTrendChart data={performanceData} />
-                    {athlete.athleteProfile?.hrZones && (
-                        <HeartRateZones zones={athlete.athleteProfile.hrZones} />
-                    )}
-                </div>
-            </div>
+            )}
 
             <AlertDialog
                 open={alertState.open || pendingDeleteAssignment !== null}

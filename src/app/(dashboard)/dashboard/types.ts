@@ -72,7 +72,7 @@ export interface SmartAlert {
   alertId?: string;
   athleteId: string;
   athleteName: string;
-  type: 'zone_violation' | 'new_feedback' | 'rpe_mismatch' | 'low_compliance' | 'missing_workout';
+  type: 'zone_violation' | 'new_feedback' | 'rpe_mismatch' | 'low_compliance' | 'missing_workout' | 'training_load';
   time: string;
   details: string;
   score: number;

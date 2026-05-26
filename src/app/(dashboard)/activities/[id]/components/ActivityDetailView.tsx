@@ -18,6 +18,7 @@ import {
     Link as LinkIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { HeartRateZonesChart } from '@/app/(dashboard)/activities/components/HeartRateZonesChart';
 import { PaceZonesChart } from '@/app/(dashboard)/activities/components/PaceZonesChart';
 import { IntervalsAnalysisChart } from '@/app/(dashboard)/activities/components/IntervalsAnalysisChart';
@@ -54,10 +55,23 @@ interface WorkoutAssignment {
 }
 
 function ActivityChartLoading() {
-    const t = useTranslations('activities.detail');
     return (
-        <div className="h-[400px] flex items-center justify-center">
-            <p>{t('loadingChart')}</p>
+        <div className="h-full w-full p-6 lg:p-8">
+            <div className="h-full w-full rounded-2xl border border-border/50 bg-muted/30 p-5 lg:p-6">
+                <div className="flex items-center justify-between mb-6">
+                    <Skeleton className="h-4 w-40" />
+                    <Skeleton className="h-3 w-24" />
+                </div>
+                <div className="grid grid-cols-12 gap-2 h-[360px] lg:h-[440px] items-end">
+                    {Array.from({ length: 12 }).map((_, idx) => (
+                        <Skeleton
+                            key={idx}
+                            className="w-full rounded-lg"
+                            style={{ height: `${40 + ((idx * 29) % 55)}%` }}
+                        />
+                    ))}
+                </div>
+            </div>
         </div>
     );
 }
@@ -405,7 +419,7 @@ export function ActivityDetailView({
 
             {!isWeightTraining(activity.sport_type) && (
                 <div className="bg-card rounded-3xl p-2 shadow-[0_20px_40px_rgba(43,52,55,0.02)] border border-muted">
-                    <div className="h-100 lg:h-125 w-full bg-muted rounded-2xl overflow-hidden relative">
+                    <div className="h-[460px] lg:h-[560px] w-full bg-muted rounded-2xl overflow-hidden relative">
                         <ActivityChart activityId={internalId} laps={activity.laps} hrZones={heartrateZones?.zones} isRunning={isRunning(activity.sport_type)} />
                     </div>
                 </div>

@@ -135,6 +135,19 @@ function calculateVariance(actual: number, planned: number): number {
     return ((actual - planned) / planned) * 100;
 }
 
+function getStepTolerance(stepType: FlatStep['stepType'], thresholdPercentage?: number): number {
+    const baseThreshold = thresholdPercentage ? thresholdPercentage / 100 : 0.1;
+    return stepType === 'warmup' || stepType === 'cooldown' ? baseThreshold * 2 : baseThreshold;
+}
+
+function getLapValueByTargetType(lap: RawLap, targetType: 'distance' | 'duration'): number {
+    if (targetType === 'distance') {
+        return lap.distance || 0;
+    }
+
+    return lap.elapsed_time || lap.moving_time || 0;
+}
+
 function isMatch(
     lapValue: number,
     stepValue: number,
@@ -142,9 +155,7 @@ function isMatch(
     stepType: FlatStep['stepType'],
     thresholdPercentage?: number
 ): { matches: boolean; variance: number; confidence: number } {
-    // Default threshold from env or 10% for active, 20% for warmup/cooldown
-    const baseThreshold = thresholdPercentage ? thresholdPercentage / 100 : 0.1;
-    const tolerance = stepType === 'warmup' || stepType === 'cooldown' ? baseThreshold * 2 : baseThreshold;
+    const tolerance = getStepTolerance(stepType, thresholdPercentage);
 
     const variance = calculateVariance(lapValue, stepValue);
     const absVariance = Math.abs(variance);
@@ -176,7 +187,8 @@ export function matchLapsToWorkout(
     const matchedLaps: MatchedLap[] = [];
     let currentStepIndex = 0;
 
-    for (let i = 0; i < laps.length; i++) {
+    let i = 0;
+    while (i < laps.length) {
         const lap = laps[i];
 
         if (currentStepIndex >= flatSteps.length) {
@@ -189,6 +201,7 @@ export function matchLapsToWorkout(
                 variance: 0,
                 matched: false,
             });
+            i++;
             continue;
         }
 
@@ -198,11 +211,11 @@ export function matchLapsToWorkout(
         let targetType: 'distance' | 'duration';
 
         if (step.target_type === 'distance') {
-            lapValue = lap.distance || 0;
+            lapValue = getLapValueByTargetType(lap, 'distance');
             stepValue = step.target_value;
             targetType = 'distance';
         } else if (step.target_type === 'duration') {
-            lapValue = lap.elapsed_time || lap.moving_time || 0;
+            lapValue = getLapValueByTargetType(lap, 'duration');
             stepValue = step.target_value;
             targetType = 'duration';
         } else {
@@ -215,6 +228,7 @@ export function matchLapsToWorkout(
                 variance: 0,
                 matched: false,
             });
+            i++;
             continue;
         }
 
@@ -231,7 +245,50 @@ export function matchLapsToWorkout(
                 matched: true,
             });
             currentStepIndex++;
+            i++;
         } else {
+            const tolerance = getStepTolerance(step.stepType, thresholdPercentage);
+            const maxAllowedValue = stepValue * (1 + tolerance);
+            let cumulativeValue = 0;
+            let cumulativeEndIndex = -1;
+            let cumulativeVariance = 0;
+            let cumulativeConfidence = 0;
+
+            for (let j = i; j < laps.length; j++) {
+                cumulativeValue += getLapValueByTargetType(laps[j], targetType);
+
+                const cumulativeMatch = isMatch(cumulativeValue, stepValue, targetType, step.stepType, thresholdPercentage);
+
+                if (cumulativeMatch.matches) {
+                    cumulativeEndIndex = j;
+                    cumulativeVariance = cumulativeMatch.variance;
+                    cumulativeConfidence = cumulativeMatch.confidence;
+                    break;
+                }
+
+                if (cumulativeValue > maxAllowedValue) {
+                    break;
+                }
+            }
+
+            if (cumulativeEndIndex >= i) {
+                for (let lapIndex = i; lapIndex <= cumulativeEndIndex; lapIndex++) {
+                    matchedLaps.push({
+                        lapIndex,
+                        stepIndex: currentStepIndex,
+                        stepLabel: generateStepLabel(step),
+                        stepType: step.stepType,
+                        confidence: Math.round(cumulativeConfidence),
+                        variance: Math.round(cumulativeVariance * 10) / 10,
+                        matched: true,
+                    });
+                }
+
+                currentStepIndex++;
+                i = cumulativeEndIndex + 1;
+                continue;
+            }
+
             let foundMatch = false;
             const maxLookAhead = 3;
 
@@ -242,11 +299,11 @@ export function matchLapsToWorkout(
                 let nextTargetType: 'distance' | 'duration';
 
                 if (nextStep.target_type === 'distance') {
-                    nextLapValue = lap.distance || 0;
+                    nextLapValue = getLapValueByTargetType(lap, 'distance');
                     nextStepValue = nextStep.target_value;
                     nextTargetType = 'distance';
                 } else if (nextStep.target_type === 'duration') {
-                    nextLapValue = lap.elapsed_time || lap.moving_time || 0;
+                    nextLapValue = getLapValueByTargetType(lap, 'duration');
                     nextStepValue = nextStep.target_value;
                     nextTargetType = 'duration';
                 } else continue;
@@ -280,6 +337,8 @@ export function matchLapsToWorkout(
                     matched: false,
                 });
             }
+
+            i++;
         }
     }
     return matchedLaps;

@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 interface CriticalAlertItemProps {
     athleteId: string;
     athleteName: string;
-    alertType: 'rpe_mismatch' | 'new_feedback' | 'low_compliance' | 'missing_workout' | 'zone_violation';
+    alertType: 'rpe_mismatch' | 'new_feedback' | 'low_compliance' | 'missing_workout' | 'zone_violation' | 'training_load';
     timestamp: string;
     message: string;
     details?: string;
@@ -52,6 +52,8 @@ export function CriticalAlertItem({
         messageColor = "text-orange-500/90";
     } else if (alertType === 'zone_violation') {
         messageColor = "text-red-500/90 font-bold";
+    } else if (alertType === 'training_load') {
+        messageColor = "text-amber-600/90 font-semibold";
     }
 
     return (

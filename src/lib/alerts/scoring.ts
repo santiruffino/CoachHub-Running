@@ -1,4 +1,4 @@
-export type SmartAlertType = 'zone_violation' | 'new_feedback' | 'rpe_mismatch' | 'low_compliance' | 'missing_workout';
+export type SmartAlertType = 'zone_violation' | 'new_feedback' | 'rpe_mismatch' | 'low_compliance' | 'missing_workout' | 'training_load';
 
 export type AlertPriority = 'P1' | 'P2' | 'P3' | 'P4';
 
@@ -13,6 +13,9 @@ export interface AlertScoringInput {
     hasRiskKeywords?: boolean;
     alreadyRead?: boolean;
     recentlyResolved?: boolean;
+    loadRisk?: 'insufficientData' | 'high' | 'moderate' | 'balanced' | 'lowStimulus';
+    acwr?: number;
+    tsb?: number;
 }
 
 export interface AlertScoringResult {
@@ -28,6 +31,7 @@ const BASE_SCORE: Record<SmartAlertType, number> = {
     low_compliance: 35,
     missing_workout: 30,
     new_feedback: 15,
+    training_load: 42,
 };
 
 function clampScore(value: number): number {
@@ -110,6 +114,39 @@ export function computeAlertScore(input: AlertScoringInput): AlertScoringResult 
     if (input.type === 'missing_workout' && typeof input.missingSessionCount === 'number' && input.missingSessionCount > 1) {
         score += 8;
         reasonCodes.push('MISSING_MULTIPLE');
+    }
+
+    if (input.type === 'training_load') {
+        if (input.loadRisk === 'high') {
+            score += 25;
+            reasonCodes.push('LOAD_RISK_HIGH');
+        } else if (input.loadRisk === 'moderate') {
+            score += 12;
+            reasonCodes.push('LOAD_RISK_MODERATE');
+        } else if (input.loadRisk === 'lowStimulus') {
+            score += 6;
+            reasonCodes.push('LOAD_RISK_LOW_STIMULUS');
+        }
+
+        if (typeof input.acwr === 'number') {
+            if (input.acwr > 1.5) {
+                score += 10;
+                reasonCodes.push('ACWR_SPIKE');
+            } else if (input.acwr > 1.3) {
+                score += 6;
+                reasonCodes.push('ACWR_ELEVATED');
+            }
+        }
+
+        if (typeof input.tsb === 'number') {
+            if (input.tsb < -30) {
+                score += 10;
+                reasonCodes.push('TSB_VERY_NEGATIVE');
+            } else if (input.tsb < -15) {
+                score += 6;
+                reasonCodes.push('TSB_NEGATIVE');
+            }
+        }
     }
 
     if (input.hasRiskKeywords) {
