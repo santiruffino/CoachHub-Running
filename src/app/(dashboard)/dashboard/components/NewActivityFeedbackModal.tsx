@@ -9,7 +9,14 @@ import { useTranslations } from 'next-intl';
 
 import api from '@/lib/axios';
 import { Activity } from '@/interfaces/activity';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogOverlay,
+    DialogTitle
+} from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
@@ -78,7 +85,7 @@ export function NewActivityFeedbackModal({
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogOverlay className="fixed inset-0 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-            <DialogContent className="sm:max-w-[560px] max-h-[90vh] overflow-y-auto border-none bg-surface p-0 overflow-hidden shadow-[0_20px_40px_rgba(43,52,55,0.08)] dark:bg-[#0a0f14]">
+            <DialogContent className="sm:max-w-140 max-h-[90vh] overflow-y-auto border-none bg-surface p-0 overflow-hidden shadow-[0_20px_40px_rgba(43,52,55,0.08)] dark:bg-[#0a0f14]">
                 <DialogHeader className="space-y-2 bg-surface-container-low px-6 pb-6 pt-7 text-left dark:bg-[#131b23]">
                     <DialogTitle className="font-display text-2xl font-bold tracking-tight text-foreground">
                         {t('title')}
@@ -87,7 +94,7 @@ export function NewActivityFeedbackModal({
                         {t('description')}
                     </DialogDescription>
                     {activity && (
-                        <p className="pt-3 text-xs font-semibold uppercase tracking-[0.1em] text-primary/90">
+                        <p className="pt-3 text-xs font-semibold uppercase tracking-widest text-primary/90">
                             {activity.title} • {format(new Date(activity.start_date), 'd MMM yyyy', { locale: es })}
                         </p>
                     )}

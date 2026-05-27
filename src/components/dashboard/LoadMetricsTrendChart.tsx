@@ -40,7 +40,7 @@ export function LoadMetricsTrendChart({ data }: LoadMetricsTrendChartProps) {
             width={38}
           />
           <Tooltip
-            formatter={(value: number, name: string) => [Number(value).toFixed(1), name]}
+            formatter={(value: number | undefined, name: string | undefined) => [Number(value ?? 0).toFixed(1), name ?? '']}
             contentStyle={{
               backgroundColor: 'hsl(var(--popover))',
               border: '1px solid hsl(var(--border))',
