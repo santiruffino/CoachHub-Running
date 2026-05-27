@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTranslations } from 'next-intl';
 import api from '@/lib/axios';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Lap {
     id: number;
@@ -213,7 +214,7 @@ export function ActivityDynamicsChart({ activityId, laps }: ActivityDynamicsChar
     const [streams, setStreams] = useState<StreamData | null>(null);
     const [loading, setLoading] = useState(true);
     const [resolution, setResolution] = useState<Resolution>('high');
-    const [xAxisType, setXAxisType] = useState<XAxisType>('time');
+    const [xAxisType, setXAxisType] = useState<XAxisType>('distance');
 
     // Toggle state for each metric
     const [visibleMetrics, setVisibleMetrics] = useState({
@@ -447,10 +448,66 @@ export function ActivityDynamicsChart({ activityId, laps }: ActivityDynamicsChar
 
     if (loading) {
         return (
-            <Card>
-                <CardContent className="py-12">
-                    <p className="text-center text-muted-foreground">{t('loading')}</p>
-                </CardContent>
+            <Card className="w-full h-full border-gray-800 bg-gray-950/50 flex flex-col justify-between p-6 min-h-[460px] lg:min-h-[560px]">
+                <div className="flex items-center justify-between mb-4">
+                    {/* Title skeleton */}
+                    <div className="flex items-center gap-2">
+                        <Skeleton className="h-5 w-5 rounded-full" />
+                        <Skeleton className="h-6 w-32" />
+                    </div>
+                    {/* Controls skeleton */}
+                    <div className="flex gap-3">
+                        <Skeleton className="h-8 w-24" />
+                        <Skeleton className="h-8 w-24" />
+                    </div>
+                </div>
+                {/* Metric toggles skeleton */}
+                <div className="flex gap-2 mb-6">
+                    <Skeleton className="h-7 w-16 rounded-full" />
+                    <Skeleton className="h-7 w-24 rounded-full" />
+                    <Skeleton className="h-7 w-20 rounded-full" />
+                </div>
+                {/* Chart area skeleton */}
+                <div className="w-full flex-1 min-h-[260px] relative mt-4 overflow-hidden">
+                    <svg
+                        className="w-full h-full text-muted/20 animate-pulse"
+                        viewBox="0 0 500 200"
+                        preserveAspectRatio="none"
+                    >
+                        {/* Area 1 (e.g. Pace style in real chart) */}
+                        <path
+                            d="M 0 150 Q 50 130 100 160 T 200 110 T 300 140 T 400 90 T 500 120 L 500 200 L 0 200 Z"
+                            fill="currentColor"
+                            opacity="0.15"
+                        />
+                        <path
+                            d="M 0 150 Q 50 130 100 160 T 200 110 T 300 140 T 400 90 T 500 120"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            fill="none"
+                            opacity="0.3"
+                        />
+
+                        {/* Area 2 (e.g. Heart Rate style in real chart) */}
+                        <path
+                            d="M 0 120 Q 80 90 160 110 T 320 80 T 500 95 L 500 200 L 0 200 Z"
+                            fill="currentColor"
+                            opacity="0.1"
+                        />
+                        <path
+                            d="M 0 120 Q 80 90 160 110 T 320 80 T 500 95"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            fill="none"
+                            opacity="0.25"
+                        />
+
+                        {/* Grid lines (horizontal) */}
+                        <line x1="0" y1="50" x2="500" y2="50" stroke="currentColor" strokeWidth="1" strokeDasharray="4 4" opacity="0.1" />
+                        <line x1="0" y1="100" x2="500" y2="100" stroke="currentColor" strokeWidth="1" strokeDasharray="4 4" opacity="0.1" />
+                        <line x1="0" y1="150" x2="500" y2="150" stroke="currentColor" strokeWidth="1" strokeDasharray="4 4" opacity="0.1" />
+                    </svg>
+                </div>
             </Card>
         );
     }
@@ -490,7 +547,7 @@ export function ActivityDynamicsChart({ activityId, laps }: ActivityDynamicsChar
                             <div className="flex items-center gap-2">
                                 <span className="text-xs text-muted-foreground uppercase font-semibold">{t('detail')}:</span>
                                 <Select value={resolution} onValueChange={(value: Resolution) => setResolution(value)}>
-                                    <SelectTrigger className="w-[100px] h-8 text-xs bg-gray-900 border-gray-700">
+                                    <SelectTrigger className="w-25 h-8 text-xs bg-gray-900 border-gray-700">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent className="bg-gray-900 border-gray-700">
@@ -556,12 +613,12 @@ export function ActivityDynamicsChart({ activityId, laps }: ActivityDynamicsChar
                     )}
                 </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-0 pb-4">
                 <div className="h-[400px] w-full mt-4">
                     <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart
                             data={chartData}
-                            margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                            margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
                         >
                             <defs>
                                 <linearGradient id="colorPace" x1="0" y1="0" x2="0" y2="1">
@@ -595,23 +652,83 @@ export function ActivityDynamicsChart({ activityId, laps }: ActivityDynamicsChar
                                 dy={10}
                             />
 
-                            {/* Left Y-axis for metrics */}
-                            <YAxis
-                                yAxisId="left"
-                                hide
-                                domain={[0, 'auto']}
-                            />
+                            {/* Fallback default Y-axis to prevent Recharts errors if nothing is selected */}
+                            <YAxis yAxisId="default" hide />
 
-                            {/* Right Y-axis for heart rate specifically */}
-                            {hasHeartRate && visibleMetrics.heartRate && (
+                            {/* Pace Y-axis */}
+                            {visibleMetrics.pace && (
                                 <YAxis
-                                    yAxisId="right"
+                                    yAxisId="pace"
+                                    orientation="left"
+                                    stroke="#06B6D4"
+                                    style={{ fontSize: '10px' }}
+                                    domain={['auto', 'auto']}
+                                    axisLine={false}
+                                    tickLine={false}
+                                    width={40}
+                                    tickFormatter={(val) => {
+                                        const paceMinutes = 10 - val;
+                                        return formatPaceString(paceMinutes);
+                                    }}
+                                />
+                            )}
+
+                            {/* Cadence Y-axis */}
+                            {visibleMetrics.cadence && hasCadence && (
+                                <YAxis
+                                    yAxisId="cadence"
+                                    orientation="left"
+                                    stroke="#F97316"
+                                    style={{ fontSize: '10px' }}
+                                    domain={['auto', 'auto']}
+                                    axisLine={false}
+                                    tickLine={false}
+                                    width={35}
+                                    tickFormatter={(val) => `${val}`}
+                                />
+                            )}
+
+                            {/* Elevation Y-axis */}
+                            {visibleMetrics.elevation && hasElevation && (
+                                <YAxis
+                                    yAxisId="elevation"
+                                    orientation="left"
+                                    stroke="#22C55E"
+                                    style={{ fontSize: '10px' }}
+                                    domain={['auto', 'auto']}
+                                    axisLine={false}
+                                    tickLine={false}
+                                    width={40}
+                                    tickFormatter={(val) => `${val}m`}
+                                />
+                            )}
+
+                            {/* Grade Y-axis */}
+                            {visibleMetrics.grade && hasGrade && (
+                                <YAxis
+                                    yAxisId="grade"
+                                    orientation="left"
+                                    stroke="#FF6800"
+                                    style={{ fontSize: '10px' }}
+                                    domain={['auto', 'auto']}
+                                    axisLine={false}
+                                    tickLine={false}
+                                    width={35}
+                                    tickFormatter={(val) => `${val}%`}
+                                />
+                            )}
+
+                            {/* Heart Rate Y-axis */}
+                            {visibleMetrics.heartRate && hasHeartRate && (
+                                <YAxis
+                                    yAxisId="heartRate"
                                     orientation="right"
                                     stroke="#A855F7"
                                     style={{ fontSize: '10px' }}
                                     domain={['dataMin - 5', 'dataMax + 5']}
                                     axisLine={false}
                                     tickLine={false}
+                                    width={35}
                                     tickFormatter={(val) => `${val}`}
                                 />
                             )}
@@ -621,7 +738,7 @@ export function ActivityDynamicsChart({ activityId, laps }: ActivityDynamicsChar
                             {/* Pace Area - Main metric */}
                             {visibleMetrics.pace && (
                                 <Area
-                                    yAxisId="left"
+                                    yAxisId="pace"
                                     type="natural"
                                     dataKey="pace"
                                     stroke="#06B6D4"
@@ -635,7 +752,7 @@ export function ActivityDynamicsChart({ activityId, laps }: ActivityDynamicsChar
                             {/* Cadence Area */}
                             {visibleMetrics.cadence && hasCadence && (
                                 <Area
-                                    yAxisId="left"
+                                    yAxisId="cadence"
                                     type="natural"
                                     dataKey="cadence"
                                     stroke="#F97316"
@@ -649,7 +766,7 @@ export function ActivityDynamicsChart({ activityId, laps }: ActivityDynamicsChar
                             {/* Grade Bars (keep as bars for contrast) */}
                             {visibleMetrics.grade && hasGrade && (
                                 <Bar
-                                    yAxisId="left"
+                                    yAxisId="grade"
                                     dataKey="grade"
                                     fill="#FF6800"
                                     radius={[2, 2, 0, 0]}
@@ -661,7 +778,7 @@ export function ActivityDynamicsChart({ activityId, laps }: ActivityDynamicsChar
                             {/* Elevation area (background) */}
                             {visibleMetrics.elevation && hasElevation && (
                                 <Area
-                                    yAxisId="left"
+                                    yAxisId="elevation"
                                     type="natural"
                                     dataKey="elevation"
                                     stroke="#22C55E"
@@ -675,7 +792,7 @@ export function ActivityDynamicsChart({ activityId, laps }: ActivityDynamicsChar
                             {/* Heart Rate area (overlay) */}
                             {visibleMetrics.heartRate && hasHeartRate && (
                                 <Area
-                                    yAxisId="right"
+                                    yAxisId="heartRate"
                                     type="natural"
                                     dataKey="heartRate"
                                     stroke="#A855F7"

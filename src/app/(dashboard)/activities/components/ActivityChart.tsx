@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import api from '@/lib/axios';
 import { useTranslations } from 'next-intl';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Lap {
     id: number;
@@ -648,10 +649,66 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
 
     if (loading) {
         return (
-            <Card>
-                <CardContent className="py-12">
-                    <p className="text-center text-muted-foreground">{t('loading')}</p>
-                </CardContent>
+            <Card className="w-full h-full border-gray-800 bg-gray-950/50 flex flex-col justify-between p-6 min-h-[460px] lg:min-h-[560px]">
+                <div className="flex items-center justify-between mb-4">
+                    {/* Title skeleton */}
+                    <div className="flex items-center gap-2">
+                        <Skeleton className="h-5 w-5 rounded-full" />
+                        <Skeleton className="h-6 w-32" />
+                    </div>
+                    {/* Controls skeleton */}
+                    <div className="flex gap-3">
+                        <Skeleton className="h-8 w-24" />
+                        <Skeleton className="h-8 w-24" />
+                    </div>
+                </div>
+                {/* Metric toggles skeleton */}
+                <div className="flex gap-2 mb-6">
+                    <Skeleton className="h-7 w-16 rounded-full" />
+                    <Skeleton className="h-7 w-24 rounded-full" />
+                    <Skeleton className="h-7 w-20 rounded-full" />
+                </div>
+                {/* Chart area skeleton */}
+                <div className="w-full flex-1 min-h-[260px] relative mt-4 overflow-hidden">
+                    <svg
+                        className="w-full h-full text-muted/20 animate-pulse"
+                        viewBox="0 0 500 200"
+                        preserveAspectRatio="none"
+                    >
+                        {/* Area 1 (e.g. Pace style in real chart) */}
+                        <path
+                            d="M 0 150 Q 50 130 100 160 T 200 110 T 300 140 T 400 90 T 500 120 L 500 200 L 0 200 Z"
+                            fill="currentColor"
+                            opacity="0.15"
+                        />
+                        <path
+                            d="M 0 150 Q 50 130 100 160 T 200 110 T 300 140 T 400 90 T 500 120"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            fill="none"
+                            opacity="0.3"
+                        />
+
+                        {/* Area 2 (e.g. Heart Rate style in real chart) */}
+                        <path
+                            d="M 0 120 Q 80 90 160 110 T 320 80 T 500 95 L 500 200 L 0 200 Z"
+                            fill="currentColor"
+                            opacity="0.1"
+                        />
+                        <path
+                            d="M 0 120 Q 80 90 160 110 T 320 80 T 500 95"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            fill="none"
+                            opacity="0.25"
+                        />
+
+                        {/* Grid lines (horizontal) */}
+                        <line x1="0" y1="50" x2="500" y2="50" stroke="currentColor" strokeWidth="1" strokeDasharray="4 4" opacity="0.1" />
+                        <line x1="0" y1="100" x2="500" y2="100" stroke="currentColor" strokeWidth="1" strokeDasharray="4 4" opacity="0.1" />
+                        <line x1="0" y1="150" x2="500" y2="150" stroke="currentColor" strokeWidth="1" strokeDasharray="4 4" opacity="0.1" />
+                    </svg>
+                </div>
             </Card>
         );
     }

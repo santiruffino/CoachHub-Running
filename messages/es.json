@@ -1,6 +1,6 @@
 {
     "nav": {
-        "brand": "Coach Hub",
+        "brand": "Endurix",
         "userFallback": "Usuario",
         "dashboard": "Dashboard",
         "athletes": "Atletas",
@@ -287,6 +287,12 @@
     },
     "activities": {
         "detail": {
+            "common": {
+                "selectAll": "Seleccionar todo",
+                "clear": "Limpiar",
+                "edit": "Editar",
+                "cancel": "Cancelar"
+            },
             "loadingChart": "Cargando gráfico...",
             "errorLoad": "Error al cargar la actividad",
             "errorSaveFeedback": "Error al guardar el feedback. Por favor, inténtalo de nuevo.",

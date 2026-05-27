@@ -106,7 +106,7 @@ export function ActivityDetailView({
     const tDashboard = useTranslations('dashboard');
     const intlFormat = useFormatter();
 
-    const [activity] = useState<ActivityDetail>(initialActivity);
+    const [activity, setActivity] = useState<ActivityDetail>(initialActivity);
     const [compliance] = useState<ComplianceData | null>(initialCompliance);
     const [heartrateZones] = useState(initialHRZones);
     const [feedback, setFeedback] = useState(initialFeedback ? { ...initialFeedback, comments: initialFeedback.comments || '' } : { rpe: 5, comments: '' });
@@ -238,14 +238,37 @@ export function ActivityDetailView({
         return colors[zone - 1] || 'bg-gray-200 text-gray-900';
     };
 
-    const handleOverrideStepType = async (lapIndex: number, newStepType: string) => {
+    const updateLapOverrides = async (overrideUpdates: Record<string, string>) => {
         try {
-            await api.patch(`/v2/activities/${internalId}`, { lapOverrides: { [lapIndex]: newStepType } });
-            // In a full implementation, we would update the local state of activity or re-fetch
-            window.location.reload();
+            const mergedOverrides = {
+                ...(activity.lap_overrides || {}),
+                ...overrideUpdates,
+            };
+
+            await api.patch(`/v2/activities/${internalId}`, { lapOverrides: mergedOverrides });
+            setActivity(prev => ({
+                ...prev,
+                lap_overrides: mergedOverrides,
+            }));
         } catch (error) {
             appLogger.error('Failed to update lap override:', error);
+            showAlert('error', t('errorSaveFeedback'));
         }
+    };
+
+    const handleOverrideStepType = async (lapIndex: number, newStepType: string) => {
+        await updateLapOverrides({ [lapIndex]: newStepType });
+    };
+
+    const handleBulkOverrideStepType = async (lapIndices: number[], newStepType: string) => {
+        if (!lapIndices.length) return;
+
+        const updates = lapIndices.reduce<Record<string, string>>((acc, lapIndex) => {
+            acc[lapIndex] = newStepType;
+            return acc;
+        }, {});
+
+        await updateLapOverrides(updates);
     };
 
     const avgPace = formatPace(activity.average_speed);
@@ -427,7 +450,12 @@ export function ActivityDetailView({
 
             {!isWeightTraining(activity.sport_type) && activity.laps && activity.laps.length > 0 && (
                 <div className="bg-card rounded-3xl p-8 shadow-[0_20px_40px_rgba(43,52,55,0.02)] border border-muted">
-                    <IntervalsAnalysisChart laps={activity.laps} isRunning={isRunning(activity.sport_type)} lapOverrides={activity.lap_overrides || {}} matchedLaps={matchedLaps} />
+                    <IntervalsAnalysisChart
+                        laps={activity.laps}
+                        isRunning={isRunning(activity.sport_type)}
+                        lapOverrides={activity.lap_overrides || {}}
+                        matchedLaps={matchedLaps}
+                    />
                 </div>
             )}
 
@@ -488,7 +516,7 @@ export function ActivityDetailView({
                         {activity.laps && activity.laps.length > 0 && (
                             <TabsContent value="laps" className="mt-0 outline-none">
                                 <LapFilterBadges value={lapFilter} onChange={setLapFilter} t={t} />
-                                <LapsTable laps={activity.laps} matchedLaps={matchedLaps} lapFilter={lapFilter} isAthlete={isAthlete} lapOverrides={activity.lap_overrides || {}} onOverrideStepType={handleOverrideStepType} formatTime={formatTime} formatPace={formatPace} getHRZoneColor={getHRZoneColor} t={t} />
+                                <LapsTable laps={activity.laps} matchedLaps={matchedLaps} lapFilter={lapFilter} isAthlete={isAthlete} lapOverrides={activity.lap_overrides || {}} onOverrideStepType={handleOverrideStepType} onBulkOverrideStepType={handleBulkOverrideStepType} formatTime={formatTime} formatPace={formatPace} getHRZoneColor={getHRZoneColor} t={t} />
                             </TabsContent>
                         )}
 

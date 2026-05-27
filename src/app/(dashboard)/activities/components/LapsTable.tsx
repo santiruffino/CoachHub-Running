@@ -1,9 +1,12 @@
 'use client';
 
+import React from 'react';
+
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Pencil, X } from 'lucide-react';
 import { Lap } from '@/interfaces/activity';
 import { MatchedLap } from '@/features/trainings/utils/workoutMatcher';
 
@@ -16,6 +19,7 @@ interface LapsTableProps {
     isAthlete: boolean;
     lapOverrides: Record<string, string>;
     onOverrideStepType: (lapIndex: number, newStepType: string) => void;
+    onBulkOverrideStepType?: (lapIndices: number[], newStepType: string) => void;
     formatTime: (seconds: number) => string;
     formatPace: (metersPerSecond: number) => string;
     getHRZoneColor: (hr: number) => string;
@@ -29,11 +33,15 @@ export function LapsTable({
     isAthlete,
     lapOverrides,
     onOverrideStepType,
+    onBulkOverrideStepType,
     formatTime,
     formatPace,
     getHRZoneColor,
     t,
 }: LapsTableProps) {
+    const [selectedLapIndices, setSelectedLapIndices] = React.useState<number[]>([]);
+    const [isBulkEditMode, setIsBulkEditMode] = React.useState(false);
+
     const stepTypeColors: Record<string, string> = {
         warmup: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
         active: 'bg-orange-500/10 text-orange-500 border-orange-500/20',
@@ -51,11 +59,122 @@ export function LapsTable({
         cooldown: t('lapFilters.cooldown'),
     };
 
+    const visibleLaps = laps.map((lap, idx) => ({ lap, idx }))
+        .filter(({ idx }) => {
+            if (lapFilter === 'all') return true;
+            const matchedLap = matchedLaps.find(m => m.lapIndex === idx);
+            return matchedLap?.stepType === lapFilter;
+        });
+
+    const visibleLapIndices = visibleLaps.map(({ lap }) => lap.lap_index);
+
+    const allVisibleSelected = visibleLapIndices.length > 0 && visibleLapIndices.every(index => selectedLapIndices.includes(index));
+
+    const toggleSelectedLap = (lapIndex: number) => {
+        setSelectedLapIndices(prev => (
+            prev.includes(lapIndex)
+                ? prev.filter(index => index !== lapIndex)
+                : [...prev, lapIndex]
+        ));
+    };
+
+    const toggleSelectAllVisible = () => {
+        setSelectedLapIndices(prev => {
+            if (allVisibleSelected) {
+                return prev.filter(index => !visibleLapIndices.includes(index));
+            }
+
+            const merged = new Set([...prev, ...visibleLapIndices]);
+            return Array.from(merged);
+        });
+    };
+
+    const applyBulkOverride = (stepType: string) => {
+        if (!onBulkOverrideStepType || selectedLapIndices.length === 0) return;
+        onBulkOverrideStepType(selectedLapIndices, stepType);
+        setSelectedLapIndices([]);
+    };
+
+    const toggleBulkEditMode = () => {
+        setIsBulkEditMode(prev => {
+            const next = !prev;
+            if (!next) setSelectedLapIndices([]);
+            return next;
+        });
+    };
+
     return (
         <div className="overflow-x-auto">
+            {!isAthlete && onBulkOverrideStepType && (
+                <div className="mb-4">
+                    <div className="flex justify-end">
+                        <Button
+                            type="button"
+                            variant={isBulkEditMode ? 'default' : 'outline'}
+                            size="sm"
+                            className="gap-1.5 text-[10px] uppercase tracking-wider font-bold"
+                            onClick={toggleBulkEditMode}
+                        >
+                            <Pencil className="w-3.5 h-3.5" />
+                            {t('common.edit')}
+                        </Button>
+                    </div>
+
+                    {isBulkEditMode && (
+                        <div className="sticky top-2 z-20 mt-3 rounded-xl border bg-card/95 backdrop-blur p-3 shadow-sm">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 px-2 text-[10px] font-semibold"
+                                    onClick={toggleSelectAllVisible}
+                                >
+                                    {allVisibleSelected ? (t('common.clear') || 'Clear') : (t('common.selectAll') || 'Select all')}
+                                </Button>
+                                <span className="text-xs text-muted-foreground">{selectedLapIndices.length} selected</span>
+                                {Object.entries(overrideLabels).map(([key, label]) => (
+                                    <Button
+                                        key={`bulk-override-${key}`}
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-7 px-2 text-[10px] font-semibold"
+                                        onClick={() => applyBulkOverride(key)}
+                                        disabled={selectedLapIndices.length === 0}
+                                    >
+                                        {label}
+                                    </Button>
+                                ))}
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 px-2 text-[10px] font-semibold ml-auto"
+                                    onClick={toggleBulkEditMode}
+                                >
+                                    <X className="w-3.5 h-3.5 mr-1" />
+                                    {t('common.cancel')}
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+
             <Table className="w-full">
                 <TableHeader>
                     <TableRow className="border-b border-muted hover:bg-transparent">
+                        {!isAthlete && onBulkOverrideStepType && isBulkEditMode && (
+                            <TableHead className="w-10 pl-0">
+                                <input
+                                    type="checkbox"
+                                    checked={allVisibleSelected}
+                                    onChange={toggleSelectAllVisible}
+                                    aria-label="Select visible laps"
+                                />
+                            </TableHead>
+                        )}
                         <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4 pl-0">{t('table.lap')}</TableHead>
                         <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.time')}</TableHead>
                         <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.distance')}</TableHead>
@@ -71,12 +190,7 @@ export function LapsTable({
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {laps.map((lap, idx) => ({ lap, idx }))
-                        .filter(({ idx }) => {
-                            if (lapFilter === 'all') return true;
-                            const matchedLap = matchedLaps.find(m => m.lapIndex === idx);
-                            return matchedLap?.stepType === lapFilter;
-                        })
+                    {visibleLaps
                         .map(({ lap, idx }) => {
                             const matchedLap = matchedLaps.find(m => m.lapIndex === idx);
 
@@ -99,6 +213,16 @@ export function LapsTable({
 
                             return (
                                 <TableRow key={lap.id}>
+                                    {!isAthlete && onBulkOverrideStepType && isBulkEditMode && (
+                                        <TableCell className="pl-0">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedLapIndices.includes(lap.lap_index)}
+                                                onChange={() => toggleSelectedLap(lap.lap_index)}
+                                                aria-label={`Select lap ${lap.lap_index}`}
+                                            />
+                                        </TableCell>
+                                    )}
                                     <TableCell className="font-medium">
                                         {lap.lap_index === 0 || (laps[0]?.lap_index === 0) ? lap.lap_index + 1 : lap.lap_index}
                                     </TableCell>

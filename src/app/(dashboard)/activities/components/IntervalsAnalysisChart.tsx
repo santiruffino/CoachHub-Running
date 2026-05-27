@@ -158,7 +158,7 @@ export function IntervalsAnalysisChart({
   laps, 
   isRunning, 
   lapOverrides = {}, 
-  matchedLaps = [] 
+  matchedLaps = []
 }: IntervalsAnalysisChartProps) {
   const t = useTranslations('activities.detail');
   const [activeLapIndex, setActiveLapIndex] = React.useState<number | null>(null);
@@ -190,6 +190,15 @@ export function IntervalsAnalysisChart({
     cadence: t('table.cadence') || 'Cadencia',
   };
 
+  const overrideLabels: Record<string, string> = {
+    warmup: t('workout.warmup') || 'Warm up',
+    active: t('workout.active') || 'Active',
+    rest: t('workout.rest') || 'Rest',
+    recovery: t('workout.recovery') || 'Recovery',
+    cooldown: t('workout.cooldown') || 'Cool Down',
+  };
+
+
   const chartData: ChartDataPoint[] = laps.map((lap, index) => {
     // If lap_index starts at 0, we display as 1-based
     const displayIndex = lap.lap_index === 0 || (laps[0]?.lap_index === 0) ? lap.lap_index + 1 : lap.lap_index;
@@ -198,15 +207,8 @@ export function IntervalsAnalysisChart({
     const matchedLap = matchedLaps.find(m => m.lapIndex === index);
     const effectiveType = (overrideType || matchedLap?.stepType || 'other') as keyof typeof BLOCK_COLORS;
     
-    const overrideLabels: Record<string, string> = {
-      warmup: t('workout.warmup') || 'Warm up',
-      active: t('workout.active') || 'Active',
-      rest: t('workout.rest') || 'Rest',
-      recovery: t('workout.recovery') || 'Recovery',
-      cooldown: t('workout.cooldown') || 'Cool Down',
-      other: `${t('table.lap') || 'Lap'} ${displayIndex}`
-    };
-    const label = overrideType ? overrideLabels[overrideType] : (matchedLap ? matchedLap.stepLabel : overrideLabels.other);
+    const fallbackLabel = `${t('table.lap') || 'Lap'} ${displayIndex}`;
+    const label = overrideType ? overrideLabels[overrideType] : (matchedLap ? matchedLap.stepLabel : fallbackLabel);
 
     return {
       name: `L${displayIndex}`,
