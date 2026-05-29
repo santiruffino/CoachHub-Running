@@ -23,17 +23,17 @@ type RateLimitResult = {
 };
 
 declare global {
-  var __coachHubRateLimitStore: RateLimitBucket | undefined;
+  var __endurixRateLimitStore: RateLimitBucket | undefined;
 }
 
 function getStore(): RateLimitBucket {
-  if (!globalThis.__coachHubRateLimitStore) {
-    globalThis.__coachHubRateLimitStore = {
+  if (!globalThis.__endurixRateLimitStore) {
+    globalThis.__endurixRateLimitStore = {
       map: new Map<string, RateLimitRecord>(),
     };
   }
 
-  return globalThis.__coachHubRateLimitStore;
+  return globalThis.__endurixRateLimitStore;
 }
 
 export function consumeRateLimit(options: RateLimitOptions): RateLimitResult {

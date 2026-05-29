@@ -2,7 +2,7 @@
 
 import { WorkoutBlock, AthleteProfile } from './types';
 import { TrainingType } from '@/interfaces/training';
-import { GripVertical, Repeat } from 'lucide-react';
+import { GripVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { VAM_ZONES } from '@/features/profiles/constants/vam';
 import { BLOCK_COLORS } from './constants';
@@ -354,50 +354,13 @@ export function WorkoutSequence({
                     );
                 })}
 
-                {/* Horizontal Add Block Buttons */}
-                <div className="pt-6 flex flex-col gap-4 pl-12">
-                    <button
-                        onClick={() => onAddStep('repeat')}
-                        className="w-full flex items-center justify-center py-4 rounded-lg border border-dashed border-[#2b3437]/30 dark:border-white/30 bg-[#8b9bb4]/10 hover:bg-[#8b9bb4]/20 transition-colors gap-2"
-                    >
-                        <Repeat size={14} className="text-[#2b3437] dark:text-[#f8f9fa]" />
-                        <span className="text-[10px] uppercase font-bold tracking-widest text-[#2b3437] dark:text-[#f8f9fa]">{t('labels.repeat') || 'REPETICONES'}</span>
-                    </button>
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                        <button
-                            onClick={() => onAddStep('warmup')}
-                            className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#2b3437]/20 dark:border-white/20 bg-[#b1f0cc]/30 hover:bg-[#b1f0cc]/50 transition-colors"
-                        >
-                            <span className="text-[10px] uppercase font-bold tracking-widest text-[#2b3437] dark:text-[#f8f9fa]">{t('labels.warmup')}</span>
-                        </button>
-                        <button
-                            onClick={() => onAddStep('interval')}
-                            className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#2b3437]/20 dark:border-white/20 bg-[#fb8b8b]/30 hover:bg-[#fb8b8b]/50 transition-colors"
-                        >
-                            <span className="text-[10px] uppercase font-bold tracking-widest text-[#2b3437] dark:text-[#f8f9fa]">{t('labels.interval')}</span>
-                        </button>
-                        <button
-                            onClick={() => onAddStep('recovery')}
-                            className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#2b3437]/20 dark:border-white/20 bg-[#c5e0fa]/30 hover:bg-[#c5e0fa]/50 transition-colors"
-                        >
-                            <span className="text-[10px] uppercase font-bold tracking-widest text-[#2b3437] dark:text-[#f8f9fa]">{t('labels.recovery')}</span>
-                            <span className="mt-1 text-[9px] uppercase font-semibold tracking-wide text-[#4e6073] dark:text-[#b8c3d1]">{t('labels.recoveryWithHint')}</span>
-                        </button>
-                        <button
-                            onClick={() => onAddStep('rest')}
-                            className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#2b3437]/20 dark:border-white/20 bg-[#e2e8f0]/50 hover:bg-[#e2e8f0]/70 transition-colors"
-                        >
-                            <span className="text-[10px] uppercase font-bold tracking-widest text-[#2b3437] dark:text-[#f8f9fa]">{t('labels.rest')}</span>
-                            <span className="mt-1 text-[9px] uppercase font-semibold tracking-wide text-[#4e6073] dark:text-[#b8c3d1]">{t('labels.restWithHint')}</span>
-                        </button>
-                        <button
-                            onClick={() => onAddStep('cooldown')}
-                            className="flex flex-col items-center justify-center py-4 rounded-lg border border-dashed border-[#2b3437]/20 dark:border-white/20 bg-[#e2e8f0]/50 hover:bg-[#e2e8f0]/70 transition-colors"
-                        >
-                            <span className="text-[10px] uppercase font-bold tracking-widest text-[#2b3437] dark:text-[#f8f9fa]">{t('labels.cooldown')}</span>
-                        </button>
+                {/* Empty State */}
+                {blocks.length === 0 && (
+                    <div className="text-center py-16">
+                        <p className="text-sm text-[#8b9bb4] font-inter mb-2">{t('startBuildingWorkout')}</p>
+                        <p className="text-xs text-[#8b9bb4]/60">{t('clickBlocksHint')}</p>
                     </div>
-                </div>
+                )}
             </div>
 
             {/* Click outside to unselect */}

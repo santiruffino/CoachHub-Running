@@ -5,7 +5,7 @@ import { withSentryConfig } from "@sentry/nextjs";
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  skipTrailingSlashRedirect: true,
 };
 
 const intlConfig = withNextIntl(nextConfig);
@@ -16,7 +16,7 @@ export default withSentryConfig(intlConfig, {
 
   org: "santis-company",
 
-  project: "coachhub",
+  project: "endurix",
 
   // Only print logs for uploading source maps in CI
   silent: !process.env.CI,

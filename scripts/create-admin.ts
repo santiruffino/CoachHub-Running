@@ -34,7 +34,7 @@ type ProfilePayload = {
 };
 
 async function main() {
-    console.log('\n🚀 Coach Hub - Create Admin User\n');
+    console.log('\n🚀 Endurix - Create Admin User\n');
 
     // Get Supabase credentials
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

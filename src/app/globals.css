@@ -5,6 +5,7 @@
   :root {
     /* Base colors - Light mode (Performance Curator) */
     --background: 210 17% 98%; /* #f8f9fa surface */
+    --background-paper: #f2f2f2;
     --foreground: 195 12% 19%; /* #2b3437 on-surface */
     --card: 0 0% 100%; /* #ffffff surface-container-lowest */
     --card-foreground: 195 12% 19%;
@@ -81,7 +82,7 @@
 }
 
 @theme inline {
-  --color-background: hsl(var(--background));
+  --color-background: hsl(var(--background-paper));
   --color-foreground: hsl(var(--foreground));
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
@@ -148,7 +149,7 @@
 }
 
 body {
-  background-color: hsl(var(--background));
+  background-color: hsl(var(--background-paper));
   color: hsl(var(--foreground));
   font-family: var(--font-sans);
 }

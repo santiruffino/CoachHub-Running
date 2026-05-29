@@ -138,6 +138,7 @@ export async function POST(request: NextRequest) {
             // Don't fail the connection if zones sync fails
         }
 
+
         const response = NextResponse.json({
             success: true,
             athleteName: tokenData.athlete.username || tokenData.athlete.firstname,

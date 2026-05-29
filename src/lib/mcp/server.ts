@@ -3,11 +3,11 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 
 /**
- * Coach Hub Running MCP Server
+ * Endurix Running MCP Server
  * Exposes tools for coaches to interact with athlete data via AI.
  */
 export const mcpServer = new McpServer({
-  name: "Coach Hub Running",
+  name: "Endurix",
   version: "1.0.0",
 });
 

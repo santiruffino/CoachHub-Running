@@ -14,7 +14,7 @@ interface CacheItem<T> {
 type CacheParams = Record<string, unknown>;
 
 class CacheService {
-    private readonly prefix = 'coachhub_cache_';
+    private readonly prefix = 'endurix_cache_';
 
     /**
      * Get an item from the cache

@@ -27,7 +27,7 @@ interface StravaTokenResponse {
  * Sync Heart Rate Zones from Strava
  * 
  * Fetches the athlete's heart rate zones from Strava and syncs them to the 
- * athlete's profile in Coach Hub.
+ * athlete's profile in Endurix.
  * 
  * Access: ATHLETE only
  */

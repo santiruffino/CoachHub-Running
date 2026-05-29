@@ -1,4 +1,4 @@
-# Coach Hub - Account Setup & Onboarding Guide
+# Endurix - Account Setup & Onboarding Guide
 
 This guide outlines the step-by-step process for provisioning new teams and onboarding users (Admins, Coaches, and Athletes) to the platform.
 

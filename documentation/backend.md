@@ -2,7 +2,7 @@
 
 ## Overview
 
-Coach Hub Running uses a serverless full-stack architecture:
+Endurix uses a serverless full-stack architecture:
 
 - Next.js route handlers for API logic (`src/app/api/**`)
 - Supabase for auth/database/RLS

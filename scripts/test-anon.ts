@@ -11,7 +11,7 @@ async function main() {
   console.log("Starting anon login...");
   try {
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: 'admin@coachhub.com', // wait, is this the email? I'll use the one I created if I knew it.
+        email: 'admin@endurix.app', // wait, is this the email? I'll use the one I created if I knew it.
         password: 'temporary_password'
     });
     

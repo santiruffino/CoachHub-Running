@@ -1,5 +1,5 @@
 -- Supabase Database Schema Migration
--- This SQL script creates all tables needed for Coach Hub Running
+-- This SQL script creates all tables needed for Endurix
 
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

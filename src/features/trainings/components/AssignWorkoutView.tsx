@@ -10,7 +10,7 @@ import { Athlete } from '@/interfaces/athlete';
 import { Group } from '@/interfaces/group';
 import { Button } from '@/components/ui/button';
 import { trainingsService } from '@/features/trainings/services/trainings.service';
-import { ArrowLeft, Search, Check, Sparkles, LayoutTemplate, Clock, X, CalendarDays, Users, Gauge } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Search, Check, Sparkles, LayoutTemplate, Clock, X, CalendarDays, Users, Gauge } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
@@ -221,7 +221,6 @@ export function AssignWorkoutView({
                 expectedRpe,
                 workoutName: workoutName || undefined,
             });
-
             showAlert('success', tAssign('successAssigned'));
             setTimeout(() => router.push(preselectedAthleteId ? `/athletes/${preselectedAthleteId}` : '/athletes'), 1500);
         } catch (error) {
@@ -341,182 +340,13 @@ export function AssignWorkoutView({
         if (editingTemplate) { setEditingTemplate(false); return; }
         if (step === 'select-template') { setStep('select-source'); return; }
         if (step === 'build') { setStep('select-source'); return; }
-        if (isNew) { setStep('build'); } else { setStep('select-template'); }
+        if (step === 'assign-details') {
+            if (isNew) { setStep('build'); } else { setStep('select-template'); }
+            return;
+        }
     };
 
     const canConfirm = scheduledDate && (selectedAthleteIds.length > 0 || selectedGroupIds.length > 0);
-
-    const renderSidebar = () => {
-        const preselectedAthlete = preselectedAthleteId ? athletes.find(a => a.id === preselectedAthleteId) : null;
-        return (
-            <div className="w-[440px] flex-shrink-0 bg-card dark:bg-muted flex flex-col h-full z-10">
-                <div className="flex-1 overflow-y-auto p-10">
-                    <Button
-                        variant="ghost"
-                        onClick={handleBack}
-                        className="w-min text-muted-foreground hover:text-foreground transition-colors p-0 hover:bg-transparent tracking-widest uppercase text-xs font-semibold mb-10"
-                    >
-                        <ArrowLeft className="w-4 h-4 mr-2" /> {tAssign('modifyBlueprint')}
-                    </Button>
-
-                    <h1 className="text-2xl font-extrabold font-display tracking-tight text-foreground mb-10">
-                        Planificación de la sesión
-                    </h1>
-
-                    <div className="space-y-10">
-                        <div>
-                            <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-4 block">
-                                {tAssign('executionDate')} <span className="text-emerald-500">*</span>
-                            </label>
-                            <input
-                                type="date"
-                                value={scheduledDate}
-                                onChange={(e) => setScheduledDate(e.target.value)}
-                                className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-2 text-xl font-bold font-display text-foreground focus:ring-0 focus:border-primary transition-colors"
-                            />
-                        </div>
-
-                        {isNew && (
-                            <div>
-                                <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-4 block">
-                                    {tAssign('objectiveTitle')}
-                                </label>
-                                <input
-                                    type="text"
-                                    value={workoutName}
-                                    onChange={(e) => setWorkoutName(e.target.value)}
-                                    placeholder={tAssign('exampleLongRun')}
-                                    className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-2 text-lg font-medium text-foreground focus:ring-0 focus:border-primary placeholder-muted-foreground/50 transition-colors"
-                                />
-                            </div>
-                        )}
-
-                        {!isNew && (
-                            <div>
-                                <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-4 block">
-                                    {tAssign('assignmentNameOverride')}
-                                </label>
-                                <input
-                                    type="text"
-                                    value={workoutName}
-                                    onChange={(e) => setWorkoutName(e.target.value)}
-                                    placeholder={tAssign('overwritesTemplateName')}
-                                    className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-2 text-lg font-medium text-foreground focus:ring-0 focus:border-primary placeholder-muted-foreground/50 transition-colors"
-                                />
-                            </div>
-                        )}
-
-                        {preselectedAthlete ? (
-                            <div>
-                                <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-4 block">
-                                    {tAssign('targetAthletes')}
-                                </label>
-                                <div className="flex items-center gap-3 border-b border-border/30 pb-3">
-                                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                                        <span className="text-sm font-bold text-primary">{(preselectedAthlete.name || preselectedAthlete.email || '?').charAt(0).toUpperCase()}</span>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-semibold text-foreground">{preselectedAthlete.name}</p>
-                                        <p className="text-xs text-muted-foreground">{preselectedAthlete.email}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        ) : (
-                            <>
-                                <div>
-                                    <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-4 block">
-                                        {tAssign('targetAthletes')}
-                                    </label>
-                                    <SearchableMultiSelect
-                                        items={athletes.map(a => ({ id: a.id, label: a.name, subLabel: a.email }))}
-                                        selectedIds={selectedAthleteIds}
-                                        onChange={setSelectedAthleteIds}
-                                        placeholder={tAssign('searchByNameOrEmail')}
-                                        noMatchesLabel={tAssign('noMatches')}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-4 block">
-                                        {tAssign('targetRunningTeams')}
-                                    </label>
-                                    <SearchableMultiSelect
-                                        items={groups.map(g => ({ id: g.id, label: g.name }))}
-                                        selectedIds={selectedGroupIds}
-                                        onChange={setSelectedGroupIds}
-                                        placeholder={tAssign('searchGroups')}
-                                        noMatchesLabel={tAssign('noMatches')}
-                                    />
-                                </div>
-                            </>
-                        )}
-
-                        <div>
-                            <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-4 flex items-center justify-between">
-                                {tAssign('globalTargetRpe')}
-                                <span className="text-primary font-bold text-sm bg-muted dark:bg-white/5 px-2 py-0.5 rounded">{expectedRpe}/10</span>
-                            </label>
-                            <Slider
-                                value={[expectedRpe]}
-                                min={1}
-                                max={10}
-                                step={1}
-                                onValueChange={(val) => setExpectedRpe(val[0])}
-                                className="my-6"
-                            />
-                            <div className="flex justify-between text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                <span>{tAssign('endurance')}</span>
-                                <span>{tAssign('maxOutput')}</span>
-                            </div>
-                        </div>
-
-                        {isNew && (
-                            <div className="bg-background dark:bg-white/5 rounded-lg p-6">
-                                <label className="flex items-start gap-4 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={saveAsTemplate}
-                                        onChange={(e) => setSaveAsTemplate(e.target.checked)}
-                                        className="w-5 h-5 mt-0.5 rounded border-gray-300 text-primary focus:ring-[#4e6073]"
-                                    />
-                                    <div className="flex flex-col">
-                                        <span className="font-semibold text-sm text-foreground mb-1">{tAssign('catalogStructure')}</span>
-                                        <p className="text-xs text-muted-foreground leading-relaxed">{tAssign('catalogStructureDesc')}</p>
-                                    </div>
-                                </label>
-                                {saveAsTemplate && (
-                                    <input
-                                        type="text"
-                                        value={templateTitle}
-                                        onChange={(e) => setTemplateTitle(e.target.value)}
-                                        placeholder={tAssign('enterLibraryTitle')}
-                                        className="mt-6 w-full bg-white dark:bg-background border border-border dark:border-white/10 rounded px-4 py-3 text-sm font-medium text-foreground focus:outline-none focus:border-primary transition-colors"
-                                    />
-                                )}
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                <div className="flex-none p-8 border-t border-border/20 dark:border-white/5 bg-card dark:bg-muted">
-                    <div className="flex flex-col mb-4">
-                        <span className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">{tAssign('actionStatus')}</span>
-                        <span className="text-sm font-semibold text-foreground mt-1">
-                            {!scheduledDate ? tAssign('awaitingScheduling') :
-                             !canConfirm ? tAssign('awaitingRecipients') :
-                             tAssign('readyToDistribute')}
-                        </span>
-                    </div>
-                    <Button
-                        onClick={handleAssign}
-                        disabled={loading || !canConfirm}
-                        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground uppercase tracking-wider text-xs font-bold py-6 rounded shadow-[0_8px_24px_rgba(78,96,115,0.3)] transition-all"
-                    >
-                        {loading ? tAssign('transmittingData') : tAssign('commitAssignment')}
-                    </Button>
-                </div>
-            </div>
-        );
-    };
 
     if (step === 'select-source') {
         return (
@@ -588,198 +418,373 @@ export function AssignWorkoutView({
 
     if (step === 'select-template') {
         return (
-            <div className="bg-background dark:bg-background flex font-inter h-[calc(100vh-64px)] overflow-hidden">
-                <div className="flex-1 flex flex-col h-full overflow-hidden border-r border-border dark:border-white/5">
-                    <div className="p-10 lg:p-12 border-b border-border dark:border-white/5 shrink-0">
-                        <Button variant="ghost" onClick={() => setStep('select-source')} className="text-muted-foreground hover:text-foreground transition-colors p-0 hover:bg-transparent tracking-widest uppercase text-xs font-semibold mb-8">
-                            <ArrowLeft className="w-4 h-4 mr-2" /> {tAssign('backToPhase1')}
-                        </Button>
-                        <h1 className="text-4xl font-extrabold font-display text-foreground tracking-tight mb-2">
-                            {tAssign('templateMatrix')}
-                        </h1>
-                        <p className="text-muted-foreground">{tAssign('templateMatrixSubtitle')}</p>
-                    </div>
-                    <div className="flex-1 overflow-y-auto p-10 lg:p-12">
-                        <div className="space-y-4">
-                            {templates.map((template) => (
-                                <button
-                                    key={template.id}
-                                    onClick={() => {
-                                        setSelectedTemplate(template);
-                                        setBlocks(template.blocks || []);
-                                        setWorkoutSource('template');
-                                        setStep('assign-details');
-                                    }}
-                                    className="w-full text-left bg-card shadow-[0_2px_8px_rgba(43,52,55,0.02)] hover:shadow-[0_8px_24px_rgba(43,52,55,0.06)] rounded-lg p-6 flex justify-between group transition-all relative overflow-hidden"
-                                >
-                                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-transparent group-hover:bg-primary transition-colors" />
-                                    <div>
-                                        <h3 className="text-xl font-bold font-display tracking-tight text-foreground mb-1">
-                                            {template.title}
-                                        </h3>
-                                        <p className="text-sm text-muted-foreground max-w-2xl line-clamp-1">
-                                            {template.description || tAssign('noDescription')}
-                                        </p>
-                                    </div>
-                                    <div className="flex flex-col items-end justify-center">
-                                        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground bg-muted dark:bg-white/5 px-3 py-1 rounded">
-                                            {template.blocks?.length || 0} {tAssign('intervals')}
-                                        </span>
-                                    </div>
-                                </button>
-                            ))}
-                            {templates.length === 0 && (
-                                <p className="text-muted-foreground text-center pt-12">{tAssign('noTemplatesInLibrary')}</p>
-                            )}
-                        </div>
+            <div className="bg-background dark:bg-background flex flex-col font-inter h-[calc(100vh-64px)] overflow-hidden">
+                <div className="p-10 lg:p-12 border-b border-border dark:border-white/5 shrink-0">
+                    <Button variant="ghost" onClick={() => setStep('select-source')} className="text-muted-foreground hover:text-foreground transition-colors p-0 hover:bg-transparent tracking-widest uppercase text-xs font-semibold mb-8">
+                        <ArrowLeft className="w-4 h-4 mr-2" /> {tAssign('backToPhase1')}
+                    </Button>
+                    <h1 className="text-4xl font-extrabold font-display text-foreground tracking-tight mb-2">
+                        {tAssign('templateMatrix')}
+                    </h1>
+                    <p className="text-muted-foreground">{tAssign('templateMatrixSubtitle')}</p>
+                </div>
+                <div className="flex-1 overflow-y-auto p-10 lg:p-12">
+                    <div className="space-y-4">
+                        {templates.map((template) => (
+                            <button
+                                key={template.id}
+                                onClick={() => {
+                                    setSelectedTemplate(template);
+                                    setBlocks(template.blocks || []);
+                                    setWorkoutSource('template');
+                                    setStep('assign-details');
+                                }}
+                                className="w-full text-left bg-card shadow-[0_2px_8px_rgba(43,52,55,0.02)] hover:shadow-[0_8px_24px_rgba(43,52,55,0.06)] rounded-lg p-6 flex justify-between group transition-all relative overflow-hidden"
+                            >
+                                <div className="absolute left-0 top-0 bottom-0 w-1 bg-transparent group-hover:bg-primary transition-colors" />
+                                <div>
+                                    <h3 className="text-xl font-bold font-display tracking-tight text-foreground mb-1">
+                                        {template.title}
+                                    </h3>
+                                    <p className="text-sm text-muted-foreground max-w-2xl line-clamp-1">
+                                        {template.description || tAssign('noDescription')}
+                                    </p>
+                                </div>
+                                <div className="flex flex-col items-end justify-center">
+                                    <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground bg-muted dark:bg-white/5 px-3 py-1 rounded">
+                                        {template.blocks?.length || 0} {tAssign('intervals')}
+                                    </span>
+                                </div>
+                            </button>
+                        ))}
+                        {templates.length === 0 && (
+                            <p className="text-muted-foreground text-center pt-12">{tAssign('noTemplatesInLibrary')}</p>
+                        )}
                     </div>
                 </div>
-                {renderSidebar()}
             </div>
         );
     }
 
     if (step === 'build') {
         return (
-            <div className="bg-background dark:bg-background flex font-inter h-[calc(100vh-64px)] overflow-hidden">
-                <div className="flex-1 flex flex-col h-full overflow-hidden border-r border-border dark:border-white/5">
-                    <div className="p-5 px-10 border-b border-border/40 flex items-center shrink-0">
-                        <Button variant="ghost" onClick={() => setStep('select-source')} className="text-muted-foreground hover:text-foreground transition-colors p-0 hover:bg-transparent tracking-widest uppercase text-xs font-semibold">
-                            <ArrowLeft className="w-4 h-4 mr-2" /> {tAssign('restart')}
-                        </Button>
-                        <div className="ml-auto text-xs font-semibold text-muted-foreground tracking-[0.05em] uppercase">
-                            {tAssign('editorPhase')}
-                        </div>
-                    </div>
-                    <div className="flex-1 overflow-hidden">
-                        <WorkoutBuilder
-                            initialBlocks={blocks}
-                            onChange={setBlocks}
-                            athleteId={builderAthleteId}
-                        />
+            <div className="bg-background dark:bg-background flex flex-col font-inter h-[calc(100vh-64px)] overflow-hidden">
+                <div className="p-5 px-10 border-b border-border/40 flex items-center shrink-0">
+                    <Button variant="ghost" onClick={() => setStep('select-source')} className="text-muted-foreground hover:text-foreground transition-colors p-0 hover:bg-transparent tracking-widest uppercase text-xs font-semibold">
+                        <ArrowLeft className="w-4 h-4 mr-2" /> {tAssign('restart')}
+                    </Button>
+                    <div className="ml-auto text-xs font-semibold text-muted-foreground tracking-[0.05em] uppercase">
+                        {tAssign('editorPhase')}
                     </div>
                 </div>
-                {renderSidebar()}
+                <div className="flex-1 overflow-hidden">
+                    <WorkoutBuilder
+                        initialBlocks={blocks}
+                        onChange={setBlocks}
+                        athleteId={builderAthleteId}
+                        footerContent={
+                            <Button
+                                onClick={() => setStep('assign-details')}
+                                disabled={blocks.length === 0}
+                                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground uppercase tracking-wider text-xs font-bold py-4 rounded transition-colors"
+                            >
+                                {tAssign('continueToAssignment')}
+                                <ArrowRight className="w-4 h-4 ml-2" />
+                            </Button>
+                        }
+                    />
+                </div>
             </div>
         );
     }
 
+    // Step: assign-details (full-width form with summary + assignment details)
+    const preselectedAthlete = preselectedAthleteId ? athletes.find(a => a.id === preselectedAthleteId) : null;
+
     return (
-        <div className="bg-background dark:bg-background flex font-inter h-[calc(100vh-64px)] overflow-hidden">
-            <div className="flex-1 flex flex-col h-full overflow-hidden border-r border-border dark:border-white/5">
-                {editingTemplate ? (
-                    <div className="flex-1 overflow-y-auto">
-                        <WorkoutBuilder
-                            initialBlocks={blocks}
-                            onChange={setBlocks}
-                            athleteId={builderAthleteId}
-                        />
+        <div className="bg-background dark:bg-background flex flex-col font-inter h-[calc(100vh-64px)] overflow-hidden">
+            <div className="p-5 px-10 border-b border-border/40 flex items-center shrink-0">
+                <Button
+                    variant="ghost"
+                    onClick={handleBack}
+                    className="text-muted-foreground hover:text-foreground transition-colors p-0 hover:bg-transparent tracking-widest uppercase text-xs font-semibold"
+                >
+                    <ArrowLeft className="w-4 h-4 mr-2" /> {tAssign('modifyBlueprint')}
+                </Button>
+                <div className="ml-auto text-xs font-semibold text-muted-foreground tracking-[0.05em] uppercase">
+                    {tAssign('editorPhase')}
+                </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto">
+                <div className="max-w-4xl mx-auto px-10 py-12 space-y-10">
+                    {/* Workout Summary Card */}
+                    <div className="rounded-xl border border-border dark:border-white/10 bg-card dark:bg-muted p-6 lg:p-8">
+                        <p className="text-xs uppercase tracking-[0.08em] font-semibold text-muted-foreground mb-3">Resumen del entrenamiento</p>
+                        <h2 className="text-3xl lg:text-4xl font-display font-extrabold text-foreground mb-5">
+                            {selectedTemplate ? selectedTemplate.title : (workoutName || tAssign('customProtocol'))}
+                        </h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div className="flex items-center gap-3 rounded-lg bg-background dark:bg-background/60 p-4 border border-border/60 dark:border-white/10">
+                                <CalendarDays className="w-4 h-4 text-primary" />
+                                <div>
+                                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Fecha objetivo</p>
+                                    <p className="font-semibold text-foreground">{format(new Date(`${scheduledDate}T00:00:00`), "EEEE dd/MM/yyyy", { locale: es })}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3 rounded-lg bg-background dark:bg-background/60 p-4 border border-border/60 dark:border-white/10">
+                                <Users className="w-4 h-4 text-primary" />
+                                <div>
+                                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Destinatarios</p>
+                                    <p className="font-semibold text-foreground">{recipientsSummaryLabel}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3 rounded-lg bg-background dark:bg-background/60 p-4 border border-border/60 dark:border-white/10">
+                                <Clock className="w-4 h-4 text-primary" />
+                                <div>
+                                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Duración estimada</p>
+                                    <p className="font-semibold text-foreground">~{estTimeMinutes} min</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3 rounded-lg bg-background dark:bg-background/60 p-4 border border-border/60 dark:border-white/10">
+                                <Gauge className="w-4 h-4 text-primary" />
+                                <div>
+                                    <p className="text-xs text-muted-foreground uppercase tracking-wide">RPE objetivo</p>
+                                    <p className="font-semibold text-foreground">{expectedRpe}/10</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                ) : (
-                    <div className="flex-1 p-10 lg:p-12 overflow-y-auto">
-                        <div className="max-w-4xl mx-auto space-y-8">
-                            <div className="rounded-xl border border-border dark:border-white/10 bg-card dark:bg-muted p-6 lg:p-8">
-                                <p className="text-xs uppercase tracking-[0.08em] font-semibold text-muted-foreground mb-3">Resumen del entrenamiento</p>
-                                <h2 className="text-3xl lg:text-4xl font-display font-extrabold text-foreground mb-5">
-                                    {selectedTemplate ? selectedTemplate.title : (workoutName || tAssign('customProtocol'))}
-                                </h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                                    <div className="flex items-center gap-3 rounded-lg bg-background dark:bg-background/60 p-4 border border-border/60 dark:border-white/10">
-                                        <CalendarDays className="w-4 h-4 text-primary" />
-                                        <div>
-                                            <p className="text-xs text-muted-foreground uppercase tracking-wide">Fecha objetivo</p>
-                                            <p className="font-semibold text-foreground">{format(new Date(`${scheduledDate}T00:00:00`), "EEEE dd/MM/yyyy", { locale: es })}</p>
+
+                    {/* Block Breakdown */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                        <div className="rounded-lg border border-border dark:border-white/10 p-4 bg-card dark:bg-muted">
+                            <p className="text-xs text-muted-foreground uppercase tracking-wide">Bloques totales</p>
+                            <p className="text-2xl font-bold text-foreground mt-1">{blocks.length}</p>
+                        </div>
+                        <div className="rounded-lg border border-border dark:border-white/10 p-4 bg-card dark:bg-muted">
+                            <p className="text-xs text-muted-foreground uppercase tracking-wide">Intervalos</p>
+                            <p className="text-2xl font-bold text-foreground mt-1">{workoutSummary.byType.interval}</p>
+                        </div>
+                        <div className="rounded-lg border border-border dark:border-white/10 p-4 bg-card dark:bg-muted">
+                            <p className="text-xs text-muted-foreground uppercase tracking-wide">Recuperación + descanso</p>
+                            <p className="text-2xl font-bold text-foreground mt-1">{workoutSummary.byType.recovery + workoutSummary.byType.rest}</p>
+                        </div>
+                        <div className="rounded-lg border border-border dark:border-white/10 p-4 bg-card dark:bg-muted">
+                            <p className="text-xs text-muted-foreground uppercase tracking-wide">Distancia planificada</p>
+                            <p className="text-2xl font-bold text-foreground mt-1">
+                                {workoutSummary.totalDistanceMeters > 0
+                                    ? `${(workoutSummary.totalDistanceMeters / 1000).toFixed(1)} km`
+                                    : '—'}
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Block Details */}
+                    <div className="rounded-xl border border-border dark:border-white/10 bg-card dark:bg-muted p-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-bold text-foreground">Desglose de bloques</h3>
+                            <span className="text-xs uppercase tracking-wide text-muted-foreground">Vista rápida</span>
+                        </div>
+                        {blocks.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">Aun no hay bloques cargados en esta sesión.</p>
+                        ) : (
+                            <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                                {blocks.map((block, index) => (
+                                    <div key={block.id || `${block.type}-${index}`} className="flex items-center justify-between rounded-lg border border-border/60 dark:border-white/10 px-3 py-2 bg-background dark:bg-background/60">
+                                        <div className="min-w-0">
+                                            <p className="text-sm font-semibold text-foreground truncate">{index + 1}. {block.stepName || blockTypeLabel[block.type]}</p>
+                                            <p className="text-xs text-muted-foreground">{blockTypeLabel[block.type]}{block.group?.reps ? ` · x${block.group.reps}` : ''}</p>
+                                        </div>
+                                        <div className="text-right shrink-0 ml-4">
+                                            <p className="text-sm font-semibold text-foreground">{formatBlockDuration(block)}</p>
+                                            <p className="text-xs text-muted-foreground">{formatBlockTarget(block)}</p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-3 rounded-lg bg-background dark:bg-background/60 p-4 border border-border/60 dark:border-white/10">
-                                        <Users className="w-4 h-4 text-primary" />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {workoutSource === 'template' && (
+                        <div className="pt-1">
+                            <Button
+                                variant="outline"
+                                onClick={() => setEditingTemplate(true)}
+                                className="border-gray-200 dark:border-white/10 text-foreground dark:text-white hover:bg-muted dark:hover:bg-white/5 uppercase tracking-wider text-xs font-bold"
+                            >
+                                {tAssign('overruleBlockStructure')}
+                            </Button>
+                        </div>
+                    )}
+
+                    {/* Assignment Form */}
+                    <div className="rounded-xl border border-border dark:border-white/10 bg-card dark:bg-muted p-6 lg:p-8">
+                        <h2 className="text-2xl font-extrabold font-display tracking-tight text-foreground mb-8">
+                            Planificación de la sesión
+                        </h2>
+
+                        <div className="space-y-8">
+                            <div>
+                                <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-4 block">
+                                    {tAssign('executionDate')} <span className="text-emerald-500">*</span>
+                                </label>
+                                <input
+                                    type="date"
+                                    value={scheduledDate}
+                                    onChange={(e) => setScheduledDate(e.target.value)}
+                                    className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-2 text-xl font-bold font-display text-foreground focus:ring-0 focus:border-primary transition-colors"
+                                />
+                            </div>
+
+                            {isNew && (
+                                <div>
+                                    <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-4 block">
+                                        {tAssign('objectiveTitle')}
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={workoutName}
+                                        onChange={(e) => setWorkoutName(e.target.value)}
+                                        placeholder={tAssign('exampleLongRun')}
+                                        className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-2 text-lg font-medium text-foreground focus:ring-0 focus:border-primary placeholder-muted-foreground/50 transition-colors"
+                                    />
+                                </div>
+                            )}
+
+                            {!isNew && (
+                                <div>
+                                    <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-4 block">
+                                        {tAssign('assignmentNameOverride')}
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={workoutName}
+                                        onChange={(e) => setWorkoutName(e.target.value)}
+                                        placeholder={tAssign('overwritesTemplateName')}
+                                        className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-2 text-lg font-medium text-foreground focus:ring-0 focus:border-primary placeholder-muted-foreground/50 transition-colors"
+                                    />
+                                </div>
+                            )}
+
+                            {preselectedAthlete ? (
+                                <div>
+                                    <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-4 block">
+                                        {tAssign('targetAthletes')}
+                                    </label>
+                                    <div className="flex items-center gap-3 border-b border-border/30 pb-3">
+                                        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                            <span className="text-sm font-bold text-primary">{(preselectedAthlete.name || preselectedAthlete.email || '?').charAt(0).toUpperCase()}</span>
+                                        </div>
                                         <div>
-                                            <p className="text-xs text-muted-foreground uppercase tracking-wide">Destinatarios</p>
-                                            <p className="font-semibold text-foreground">{recipientsSummaryLabel}</p>
+                                            <p className="text-sm font-semibold text-foreground">{preselectedAthlete.name}</p>
+                                            <p className="text-xs text-muted-foreground">{preselectedAthlete.email}</p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-3 rounded-lg bg-background dark:bg-background/60 p-4 border border-border/60 dark:border-white/10">
-                                        <Clock className="w-4 h-4 text-primary" />
-                                        <div>
-                                            <p className="text-xs text-muted-foreground uppercase tracking-wide">Duración estimada</p>
-                                            <p className="font-semibold text-foreground">~{estTimeMinutes} min</p>
-                                        </div>
+                                </div>
+                            ) : (
+                                <>
+                                    <div>
+                                        <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-4 block">
+                                            {tAssign('targetAthletes')}
+                                        </label>
+                                        <SearchableMultiSelect
+                                            items={athletes.map(a => ({ id: a.id, label: a.name, subLabel: a.email }))}
+                                            selectedIds={selectedAthleteIds}
+                                            onChange={setSelectedAthleteIds}
+                                            placeholder={tAssign('searchByNameOrEmail')}
+                                            noMatchesLabel={tAssign('noMatches')}
+                                        />
                                     </div>
-                                    <div className="flex items-center gap-3 rounded-lg bg-background dark:bg-background/60 p-4 border border-border/60 dark:border-white/10">
-                                        <Gauge className="w-4 h-4 text-primary" />
-                                        <div>
-                                            <p className="text-xs text-muted-foreground uppercase tracking-wide">RPE objetivo</p>
-                                            <p className="font-semibold text-foreground">{expectedRpe}/10</p>
-                                        </div>
+                                    <div>
+                                        <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-4 block">
+                                            {tAssign('targetRunningTeams')}
+                                        </label>
+                                        <SearchableMultiSelect
+                                            items={groups.map(g => ({ id: g.id, label: g.name }))}
+                                            selectedIds={selectedGroupIds}
+                                            onChange={setSelectedGroupIds}
+                                            placeholder={tAssign('searchGroups')}
+                                            noMatchesLabel={tAssign('noMatches')}
+                                        />
                                     </div>
+                                </>
+                            )}
+
+                            <div>
+                                <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-4 flex items-center justify-between">
+                                    {tAssign('globalTargetRpe')}
+                                    <span className="text-primary font-bold text-sm bg-muted dark:bg-white/5 px-2 py-0.5 rounded">{expectedRpe}/10</span>
+                                </label>
+                                <Slider
+                                    value={[expectedRpe]}
+                                    min={1}
+                                    max={10}
+                                    step={1}
+                                    onValueChange={(val) => setExpectedRpe(val[0])}
+                                    className="my-6"
+                                />
+                                <div className="flex justify-between text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                    <span>{tAssign('endurance')}</span>
+                                    <span>{tAssign('maxOutput')}</span>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                                <div className="rounded-lg border border-border dark:border-white/10 p-4 bg-card dark:bg-muted">
-                                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Bloques totales</p>
-                                    <p className="text-2xl font-bold text-foreground mt-1">{blocks.length}</p>
-                                </div>
-                                <div className="rounded-lg border border-border dark:border-white/10 p-4 bg-card dark:bg-muted">
-                                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Intervalos</p>
-                                    <p className="text-2xl font-bold text-foreground mt-1">{workoutSummary.byType.interval}</p>
-                                </div>
-                                <div className="rounded-lg border border-border dark:border-white/10 p-4 bg-card dark:bg-muted">
-                                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Recuperación + descanso</p>
-                                    <p className="text-2xl font-bold text-foreground mt-1">{workoutSummary.byType.recovery + workoutSummary.byType.rest}</p>
-                                </div>
-                                <div className="rounded-lg border border-border dark:border-white/10 p-4 bg-card dark:bg-muted">
-                                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Distancia planificada</p>
-                                    <p className="text-2xl font-bold text-foreground mt-1">
-                                        {workoutSummary.totalDistanceMeters > 0
-                                            ? `${(workoutSummary.totalDistanceMeters / 1000).toFixed(1)} km`
-                                            : '—'}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="rounded-xl border border-border dark:border-white/10 bg-card dark:bg-muted p-6">
-                                <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-lg font-bold text-foreground">Desglose de bloques</h3>
-                                    <span className="text-xs uppercase tracking-wide text-muted-foreground">Vista rápida</span>
-                                </div>
-                                {blocks.length === 0 ? (
-                                    <p className="text-sm text-muted-foreground">Aun no hay bloques cargados en esta sesión.</p>
-                                ) : (
-                                    <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-                                        {blocks.map((block, index) => (
-                                            <div key={block.id || `${block.type}-${index}`} className="flex items-center justify-between rounded-lg border border-border/60 dark:border-white/10 px-3 py-2 bg-background dark:bg-background/60">
-                                                <div className="min-w-0">
-                                                    <p className="text-sm font-semibold text-foreground truncate">{index + 1}. {block.stepName || blockTypeLabel[block.type]}</p>
-                                                    <p className="text-xs text-muted-foreground">{blockTypeLabel[block.type]}{block.group?.reps ? ` · x${block.group.reps}` : ''}</p>
-                                                </div>
-                                                <div className="text-right shrink-0 ml-4">
-                                                    <p className="text-sm font-semibold text-foreground">{formatBlockDuration(block)}</p>
-                                                    <p className="text-xs text-muted-foreground">{formatBlockTarget(block)}</p>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-
-                            {workoutSource === 'template' && (
-                                <div className="pt-1">
-                                    <Button
-                                        variant="outline"
-                                        onClick={() => setEditingTemplate(true)}
-                                        className="border-gray-200 dark:border-white/10 text-foreground dark:text-white hover:bg-muted dark:hover:bg-white/5 uppercase tracking-wider text-xs font-bold"
-                                    >
-                                        {tAssign('overruleBlockStructure')}
-                                    </Button>
+                            {isNew && (
+                                <div className="bg-background dark:bg-white/5 rounded-lg p-6">
+                                    <label className="flex items-start gap-4 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={saveAsTemplate}
+                                            onChange={(e) => setSaveAsTemplate(e.target.checked)}
+                                            className="w-5 h-5 mt-0.5 rounded border-gray-300 text-primary focus:ring-[#4e6073]"
+                                        />
+                                        <div className="flex flex-col">
+                                            <span className="font-semibold text-sm text-foreground mb-1">{tAssign('catalogStructure')}</span>
+                                            <p className="text-xs text-muted-foreground leading-relaxed">{tAssign('catalogStructureDesc')}</p>
+                                        </div>
+                                    </label>
+                                    {saveAsTemplate && (
+                                        <input
+                                            type="text"
+                                            value={templateTitle}
+                                            onChange={(e) => setTemplateTitle(e.target.value)}
+                                            placeholder={tAssign('enterLibraryTitle')}
+                                            className="mt-6 w-full bg-white dark:bg-background border border-border dark:border-white/10 rounded px-4 py-3 text-sm font-medium text-foreground focus:outline-none focus:border-primary transition-colors"
+                                        />
+                                    )}
                                 </div>
                             )}
                         </div>
                     </div>
-                )}
-            </div>
 
-            {renderSidebar()}
+                    {/* Action Buttons */}
+                    <div className="pt-4 pb-8 space-y-3">
+                        <div className="flex flex-col mb-4">
+                            <span className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">{tAssign('actionStatus')}</span>
+                            <span className="text-sm font-semibold text-foreground mt-1">
+                                {!scheduledDate ? tAssign('awaitingScheduling') :
+                                 !canConfirm ? tAssign('awaitingRecipients') :
+                                 tAssign('readyToDistribute')}
+                            </span>
+                        </div>
+                        <Button
+                            onClick={handleAssign}
+                            disabled={loading || !canConfirm}
+                            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground uppercase tracking-wider text-xs font-bold py-6 rounded shadow-[0_8px_24px_rgba(78,96,115,0.3)] transition-all"
+                        >
+                            {loading ? tAssign('transmittingData') : tAssign('commitAssignment')}
+                        </Button>
+                        <Button
+                            variant="outline"
+                            className="w-full"
+                            onClick={() => router.back()}
+                        >
+                            {tAssign('cancelExit') || 'Cancelar'}
+                        </Button>
+                    </div>
+                </div>
+            </div>
 
             <AlertDialog
                 open={alertState.open}

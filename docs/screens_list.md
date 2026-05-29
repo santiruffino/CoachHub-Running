@@ -1,4 +1,4 @@
-# Coach Hub Running - Screens List
+# Endurix - Screens List
 
 This list reflects currently implemented screens from the App Router.
 

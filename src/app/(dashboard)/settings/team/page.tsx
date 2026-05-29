@@ -51,7 +51,7 @@ export default async function TeamSettingsPage() {
         },
     } : {
         thresholds: { rpeMismatchThreshold: 2, lowComplianceThreshold: 50 },
-        branding: { teamName: 'Coach Hub Team', logoUrl: '', primaryColor: '#1f2937' },
+        branding: { teamName: 'Endurix Team', logoUrl: '', primaryColor: '#1f2937' },
         defaultModels: { workoutMatcherModel: 'baseline-v1', complianceModel: 'baseline-v1' },
     };
 

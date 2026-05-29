@@ -1,6 +1,6 @@
-# Coach Hub Running - Marketing Features & Value Propositions
+# Endurix - Marketing Features & Value Propositions
 
-This document summarizes the core features and marketing hooks for **Coach Hub Running**, designed to assist in social media marketing and product positioning.
+This document summarizes the core features and marketing hooks for **Endurix**, designed to assist in social media marketing and product positioning.
 
 ---
 
@@ -9,7 +9,7 @@ This document summarizes the core features and marketing hooks for **Coach Hub R
 **"Entrena más inteligente. Rinde por más tiempo."**
 *(Train smarter. Perform longer.)*
 
-Coach Hub is the professional-grade platform for endurance coaches and athletes who reject the "lifestyle" aesthetic in favor of pure, structured, and data-driven performance.
+Endurix is the professional-grade platform for endurance coaches and athletes who reject the "lifestyle" aesthetic in favor of pure, structured, and data-driven performance.
 
 ---
 
@@ -60,8 +60,8 @@ Métricas de RPE (Esfuerzo Percibido) y comentarios de los atletas. Recibe alert
 ## 📱 Social Media Hook Ideas
 
 ### For Coaches:
-*   "Deja de perseguir a tus atletas para que suban sus entrenos. Coach Hub lo hace por ti al segundo con Strava."
-*   "¿Tus atletas están cumpliendo las zonas? Coach Hub te avisa cuando la intensidad real no coincide con tu plan."
+*   "Deja de perseguir a tus atletas para que suban sus entrenos. Endurix lo hace por ti al segundo con Strava."
+*   "¿Tus atletas están cumpliendo las zonas? Endurix te avisa cuando la intensidad real no coincide con tu plan."
 *   "Construye una biblioteca de entrenamientos profesional y gestiónala a escala de equipo."
 
 ### For Athletes:

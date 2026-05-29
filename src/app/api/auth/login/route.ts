@@ -40,6 +40,7 @@ export async function POST(request: Request) {
       );
     }
 
+
     return NextResponse.json({
       user: {
         id: data.user.id,

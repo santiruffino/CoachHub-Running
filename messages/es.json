@@ -713,6 +713,7 @@
             "blocksRegistered": "Bloques cargados",
             "proceedToScheduling": "Continúa para definir fecha, destinatarios y esfuerzo objetivo.",
             "continueToScheduling": "Continuar a Programación",
+            "continueToAssignment": "Continuar a Asignación",
             "modifyBlueprint": "Modificar entrenamiento",
             "actionCalendar": "Planificación",
             "executionDate": "Fecha de Ejecución Objetivo",
@@ -905,8 +906,10 @@
             "warmup": "Calentamiento",
             "interval": "Activo",
             "recovery": "Recuperación",
+            "recoveryDescription": "Activo",
             "recoveryWithHint": "Recuperación",
             "rest": "Descanso",
+            "restDescription": "Pasivo",
             "restWithHint": "Descanso",
             "cooldown": "Enfriamiento",
             "hard": "Fuerte",
@@ -1002,6 +1005,10 @@
         "cancelExit": "Cancelar / Salir",
         "finalizeWorkout": "Finalizar Entrenamiento",
         "saving": "Guardando...",
+        "workoutBuilder": "Constructor",
+        "reviewAndPublish": "Revisar y Publicar",
+        "backToBuilder": "Volver al Constructor",
+        "nextStep": "Siguiente Paso",
         "enterTitleWarning": "Por favor, introduce un título para el entrenamiento",
         "addBlockWarning": "Por favor, añade al menos un bloque de entrenamiento",
         "saveSuccess": "¡Plantilla de entrenamiento guardada correctamente!",
@@ -1374,9 +1381,7 @@
         "footer": {
             "privacy": "POLÍTICA DE PRIVACIDAD",
             "terms": "TÉRMINOS DE SERVICIO",
-            "docs": "API DOCS",
-            "support": "SOPORTE",
-            "copyright": "© 2024 ENDURIX PERFORMANCE SYSTEMS. SIN EXCUSAS. SOLO DATOS."
+            "copyright": "© 2026 ENDURIX PERFORMANCE SYSTEMS. SIN EXCUSAS. SOLO DATOS."
         }
     },
     "races": {
@@ -1621,12 +1626,12 @@
             "backToHome": "Volver al inicio",
             "title": "Política de privacidad",
             "lastUpdated": "Última actualización: 14 de febrero de 2026",
-            "footer": "© 2026 Coach Hub. Todos los derechos reservados.",
+            "footer": "© 2026 Endurix. Todos los derechos reservados.",
             "sections": {
                 "introduction": {
                     "title": "Introducción",
-                    "p1": "Bienvenido a Coach Hub Running (nosotros, nuestro o la plataforma). Nos comprometemos a proteger tu información personal y tu derecho a la privacidad. Esta política explica cómo recopilamos, usamos, divulgamos y protegemos tu información cuando utilizas nuestra plataforma.",
-                    "p2": "Al usar Coach Hub Running, aceptas la recopilación y uso de información conforme a esta política. Si no estás de acuerdo con estas prácticas, no utilices el servicio."
+                    "p1": "Bienvenido a Endurix (nosotros, nuestro o la plataforma). Nos comprometemos a proteger tu información personal y tu derecho a la privacidad. Esta política explica cómo recopilamos, usamos, divulgamos y protegemos tu información cuando utilizas nuestra plataforma.",
+                    "p2": "Al usar Endurix, aceptas la recopilación y uso de información conforme a esta política. Si no estás de acuerdo con estas prácticas, no utilices el servicio."
                 },
                 "collect": {
                     "title": "Información que recopilamos",
@@ -1696,7 +1701,7 @@
                 },
                 "integrations": {
                     "title": "Integraciones de terceros",
-                    "p1": "Coach Hub Running se integra con plataformas de terceros como Strava, Garmin y otras. Cuando conectas estos servicios:",
+                    "p1": "Endurix se integra con plataformas de terceros como Strava, Garmin y otras. Cuando conectas estos servicios:",
                     "items": {
                         "auth": "Nos autorizas a acceder a tus datos de actividad en esas plataformas",
                         "policies": "Aplican sus propias políticas de privacidad y términos de servicio",
@@ -1708,9 +1713,9 @@
                         "intro": "Si conectas Strava, también aplican estas condiciones específicas:",
                         "items": {
                             "consent": "Solo accedemos a tus datos de Strava cuando nos das autorización explícita y puedes revocarla en cualquier momento desde Strava o desde tu cuenta.",
-                            "scope": "Te informamos qué datos se solicitan (por ejemplo: perfil, actividades y zonas de frecuencia cardíaca) y para qué se usan dentro de Coach Hub Running.",
+                            "scope": "Te informamos qué datos se solicitan (por ejemplo: perfil, actividades y zonas de frecuencia cardíaca) y para qué se usan dentro de Endurix.",
                             "withdrawal": "Si revocas el acceso de Strava, dejamos de sincronizar y eliminamos los datos derivados de Strava que conservamos en nuestros sistemas.",
-                            "deletion": "Puedes solicitar eliminación de datos vinculados a Strava escribiendo a privacy@coachhub.com.",
+                            "deletion": "Puedes solicitar eliminación de datos vinculados a Strava escribiendo a privacy@endurix.app.",
                             "usageData": "Strava puede recopilar información de uso relacionada con el acceso a su API desde nuestra integración, de acuerdo con su API Agreement y su política de privacidad.",
                             "attribution": "Cuando corresponda, mostramos la atribución \"Powered by Strava\" y cualquier atribución adicional exigida por proveedores de datos como Garmin."
                         }
@@ -1773,7 +1778,7 @@
                             "text": "Retirar consentimiento para el procesamiento de datos cuando aplique"
                         }
                     },
-                    "contact": "Para ejercer estos derechos, contáctanos en privacy@coachhub.com. Responderemos en un plazo de 30 días."
+                    "contact": "Para ejercer estos derechos, contáctanos en privacy@endurix.app. Responderemos en un plazo de 30 días."
                 },
                 "retention": {
                     "title": "Retención de datos",

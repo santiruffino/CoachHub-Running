@@ -286,7 +286,7 @@ export function AthleteDetailsView({
     const nextRaceDays = nextRace ? Math.max(0, differenceInDays(parseISO(nextRace.date), startOfDay(new Date()))) : null;
 
     return (
-        <div className="space-y-6 p-4 md:p-8 max-w-[1400px] mx-auto pb-20 bg-background min-h-screen">
+        <div className="space-y-6 p-4 md:p-8 max-w-350 mx-auto pb-20 bg-background min-h-screen">
             <div className="flex items-center gap-2">
                 <Button variant="ghost" size="icon" onClick={() => router.back()} className="h-8 w-8 text-muted-foreground hover:text-foreground">
                     <ArrowLeft className="h-4 w-4" />
@@ -333,21 +333,23 @@ export function AthleteDetailsView({
 
             <div className="bg-background/90 border border-border/50 rounded-2xl p-3">
                 <div className="flex flex-col gap-3">
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
                         <Link href={'/workouts/assign?athleteId=' + id}>
                             <Button className="gap-2 text-primary-foreground border-0 font-medium px-4">
                                 <Plus className="h-4 w-4" />
                                 {t("trainings.assign.assignWorkout")}
                             </Button>
                         </Link>
-                        <Button variant="outline" className="gap-2" onClick={() => setIsAssignRaceModalOpen(true)}>
-                            <Trophy className="h-4 w-4" />
-                            {t("races.athlete.addRace")}
-                        </Button>
-                        <Button variant="outline" className="gap-2" onClick={() => setActiveSection('racesNotes')}>
-                            <MessageSquare className="h-4 w-4" />
-                            {t("athletes.detail.coachComments")}
-                        </Button>
+                        <div className="flex flex-wrap gap-2">
+                            <Button variant="outline" className="gap-2" onClick={() => setIsAssignRaceModalOpen(true)}>
+                                <Trophy className="h-4 w-4" />
+                                {t("races.athlete.addRace")}
+                            </Button>
+                            <Button variant="outline" className="gap-2" onClick={() => setActiveSection('racesNotes')}>
+                                <MessageSquare className="h-4 w-4" />
+                                {t("athletes.detail.coachComments")}
+                            </Button>
+                        </div>
                     </div>
 
                     <Tabs value={activeSection} onValueChange={(value) => setActiveSection(value as 'training' | 'overview' | 'health' | 'racesNotes')}>

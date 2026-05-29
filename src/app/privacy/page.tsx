@@ -212,7 +212,7 @@ export default async function PrivacyPage() {
                             {t('sections.contact.subtitle')}
                         </p>
                         <div className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg p-4 mt-4">
-                            <p className="text-gray-700 dark:text-gray-light"><strong>{t('sections.contact.emailLabel')}:</strong> privacy@coachhub.com</p>
+                            <p className="text-gray-700 dark:text-gray-light"><strong>{t('sections.contact.emailLabel')}:</strong> privacy@endurix.app</p>
                         </div>
                     </section>
                 </div>

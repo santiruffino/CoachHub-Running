@@ -79,7 +79,7 @@ export function InviteCoachModal({ open, onClose }: InviteCoachModalProps) {
     const getWhatsAppShareUrl = () => {
         if (!invitationLink) return '#';
 
-        const message = `Hola! Te invito a unirte como coach en Coach Hub Running. Usa este enlace para aceptar la invitacion: ${invitationLink}`;
+        const message = `Hola! Te invito a unirte como coach en Endurix. Usa este enlace para aceptar la invitacion: ${invitationLink}`;
         return `https://wa.me/?text=${encodeURIComponent(message)}`;
     };
 

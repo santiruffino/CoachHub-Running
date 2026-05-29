@@ -2,7 +2,7 @@
 
 ## Overview
 
-Coach Hub Running uses Supabase PostgreSQL as the source of truth.
+Endurix uses Supabase PostgreSQL as the source of truth.
 
 - auth identities are managed by Supabase Auth
 - app profiles and domain data live in public tables

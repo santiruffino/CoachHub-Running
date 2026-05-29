@@ -2,7 +2,7 @@
 
 ## Overview
 
-Coach Hub uses Google Analytics 4 (GA4) for product funnel instrumentation.
+Endurix uses Google Analytics 4 (GA4) for product funnel instrumentation.
 
 - Provider: GA4 via `gtag.js`
 - Runtime injection: `src/components/analytics/GoogleAnalytics.tsx`

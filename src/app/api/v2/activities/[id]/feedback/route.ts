@@ -187,6 +187,7 @@ export async function POST(
             );
         }
 
+
         return NextResponse.json(feedback);
     } catch (error: unknown) {
         appLogger.error('Submit activity feedback error:', error);

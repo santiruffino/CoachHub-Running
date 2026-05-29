@@ -1,6 +1,6 @@
 # Roles and Permissions
 
-Coach Hub Running uses a role model with team-scoped authorization.
+Endurix uses a role model with team-scoped authorization.
 
 ## Roles
 

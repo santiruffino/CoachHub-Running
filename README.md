@@ -1,6 +1,6 @@
-# Coach Hub Running
+# Endurix
 
-Coach Hub Running is a multi-tenant coaching platform focused on running, with a staged path to cycling support.
+Endurix is a multi-tenant coaching platform focused on running, with a staged path to cycling support.
 
 - Frontend + API: Next.js App Router (Next.js 16)
 - Auth + DB: Supabase (`@supabase/ssr`, PostgreSQL, RLS)

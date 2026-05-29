@@ -22,7 +22,7 @@ function question(query: string): Promise<string> {
 }
 
 async function main() {
-    console.log('\n🚀 Coach Hub - Create Coach User\n');
+    console.log('\n🚀 Endurix - Create Coach User\n');
 
     // Get Supabase credentials
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

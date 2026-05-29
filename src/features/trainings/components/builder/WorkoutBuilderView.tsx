@@ -12,6 +12,7 @@ import { Slider } from '@/components/ui/slider';
 import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
 import { useTranslations } from 'next-intl';
 import { useApiError } from '@/hooks/useApiError';
+import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 
 interface WorkoutBuilderViewProps {
     initialWorkout: Training | null;
@@ -27,6 +28,7 @@ export function WorkoutBuilderView({ initialWorkout, athleteId }: WorkoutBuilder
     const [expectedRpe, setExpectedRpe] = useState<number>(initialWorkout?.expectedRpe || 5);
     const [activityType, setActivityType] = useState<TrainingType>(initialWorkout?.type || TrainingType.RUNNING);
     const [saving, setSaving] = useState(false);
+    const [currentStep, setCurrentStep] = useState<1 | 2>(1);
     const { alertState, showAlert, closeAlert } = useAlertDialog();
     const t = useTranslations('builder');
 
@@ -68,116 +70,172 @@ export function WorkoutBuilderView({ initialWorkout, athleteId }: WorkoutBuilder
         }
     };
 
-    const rightSidebarContent = (
-        <div className="flex flex-col h-full">
-            {/* Header + Form Fields */}
-            <div className="p-8 pb-4 flex-1 overflow-y-auto">
-                <h3 className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-2">
-                    {t('editorPhase')}
-                </h3>
-                <h2 className="text-xl font-bold font-display text-foreground mb-8">
-                    {t('coreDetails')}
-                </h2>
-
-                <div className="space-y-6">
-                    <div>
-                        <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-1 block">
-                            {t('workoutTitleLabel')}
-                        </label>
-                        <input
-                            type="text"
-                            value={workoutTitle}
-                            onChange={(e) => setWorkoutTitle(e.target.value)}
-                            placeholder={t('workoutTitlePlaceholder')}
-                            className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-2 text-foreground focus:ring-0 focus:border-primary placeholder-muted-foreground/50 transition-colors"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-1 block">
-                            {t('activityTypeLabel')}
-                        </label>
-                        <select
-                            value={activityType}
-                            onChange={(e) => setActivityType(e.target.value as TrainingType)}
-                            className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-2 text-foreground focus:ring-0 focus:border-primary outline-none"
-                        >
-                            <option value="RUNNING">{t('trainingTypes.RUNNING')}</option>
-                            <option value="CYCLING">{t('trainingTypes.CYCLING')}</option>
-                            <option value="SWIMMING">{t('trainingTypes.SWIMMING')}</option>
-                            <option value="STRENGTH">{t('trainingTypes.STRENGTH')}</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-1 block">
-                            {t('coachNotesLabel')}
-                        </label>
-                        <input
-                            type="text"
-                            value={workoutDescription}
-                            onChange={(e) => setWorkoutDescription(e.target.value)}
-                            placeholder={t('coachNotesPlaceholder')}
-                            className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-2 text-foreground focus:ring-0 focus:border-primary placeholder-muted-foreground/50 transition-colors"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-2 block flex items-between">
-                            {t('expectedRpeLabel')}
-                            <span className="ml-auto text-primary">{expectedRpe}/10</span>
-                        </label>
-                        <Slider
-                            value={[expectedRpe]}
-                            min={1}
-                            max={10}
-                            step={1}
-                            onValueChange={(val) => setExpectedRpe(val[0])}
-                            className="my-4"
-                        />
-                    </div>
-                </div>
-            </div>
-
-            {/* Action Buttons — pinned to the bottom of the sidebar */}
-            <div className="flex-none border-t border-border/30 dark:border-white/5 bg-[#2b3437] p-6 space-y-3">
-                <div className="mb-3">
-                    <p className="text-sm font-bold font-display text-white">{t('readyToPublish')}</p>
-                    <p className="text-xs text-white/50 mt-0.5">{t('publishDescription')}</p>
-                </div>
-                <Button
-                    onClick={handleSave}
-                    disabled={saving || !workoutTitle.trim() || blocks.length === 0}
-                    className="w-full bg-endurix-orange hover:bg-brand-primary-dark text-white uppercase tracking-wider text-xs font-semibold py-5 rounded shadow-lg transition-colors"
-                >
-                    {saving ? t('saving') : t('finalizeWorkout')}
-                </Button>
-                <Button
-                    variant="outline"
-                    className="w-full border-white/20 text-white bg-transparent hover:bg-white/10 hover:text-white uppercase tracking-wider text-xs font-semibold py-5"
-                    onClick={() => router.push('/trainings')}
-                >
-                    {t('cancelExit')}
-                </Button>
-            </div>
-        </div>
-    );
+    const canProceedToStep2 = blocks.length > 0;
 
     return (
-        <div className="h-[calc(100vh-theme(spacing.16))] w-[calc(100%+2rem)] md:w-[calc(100%+4rem)] overflow-hidden -mx-4 md:-mx-8 -my-4 md:-my-8 bg-background dark:bg-background font-inter flex relative">
-            {/* Main builder area — occupies all remaining space on the left */}
-            <div className="flex-1 overflow-hidden relative">
-                <WorkoutBuilder
-                    initialBlocks={blocks}
-                    onChange={setBlocks}
-                    athleteId={athleteId || undefined}
-                    trainingType={activityType}
-                />
+        <div className="h-[calc(100vh-theme(spacing.16))] w-[calc(100%+2rem)] md:w-[calc(100%+4rem)] overflow-hidden -mx-4 md:-mx-8 -my-4 md:-my-8 bg-background dark:bg-background font-inter flex flex-col relative">
+            {/* Step Indicator */}
+            <div className="flex-none border-b border-border/30 dark:border-white/5 bg-card dark:bg-muted px-8 py-4">
+                <div className="flex items-center justify-between max-w-4xl mx-auto">
+                    <div className="flex items-center gap-8">
+                        {/* Step 1 */}
+                        <div className="flex items-center gap-3">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors ${
+                                currentStep === 1 
+                                    ? 'bg-endurix-orange text-white' 
+                                    : currentStep === 2 
+                                        ? 'bg-green-500 text-white' 
+                                        : 'bg-muted text-muted-foreground'
+                            }`}>
+                                {currentStep === 2 ? <Check className="w-4 h-4" /> : '1'}
+                            </div>
+                            <span className={`text-sm font-medium ${currentStep === 1 ? 'text-foreground' : 'text-muted-foreground'}`}>
+                                {t('workoutBuilder')}
+                            </span>
+                        </div>
+
+                        {/* Connector */}
+                        <div className={`w-12 h-0.5 ${currentStep === 2 ? 'bg-green-500' : 'bg-border'}`} />
+
+                        {/* Step 2 */}
+                        <div className="flex items-center gap-3">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors ${
+                                currentStep === 2 
+                                    ? 'bg-endurix-orange text-white' 
+                                    : 'bg-muted text-muted-foreground'
+                            }`}>
+                                2
+                            </div>
+                            <span className={`text-sm font-medium ${currentStep === 2 ? 'text-foreground' : 'text-muted-foreground'}`}>
+                                {t('reviewAndPublish')}
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Step Navigation */}
+                    {currentStep === 2 && (
+                        <div className="flex items-center gap-3">
+                            <Button
+                                variant="outline"
+                                onClick={() => setCurrentStep(1)}
+                                className="flex items-center gap-2"
+                            >
+                                <ArrowLeft className="w-4 h-4" />
+                                {t('backToBuilder')}
+                            </Button>
+                        </div>
+                    )}
+                </div>
             </div>
 
-            {/* Right sidebar — metadata + actions */}
-            <div className="w-[320px] lg:w-[380px] flex-shrink-0 bg-card dark:bg-muted border-l border-border dark:border-white/5 overflow-hidden z-10 flex flex-col">
-                {rightSidebarContent}
+            {/* Main Content */}
+            <div className="flex-1 overflow-hidden relative">
+                {currentStep === 1 ? (
+                    <WorkoutBuilder
+                        initialBlocks={blocks}
+                        onChange={setBlocks}
+                        athleteId={athleteId || undefined}
+                        trainingType={activityType}
+                        footerContent={
+                            <Button
+                                onClick={() => setCurrentStep(2)}
+                                disabled={!canProceedToStep2}
+                                className="w-full bg-endurix-orange hover:bg-brand-primary-dark text-white uppercase tracking-wider text-xs font-semibold py-4 rounded transition-colors"
+                            >
+                                {t('nextStep')}
+                                <ArrowRight className="w-4 h-4 ml-2" />
+                            </Button>
+                        }
+                    />
+                ) : (
+                    <div className="h-full overflow-y-auto bg-[#f8f9fa] dark:bg-[#0a0f14]">
+                        <div className="max-w-2xl mx-auto px-8 py-12">
+                            <h2 className="text-2xl font-bold font-display text-foreground mb-2">
+                                {t('coreDetails')}
+                            </h2>
+                            <p className="text-sm text-muted-foreground mb-8">
+                                {t('publishDescription')}
+                            </p>
+
+                            <div className="space-y-8">
+                                <div>
+                                    <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-2 block">
+                                        {t('workoutTitleLabel')}
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={workoutTitle}
+                                        onChange={(e) => setWorkoutTitle(e.target.value)}
+                                        placeholder={t('workoutTitlePlaceholder')}
+                                        className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-3 text-foreground focus:ring-0 focus:border-primary placeholder-muted-foreground/50 transition-colors text-lg"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-2 block">
+                                        {t('activityTypeLabel')}
+                                    </label>
+                                    <select
+                                        value={activityType}
+                                        onChange={(e) => setActivityType(e.target.value as TrainingType)}
+                                        className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-3 text-foreground focus:ring-0 focus:border-primary outline-none"
+                                    >
+                                        <option value="RUNNING">{t('trainingTypes.RUNNING')}</option>
+                                        <option value="CYCLING">{t('trainingTypes.CYCLING')}</option>
+                                        <option value="SWIMMING">{t('trainingTypes.SWIMMING')}</option>
+                                        <option value="STRENGTH">{t('trainingTypes.STRENGTH')}</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-2 block">
+                                        {t('coachNotesLabel')}
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={workoutDescription}
+                                        onChange={(e) => setWorkoutDescription(e.target.value)}
+                                        placeholder={t('coachNotesPlaceholder')}
+                                        className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-3 text-foreground focus:ring-0 focus:border-primary placeholder-muted-foreground/50 transition-colors"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-2 block flex items-between">
+                                        {t('expectedRpeLabel')}
+                                        <span className="ml-auto text-primary text-lg font-bold">{expectedRpe}/10</span>
+                                    </label>
+                                    <Slider
+                                        value={[expectedRpe]}
+                                        min={1}
+                                        max={10}
+                                        step={1}
+                                        onValueChange={(val) => setExpectedRpe(val[0])}
+                                        className="my-4"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="mt-12 pt-8 border-t border-border/30 dark:border-white/5 space-y-3">
+                                <Button
+                                    onClick={handleSave}
+                                    disabled={saving || !workoutTitle.trim() || blocks.length === 0}
+                                    className="w-full bg-endurix-orange hover:bg-brand-primary-dark text-white uppercase tracking-wider text-xs font-semibold py-5 rounded shadow-lg transition-colors"
+                                >
+                                    {saving ? t('saving') : t('finalizeWorkout')}
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    className="w-full"
+                                    onClick={() => router.push('/trainings')}
+                                >
+                                    {t('cancelExit')}
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <AlertDialog

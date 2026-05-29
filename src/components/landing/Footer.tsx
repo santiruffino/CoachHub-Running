@@ -6,12 +6,11 @@ import { useTranslations } from 'next-intl';
 
 export function Footer() {
   const t = useTranslations('landing.footer');
+  const currentYear = new Date().getFullYear();
 
   const FOOTER_LINKS = [
     { label: t('privacy'), href: '/privacy' },
     { label: t('terms'), href: '/terms' },
-    { label: t('docs'), href: '/docs' },
-    { label: t('support'), href: '/support' },
   ];
 
   return (
@@ -51,7 +50,7 @@ export function Footer() {
             className="text-white/30 text-[10px] tracking-wider text-center md:text-right"
             style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
           >
-            {t('copyright')}
+            {t('copyright', { year: currentYear })}
           </p>
         </div>
       </div>

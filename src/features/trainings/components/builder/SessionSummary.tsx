@@ -10,10 +10,11 @@ interface SessionSummaryProps {
     blocks: WorkoutBlock[];
     athleteProfile?: AthleteProfile | null;
     trainingType?: TrainingType;
+    compact?: boolean;
 }
 
 export function calculateTotals(
-    blocks: WorkoutBlock[], 
+    blocks: WorkoutBlock[],
     athleteProfile?: AthleteProfile | null,
     trainingType: TrainingType = TrainingType.RUNNING
 ): WorkoutTotals {
@@ -58,19 +59,19 @@ export function calculateTotals(
         if (block.duration.type === 'distance') {
             const distMeters = block.duration.value;
             totalDistance += (distMeters / 1000) * multiplier;
-            
+
             if (trainingType === TrainingType.CYCLING) {
                 // For cycling, we assume a base speed of 30 km/h if no profile info is used for IF
                 const baseSpeedMs = (30 * intensityFactor) / 3.6;
                 stepDurationSecs = baseSpeedMs > 0 ? distMeters / baseSpeedMs : distMeters * (120 / 1000); // 120s/km = 30km/h
             } else if (athleteProfile?.vam) {
                 // If VAM is in mm:ss format, convert to km/h, otherwise assume it's directly km/h
-                const vamSeconds = athleteProfile.vam.includes(':') 
-                    ? parsePaceToSeconds(athleteProfile.vam) 
+                const vamSeconds = athleteProfile.vam.includes(':')
+                    ? parsePaceToSeconds(athleteProfile.vam)
                     : 0;
-                
-                const vamKmh = vamSeconds > 0 
-                    ? 3600 / vamSeconds 
+
+                const vamKmh = vamSeconds > 0
+                    ? 3600 / vamSeconds
                     : (parseFloat(athleteProfile.vam) || 15); // Fallback to 15 km/h if unparseable
 
                 const targetSpeedMs = (vamKmh * intensityFactor) / 3.6;
@@ -86,18 +87,18 @@ export function calculateTotals(
         if (block.duration.type === 'time') {
             stepDurationSecs = block.duration.value;
             totalDuration += stepDurationSecs * multiplier;
-            
+
             if (trainingType === TrainingType.CYCLING) {
                 const baseSpeedMs = (30 * intensityFactor) / 3.6;
                 const distKm = (stepDurationSecs * baseSpeedMs) / 1000;
                 totalDistance += distKm * multiplier;
             } else if (athleteProfile?.vam) {
-                const vamSeconds = athleteProfile.vam.includes(':') 
-                    ? parsePaceToSeconds(athleteProfile.vam) 
+                const vamSeconds = athleteProfile.vam.includes(':')
+                    ? parsePaceToSeconds(athleteProfile.vam)
                     : 0;
-                
-                const vamKmh = vamSeconds > 0 
-                    ? 3600 / vamSeconds 
+
+                const vamKmh = vamSeconds > 0
+                    ? 3600 / vamSeconds
                     : (parseFloat(athleteProfile.vam) || 15);
 
                 const targetSpeedMs = (vamKmh * intensityFactor) / 3.6;
@@ -122,7 +123,7 @@ export function calculateTotals(
     };
 }
 
-export function SessionSummary({ blocks, athleteProfile, trainingType = TrainingType.RUNNING }: SessionSummaryProps) {
+export function SessionSummary({ blocks, athleteProfile, trainingType = TrainingType.RUNNING, compact = false }: SessionSummaryProps) {
     const totals = useMemo(() => calculateTotals(blocks, athleteProfile, trainingType), [blocks, athleteProfile, trainingType]);
     const t = useTranslations('builder');
 
@@ -138,7 +139,7 @@ export function SessionSummary({ blocks, athleteProfile, trainingType = Training
     };
 
     const durationStr = formatDurationParts(totals.duration);
-    
+
     const avgIF = totals.duration > 0 ? Math.sqrt(totals.tss / (totals.duration / 3600) / 100).toFixed(2) : '0.00';
 
     const getEstimatedLoad = (tss: number) => {
@@ -151,28 +152,76 @@ export function SessionSummary({ blocks, athleteProfile, trainingType = Training
 
     const loadData = getEstimatedLoad(totals.tss);
 
+    if (compact) {
+        return (
+            <div className="w-full space-y-4">
+                <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#8b9bb4]">
+                    {t('sessionSummary')}
+                </h4>
+
+                <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                        <span className="text-xs text-[#8b9bb4]">{t('duration')}</span>
+                        <span className="text-sm font-bold font-display text-[#2b3437] dark:text-[#f8f9fa]">
+                            {totals.duration > 0 ? durationStr : '00:00'}
+                        </span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                        <span className="text-xs text-[#8b9bb4]">{t('tss')}</span>
+                        <span className="text-sm font-bold font-display text-[#2b3437] dark:text-[#f8f9fa]">
+                            {totals.tss}
+                        </span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                        <span className="text-xs text-[#8b9bb4]">{t('if')}</span>
+                        <span className="text-sm font-bold font-display text-[#2b3437] dark:text-[#f8f9fa]">
+                            {avgIF}
+                        </span>
+                    </div>
+
+                    <div className="pt-2 border-t border-[#e2e8f0] dark:border-white/10">
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#8b9bb4]">{t('estimatedLoad')}</span>
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#2b3437] dark:text-[#f8f9fa]">
+                                {t(loadData.label as 'low' | 'medium' | 'high' | 'veryHigh')}
+                            </span>
+                        </div>
+                        <div className="w-full h-1.5 bg-[#e2e8f0] dark:bg-white/10 rounded-full overflow-hidden">
+                            <div
+                                className="h-full bg-[#4e6073] dark:bg-white rounded-full transition-all duration-500 ease-in-out"
+                                style={{ width: `${loadData.percent}%` }}
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="bg-[#4e6073] dark:bg-[#131b23] rounded-2xl p-6 text-white w-full shadow-sm">
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-display font-bold">{t('sessionSummary')}</h2>
             </div>
-            
+
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 <div className="flex flex-col border-r border-white/10 pr-6">
                     <span className="text-sm font-medium text-gray-300 mb-2">{t('duration')}</span>
                     <span className="text-3xl font-display font-bold tracking-tight">{totals.duration > 0 ? durationStr : '00:00'}</span>
                 </div>
-                
+
                 <div className="flex flex-col border-r border-white/10 px-6">
                     <span className="text-sm font-medium text-gray-300 mb-2">{t('tss')}</span>
                     <span className="text-3xl font-display font-bold tracking-tight">{totals.tss}</span>
                 </div>
-                
+
                 <div className="flex flex-col md:border-r border-white/10 md:px-6 pr-6">
                     <span className="text-sm font-medium text-gray-300 mb-2">{t('if')}</span>
                     <span className="text-3xl font-display font-bold tracking-tight">{avgIF}</span>
                 </div>
-                
+
                 <div className="flex flex-col md:pl-6 justify-center">
                     <div className="flex items-center justify-between mb-2">
                         <span className="text-xs font-bold uppercase tracking-wider text-gray-300">{t('estimatedLoad')}</span>

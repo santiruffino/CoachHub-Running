@@ -2,7 +2,7 @@
 
 ## Product focus
 
-Coach Hub Running is currently optimized for running coaching workflows.
+Endurix is currently optimized for running coaching workflows.
 
 - Primary users: `ADMIN`, `COACH`, `ATHLETE`
 - Primary domain: running planning, assignment, activity sync, and coaching feedback

@@ -11,7 +11,7 @@ export const DEFAULT_MODELS = {
 };
 
 export const DEFAULT_TEAM_BRANDING = {
-  teamName: 'Coach Hub Team',
+  teamName: 'Endurix Team',
   logoUrl: '',
   primaryColor: '#1f2937',
 };

@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Settings, LogOut, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/features/auth/hooks/useAuth';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -75,7 +76,8 @@ export function Navbar() {
                     </div>
 
                     {/* User Menu */}
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                        <ThemeToggle />
                         <DropdownMenu>
                             <DropdownMenuTrigger className="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
                                 <Avatar className="h-8 w-8">

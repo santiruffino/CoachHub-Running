@@ -34,7 +34,7 @@ const getRoadmapItems = (t: any): Array<{
     title: t('item3Title'),
     description: t('item3Desc'),
     status: t('item3Status'),
-    statusType: 'planned',
+    statusType: 'future',
   },
 ];
 

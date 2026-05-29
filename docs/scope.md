@@ -1,8 +1,8 @@
-# Coach Hub Platform Scope
+# Endurix Platform Scope
 
 ## Purpose
 
-Coach Hub Running is a multi-tenant coaching platform for running teams.
+Endurix is a multi-tenant coaching platform for running teams.
 
 - Primary goal: plan, assign, and analyze running training at team scale
 - Secondary goal: prepare domain architecture for cycling expansion

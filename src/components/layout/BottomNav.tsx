@@ -6,6 +6,7 @@ import { LayoutDashboard, Users, User, Trophy, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useTranslations } from 'next-intl';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 export function BottomNav() {
     const pathname = usePathname();
@@ -56,6 +57,9 @@ export function BottomNav() {
                             </Link>
                         );
                     })}
+                <div className="flex flex-col items-center justify-center gap-1 min-w-[60px] py-2">
+                    <ThemeToggle />
+                </div>
             </div>
         </nav>
     );

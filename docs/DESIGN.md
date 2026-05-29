@@ -1,5 +1,7 @@
 # Design System Strategy: High-End Endurance Coaching (Desktop)
 
+> **For dashboard implementation reference, see [`DASHBOARD-DESIGN-SYSTEM.md`](./DASHBOARD-DESIGN-SYSTEM.md)** — a practical guide with Tailwind classes, component patterns, and copy-paste examples extracted from the landing page.
+
 ## 1. Overview & Creative North Star
 **The Creative North Star: "The Performance Curator"**
 
