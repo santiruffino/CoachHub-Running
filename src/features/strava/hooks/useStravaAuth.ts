@@ -68,6 +68,14 @@ export function useStravaAuth(options?: { enabled?: boolean }) {
         try {
             setLoading(true);
             await stravaService.exchangeCode(code);
+            // Trigger initial sync for immediate feedback (non-blocking with exchange)
+            try {
+                await stravaService.sync(90);
+                await fetchStatus();
+            } catch (syncErr) {
+                appLogger.error('Initial sync after exchange failed', syncErr);
+                // Don't fail the connection if initial sync fails
+            }
             router.push('/profile'); // Redirect back to profile page
         } catch (err: unknown) {
             appLogger.error(err);
@@ -76,7 +84,7 @@ export function useStravaAuth(options?: { enabled?: boolean }) {
         } finally {
             setLoading(false);
         }
-    }, [router]);
+    }, [router, fetchStatus]);
 
     const sync = useCallback(async () => {
         try {

@@ -138,6 +138,25 @@ export async function POST(request: NextRequest) {
             // Don't fail the connection if zones sync fails
         }
 
+        // Trigger 90-day historical activity sync (non-blocking)
+        // This runs in the background so the response returns immediately
+        const { syncStravaActivities } = await import('@/lib/strava/sync-activities');
+        syncStravaActivities(supabase, user!.id, tokenData.access_token, { days: 90 })
+            .then((result) => {
+                appLogger.info('Initial 90-day Strava sync completed', {
+                    userId: user!.id,
+                    inserted: result.inserted,
+                    updated: result.updated,
+                    total: result.total,
+                    pages: result.pages,
+                });
+            })
+            .catch((err) => {
+                appLogger.error('Initial 90-day Strava sync failed', {
+                    userId: user!.id,
+                    error: err instanceof Error ? err.message : err,
+                });
+            });
 
         const response = NextResponse.json({
             success: true,

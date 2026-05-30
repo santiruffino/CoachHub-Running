@@ -5,6 +5,7 @@ import { BarChart, Bar, XAxis, ResponsiveContainer, Cell } from 'recharts';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import { ArrowRight } from 'lucide-react';
 
 const weeklyData = [
   { day: 'L', value: 38 },
@@ -240,7 +241,7 @@ export function HeroSection() {
                   className="inline-flex items-center justify-center gap-2 bg-endurix-orange text-white text-xs font-bold tracking-widest px-8 py-4 transition-all hover:bg-endurix-orange/90 w-full sm:w-auto"
                   style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
                 >
-                  {t('viewTraining')} <span aria-hidden>→</span>
+                  {t('viewTraining')} <ArrowRight className="w-4 h-4" />
                 </Link>
               </motion.div>
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>

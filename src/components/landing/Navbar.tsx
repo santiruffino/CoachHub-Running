@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ChevronsRight, Menu, X } from 'lucide-react';
+import { ArrowRight, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
@@ -60,7 +60,7 @@ export function Navbar() {
                 className="inline-flex items-center gap-2 bg-endurix-orange text-white text-xs font-bold tracking-widest px-5 py-2.5 transition-all hover:bg-endurix-orange/90"
                 style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
               >
-                {t('startTraining')} <span aria-hidden>→</span>
+                {t('startTraining')} <ArrowRight className="w-4 h-4" />
               </Link>
             </motion.div>
           </div>
@@ -103,7 +103,7 @@ export function Navbar() {
               className="inline-flex items-center gap-2 bg-endurix-orange text-white text-xs font-bold tracking-widest px-5 py-2.5 self-start"
               style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
             >
-              {t('startTraining')} →
+              {t('startTraining')} <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         </motion.div>

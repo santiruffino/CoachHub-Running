@@ -1,6 +1,5 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTranslations } from 'next-intl';
 
 interface Lap {
@@ -45,7 +44,7 @@ type HeartRateDataItem = Pick<Lap, 'average_heartrate' | 'moving_time' | 'elapse
 
 export function HeartRateZonesChart({ laps, splits, zones, zoneNames }: HeartRateZonesChartProps) {
     const t = useTranslations('activities.detail.zones');
-    
+
     const defaultZoneNames = [
         t('names.z1'),
         t('names.z2_hr'),
@@ -56,7 +55,6 @@ export function HeartRateZonesChart({ laps, splits, zones, zoneNames }: HeartRat
 
     const actualZoneNames = zoneNames || defaultZoneNames;
 
-    // Calculate time in each zone from laps or splits
     const calculateZoneDistribution = (): Array<{ zone: number; time: number; percentage: number }> => {
         const zoneDistribution = new Array(zones.length).fill(0);
         let totalTime = 0;
@@ -71,17 +69,14 @@ export function HeartRateZonesChart({ laps, splits, zones, zoneNames }: HeartRat
 
             totalTime += time;
 
-            // Determine which zone this heart rate falls into
             for (let i = 0; i < zones.length; i++) {
                 const zone = zones[i];
                 if (i === zones.length - 1) {
-                    // Last zone: only check minimum
                     if (hr >= zone.min) {
                         zoneDistribution[i] += time;
                         break;
                     }
                 } else {
-                    // Other zones: check range
                     if (hr >= zone.min && hr < zone.max) {
                         zoneDistribution[i] += time;
                         break;
@@ -90,7 +85,6 @@ export function HeartRateZonesChart({ laps, splits, zones, zoneNames }: HeartRat
             }
         });
 
-        // Convert to percentage and format
         return zoneDistribution.map((time, index) => ({
             zone: index + 1,
             time,
@@ -98,61 +92,61 @@ export function HeartRateZonesChart({ laps, splits, zones, zoneNames }: HeartRat
         }));
     };
 
-    const formatTime = (seconds: number): string => {
-        const mins = Math.floor(seconds / 60);
-        const secs = Math.round(seconds % 60);
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
-    };
-
     const distribution = calculateZoneDistribution();
     const totalTime = distribution.reduce((sum, d) => sum + d.time, 0);
 
     const zoneColors = [
         'bg-gray-400',
-        'bg-blue-500',
         'bg-green-500',
         'bg-yellow-500',
+        'bg-orange-500',
         'bg-red-500',
     ];
 
+    if (totalTime === 0) {
+        return (
+            <p className="text-sm text-endurix-black/50 dark:text-muted-foreground text-center py-8">
+                {t('noHrData')}
+            </p>
+        );
+    }
+
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>{t('hrTitle')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-                {distribution.map((item, index) => {
-                    if (item.time === 0) return null;
+        <div className="space-y-3">
+            {distribution.map((item, index) => {
+                if (item.time === 0) return null;
 
-                    return (
-                        <div key={index} className="space-y-1">
-                            <div className="flex items-center justify-between text-sm">
-                                <span className="font-medium">{actualZoneNames[index]}</span>
-                                <div className="flex items-center gap-3">
-                                    <span className="text-muted-foreground">
-                                        {formatTime(item.time)} ({item.percentage.toFixed(1)}%)
-                                    </span>
-                                    <span className="text-xs text-muted-foreground">
-                                        {zones[index].min}-{index === zones.length - 1 ? zones[index].max : zones[index].max} ppm
-                                    </span>
-                                </div>
-                            </div>
-                            <div className="relative h-6 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                                <div
-                                    className={`absolute top-0 left-0 h-full ${zoneColors[index]} transition-all duration-500`}
-                                    style={{ width: `${item.percentage}%` }}
-                                />
-                            </div>
+                return (
+                    <div key={index} className="flex items-center gap-4">
+                        <div className="w-[180px] shrink-0">
+                            <span
+                                className="text-[10px] font-semibold text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase"
+                                style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                            >
+                                {actualZoneNames[index]}
+                            </span>
+                            <p
+                                className="text-[9px] text-endurix-black/40 dark:text-muted-foreground mt-0.5"
+                                style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                            >
+                                ({zones[index].min}-{zones[index].max} bpm)
+                            </p>
                         </div>
-                    );
-                })}
-
-                {totalTime === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-8">
-                        {t('noHrData')}
-                    </p>
-                )}
-            </CardContent>
-        </Card>
+                        <div className="flex-1 h-1.5 bg-endurix-black/15 dark:bg-border relative">
+                            <div
+                                className={`absolute inset-y-0 left-0 ${zoneColors[index]} transition-all duration-500`}
+                                style={{ width: `${item.percentage}%` }}
+                            />
+                        </div>
+                        <span
+                            className="text-[10px] font-bold text-endurix-black dark:text-foreground w-12 text-right"
+                            style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                        >
+                            {item.percentage.toFixed(0)}%
+                        </span>
+                    </div>
+                );
+            })}
+        </div>
     );
 }

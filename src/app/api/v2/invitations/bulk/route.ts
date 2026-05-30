@@ -3,6 +3,7 @@ import { requireRole } from '@/lib/supabase/api-helpers';
 import { randomBytes } from 'crypto';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { appLogger } from '@/lib/app-logger';
+import { sendInvitationEmail } from '@/lib/email/send';
 
 interface BulkInviteRequest {
   emails: string[];
@@ -60,6 +61,15 @@ export async function POST(request: NextRequest) {
     const coachIdToAssign = (profile.role === 'ADMIN' || role === 'COACH') ? null : user!.id;
     const results: InviteResult[] = [];
 
+    // Fetch team name and inviter profile for emails
+    const [{ data: team }, { data: inviterProfile }] = await Promise.all([
+      adminClient.from('teams').select('name').eq('id', profile.team_id).single(),
+      adminClient.from('profiles').select('name, email').eq('id', user!.id).single(),
+    ]);
+
+    const teamName = team?.name || 'your team';
+    const inviterName = inviterProfile?.name || inviterProfile?.email || 'your coach';
+
     // Process invitations in batches or loop (for simplicity and per-email reporting)
     for (const email of emails) {
       try {
@@ -93,6 +103,19 @@ export async function POST(request: NextRequest) {
             status: 'pending', 
             token: existingInvitation.token 
           });
+
+          // Resend invitation email (non-blocking)
+          sendInvitationEmail({
+            to: normalizedEmail,
+            inviterName,
+            teamName,
+            role: existingInvitation.role || role,
+            token: existingInvitation.token,
+            expiresAt: new Date(existingInvitation.expires_at),
+          }).catch((err) => {
+            appLogger.error(`Failed to resend invitation email to ${normalizedEmail}:`, err);
+          });
+
           continue;
         }
 
@@ -122,6 +145,18 @@ export async function POST(request: NextRequest) {
             email: normalizedEmail, 
             status: 'success', 
             token: invitation.token 
+          });
+
+          // Send invitation email (non-blocking)
+          sendInvitationEmail({
+            to: normalizedEmail,
+            inviterName,
+            teamName,
+            role,
+            token: invitation.token,
+            expiresAt,
+          }).catch((err) => {
+            appLogger.error(`Failed to send invitation email to ${normalizedEmail}:`, err);
           });
         }
       } catch (err) {

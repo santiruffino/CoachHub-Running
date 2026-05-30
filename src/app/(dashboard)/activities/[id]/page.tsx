@@ -91,6 +91,10 @@ async function renderActivityDetail(supabase: SupabaseClient, user: { id: string
         max_speed: activity.max_speed ?? metadata.max_speed ?? 0,
         average_heartrate: activity.avg_hr ?? metadata.average_heartrate ?? null,
         max_heartrate: activity.max_hr ?? metadata.max_heartrate ?? null,
+        average_cadence: activity.average_cadence ?? metadata.average_cadence ?? null,
+        laps: metadata.laps ?? activity.laps ?? null,
+        splits_metric: metadata.splits_metric ?? null,
+        splits_standard: metadata.splits_standard ?? null,
         lap_overrides: activity.lap_overrides ?? null,
         // 3. Internal fields
         _internalId: internalId,

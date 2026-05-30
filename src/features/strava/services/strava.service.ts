@@ -21,6 +21,7 @@ export interface StravaSyncResponse {
     inserted: number;
     updated: number;
     total: number;
+    days?: number;
     zonesSynced: boolean;
 }
 
@@ -64,8 +65,9 @@ export const stravaService = {
         await api.post('/v2/strava/auth/disconnect');
     },
 
-    sync: async () => {
-        const response = await api.post<StravaSyncResponse>('/v2/strava/auth/sync');
+    sync: async (days?: number) => {
+        const params = days ? `?days=${days}` : '';
+        const response = await api.post<StravaSyncResponse>(`/v2/strava/auth/sync${params}`);
         return response.data;
     },
 

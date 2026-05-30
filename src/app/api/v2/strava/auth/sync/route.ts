@@ -3,6 +3,7 @@ import { requireRole } from '@/lib/supabase/api-helpers';
 import * as Sentry from '@sentry/nextjs';
 import { createRequestLogger, withRequestId } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
+import { syncStravaActivities } from '@/lib/strava/sync-activities';
 
 interface StravaTokenResponse {
     access_token: string;
@@ -10,72 +11,12 @@ interface StravaTokenResponse {
     expires_at: number;
 }
 
-interface StravaActivity {
-    id: number;
-    name: string;
-    type: string;
-    distance: number;
-    moving_time: number;
-    start_date: string;
-    elapsed_time: number;
-    total_elevation_gain: number;
-    average_speed?: number | null;
-    max_speed?: number | null;
-    average_heartrate: number | null;
-    max_heartrate: number | null;
-    suffer_score?: number | null;
-    private: boolean;
-}
-
-interface ActivityUpsertRow {
-    user_id: string;
-    external_id: string;
-    title: string;
-    type: string;
-    distance: number;
-    duration: number;
-    start_date: string;
-    elapsed_time: number;
-    elevation_gain: number;
-    average_speed: number;
-    max_speed: number;
-    avg_hr: number | null;
-    max_hr: number | null;
-    suffer_score: number | null;
-    load_score: number;
-    is_private: boolean;
-    metadata: StravaActivity;
-    updated_at: string;
-}
-
-function estimateLoadScore(activity: StravaActivity): number {
-    if (typeof activity.suffer_score === 'number' && Number.isFinite(activity.suffer_score)) {
-        return Math.max(0, activity.suffer_score);
-    }
-
-    const durationHours = Math.max(0, activity.moving_time || activity.elapsed_time || 0) / 3600;
-    if (durationHours <= 0) return 0;
-
-    return durationHours * 45;
-}
-
-function chunkArray<T>(items: T[], chunkSize: number): T[][] {
-    if (items.length === 0) return [];
-
-    const chunks: T[][] = [];
-    for (let index = 0; index < items.length; index += chunkSize) {
-        chunks.push(items.slice(index, index + chunkSize));
-    }
-
-    return chunks;
-}
-
 /**
  * Manual Strava Activity Sync
- * 
- * Fetches recent activities from Strava and stores them in the database.
- * This is a synchronous operation triggered by user button click.
- * 
+ *
+ * Fetches activities from Strava and stores them in the database.
+ * Supports optional ?days=N query parameter (default: 30, max: 90).
+ *
  * Access: ATHLETE only
  */
 export async function POST(request: NextRequest) {
@@ -84,7 +25,6 @@ export async function POST(request: NextRequest) {
         NextResponse.json(body, withRequestId(init, requestId));
 
     try {
-        void request;
         const authResult = await requireRole('ATHLETE');
 
         if (authResult.response) {
@@ -93,6 +33,11 @@ export async function POST(request: NextRequest) {
         }
 
         const { supabase, user } = authResult;
+
+        // Parse optional days parameter (default 30, max 90)
+        const { searchParams } = new URL(request.url);
+        const daysParam = parseInt(searchParams.get('days') || '30', 10);
+        const days = Math.min(Math.max(daysParam, 1), 90);
 
         // Get Strava connection
         const { data: connection, error: connError } = await supabase
@@ -150,96 +95,8 @@ export async function POST(request: NextRequest) {
                 .eq('user_id', user!.id);
         }
 
-        // Fetch activities from Strava (last 30 activities)
-        const activitiesResponse = await fetch(
-            'https://www.strava.com/api/v3/athlete/activities?per_page=30',
-            {
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`,
-                },
-            }
-        );
-
-        if (!activitiesResponse.ok) {
-            logger.error('strava_sync.fetch_activities_failed', { userId: user!.id, status: activitiesResponse.status });
-            return respond(apiError('FAILED_TO_FETCH_ACTIVITIES_FROM_STRAVA'),
-                { status: 500 }
-            );
-        }
-
-        const stravaActivities = (await activitiesResponse.json()) as StravaActivity[];
-
-        const dedupedActivities = Array.from(
-            new Map(stravaActivities.map((activity) => [activity.id.toString(), activity])).values()
-        );
-
-        const externalIds = dedupedActivities.map((activity) => activity.id.toString());
-
-        let existingExternalIds = new Set<string>();
-        if (externalIds.length > 0) {
-            const { data: existingRows, error: existingError } = await supabase
-                .from('activities')
-                .select('external_id')
-                .eq('user_id', user!.id)
-                .in('external_id', externalIds);
-
-            if (existingError) {
-                logger.error('strava_sync.load_existing_failed', { userId: user!.id, error: existingError });
-                return respond(apiError('FAILED_TO_PREPARE_ACTIVITY_SYNC'),
-                    { status: 500 }
-                );
-            }
-
-            existingExternalIds = new Set((existingRows || []).map((row) => row.external_id));
-        }
-
-        const upsertRows: ActivityUpsertRow[] = dedupedActivities.map((activity) => {
-            const sufferScore = typeof activity.suffer_score === 'number' ? activity.suffer_score : null;
-            return {
-                user_id: user!.id,
-                external_id: activity.id.toString(),
-                title: activity.name,
-                type: activity.type,
-                distance: activity.distance || 0,
-                duration: activity.moving_time || activity.elapsed_time || 0,
-                start_date: activity.start_date,
-                elapsed_time: activity.elapsed_time || 0,
-                elevation_gain: activity.total_elevation_gain || 0,
-                average_speed: activity.average_speed || 0,
-                max_speed: activity.max_speed || 0,
-                avg_hr: activity.average_heartrate,
-                max_hr: activity.max_heartrate,
-                suffer_score: sufferScore,
-                load_score: estimateLoadScore(activity),
-                is_private: activity.private || false,
-                metadata: activity,
-                updated_at: new Date().toISOString(),
-            };
-        });
-
-        for (const batch of chunkArray(upsertRows, 100)) {
-            const { error: upsertError } = await supabase
-                .from('activities')
-                .upsert(batch, { onConflict: 'user_id,external_id' });
-
-            if (upsertError) {
-                logger.error('strava_sync.bulk_upsert_failed', {
-                    userId: user!.id,
-                    error: upsertError,
-                    hint: 'Ensure unique index exists on activities(user_id, external_id)',
-                    sampleExternalId: batch[0]?.external_id,
-                    batchSize: batch.length,
-                });
-                return respond(apiError('FAILED_TO_SYNC_ACTIVITIES_TO_DATABASE'),
-                    { status: 500 }
-                );
-            }
-        }
-
-        const insertedCount = dedupedActivities.filter(
-            (activity) => !existingExternalIds.has(activity.id.toString())
-        ).length;
-        const updatedCount = dedupedActivities.length - insertedCount;
+        // Fetch and upsert activities using shared helper
+        const syncResult = await syncStravaActivities(supabase, user!.id, accessToken, { days });
 
         // Log sync
         await supabase
@@ -247,8 +104,8 @@ export async function POST(request: NextRequest) {
             .insert({
                 user_id: user!.id,
                 status: 'SUCCESS',
-                message: `Synced ${insertedCount} new activities, updated ${updatedCount} existing`,
-                items_processed: dedupedActivities.length,
+                message: `Synced ${syncResult.inserted} new activities, updated ${syncResult.updated} existing (last ${days} days)`,
+                items_processed: syncResult.total,
                 completed_at: new Date().toISOString(),
             });
 
@@ -269,18 +126,21 @@ export async function POST(request: NextRequest) {
 
         logger.info('strava_sync.completed', {
             userId: user!.id,
-            inserted: insertedCount,
-            updated: updatedCount,
-            total: dedupedActivities.length,
+            inserted: syncResult.inserted,
+            updated: syncResult.updated,
+            total: syncResult.total,
+            days,
+            pages: syncResult.pages,
             zonesSynced: zonesResult.success,
         });
 
         return respond({
             success: true,
-            message: `Sync complete: ${insertedCount} new, ${updatedCount} updated`,
-            inserted: insertedCount,
-            updated: updatedCount,
-            total: dedupedActivities.length,
+            message: `Sync complete: ${syncResult.inserted} new, ${syncResult.updated} updated (last ${days} days)`,
+            inserted: syncResult.inserted,
+            updated: syncResult.updated,
+            total: syncResult.total,
+            days,
             zonesSynced: zonesResult.success,
         }, { status: 200 });
     } catch (error: unknown) {

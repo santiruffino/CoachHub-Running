@@ -29,9 +29,7 @@ interface StreamData {
     time?: { data: number[] };
     distance?: { data: number[] };
     altitude?: { data: number[] };
-    grade_smooth?: { data: number[] };
     heartrate?: { data: number[] };
-    cadence?: { data: number[] };
     velocity_smooth?: { data: number[] };
 }
 
@@ -54,9 +52,6 @@ interface ChartSamplePoint {
     xLabel: string;
     pace: number;
     heartRate: number | null;
-    cadence: number | null;
-    elevation: number | null;
-    grade: number | null;
 }
 
 interface ChartDataResult {
@@ -64,9 +59,6 @@ interface ChartDataResult {
     series: {
         pace: number[];
         heartRate: Array<number | null>;
-        cadence: Array<number | null>;
-        elevation: Array<number | null>;
-        grade: Array<number | null>;
     };
 }
 
@@ -75,9 +67,6 @@ const EMPTY_CHART_DATA: ChartDataResult = {
     series: {
         pace: [],
         heartRate: [],
-        cadence: [],
-        elevation: [],
-        grade: [],
     },
 };
 
@@ -120,17 +109,14 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
     const paceMetricName = isRunning ? t('metrics.pace') : t('metrics.pace');
     const [streams, setStreams] = useState<StreamData | null>(null);
     const [loading, setLoading] = useState(true);
-    const [resolution, setResolution] = useState<Resolution>('medium');
-    const [xAxisType, setXAxisType] = useState<XAxisType>('time');
-    const [showLaps, setShowLaps] = useState(false);
+    const [resolution, setResolution] = useState<Resolution>('high');
+const [xAxisType, setXAxisType] = useState<XAxisType>('time');
+const [showLaps, setShowLaps] = useState(false);
 
     // Track which series are selected in the legend
     const [legendSelected, setLegendSelected] = useState<Record<string, boolean>>({
         [paceMetricName]: true,
         [t('metrics.heartRate')]: true,
-        [t('metrics.cadence')]: true,
-        [t('metrics.elevation')]: true,
-        [t('metrics.grade')]: true,
     });
 
     useEffect(() => {
@@ -212,9 +198,6 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
                 series: {
                     pace: laps.map(l => metersPerSecondToPace(l.average_speed)),
                     heartRate: laps.map(l => l.average_heartrate || null),
-                    cadence: laps.map(l => l.average_cadence || null),
-                    elevation: laps.map(l => l.total_elevation_gain || null),
-                    grade: laps.map(() => null),
                 }
             };
 
@@ -226,7 +209,6 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
         // Apply robust smoothing to streams (15-point moving average to kill those peaks)
         const smoothedVelocity = movingAverage(streams.velocity_smooth?.data || [], 15);
         const smoothedHR = movingAverage(streams.heartrate?.data || [], 10);
-        const smoothedCadence = movingAverage(streams.cadence?.data || [], 10);
 
         // Build full dataset
         const fullData: ChartSamplePoint[] = timeData.map((time, index) => {
@@ -239,9 +221,6 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
                 xLabel,
                 pace: metersPerSecondToPace(velocity),
                 heartRate: (smoothedHR[index] as number) || null,
-                cadence: (smoothedCadence[index] as number) || null,
-                elevation: streams.altitude?.data[index] || null,
-                grade: streams.grade_smooth?.data[index] || null,
             };
         });
 
@@ -252,9 +231,6 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
             series: {
                 pace: sampledData.map(d => d.pace),
                 heartRate: sampledData.map(d => d.heartRate),
-                cadence: sampledData.map(d => d.cadence),
-                elevation: sampledData.map(d => d.elevation),
-                grade: sampledData.map(d => d.grade),
             }
         };
         return sampledResult;
@@ -268,9 +244,6 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
 
         // Check what data is available
         const hasHeartRateData = chartData.series.heartRate?.some((v) => v !== null);
-        const hasCadenceData = chartData.series.cadence?.some((v) => v !== null);
-        const hasElevationData = chartData.series.elevation?.some((v) => v !== null);
-        const hasGradeData = chartData.series.grade?.some((v) => v !== null);
 
         // Pace axis (left, inverted) - Always shown
         const validPaces = (chartData.series.pace || []).filter((p: number) => p > 0 && p < 20);
@@ -288,12 +261,12 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
             min: paceMin,
             max: paceMax,
             interval: 1,
-            show: legendSelected[paceMetricName] !== false,
+            show: legendSelected[paceMetricName],
             axisLabel: {
                 formatter: (value: number) => formatPace(value),
-                color: '#06B6D4',
+                color: '#0647d4',
             },
-            axisLine: { lineStyle: { color: '#06B6D4' } },
+            axisLine: { lineStyle: { color: '#0647d4' } },
             splitLine: { show: false },
         });
 
@@ -303,8 +276,8 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
             yAxisIndex: yAxisIndex,
             data: chartData.series.pace,
             smooth: true,
-            lineStyle: { color: '#06B6D4', width: 2.5 },
-            itemStyle: { color: '#06B6D4' },
+            lineStyle: { color: '#0647d4', width: 2.5 },
+            itemStyle: { color: '#0647d4' },
             showSymbol: false,
             areaStyle: {
                 color: {
@@ -416,12 +389,12 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
                 type: 'value',
                 name: t('metrics.heartRate'),
                 position: 'right',
-                show: legendSelected[t('metrics.heartRate')] !== false,
+                show: legendSelected[t('metrics.heartRate')],
                 axisLabel: {
                     formatter: '{value} ppm',
-                    color: '#A855F7',
+                    color: '#ff4347',
                 },
-                axisLine: { lineStyle: { color: '#A855F7' } },
+                axisLine: { lineStyle: { color: '#ff4347' } },
                 splitLine: { show: false },
             };
 
@@ -431,8 +404,8 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
                 yAxisIndex: yAxisIndex,
                 data: chartData.series.heartRate,
                 smooth: true,
-                lineStyle: { color: '#A855F7', width: 2 },
-                itemStyle: { color: '#A855F7' },
+                lineStyle: { color: '#ff4347', width: 2 },
+                itemStyle: { color: '#ff4347' },
                 showSymbol: false,
             };
 
@@ -459,101 +432,8 @@ export function ActivityChart({ activityId, laps, hrZones, isRunning }: Activity
             yAxisIndex++;
         }
 
-        // Cadence (left offset)
-        if (hasCadenceData) {
-            yAxisArray.push({
-                type: 'value',
-                name: t('metrics.cadence'),
-                position: 'left',
-                offset: 60,
-                show: legendSelected[t('metrics.cadence')] !== false,
-                axisLabel: {
-                    formatter: '{value} ppm',
-                    color: '#F97316',
-                },
-                axisLine: { lineStyle: { color: '#F97316' } },
-                splitLine: { show: false },
-            });
-
-            seriesArray.push({
-                name: t('metrics.cadence'),
-                type: 'line',
-                yAxisIndex: yAxisIndex,
-                data: chartData.series.cadence,
-                smooth: true,
-                lineStyle: { color: '#F97316', width: 2 },
-                itemStyle: { color: '#F97316' },
-                showSymbol: false,
-            });
-            yAxisIndex++;
-        }
-
-        // Elevation/Altitude axis (right, offset)
-        if (hasElevationData) {
-            yAxisArray.push({
-                type: 'value',
-                name: t('metrics.elevation'),
-                position: 'right',
-                offset: (hasHeartRateData && legendSelected[t('metrics.heartRate')] !== false) ? 60 : 0,
-                show: legendSelected[t('metrics.elevation')] !== false,
-                min: 'dataMin',
-                max: 'dataMax',
-                boundaryGap: ['10%', '10%'],
-                axisLabel: {
-                    formatter: '{value} m',
-                    color: '#22C55E',
-                },
-                axisLine: { lineStyle: { color: '#22C55E' } },
-                splitLine: { show: false },
-            });
-
-            seriesArray.push({
-                name: t('metrics.elevation'),
-                type: 'line',
-                yAxisIndex: yAxisIndex,
-                data: chartData.series.elevation,
-                smooth: true,
-                areaStyle: { color: 'rgba(34, 197, 94, 0.2)' },
-                lineStyle: { color: '#22C55E', width: 1 },
-                itemStyle: { color: '#22C55E' },
-                showSymbol: false,
-            });
-            yAxisIndex++;
-        }
-
-        // Grade (right, offset)
-        if (hasGradeData) {
-            yAxisArray.push({
-                type: 'value',
-                name: t('metrics.grade'),
-                position: 'right',
-                offset: ((hasHeartRateData && legendSelected[t('metrics.heartRate')] !== false) ? 60 : 0) + ((hasElevationData && legendSelected[t('metrics.elevation')] !== false) ? 60 : 0),
-                show: legendSelected[t('metrics.grade')] !== false,
-                axisLabel: {
-                    formatter: '{value}%',
-                    color: '#EAB308',
-                },
-                axisLine: { lineStyle: { color: '#EAB308' } },
-                splitLine: { show: false },
-            });
-
-            seriesArray.push({
-                name: t('metrics.grade'),
-                type: 'line',
-                yAxisIndex: yAxisIndex,
-                data: chartData.series.grade,
-                smooth: true,
-                lineStyle: { color: '#EAB308', width: 2 },
-                itemStyle: { color: '#EAB308' },
-                showSymbol: false,
-            });
-        }
-
-        const leftMargin = (hasCadenceData && legendSelected[t('metrics.cadence')] !== false) ? 100 : 60;
-        const rightMargin = 60
-            + ((hasHeartRateData && legendSelected[t('metrics.heartRate')] !== false) ? 60 : 0)
-            + ((hasElevationData && legendSelected[t('metrics.elevation')] !== false) ? 60 : 0)
-            + ((hasGradeData && legendSelected[t('metrics.grade')] !== false) ? 60 : 0);
+        const leftMargin = 60;
+        const rightMargin = (hasHeartRateData && legendSelected[t('metrics.heartRate')] !== false) ? 120 : 60;
 
         return {
             backgroundColor: 'transparent',

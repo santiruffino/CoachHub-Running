@@ -3,6 +3,7 @@ import { requireRole } from '@/lib/supabase/api-helpers';
 import { randomBytes } from 'crypto';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { appLogger } from '@/lib/app-logger';
+import { sendInvitationEmail } from '@/lib/email/send';
 
 export async function POST(request: NextRequest) {
     try {
@@ -69,6 +70,24 @@ export async function POST(request: NextRequest) {
             .single();
 
         if (existingInvitation) {
+            // Fetch team name and inviter profile for the email
+            const [{ data: team }, { data: inviterProfile }] = await Promise.all([
+                adminClient.from('teams').select('name').eq('id', profile.team_id).single(),
+                adminClient.from('profiles').select('name, email').eq('id', user!.id).single(),
+            ]);
+
+            // Resend invitation email (non-blocking)
+            sendInvitationEmail({
+                to: email,
+                inviterName: inviterProfile?.name || inviterProfile?.email || 'your coach',
+                teamName: team?.name || 'your team',
+                role: existingInvitation.role || 'ATHLETE',
+                token: existingInvitation.token,
+                expiresAt: new Date(existingInvitation.expires_at),
+            }).catch((err) => {
+                appLogger.error('Failed to resend invitation email:', err);
+            });
+
             // Return existing invitation
             return NextResponse.json({
                 id: existingInvitation.id,
@@ -113,6 +132,24 @@ export async function POST(request: NextRequest) {
                 { status: 500 }
             );
         }
+
+        // Fetch team name and inviter profile for the email
+        const [{ data: team }, { data: inviterProfile }] = await Promise.all([
+            adminClient.from('teams').select('name').eq('id', profile.team_id).single(),
+            adminClient.from('profiles').select('name, email').eq('id', user!.id).single(),
+        ]);
+
+        // Send invitation email (non-blocking)
+        sendInvitationEmail({
+            to: email,
+            inviterName: inviterProfile?.name || inviterProfile?.email || 'your coach',
+            teamName: team?.name || 'your team',
+            role,
+            token: invitation.token,
+            expiresAt,
+        }).catch((err) => {
+            appLogger.error('Failed to send invitation email:', err);
+        });
 
         return NextResponse.json({
             id: invitation.id,
