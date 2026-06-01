@@ -172,16 +172,18 @@ export function AthletesList({ initialAthletes, initialCoaches, isAdmin }: Athle
   });
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      {/* Header */}
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">
+          <h1
+            className="text-2xl sm:text-3xl font-bold text-endurix-black dark:text-foreground tracking-tight uppercase"
+            style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+          >
             {t('title')} {isAdmin && ` (${tDashboard('admin.globalScope')})`}
           </h1>
         </div>
         <div className="flex items-center gap-2">
-          <Button onClick={() => setInviteModalOpen(true)} size="sm" className="sm:size-default">
+          <Button variant="orange" onClick={() => setInviteModalOpen(true)} size="sm" className="uppercase tracking-widest">
             <UserPlus className="h-4 w-4 sm:mr-2" />
             <span className="hidden sm:inline">{t('addAthlete')}</span>
           </Button>
@@ -192,17 +194,17 @@ export function AthletesList({ initialAthletes, initialCoaches, isAdmin }: Athle
         open={inviteModalOpen}
         onClose={() => setInviteModalOpen(false)}
       />
-      <EditAthleteModal 
-        open={isEditModalOpen} 
+      <EditAthleteModal
+        open={isEditModalOpen}
         onClose={() => setEditModalOpen(false)}
         athlete={editAthlete}
         onSuccess={fetchAthletes}
         isAdmin={isAdmin}
         coaches={coaches}
       />
-      
-      <AlertDialog 
-        open={!!deleteId} 
+
+      <AlertDialog
+        open={!!deleteId}
         onClose={() => { if (!isDeleting) setDeleteId(null); }}
         onConfirm={handleDelete}
         type="warning"
@@ -212,15 +214,15 @@ export function AthletesList({ initialAthletes, initialCoaches, isAdmin }: Athle
         loading={isDeleting}
       />
 
-      {/* Filters Strip */}
-      <div className="flex flex-col sm:flex-row gap-4 flex-wrap">
+      <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
         <div className="relative max-w-md w-full sm:w-auto flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-4 text-endurix-black/40 dark:text-muted-foreground" />
           <Input
+            variant="boxed"
             placeholder={t('searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+            className="pl-7"
           />
         </div>
 
@@ -301,7 +303,7 @@ export function AthletesList({ initialAthletes, initialCoaches, isAdmin }: Athle
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold truncate">{athlete.name}</p>
                       {isAdmin && athlete.coach && (
-                        <p className="text-xs text-primary font-medium">{t('filters.coach')}: {athlete.coach.name}</p>
+                        <p className="text-xs text-endurix-orange font-medium">{t('filters.coach')}: {athlete.coach.name}</p>
                       )}
                       <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
                         <Mail className="h-3 w-3 flex-shrink-0" />
@@ -309,7 +311,6 @@ export function AthletesList({ initialAthletes, initialCoaches, isAdmin }: Athle
                       </div>
                     </div>
                   </div>
-                  {/* Actions Dropdown Mobile */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon">
@@ -328,12 +329,12 @@ export function AthletesList({ initialAthletes, initialCoaches, isAdmin }: Athle
                   </DropdownMenu>
                 </div>
                 <div className="flex gap-2">
-                  <Button asChild variant="outline" size="sm" className="flex-1">
+                  <Button asChild variant="outline-brand" size="sm" className="flex-1 uppercase tracking-widest">
                     <Link href={`/athletes/${athlete.id}`}>
                       {t('viewProfile')}
                     </Link>
                   </Button>
-                  <Button asChild size="sm" className="flex-1">
+                  <Button asChild variant="orange" size="sm" className="flex-1 uppercase tracking-widest">
                     <Link href={`/workouts/assign?athleteId=${athlete.id}`}>
                       {t('assignWorkout')}
                     </Link>
@@ -348,132 +349,127 @@ export function AthletesList({ initialAthletes, initialCoaches, isAdmin }: Athle
       {/* Desktop Table View */}
       <Card className="hidden lg:block">
         <CardContent className="p-0">
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[280px]">{t('table.athlete')}</TableHead>
+                <TableHead>{t('table.sport')}</TableHead>
+                <TableHead>{t('table.level')}</TableHead>
+                {isAdmin && <TableHead>{t('filters.coach')}</TableHead>}
+                <TableHead className="text-center">{t('table.trainings')}</TableHead>
+                <TableHead className="text-center">{t('table.planned')}</TableHead>
+                <TableHead className="w-[150px]">{t('table.compliance')}</TableHead>
+                <TableHead className="text-right w-[180px]">{t('table.actions')}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                [1, 2, 3, 4, 5].map(i => (
+                  <TableRow key={i}>
+                    <TableCell><Skeleton className="h-10 w-40" /></TableCell>
+                    <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                    <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                    {isAdmin && <TableCell><Skeleton className="h-6 w-32" /></TableCell>}
+                    <TableCell><Skeleton className="h-6 w-10 mx-auto" /></TableCell>
+                    <TableCell><Skeleton className="h-6 w-10 mx-auto" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-full" /></TableCell>
+                    <TableCell><Skeleton className="h-8 w-32 ml-auto" /></TableCell>
+                  </TableRow>
+                ))
+              ) : filteredAthletes.length === 0 ? (
                 <TableRow>
-                  <TableHead className="w-[280px]">{t('table.athlete')}</TableHead>
-                  <TableHead>{t('table.sport')}</TableHead>
-                  <TableHead>{t('table.level')}</TableHead>
-                  {isAdmin && <TableHead>{t('filters.coach')}</TableHead>}
-                  <TableHead className="text-center">{t('table.trainings')}</TableHead>
-                  <TableHead className="text-center">{t('table.planned')}</TableHead>
-                  <TableHead className="w-[150px]">{t('table.compliance')}</TableHead>
-                  <TableHead className="text-right w-[180px]">{t('table.actions')}</TableHead>
+                  <TableCell colSpan={isAdmin ? 8 : 7} className="text-center py-12 text-muted-foreground">
+                    {t('noAthletes')}
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  [1, 2, 3, 4, 5].map(i => (
-                    <TableRow key={i}>
-                      <TableCell><Skeleton className="h-10 w-40" /></TableCell>
-                      <TableCell><Skeleton className="h-6 w-20" /></TableCell>
-                      <TableCell><Skeleton className="h-6 w-20" /></TableCell>
-                      {isAdmin && <TableCell><Skeleton className="h-6 w-32" /></TableCell>}
-                      <TableCell><Skeleton className="h-6 w-10 mx-auto" /></TableCell>
-                      <TableCell><Skeleton className="h-6 w-10 mx-auto" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-full" /></TableCell>
-                      <TableCell><Skeleton className="h-8 w-32 ml-auto" /></TableCell>
-                    </TableRow>
-                  ))
-                ) : filteredAthletes.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={isAdmin ? 9 : 8} className="text-center py-12 text-muted-foreground">
-                      {t('noAthletes')}
+              ) : (
+                filteredAthletes.map((athlete, idx) => (
+                  <TableRow key={athlete.id}>
+                    <TableCell>
+                    <Link href={`/athletes/${athlete.id}`}>
+                      <div className="flex items-center gap-3">
+                        <Avatar className={`h-10 w-10 ${AVATAR_COLORS[idx % AVATAR_COLORS.length]}`}>
+                          <AvatarFallback className="bg-transparent text-white font-semibold">
+                            {athlete.name.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="font-medium truncate">{athlete.name}</p>
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
+                            <Mail className="h-3 w-3 flex-shrink-0" />
+                            <span className="truncate">{athlete.email}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                    </TableCell>
+
+                    <TableCell><Badge variant="outline">{athlete.sport}</Badge></TableCell>
+                    <TableCell><span className="text-sm font-medium">{athlete.level}</span></TableCell>
+                    {isAdmin && (
+                      <TableCell>
+                        <span className="text-sm font-medium text-endurix-orange block truncate max-w-[120px]">
+                          {athlete.coach?.name || '-'}
+                        </span>
+                      </TableCell>
+                    )}
+
+                    <TableCell className="text-center"><span className="font-medium">{athlete.totalTrainings}</span></TableCell>
+                    <TableCell className="text-center">
+                      <div className="flex items-center justify-center gap-1.5">
+                        <span className="font-medium">{athlete.plannedTrainings}</span>
+                        {athlete.plannedTrainings < 3 && (
+                          <AlertTriangle className="h-4 w-4 text-endurix-orange flex-shrink-0" />
+                        )}
+                      </div>
+                    </TableCell>
+
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-xs tabular-nums w-10">{athlete.completionPercentage}%</span>
+                        <div className="flex-1 h-1.5 bg-endurix-black/10 dark:bg-border">
+                          <div
+                            className="h-full bg-endurix-orange"
+                            style={{ width: `${athlete.completionPercentage}%` }}
+                          />
+                        </div>
+                      </div>
+                    </TableCell>
+
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <Button asChild variant="outline-brand" size="sm" className="uppercase tracking-widest text-[10px]">
+                          <Link href={`/athletes/${athlete.id}`}>{t('viewProfile')}</Link>
+                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <span className="sr-only">{tA11y('openMenu')}</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem asChild>
+                              <Link href={`/workouts/assign?athleteId=${athlete.id}`}>
+                                {t('assignWorkout')}
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => { setEditAthlete(athlete); setEditModalOpen(true); }}>
+                              {t('edit')}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-red-600 focus:text-red-600" onClick={() => setDeleteId(athlete.id)}>
+                              {t('delete')}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </TableCell>
                   </TableRow>
-                ) : (
-                  filteredAthletes.map((athlete, idx) => (
-                    <TableRow key={athlete.id}>
-                      {/* Athlete Info */}
-                      <TableCell>
-                      <Link href={`/athletes/${athlete.id}`}>
-                        <div className="flex items-center gap-3">
-                          <Avatar className={`h-10 w-10 ${AVATAR_COLORS[idx % AVATAR_COLORS.length]}`}>
-                            <AvatarFallback className="bg-transparent text-white font-semibold">
-                              {athlete.name.charAt(0).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="min-w-0">
-                            <p className="font-medium truncate">{athlete.name}</p>
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
-                              <Mail className="h-3 w-3 flex-shrink-0" />
-                              <span className="truncate">{athlete.email}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </Link>
-                      </TableCell>
-
-                      <TableCell><Badge variant="outline">{athlete.sport}</Badge></TableCell>
-                      <TableCell><span className="text-sm font-medium">{athlete.level}</span></TableCell>
-                      {isAdmin && (
-                        <TableCell>
-                          <span className="text-sm font-medium text-primary block truncate max-w-[120px]">
-                            {athlete.coach?.name || '-'}
-                          </span>
-                        </TableCell>
-                      )}
-
-                      <TableCell className="text-center"><span className="font-medium">{athlete.totalTrainings}</span></TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-1.5">
-                          <span className="font-medium">{athlete.plannedTrainings}</span>
-                          {athlete.plannedTrainings < 3 && (
-                            <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0" />
-                          )}
-                        </div>
-                      </TableCell>
-
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="font-medium text-xs">{athlete.completionPercentage}%</span>
-                          </div>
-                          <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-foreground transition-all rounded-full"
-                              style={{ width: `${athlete.completionPercentage}%` }}
-                            />
-                          </div>
-                        </div>
-                      </TableCell>
-
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button asChild variant="outline" size="sm">
-                            <Link href={`/athletes/${athlete.id}`}>{t('viewProfile')}</Link>
-                          </Button>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                <span className="sr-only">{tA11y('openMenu')}</span>
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem asChild>
-                                <Link href={`/workouts/assign?athleteId=${athlete.id}`}>
-                                  {t('assignWorkout')}
-                                </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => { setEditAthlete(athlete); setEditModalOpen(true); }}>
-                                {t('edit')}
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-red-600 focus:text-red-600" onClick={() => setDeleteId(athlete.id)}>
-                                {t('delete')}
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>

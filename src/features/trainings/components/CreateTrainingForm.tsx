@@ -5,6 +5,10 @@ import { CreateTrainingDto, TrainingType } from '../types';
 import { trainingsService } from '../services/trainings.service';
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 
 export function CreateTrainingForm({ onSuccess }: { onSuccess?: () => void }) {
     const t = useTranslations('trainings');
@@ -22,23 +26,30 @@ export function CreateTrainingForm({ onSuccess }: { onSuccess?: () => void }) {
     };
 
     return (
-        <div className="bg-white p-6 shadow rounded-lg mb-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">{t('new.title')}</h3>
+        <div className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border p-6 mb-6">
+            <h3
+                className="text-lg font-medium text-endurix-black dark:text-foreground mb-4 uppercase tracking-tight"
+                style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+            >
+                {t('new.title')}
+            </h3>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">{t('new.titleLabel')}</label>
-                        <input
+                    <div className="space-y-2">
+                        <Label htmlFor="title" className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-70">{t('new.titleLabel')}</Label>
+                        <Input
+                            id="title"
+                            variant="boxed"
                             {...register('title', { required: true })}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-primary focus:ring-brand-primary sm:text-sm border p-2"
                             placeholder={t('new.titlePlaceholder')}
                         />
                     </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">{t('new.sportTypeLabel')}</label>
+                    <div className="space-y-2">
+                        <Label htmlFor="type" className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-70">{t('new.sportTypeLabel')}</Label>
                         <select
+                            id="type"
                             {...register('type')}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-primary focus:ring-brand-primary sm:text-sm border p-2 bg-white"
+                            className="flex h-10 w-full border border-endurix-black/10 dark:border-border bg-white dark:bg-card px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-endurix-orange appearance-none cursor-pointer"
                         >
                             {Object.values(TrainingType).map((type) => (
                                 <option key={type} value={type}>{type}</option>
@@ -47,22 +58,20 @@ export function CreateTrainingForm({ onSuccess }: { onSuccess?: () => void }) {
                     </div>
                 </div>
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">{t('new.descriptionLabel')}</label>
-                    <textarea
+                <div className="space-y-2">
+                    <Label htmlFor="description" className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-70">{t('new.descriptionLabel')}</Label>
+                    <Textarea
+                        id="description"
+                        variant="boxed"
                         {...register('description')}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-primary focus:ring-brand-primary sm:text-sm border p-2"
                         placeholder={t('new.descriptionPlaceholder')}
                     />
                 </div>
 
                 {error && <p className="text-red-500 text-sm">{error}</p>}
-                <button
-                    type="submit"
-                    className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-brand-primary hover:bg-brand-primary-dark"
-                >
+                <Button type="submit" variant="orange" className="uppercase tracking-widest text-xs">
                     {t('new.save')}
-                </button>
+                </Button>
             </form>
         </div>
     );

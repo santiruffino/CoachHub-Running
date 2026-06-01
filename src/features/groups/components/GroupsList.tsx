@@ -58,12 +58,13 @@ export function GroupsList({ initialGroups }: GroupsListProps) {
 
     const renderGroupCard = (group: Group, isArchived: boolean = false) => (
         <Link key={group.id} href={`/groups/${group.id}`} className={`block group ${isArchived ? 'opacity-70 grayscale-[0.3]' : ''}`}>
-            <Card className={`h-full hover:border-primary/50 transition-all duration-300 ${isArchived ? 'bg-muted/20' : ''}`}>
+            <Card className={`h-full hover:border-endurix-orange/50 transition-colors ${isArchived ? 'bg-endurix-black/5 dark:bg-white/5' : ''}`}>
                 <CardContent className="p-5 h-full flex flex-col">
                     <div className="flex items-start justify-between mb-6">
                         {editingGroupId === group.id ? (
                             <div className="flex items-center gap-2 w-full pr-4" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
                                 <Input
+                                    variant="boxed"
                                     value={editingName}
                                     onChange={(e) => setEditingName(e.target.value)}
                                     className="h-8 py-0"
@@ -82,7 +83,7 @@ export function GroupsList({ initialGroups }: GroupsListProps) {
                                 <Button
                                     size="icon"
                                     variant="ghost"
-                                    className="h-8 w-8 shrink-0 text-primary"
+                                    className="h-8 w-8 shrink-0 text-endurix-orange"
                                     onClick={(e) => handleSaveName(e, group.id)}
                                 >
                                     <Check className="h-4 w-4" />
@@ -98,7 +99,10 @@ export function GroupsList({ initialGroups }: GroupsListProps) {
                             </div>
                         ) : (
                             <>
-                                <h3 className="text-xl font-semibold text-foreground leading-tight group-hover:text-primary transition-colors pr-4">
+                                <h3
+                                    className="text-xl font-medium text-endurix-black dark:text-foreground leading-tight group-hover:text-endurix-orange transition-colors pr-4 uppercase"
+                                    style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                                >
                                     {group.name}
                                 </h3>
                                 <Button
@@ -119,7 +123,7 @@ export function GroupsList({ initialGroups }: GroupsListProps) {
                                 <Users className="h-4 w-4" />
                                 <span>{t('athletes')}</span>
                             </div>
-                            <span className="font-medium text-foreground">{t('athletesCount', { count: group._count?.length || 0 })}</span>
+                            <span className="font-medium text-endurix-black dark:text-foreground tabular-nums">{t('athletesCount', { count: group._count?.length || 0 })}</span>
                         </div>
 
                         <div className="flex justify-between items-center text-sm">
@@ -128,11 +132,15 @@ export function GroupsList({ initialGroups }: GroupsListProps) {
                                 <span>{t('phase')}</span>
                             </div>
                             {group.group_type === 'RACE' ? (
-                                <span className={`font-medium px-2 py-0.5 rounded text-xs ${isArchived ? 'bg-muted text-muted-foreground' : 'bg-primary/10 text-primary'}`}>
+                                <span className={`font-medium px-2 py-0.5 text-[10px] uppercase tracking-wider ${isArchived ? 'bg-endurix-black/10 text-muted-foreground' : 'bg-endurix-orange/10 text-endurix-orange border border-endurix-orange/30'}`}
+                                    style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                                     {isArchived ? t('finished') || 'Finalizado' : t('racePrep')}
                                 </span>
                             ) : (
-                                <span className="font-medium bg-muted text-muted-foreground px-2 py-0.5 rounded text-xs">{t('base')}</span>
+                                <span className="font-medium bg-endurix-black/8 text-muted-foreground px-2 py-0.5 text-[10px] uppercase tracking-wider"
+                                    style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
+                                    {t('base')}
+                                </span>
                             )}
                         </div>
 
@@ -142,7 +150,7 @@ export function GroupsList({ initialGroups }: GroupsListProps) {
                                     <Calendar className="h-4 w-4" />
                                     {group.race_priority === 'A' ? <span>{t('targetRace')}</span> : <span>{t('event')}</span>}
                                 </div>
-                                <span className="font-medium text-foreground">
+                                <span className="font-medium text-endurix-black dark:text-foreground">
                                     {new Date(group.race_date).toLocaleDateString('es-ES', { month: 'short', day: 'numeric', year: 'numeric' })}
                                     {group.race_distance ? ` (${group.race_distance})` : ''}
                                 </span>
@@ -150,8 +158,8 @@ export function GroupsList({ initialGroups }: GroupsListProps) {
                         )}
                     </div>
 
-                    <div className="mt-6 pt-4 border-t">
-                        <div className="flex items-center text-primary font-medium text-sm">
+                    <div className="mt-6 pt-4 border-t border-endurix-black/10 dark:border-border">
+                        <div className="flex items-center text-endurix-orange font-medium text-sm uppercase tracking-widest text-[10px]">
                             <span>{t('viewDetails')}</span>
                             <ChevronRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
                         </div>
@@ -165,11 +173,14 @@ export function GroupsList({ initialGroups }: GroupsListProps) {
         <div className="space-y-8 sm:space-y-10">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">
+                    <h1
+                        className="text-2xl sm:text-3xl font-bold text-endurix-black dark:text-foreground tracking-tight uppercase"
+                        style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                    >
                         {t('title')}
                     </h1>
                 </div>
-                <Button size="sm" className="sm:size-default" asChild>
+                <Button variant="orange" size="sm" className="sm:size-default uppercase tracking-widest" asChild>
                     <Link href="/groups/new">
                         <Plus className="h-4 w-4 sm:mr-2" />
                         <span className="hidden sm:inline">{t('createGroup')}</span>
@@ -180,19 +191,28 @@ export function GroupsList({ initialGroups }: GroupsListProps) {
             <div className="space-y-12">
                 {/* Active Groups Section */}
                 <div className="space-y-4">
-                    <h2 className="text-lg font-bold font-display tracking-tight flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-green-500" />
+                    <h2
+                        className="text-lg font-bold text-endurix-black dark:text-foreground tracking-tight flex items-center gap-2 uppercase"
+                        style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                    >
+                        <span className="w-2 h-2 bg-emerald-500" />
                         {t('activeGroups') || 'Grupos Activos'}
                     </h2>
                     <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
                         {activeGroups.map((group) => renderGroupCard(group))}
 
                         <Link href="/groups/new" className="block h-full group">
-                            <Card className="h-full hover:border-primary/50 transition-all duration-300 border-dashed bg-muted/30 cursor-pointer flex flex-col items-center justify-center text-center p-6 min-h-[250px]">
-                                <div className="w-12 h-12 bg-muted flex items-center justify-center rounded-full mb-4 text-muted-foreground group-hover:text-primary group-hover:scale-105 transition-all duration-300">
+                            <Card className="h-full hover:border-endurix-orange/50 transition-colors border-dashed bg-endurix-black/5 dark:bg-white/5 cursor-pointer flex flex-col items-center justify-center text-center p-6 min-h-[250px]">
+                                <div className="w-12 h-12 bg-endurix-black/8 dark:bg-white/10 flex items-center justify-center mb-4 text-muted-foreground group-hover:text-endurix-orange group-hover:scale-105 transition-all duration-300">
                                     <UserPlus className="h-6 w-6" />
                                 </div>
-                                <h3 className="text-lg font-bold font-display tracking-tight text-foreground mb-1">{t('emptyCardTitle')}</h3>                                    <p className="text-sm text-muted-foreground max-w-[200px] leading-relaxed">{t('emptyCardDesc')}</p>
+                                <h3
+                                    className="text-lg font-bold text-endurix-black dark:text-foreground tracking-tight mb-1 uppercase"
+                                    style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                                >
+                                    {t('emptyCardTitle')}
+                                </h3>
+                                <p className="text-sm text-muted-foreground max-w-[200px] leading-relaxed">{t('emptyCardDesc')}</p>
                             </Card>
                         </Link>
                     </div>
@@ -201,8 +221,11 @@ export function GroupsList({ initialGroups }: GroupsListProps) {
                 {/* Finished Groups Section */}
                 {finishedGroups.length > 0 && (
                     <div className="space-y-4">
-                        <h2 className="text-lg font-semibold flex items-center gap-2 text-muted-foreground">
-                            <span className="w-2 h-2 rounded-full bg-muted-foreground/40" />
+                        <h2
+                            className="text-lg font-medium flex items-center gap-2 text-muted-foreground uppercase"
+                            style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                        >
+                            <span className="w-2 h-2 bg-muted-foreground/40" />
                             {t('finishedGroups') || 'Grupos Históricos'}
                         </h2>
                         <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">

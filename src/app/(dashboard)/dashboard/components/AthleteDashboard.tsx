@@ -10,7 +10,7 @@ import { useTranslations } from 'next-intl';
 import { Zap, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 
 import { AthleteWeeklyCalendar } from '@/components/dashboard/AthleteWeeklyCalendar';
-import { MetricCard } from '@/components/dashboard/MetricCard';
+import { StatCard, DashboardCard, DashboardCardHeaderDots, MonospaceLabel } from '@/components/dashboard';
 import { PerformanceTrendChart } from '@/components/dashboard/PerformanceTrendChart';
 import { CoachNotes } from '@/components/dashboard/CoachNotes';
 import { HeartRateZones } from '@/features/profiles/components/HeartRateZones';
@@ -240,116 +240,151 @@ export default function AthleteDashboard({ user, initialData = null }: AthleteDa
         };
     }, [activities, assignments, currentWeekStart]);
 
-    if (loading) return <div className="p-8"><Skeleton className="h-64 w-full rounded-3xl" /></div>;
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-endurix-paper dark:bg-background">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    <Skeleton className="h-40 w-full" />
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div className="space-y-8 p-4 md:p-8 max-w-[1400px] mx-auto pb-20 bg-background min-h-screen">
-            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
-                <div className="flex items-center gap-6">
-                    <div className="relative">
-                        <div className="h-20 w-20 rounded-2xl bg-primary/10 overflow-hidden flex items-center justify-center text-2xl font-display font-medium text-primary shadow-sm">
-                            {user.firstName?.charAt(0) || user.name?.charAt(0)}
+        <div className="min-h-screen bg-endurix-paper dark:bg-background">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+                <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
+                    <div className="flex items-center gap-6">
+                        <div className="relative">
+                            <div className="h-20 w-20 bg-endurix-black/8 dark:bg-white/8 overflow-hidden flex items-center justify-center text-2xl font-bold text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>
+                                {user.firstName?.charAt(0) || user.name?.charAt(0)}
+                            </div>
+                            <div className="absolute -bottom-1 -right-1 bg-endurix-orange p-1.5 text-white">
+                                <Zap className="h-3 w-3" />
+                            </div>
                         </div>
-                        <div className="absolute -bottom-1 -right-1 bg-primary p-1 rounded-lg text-primary-foreground">
-                            <Zap className="h-3 w-3" />
+                        <div>
+                            <MonospaceLabel color="muted" size="sm" className="block mb-1">
+                                {format(new Date(), 'EEEE, d MMMM', { locale: es })}
+                            </MonospaceLabel>
+                            <h1
+                                className="text-3xl lg:text-4xl font-bold text-endurix-black dark:text-foreground leading-[1.05] tracking-tight uppercase"
+                                style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                            >
+                                {t('dashboard.messages.hi', { name: userDisplayName })}
+                            </h1>
                         </div>
                     </div>
-                    <div>
-                        <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">
-                            {t('dashboard.messages.hi', { name: userDisplayName })}
-                        </h1>
-                        <p className="text-sm text-muted-foreground mt-1">
-                            {format(new Date(), 'EEEE, d MMMM', { locale: es })}
-                        </p>
+
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 w-full xl:w-auto">
+                        <StatCard label={t('athletes.detail.weeklyVolume')} value={weeklyStats.distance} />
+                        <StatCard label={t('athletes.detail.weeklyTime')} value={weeklyStats.time} />
+                        <StatCard label={t('activities.detail.metrics.elevationGain')} value={weeklyStats.elevation} />
+                        <StatCard label={t('athletes.detail.complianceRate')} value={weeklyStats.compliance} />
                     </div>
                 </div>
 
-                <div className="flex flex-wrap gap-4">
-                    <MetricCard title={t('athletes.detail.weeklyVolume')} value={weeklyStats.distance} />
-                    <MetricCard title={t('athletes.detail.weeklyTime')} value={weeklyStats.time} />
-                    <MetricCard title={t('activities.detail.metrics.elevationGain')} value={weeklyStats.elevation} />
-                    <MetricCard title={t('athletes.detail.complianceRate')} value={weeklyStats.compliance} />
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-1 border border-endurix-black/15 dark:border-border bg-endurix-paper dark:bg-muted p-1">
+                        <Button variant="ghost" size="icon" onClick={() => setCurrentWeekStart(addWeeks(currentWeekStart, -1))} className="h-8 w-8">
+                            <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <span className="px-4 text-xs font-bold tracking-widest uppercase text-endurix-black dark:text-foreground w-40 text-center" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>
+                            {format(currentWeekStart, 'MMMM yyyy', { locale: es })}
+                        </span>
+                        <Button variant="ghost" size="icon" onClick={() => setCurrentWeekStart(addWeeks(currentWeekStart, 1))} className="h-8 w-8">
+                            <ChevronRight className="h-4 w-4" />
+                        </Button>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Button variant="outline-brand" size="xs" onClick={() => setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }))} className="uppercase tracking-widest">
+                            {t('common.today')}
+                        </Button>
+                        <Button variant="orange" size="xs" onClick={() => setIsAssignRaceModalOpen(true)} className="gap-2 uppercase tracking-widest">
+                            <Plus className="h-4 w-4" />
+                            {t('races.athlete.addRace')}
+                        </Button>
+                    </div>
                 </div>
-            </div>
 
-            <div className="flex justify-between items-center mt-10 mb-4">
-                <div className="flex items-center bg-card rounded-lg p-1 shadow-sm border border-border/40">
-                    <Button variant="ghost" size="icon" onClick={() => setCurrentWeekStart(addWeeks(currentWeekStart, -1))}>
-                        <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <span className="px-4 font-semibold text-sm w-36 text-center capitalize">
-                        {format(currentWeekStart, 'MMMM yyyy', { locale: es })}
-                    </span>
-                    <Button variant="ghost" size="icon" onClick={() => setCurrentWeekStart(addWeeks(currentWeekStart, 1))}>
-                        <ChevronRight className="h-4 w-4" />
-                    </Button>
+                <div className="w-full">
+                    <AthleteWeeklyCalendar
+                        weekStart={currentWeekStart}
+                        assignments={assignments}
+                        activities={activities}
+                        races={races}
+                    />
                 </div>
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={() => setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }))}>
-                        {t('common.today')}
-                    </Button>
-                    <Button size="sm" onClick={() => setIsAssignRaceModalOpen(true)} className="gap-2">
-                        <Plus className="h-4 w-4" />
-                        {t('races.athlete.addRace')}
-                    </Button>
-                </div>
-            </div>
 
-            <div className="w-full">
-                <AthleteWeeklyCalendar 
-                    weekStart={currentWeekStart}
-                    assignments={assignments}
-                    activities={activities}
-                    races={races}
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+                    <div className="lg:col-span-7">
+                        <DashboardCard
+                            headerLabel="Coach Notes"
+                            headerAccessory={<DashboardCardHeaderDots />}
+                            className="h-full"
+                        >
+                            <CoachNotes
+                                athleteId={user.id}
+                                initialNotes={athleteDetails?.athleteProfile?.coachNotes}
+                                readOnly
+                            />
+                        </DashboardCard>
+                    </div>
+
+                    <div className="lg:col-span-5">
+                        <NextRaces athleteRaces={races} />
+                    </div>
+                </div>
+
+                <DashboardCard
+                    headerLabel="Performance"
+                    headerAccessory={<DashboardCardHeaderDots />}
+                    bodyClassName="p-0"
+                >
+                    <div className="px-6 pt-4">
+                        <h3
+                            className="text-xl lg:text-2xl font-bold text-endurix-black dark:text-foreground uppercase tracking-tight"
+                            style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                        >
+                            {t('athletes.detail.performanceAndZones')}
+                        </h3>
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 lg:divide-x divide-endurix-black/8 dark:divide-border mt-4">
+                        <div className="p-6">
+                            <PerformanceTrendChart data={performanceData} />
+                        </div>
+                        <div className="p-6">
+                            <h4
+                                className="mb-6 text-lg font-bold uppercase tracking-tight text-endurix-black dark:text-foreground"
+                                style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                            >
+                                {t('activities.detail.zones.hrTitle')}
+                            </h4>
+                            {athleteDetails?.athleteProfile?.hrZones ? (
+                                <HeartRateZones zones={athleteDetails.athleteProfile.hrZones} />
+                            ) : (
+                                <p className="text-sm text-endurix-black/50 dark:text-muted-foreground">
+                                    {t('activities.detail.zones.noHrData')}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                </DashboardCard>
+
+                <AssignRaceModal
+                    open={isAssignRaceModalOpen}
+                    onOpenChange={setIsAssignRaceModalOpen}
+                    athleteId={user.id}
+                    onSuccess={fetchData}
+                />
+
+                <NewActivityFeedbackModal
+                    open={isFeedbackModalOpen}
+                    activity={pendingFeedbackActivity}
+                    onOpenChange={handleFeedbackModalOpenChange}
+                    onSubmitted={handleFeedbackSubmitted}
                 />
             </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-12">
-                <div className="lg:col-span-7">
-                    <div className="bg-muted/50 rounded-3xl p-6 h-full">
-                        <CoachNotes 
-                            athleteId={user.id} 
-                            initialNotes={athleteDetails?.athleteProfile?.coachNotes} 
-                            readOnly 
-                        />
-                    </div>
-                </div>
-
-                <div className="lg:col-span-5">
-                    <NextRaces athleteRaces={races} />
-                </div>
-            </div>
-
-            <div className="mt-16 bg-card border border-border/40 p-8 md:p-10 rounded-[2rem] shadow-sm">
-                <h3 className="text-[22px] font-display font-bold tracking-tight mb-8 text-foreground">{t('athletes.detail.performanceAndZones')}</h3>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
-                    <PerformanceTrendChart data={performanceData} className="bg-background/50 border-border/40" />
-                    <div className="rounded-2xl border border-border/40 bg-muted/20 p-5 sm:p-6">
-                        <h4 className="mb-6 text-lg font-semibold text-foreground">{t('activities.detail.zones.hrTitle')}</h4>
-                        {athleteDetails?.athleteProfile?.hrZones ? (
-                            <HeartRateZones zones={athleteDetails.athleteProfile.hrZones} />
-                        ) : (
-                            <p className="text-sm text-muted-foreground">
-                                {t('activities.detail.zones.noHrData')}
-                            </p>
-                        )}
-                    </div>
-                </div>
-            </div>
-
-            <AssignRaceModal
-                open={isAssignRaceModalOpen}
-                onOpenChange={setIsAssignRaceModalOpen}
-                athleteId={user.id}
-                onSuccess={fetchData}
-            />
-
-            <NewActivityFeedbackModal
-                open={isFeedbackModalOpen}
-                activity={pendingFeedbackActivity}
-                onOpenChange={handleFeedbackModalOpenChange}
-                onSubmitted={handleFeedbackSubmitted}
-            />
         </div>
     );
 }

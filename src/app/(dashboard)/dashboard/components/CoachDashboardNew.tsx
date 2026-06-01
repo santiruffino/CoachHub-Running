@@ -7,6 +7,7 @@ import { appLogger } from '@/lib/app-logger';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CriticalAlertItem } from '@/components/dashboard/CriticalAlertItem';
 import { GroupStatusCard } from '@/components/dashboard/GroupStatusCard';
+import { StatCard, SectionHeader, TimelineItem } from '@/components/dashboard';
 import { User } from '@/interfaces/auth';
 import { DashboardStats, LowCompliance, MissingWorkout, RPEMismatch, SmartAlert, TimelineEvent } from '../types';
 import { NextRaces } from './NextRaces';
@@ -57,89 +58,15 @@ interface CoachDashboardNewProps {
     user: User;
 }
 
-function TimelineItem({ item, warning }: { item: TimelineEvent; warning: boolean }) {
+function LocalTimelineItem({ item, warning }: { item: TimelineEvent; warning: boolean }) {
     return (
-        <div className="border-l-2 border-endurix-orange pl-3 py-1">
-            <p
-                className="text-[9px] uppercase tracking-[0.12em] text-endurix-black/50 dark:text-muted-foreground"
-                style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
-            >
-                {new Date(item.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </p>
-            <p className="text-xs font-semibold text-endurix-black dark:text-foreground mt-0.5">
-                {item.athleteName}
-            </p>
-            <p className="text-xs text-endurix-black/80 dark:text-muted-foreground">
-                {item.activityName}
-            </p>
-            <p className="text-xs mt-0.5 text-endurix-black/60 dark:text-muted-foreground">
-                {warning ? `\u26A0 ${item.content || 'RPE mismatch detected'}` : `"${item.content}"`}
-            </p>
-        </div>
-    );
-}
-
-function StatCard({ label, value, chip, chipColor }: {
-    label: string;
-    value: number;
-    chip: string;
-    chipColor?: 'orange' | 'green' | 'red';
-}) {
-    const colorMap = {
-        orange: 'text-endurix-orange border-endurix-orange/30',
-        green: 'text-green-600 dark:text-green-500 border-green-500/30',
-        red: 'text-red-600 dark:text-red-500 border-red-500/30',
-    };
-    const chipClass = colorMap[chipColor ?? 'orange'];
-
-    return (
-        <article className="border border-endurix-black/12 dark:border-border bg-white dark:bg-card p-3">
-            <div className="flex items-start justify-between gap-2">
-                <span
-                    className="text-[9px] text-endurix-black/50 dark:text-muted-foreground tracking-widest font-semibold uppercase"
-                    style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
-                >
-                    {label}
-                </span>
-                <span
-                    className={`text-[8px] font-bold tracking-wider border px-1.5 py-0.5 ${chipClass}`}
-                    style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
-                >
-                    {chip}
-                </span>
-            </div>
-            <p
-                className="mt-2 text-3xl font-bold text-endurix-black dark:text-foreground leading-none"
-                style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
-            >
-                {value}
-            </p>
-            <p
-                className="mt-2 border-t border-endurix-black/8 dark:border-border pt-1.5 text-[8px] text-endurix-black/40 dark:text-muted-foreground tracking-widest uppercase"
-                style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
-            >
-                Live operating signal
-            </p>
-        </article>
-    );
-}
-
-function SectionHeader({ eyebrow, title }: { eyebrow: string; title: string }) {
-    return (
-        <div className="mb-2">
-            <span
-                className="inline-block text-[9px] text-endurix-black/50 dark:text-muted-foreground tracking-widest mb-1"
-                style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
-            >
-                {eyebrow}
-            </span>
-            <h3
-                className="font-bold text-endurix-black dark:text-foreground text-xl lg:text-2xl leading-[1.0] tracking-tight uppercase"
-                style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
-            >
-                {title}
-            </h3>
-        </div>
+        <TimelineItem
+            time={new Date(item.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            athleteName={item.athleteName}
+            activityName={item.activityName}
+            content={item.content}
+            warning={warning}
+        />
     );
 }
 
@@ -531,7 +458,7 @@ export default function CoachDashboardNew({ user }: CoachDashboardNewProps) {
                         <div className="space-y-2">
                             {filteredTimeline.slice(0, 6).map((item) => {
                                 const hasFeedback = item.content && item.content.trim().length > 0;
-                                return <TimelineItem key={item.id} item={item} warning={!hasFeedback} />;
+                                return <LocalTimelineItem key={item.id} item={item} warning={!hasFeedback} />;
                             })}
                             {filteredTimeline.length === 0 && (
                                 <p className="text-xs text-endurix-black/40 dark:text-muted-foreground">
@@ -566,12 +493,9 @@ export default function CoachDashboardNew({ user }: CoachDashboardNewProps) {
                     </article>
 
                     {/* Next Races */}
-                    <article className="xl:col-span-5 border border-endurix-black/12 dark:border-border bg-white dark:bg-card p-4">
-                        <SectionHeader eyebrow="Upcoming" title={t('dashboard.alerts.nextRaces')} />
-                        <div className="[&>div]:p-0 [&>div]:bg-transparent [&_.rounded-2xl]:rounded-none [&_.bg-muted]:bg-transparent [&_h2]:hidden">
-                            <NextRaces />
-                        </div>
-                    </article>
+                    <div className="xl:col-span-5">
+                        <NextRaces />
+                    </div>
                 </section>
             </div>
         </div>

@@ -72,7 +72,10 @@ export function RaceDialog({ open, onOpenChange, race, onSuccess }: RaceDialogPr
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle
+            className="uppercase tracking-tight"
+            style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+          >
             {race ? t('editTitle') : t('createTitle')}
           </DialogTitle>
         </DialogHeader>
@@ -80,6 +83,7 @@ export function RaceDialog({ open, onOpenChange, race, onSuccess }: RaceDialogPr
           <div className="space-y-2">
             <Label htmlFor="name">{t('nameLabel')}</Label>
             <Input
+              variant="boxed"
               id="name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -90,6 +94,7 @@ export function RaceDialog({ open, onOpenChange, race, onSuccess }: RaceDialogPr
           <div className="space-y-2">
             <Label htmlFor="location">{t('locationLabel')}</Label>
             <Input
+              variant="boxed"
               id="location"
               value={formData.location}
               onChange={(e) => setFormData({ ...formData, location: e.target.value })}
@@ -100,6 +105,7 @@ export function RaceDialog({ open, onOpenChange, race, onSuccess }: RaceDialogPr
             <div className="space-y-2">
               <Label htmlFor="distance">{t('distanceLabel')}</Label>
               <Input
+                variant="boxed"
                 id="distance"
                 type="number"
                 min="0"
@@ -112,6 +118,7 @@ export function RaceDialog({ open, onOpenChange, race, onSuccess }: RaceDialogPr
             <div className="space-y-2">
               <Label htmlFor="date">{t('dateLabel')}</Label>
               <Input
+                variant="boxed"
                 id="date"
                 type="date"
                 value={formData.date}
@@ -123,6 +130,7 @@ export function RaceDialog({ open, onOpenChange, race, onSuccess }: RaceDialogPr
           <div className="space-y-2">
             <Label htmlFor="description">{t('descriptionLabel')}</Label>
             <Textarea
+              variant="boxed"
               id="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -131,10 +139,10 @@ export function RaceDialog({ open, onOpenChange, race, onSuccess }: RaceDialogPr
             />
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="outline-brand" onClick={() => onOpenChange(false)}>
               {t('cancel')}
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" variant="orange" disabled={loading}>
               {loading ? t('saving') : t('save')}
             </Button>
           </DialogFooter>

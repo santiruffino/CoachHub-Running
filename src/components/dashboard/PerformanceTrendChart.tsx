@@ -22,7 +22,7 @@ export function PerformanceTrendChart({ data, showTitle = false, className }: Pe
   const t = useTranslations('dashboard.performanceTrend');
 
   return (
-    <div className={cn('rounded-2xl border border-border/50 bg-muted/20 p-5 sm:p-6', className)}>
+    <div className={cn('p-1', className)}>
       {showTitle && (
         <h4 className="mb-6 flex items-center gap-2 text-lg font-semibold text-foreground">
           <span>📈</span>

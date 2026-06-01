@@ -136,34 +136,41 @@ export function EditGroupModal({ group, isOpen, onClose, onUpdated }: EditGroupM
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[525px] rounded-[2rem] border-none shadow-2xl">
+      <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
-          <DialogTitle className="font-manrope text-2xl font-bold">{tGroups('detail.editGroup')}</DialogTitle>
+          <DialogTitle
+            className="text-2xl font-bold uppercase tracking-tight"
+            style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+          >
+            {tGroups('detail.editGroup')}
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6 py-4">
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="edit-name" className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-70">{tEdit('groupNameLabel')}</Label>
               <Input
+                variant="boxed"
                 id="edit-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="bg-muted/30 border-none h-12 rounded-xl focus-visible:ring-1 focus-visible:ring-primary/20"
+                className="h-12"
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-description" className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-70">{tEdit('descriptionLabel')}</Label>
               <Textarea
+                variant="boxed"
                 id="edit-description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder={tEdit('optionalPlaceholder')}
-                className="bg-muted/30 border-none rounded-xl focus-visible:ring-1 focus-visible:ring-primary/20 min-h-[80px]"
+                className="min-h-[80px]"
               />
             </div>
-            <div className="flex items-center space-x-2 pt-2 border-t border-border/40">
-              <Switch 
+            <div className="flex items-center space-x-2 pt-2 border-t border-endurix-black/10 dark:border-border">
+              <Switch
                 id="edit-is-race-group"
                 checked={group_type === 'RACE'}
                 onCheckedChange={(checked) => setGroupType(checked ? 'RACE' : 'REGULAR')}
@@ -175,20 +182,20 @@ export function EditGroupModal({ group, isOpen, onClose, onUpdated }: EditGroupM
           </div>
 
           {group_type === 'RACE' && (
-            <div className="space-y-6 pt-6 mt-6 border-t border-border/40 animate-in fade-in slide-in-from-top-2">
-              <div className="flex p-1 bg-muted/30 rounded-xl">
-                <Button 
+            <div className="space-y-6 pt-6 mt-6 border-t border-endurix-black/10 dark:border-border animate-in fade-in slide-in-from-top-2">
+              <div className="flex p-1 bg-endurix-black/8 dark:bg-white/8">
+                <Button
                   type="button"
-                  variant={raceSelectionMode === 'EXISTING' ? 'secondary' : 'ghost'}
-                  className="flex-1 rounded-lg text-[10px] font-bold uppercase tracking-wider h-9"
+                  variant={raceSelectionMode === 'EXISTING' ? 'orange' : 'ghost'}
+                  className="flex-1 text-[10px] font-bold uppercase tracking-wider h-9"
                   onClick={() => setRaceSelectionMode('EXISTING')}
                 >
                   {tGroups('detail.selectExistingRace')}
                 </Button>
-                <Button 
+                <Button
                   type="button"
-                  variant={raceSelectionMode === 'NEW' ? 'secondary' : 'ghost'}
-                  className="flex-1 rounded-lg text-[10px] font-bold uppercase tracking-wider h-9"
+                  variant={raceSelectionMode === 'NEW' ? 'orange' : 'ghost'}
+                  className="flex-1 text-[10px] font-bold uppercase tracking-wider h-9"
                   onClick={() => setRaceSelectionMode('NEW')}
                 >
                   {tGroups('detail.createNewRace')}
@@ -199,9 +206,9 @@ export function EditGroupModal({ group, isOpen, onClose, onUpdated }: EditGroupM
                 <div className="space-y-2">
                   <Label className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-70">{tGroups('detail.pickFromLibrary')}</Label>
                   <div className="relative">
-                    <Trophy className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary" />
-                    <select 
-                      className="flex h-12 w-full rounded-xl border-none bg-muted/30 pl-11 pr-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/20 appearance-none cursor-pointer"
+                    <Trophy className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-endurix-orange" />
+                    <select
+                      className="flex h-12 w-full border border-endurix-black/10 dark:border-border bg-white dark:bg-card pl-11 pr-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-endurix-orange appearance-none cursor-pointer"
                       value={selectedRaceId}
                       onChange={(e) => setSelectedRaceId(e.target.value)}
                       required={group_type === 'RACE' && raceSelectionMode === 'EXISTING'}
@@ -219,40 +226,43 @@ export function EditGroupModal({ group, isOpen, onClose, onUpdated }: EditGroupM
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-1">
                   <div className="space-y-2 col-span-1 md:col-span-2">
                     <Label className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-70">{tGroups('detail.raceName')}</Label>
-                    <Input 
-                      placeholder={tEdit('raceNamePlaceholder')} 
-                      value={race_name} 
-                      onChange={(e) => setRaceName(e.target.value)} 
+                    <Input
+                      variant="boxed"
+                      placeholder={tEdit('raceNamePlaceholder')}
+                      value={race_name}
+                      onChange={(e) => setRaceName(e.target.value)}
                       required={group_type === 'RACE' && raceSelectionMode === 'NEW'}
-                      className="bg-muted/30 border-none h-11 rounded-xl focus-visible:ring-1 focus-visible:ring-primary/20"
+                      className="h-11"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-70">{tGroups('detail.raceDate')}</Label>
-                    <Input 
-                      type="date" 
-                      value={race_date} 
-                      onChange={(e) => setRaceDate(e.target.value)} 
+                    <Input
+                      variant="boxed"
+                      type="date"
+                      value={race_date}
+                      onChange={(e) => setRaceDate(e.target.value)}
                       required={group_type === 'RACE' && raceSelectionMode === 'NEW'}
-                      className="bg-muted/30 border-none h-11 rounded-xl focus-visible:ring-1 focus-visible:ring-primary/20"
+                      className="h-11"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-70">{tGroups('detail.raceDistance')}</Label>
-                    <Input 
-                      placeholder={tEdit('raceDistancePlaceholder')} 
-                      value={race_distance} 
-                      onChange={(e) => setRaceDistance(e.target.value)} 
-                      className="bg-muted/30 border-none h-11 rounded-xl focus-visible:ring-1 focus-visible:ring-primary/20"
+                    <Input
+                      variant="boxed"
+                      placeholder={tEdit('raceDistancePlaceholder')}
+                      value={race_distance}
+                      onChange={(e) => setRaceDistance(e.target.value)}
+                      className="h-11"
                     />
                   </div>
                 </div>
               )}
-              
+
               <div className="space-y-2">
                 <Label className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-70">{tGroups('detail.racePriority')}</Label>
                 <select
-                  className="flex h-11 w-full rounded-xl border-none bg-muted/30 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/20 appearance-none cursor-pointer"
+                  className="flex h-11 w-full border border-endurix-black/10 dark:border-border bg-white dark:bg-card px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-endurix-orange appearance-none cursor-pointer"
                   value={race_priority}
                   onChange={(e) => setRacePriority(e.target.value as 'A' | 'B' | 'C')}
                 >
@@ -262,8 +272,8 @@ export function EditGroupModal({ group, isOpen, onClose, onUpdated }: EditGroupM
                 </select>
               </div>
 
-              <div className="flex items-center space-x-2 pt-2 border-t border-border/40">
-                <Switch 
+              <div className="flex items-center space-x-2 pt-2 border-t border-endurix-black/10 dark:border-border">
+                <Switch
                   id="sync-members"
                   checked={syncWithMembers}
                   onCheckedChange={setSyncWithMembers}
@@ -281,10 +291,10 @@ export function EditGroupModal({ group, isOpen, onClose, onUpdated }: EditGroupM
           )}
 
           <DialogFooter className="pt-4 gap-2">
-            <Button type="button" variant="ghost" onClick={onClose} className="rounded-xl font-bold uppercase tracking-wider text-xs">
+            <Button type="button" variant="ghost" onClick={onClose} className="font-bold uppercase tracking-wider text-xs">
               {t('cancel')}
             </Button>
-            <Button type="submit" disabled={loading} className="rounded-xl px-8 font-bold uppercase tracking-wider text-xs shadow-lg shadow-primary/20">
+            <Button type="submit" variant="orange" disabled={loading} className="px-8 font-bold uppercase tracking-wider text-xs">
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {t('save')}
             </Button>

@@ -91,8 +91,8 @@ export function AddMemberModal({ groupId, currentMemberIds, open, onClose, onAdd
                 )}
 
                 <DialogFooter>
-                    <Button variant="outline" onClick={onClose}>{t('common.cancel')}</Button>
-                    <Button onClick={handleSubmit} disabled={submitting || !selectedId}>
+                    <Button variant="outline-brand" onClick={onClose}>{t('common.cancel')}</Button>
+                    <Button variant="orange" onClick={handleSubmit} disabled={submitting || !selectedId}>
                         {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         {t('groups.detail.addMember')}
                     </Button>

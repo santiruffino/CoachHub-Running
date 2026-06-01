@@ -27,6 +27,7 @@ import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
 import { useTranslations } from 'next-intl';
 import { AthleteWeeklyCalendar } from '@/components/dashboard/AthleteWeeklyCalendar';
 import { CoachNotes } from '@/components/dashboard/CoachNotes';
+import { StatCard, SectionHeader, MonospaceLabel } from '@/components/dashboard';
 import { normalizeActivityType } from '@/utils/activity-utils';
 import { useRouter } from 'next/navigation';
 
@@ -286,66 +287,80 @@ export function AthleteDetailsView({
     const nextRaceDays = nextRace ? Math.max(0, differenceInDays(parseISO(nextRace.date), startOfDay(new Date()))) : null;
 
     return (
-        <div className="space-y-6 p-4 md:p-8 max-w-350 mx-auto pb-20 bg-background min-h-screen">
+        <div className="space-y-6 pb-20">
             <div className="flex items-center gap-2">
                 <Button variant="ghost" size="icon" onClick={() => router.back()} className="h-8 w-8 text-muted-foreground hover:text-foreground">
                     <ArrowLeft className="h-4 w-4" />
                 </Button>
             </div>
 
-            <div className="bg-card rounded-2xl border border-border/50 p-5 md:p-6 shadow-[0_10px_30px_rgba(43,52,55,0.04)]">
+            <div className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border p-5 md:p-6">
                 <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-5">
                     <div className="flex items-center gap-4">
                         <div className="relative">
-                            <div className="h-20 w-20 rounded-2xl bg-primary/10 overflow-hidden flex items-center justify-center text-3xl font-display font-medium text-primary shadow-sm">
+                            <div className="h-20 w-20 bg-endurix-black/8 dark:bg-white/10 overflow-hidden flex items-center justify-center text-3xl font-medium text-endurix-black dark:text-foreground"
+                                style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>
                                 {athlete.name?.charAt(0) || athlete.email.charAt(0)}
                             </div>
-                            <div className="absolute -bottom-2 -right-2 bg-primary p-1.5 rounded-lg text-primary-foreground shadow-md">
+                            <div className="absolute -bottom-2 -right-2 bg-endurix-orange p-1.5 text-white">
                                 <Zap className="h-4 w-4" />
                             </div>
                         </div>
                         <div>
-                            <h1 className="text-3xl font-display font-medium text-foreground">{athlete.name || athlete.email}</h1>
+                            <h1
+                                className="text-3xl font-medium text-endurix-black dark:text-foreground tracking-tight uppercase"
+                                style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                            >
+                                {athlete.name || athlete.email}
+                            </h1>
                             <p className="text-sm text-muted-foreground">{athlete.email}</p>
                         </div>
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full xl:w-auto">
+                        <StatCard
+                            label={t("athletes.detail.complianceRate")}
+                            value={`${completionRate}%`}
+                        />
                         <div>
-                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">{t("athletes.detail.complianceRate")}</p>
-                            <p className="text-2xl font-display mt-1">{completionRate}%</p>
-                        </div>
-                        <div>
-                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">{tAthlete('loadMonitoringTitle')}</p>
+                            <MonospaceLabel className="text-[10px]">{tAthlete('loadMonitoringTitle')}</MonospaceLabel>
                             <Badge className={`${loadMetrics.riskClassName} border-0 text-[10px] uppercase tracking-wider mt-1`}>{tAthlete(`loadRisk.${loadMetrics.riskKey}`)}</Badge>
                         </div>
-                        <div>
-                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">{t("athletes.detail.weeklyVolume")}</p>
-                            <p className="text-2xl font-display mt-1">{stats.distance.toFixed(1)} <span className="text-xs text-muted-foreground font-sans">{tUnits('km')}</span></p>
-                        </div>
-                        <div>
-                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">{tAthlete('nextRace')}</p>
-                            <p className="text-2xl font-display mt-1">{nextRaceDays ?? '-'} <span className="text-xs text-muted-foreground font-sans">{tAthlete('daysShort')}</span></p>
-                        </div>
+                        <StatCard
+                            label={t("athletes.detail.weeklyVolume")}
+                            value={
+                                <>
+                                    {stats.distance.toFixed(1)} <span className="text-xs text-muted-foreground font-sans">{tUnits('km')}</span>
+                                </>
+                            }
+                        />
+                        <StatCard
+                            label={tAthlete('nextRace')}
+                            value={
+                                <>
+                                    {nextRaceDays ?? '-'} <span className="text-xs text-muted-foreground font-sans">{tAthlete('daysShort')}</span>
+                                </>
+                            }
+                        />
                     </div>
                 </div>
             </div>
 
-            <div className="bg-background/90 border border-border/50 rounded-2xl p-3">
+            <div className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border p-3">
                 <div className="flex flex-col gap-3">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                         <Link href={'/workouts/assign?athleteId=' + id}>
-                            <Button className="gap-2 text-primary-foreground border-0 font-medium px-4">
+                            <Button variant="orange" className="gap-2 uppercase tracking-widest">
                                 <Plus className="h-4 w-4" />
                                 {t("trainings.assign.assignWorkout")}
                             </Button>
                         </Link>
                         <div className="flex flex-wrap gap-2">
-                            <Button variant="outline" className="gap-2" onClick={() => setIsAssignRaceModalOpen(true)}>
+                            <Button variant="outline-brand" className="gap-2 uppercase tracking-widest" onClick={() => setIsAssignRaceModalOpen(true)}>
                                 <Trophy className="h-4 w-4" />
                                 {t("races.athlete.addRace")}
                             </Button>
-                            <Button variant="outline" className="gap-2" onClick={() => setActiveSection('racesNotes')}>
+                            <Button variant="outline-brand" className="gap-2 uppercase tracking-widest" onClick={() => setActiveSection('racesNotes')}>
                                 <MessageSquare className="h-4 w-4" />
                                 {t("athletes.detail.coachComments")}
                             </Button>
@@ -353,11 +368,11 @@ export function AthleteDetailsView({
                     </div>
 
                     <Tabs value={activeSection} onValueChange={(value) => setActiveSection(value as 'training' | 'overview' | 'health' | 'racesNotes')}>
-                        <TabsList className="w-full h-auto grid grid-cols-2 md:grid-cols-4 gap-1 bg-muted/80 p-1 rounded-xl">
-                            <TabsTrigger value="training" className="text-xs font-semibold">{tAthlete('trainingTab')}</TabsTrigger>
-                            <TabsTrigger value="overview" className="text-xs font-semibold">{tAthlete('overviewTab')}</TabsTrigger>
-                            <TabsTrigger value="health" className="text-xs font-semibold">{tAthlete('healthTab')}</TabsTrigger>
-                            <TabsTrigger value="racesNotes" className="text-xs font-semibold">{tAthlete('racesNotesTab')}</TabsTrigger>
+                        <TabsList className="w-full h-auto grid grid-cols-2 md:grid-cols-4 gap-1 bg-endurix-black/8 dark:bg-white/8 p-1 border border-endurix-black/10 dark:border-border">
+                            <TabsTrigger value="training" className="text-xs font-semibold uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-endurix-black data-[state=active]:dark:bg-card data-[state=active]:dark:text-foreground">{tAthlete('trainingTab')}</TabsTrigger>
+                            <TabsTrigger value="overview" className="text-xs font-semibold uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-endurix-black data-[state=active]:dark:bg-card data-[state=active]:dark:text-foreground">{tAthlete('overviewTab')}</TabsTrigger>
+                            <TabsTrigger value="health" className="text-xs font-semibold uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-endurix-black data-[state=active]:dark:bg-card data-[state=active]:dark:text-foreground">{tAthlete('healthTab')}</TabsTrigger>
+                            <TabsTrigger value="racesNotes" className="text-xs font-semibold uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-endurix-black data-[state=active]:dark:bg-card data-[state=active]:dark:text-foreground">{tAthlete('racesNotesTab')}</TabsTrigger>
                         </TabsList>
                     </Tabs>
                 </div>
@@ -365,15 +380,15 @@ export function AthleteDetailsView({
 
             {activeSection === 'overview' && (
                 <div className="space-y-6">
-                    <div className="bg-card rounded-2xl border border-border/50 overflow-hidden">
-                        <div className="px-5 py-4 border-b border-border/40 flex items-center justify-between gap-2">
+                    <div className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border overflow-hidden">
+                        <div className="px-5 py-4 border-b border-endurix-black/10 dark:border-border flex items-center justify-between gap-2">
                             <div>
-                                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">{tAthlete('athleteProfileTitle')}</p>
+                                <MonospaceLabel className="text-[10px]">{tAthlete('athleteProfileTitle')}</MonospaceLabel>
                                 <p className="text-sm text-muted-foreground mt-1">{tAthlete('athleteProfileSubtitle')}</p>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 divide-x divide-y lg:divide-y-0 divide-muted dark:divide-white/5">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 divide-x divide-y lg:divide-y-0 divide-endurix-black/10 dark:divide-white/10">
                             {[
                                 { label: t("athletes.detail.height"), value: athlete.athleteProfile?.height, unit: tUnits('cm') },
                                 { label: t("athletes.detail.weight"), value: athlete.athleteProfile?.weight, unit: tUnits('kg') },
@@ -384,7 +399,12 @@ export function AthleteDetailsView({
                                 <div key={i} className="p-5 flex flex-col gap-2">
                                     <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">{m.label}</span>
                                     <div className="flex items-baseline gap-1.5">
-                                        <span className="text-2xl font-extrabold font-display text-foreground leading-none">{m.value ?? '—'}</span>
+                                        <span
+                                            className="text-2xl font-medium text-foreground leading-none"
+                                            style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                                        >
+                                            {m.value ?? '—'}
+                                        </span>
                                         {m.value && <span className="text-xs font-semibold text-muted-foreground">{m.unit}</span>}
                                     </div>
                                 </div>
@@ -392,12 +412,17 @@ export function AthleteDetailsView({
                             <div className="p-5 flex flex-col gap-2">
                                 <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">{t("athletes.detail.testVAM")}</span>
                                 <div className="flex items-baseline gap-1.5">
-                                    <span className="text-2xl font-extrabold text-foreground leading-none font-mono">{athlete.athleteProfile?.vam ?? '—'}</span>
+                                    <span
+                                        className="text-2xl font-medium text-foreground leading-none"
+                                        style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                                    >
+                                        {athlete.athleteProfile?.vam ?? '—'}
+                                    </span>
                                     {athlete.athleteProfile?.vam && <span className="text-xs font-semibold text-muted-foreground">{tUnits('minPerKm')}</span>}
                                 </div>
                                 {!athlete.athleteProfile?.vam && (
                                     <Select onValueChange={handleUpdateVAM}>
-                                        <SelectTrigger className="h-6 text-[10px] font-bold uppercase tracking-wider text-primary bg-muted dark:bg-white/5 border-0 rounded px-2 w-fit gap-1 focus:ring-0 mt-1">
+                                        <SelectTrigger className="h-6 text-[10px] font-bold uppercase tracking-wider text-endurix-orange bg-endurix-black/8 dark:bg-white/10 border-0 px-2 w-fit gap-1 focus:ring-0 mt-1">
                                             <SelectValue placeholder={tAthlete('assignLevel')} />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -411,15 +436,23 @@ export function AthleteDetailsView({
                             <div className="p-5 flex flex-col gap-2">
                                 <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">{t("athletes.detail.testUAN")}</span>
                                 <div className="flex items-baseline gap-1.5">
-                                    <span className="text-2xl font-extrabold text-foreground leading-none font-mono">{athlete.athleteProfile?.uan ?? '—'}</span>
+                                    <span
+                                        className="text-2xl font-medium text-foreground leading-none"
+                                        style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                                    >
+                                        {athlete.athleteProfile?.uan ?? '—'}
+                                    </span>
                                     {athlete.athleteProfile?.uan && <span className="text-xs font-semibold text-muted-foreground">{tUnits('minPerKm')}</span>}
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-card dark:border dark:border-white/5 p-8 rounded-2xl shadow-[0_12px_30px_rgba(43,52,55,0.03)] border border-muted">
-                        <h3 className="text-xl font-display font-bold tracking-tight mb-6 text-foreground">{tAthlete('performanceAndZones')}</h3>
+                    <div className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border p-6">
+                        <SectionHeader
+                            title={tAthlete('performanceAndZones')}
+                            size="sm"
+                        />
                         <PerformanceTrendChart data={performanceData} />
                     </div>
                 </div>
@@ -427,42 +460,51 @@ export function AthleteDetailsView({
 
             {activeSection === 'training' && (
                 <div className="space-y-6">
-                    <div className="flex items-center bg-card dark:border dark:border-white/5 rounded-lg p-1 w-full sm:w-fit">
+                    <div className="flex items-center bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border p-1 w-full sm:w-fit">
                         <Button variant="ghost" onClick={() => setCurrentWeekStart(prev => addWeeks(prev, -1))} size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground"><ChevronLeft className="w-4 h-4" /></Button>
-                        <span className="px-5 font-semibold text-[13px] tracking-wide w-40 text-center text-foreground capitalize">{format(currentWeekStart, 'MMMM yyyy', { locale: es })}</span>
+                        <span
+                            className="px-5 font-semibold text-[13px] tracking-wide w-40 text-center text-foreground capitalize"
+                            style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                        >
+                            {format(currentWeekStart, 'MMMM yyyy', { locale: es })}
+                        </span>
                         <Button variant="ghost" onClick={() => setCurrentWeekStart(prev => addWeeks(prev, 1))} size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground"><ChevronRight className="w-4 h-4" /></Button>
-                        <div className="h-4 w-px bg-border/50 mx-1" />
-                        <Button variant="ghost" onClick={() => setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }))} className="px-3 h-8 text-[11px] font-bold tracking-wider uppercase text-primary">{t("common.today")}</Button>
+                        <div className="h-4 w-px bg-endurix-black/15 dark:bg-border mx-1" />
+                        <Button variant="ghost" onClick={() => setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }))} className="px-3 h-8 text-[11px] font-bold tracking-wider uppercase text-endurix-orange">{t("common.today")}</Button>
                     </div>
 
                     <AthleteWeeklyCalendar weekStart={currentWeekStart} assignments={assignments} activities={activities} />
 
-                    <div className="bg-card dark:border dark:border-white/5 p-8 rounded-2xl shadow-[0_12px_30px_rgba(43,52,55,0.03)] border border-muted">
-                        <h3 className="text-xl font-display font-bold tracking-tight mb-6 text-foreground">{tAthlete('trainingComplianceTrend')}</h3>
+                    <div className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border p-6">
+                        <SectionHeader
+                            title={tAthlete('trainingComplianceTrend')}
+                            size="sm"
+                        />
                         <PerformanceTrendChart data={performanceData} />
                     </div>
                 </div>
             )}
 
             {activeSection === 'health' && (
-                <div className="bg-card rounded-2xl shadow-[0_4px_24px_rgba(43,52,55,0.04)] dark:border dark:border-white/5">
-                    <div className="px-5 pt-5 pb-4 border-b border-border/40 flex items-center justify-between gap-3">
+                <div className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border">
+                    <div className="px-5 pt-5 pb-4 border-b border-endurix-black/10 dark:border-border flex items-center justify-between gap-3">
                         <div>
-                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">{tAthlete('loadMonitoringTitle')}</p>
+                            <MonospaceLabel className="text-[10px]">{tAthlete('loadMonitoringTitle')}</MonospaceLabel>
                             <p className="text-sm text-foreground font-medium mt-1">{tAthlete('loadMonitoringSubtitle')}</p>
                         </div>
                         <Badge className={`${loadMetrics.riskClassName} border-0 text-[10px] uppercase tracking-wider`}>
                             {tAthlete(`loadRisk.${loadMetrics.riskKey}`)}
                         </Badge>
                     </div>
-                    <div className="px-5 py-3 border-b border-border/40 flex items-center justify-between gap-3 flex-wrap">
+                    <div className="px-5 py-3 border-b border-endurix-black/10 dark:border-border flex items-center justify-between gap-3 flex-wrap">
                         <div className="flex items-center gap-2">
                             {[7, 30, 90].map((range) => (
                                 <Button
                                     key={range}
                                     type="button"
-                                    variant={loadRange === range ? 'default' : 'outline'}
-                                    className="h-7 px-3 text-[10px] font-bold tracking-wider"
+                                    variant={loadRange === range ? 'orange' : 'outline-brand'}
+                                    size="sm"
+                                    className="h-7 px-3 text-[10px] font-bold tracking-wider uppercase"
                                     onClick={() => handleLoadRangeChange(range as LoadMetricsRange)}
                                     disabled={isSwitchingLoadRange}
                                 >
@@ -481,11 +523,11 @@ export function AthleteDetailsView({
                         </div>
                     </div>
                     {showLoadSkeleton ? (
-                        <div className="px-5 py-4 border-t border-border/40">
-                            <div className="rounded-2xl border border-border/50 bg-muted/20 p-5 sm:p-6">
+                        <div className="px-5 py-4 border-t border-endurix-black/10 dark:border-border">
+                            <div className="border border-endurix-black/10 dark:border-border bg-endurix-black/5 dark:bg-white/5 p-5 sm:p-6">
                                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-5">
                                     {Array.from({ length: 6 }).map((_, idx) => (
-                                        <div key={`load-skeleton-metric-${idx}`} className="rounded-lg bg-card/60 border border-border/40 p-3">
+                                        <div key={`load-skeleton-metric-${idx}`} className="bg-white/60 dark:bg-card/60 border border-endurix-black/10 dark:border-border p-3">
                                             <Skeleton className="h-3 w-14 mb-3" />
                                             <Skeleton className="h-8 w-20" />
                                         </div>
@@ -496,7 +538,7 @@ export function AthleteDetailsView({
                         </div>
                     ) : (
                         <>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 divide-x divide-y sm:divide-y-0 divide-muted dark:divide-white/5">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 divide-x divide-y sm:divide-y-0 divide-endurix-black/10 dark:divide-white/10">
                                 {[
                                     { label: 'CTL', value: loadMetrics.ctl, tooltip: tAthlete('metricTooltip.ctl') },
                                     { label: 'ATL', value: loadMetrics.atl, tooltip: tAthlete('metricTooltip.atl') },
@@ -510,7 +552,7 @@ export function AthleteDetailsView({
                                             {metric.label}
                                             <span className="relative inline-flex items-center group">
                                                 <Info className="h-3 w-3 text-muted-foreground/80 cursor-help" aria-label={metric.tooltip} />
-                                                <span className={`pointer-events-none absolute top-full z-20 mt-2 w-52 rounded-md bg-foreground px-2 py-1.5 text-[10px] font-medium normal-case leading-relaxed text-background opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100 ${
+                                                <span className={`pointer-events-none absolute top-full z-20 mt-2 w-52 bg-endurix-black dark:bg-foreground px-2 py-1.5 text-[10px] font-medium normal-case leading-relaxed text-white dark:text-background opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100 ${
                                                     metricIndex === 0
                                                         ? 'left-0'
                                                         : metricIndex === metrics.length - 1
@@ -522,19 +564,24 @@ export function AthleteDetailsView({
                                             </span>
                                         </span>
                                         <div className="flex items-baseline gap-1.5">
-                                            <span className="text-2xl font-extrabold font-display text-foreground leading-none">{metric.decimals ? metric.value.toFixed(metric.decimals) : Math.round(metric.value)}</span>
+                                            <span
+                                                className="text-2xl font-medium text-foreground leading-none"
+                                                style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                                            >
+                                                {metric.decimals ? metric.value.toFixed(metric.decimals) : Math.round(metric.value)}
+                                            </span>
                                             <span className="text-xs font-semibold text-muted-foreground">{metric.label === 'ACWR' ? '' : tAthlete('loadPoints')}</span>
                                         </div>
                                     </div>
                                 ))}
                             </div>
 
-                            <div className="px-5 py-4 border-t border-border/40">
+                            <div className="px-5 py-4 border-t border-endurix-black/10 dark:border-border">
                                 <LoadMetricsTrendChart data={loadTrendData} />
                             </div>
                             <div className="px-5 pb-5">
                                 {athlete.athleteProfile?.hrZones ? (
-                                    <div className="rounded-xl bg-muted/20 p-4">
+                                    <div className="bg-endurix-black/5 dark:bg-white/5 p-4">
                                         <HeartRateZones zones={athlete.athleteProfile.hrZones} />
                                     </div>
                                 ) : (
@@ -543,7 +590,7 @@ export function AthleteDetailsView({
                             </div>
                         </>
                     )}
-                    <div className="px-5 py-4 border-t border-border/40">
+                    <div className="px-5 py-4 border-t border-endurix-black/10 dark:border-border">
                         <p className="text-xs text-muted-foreground leading-relaxed">{tAthlete('loadRiskHint', { tsb: Math.round(loadMetrics.tsb), atl: Math.round(loadMetrics.atl), ctl: Math.round(loadMetrics.ctl), acwr: loadMetrics.acwr.toFixed(2) })}</p>
                     </div>
                 </div>
@@ -552,13 +599,16 @@ export function AthleteDetailsView({
             {activeSection === 'racesNotes' && (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 w-full items-stretch relative">
                     <div className="lg:col-span-4 h-full">
-                        <div className="bg-muted dark:bg-muted rounded-3xl p-6 h-full flex flex-col pt-7 pb-6 relative group overflow-hidden">
-                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white to-transparent opacity-50" />
-                            <h3 className="text-xl font-display font-bold tracking-tight mb-6 text-foreground px-2 flex items-center justify-between">
+                        <div className="bg-endurix-black/5 dark:bg-white/5 p-6 h-full flex flex-col pt-7 pb-6 relative group overflow-hidden border border-endurix-black/10 dark:border-border">
+                            <div className="absolute top-0 left-0 w-full h-1 bg-endurix-orange/60" />
+                            <h3
+                                className="text-xl font-medium tracking-tight mb-6 text-endurix-black dark:text-foreground px-2 flex items-center justify-between uppercase"
+                                style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                            >
                                 {t("athletes.detail.coachComments")}
                                 <MessageSquare className="w-4 h-4 text-muted-foreground/60" />
                             </h3>
-                            <div className="flex-1 w-full bg-transparent mb-6 overflow-hidden [&_.bg-card]:bg-transparent [&_.bg-card]:border-0 [&_.bg-card]:shadow-none [&_.p-6]:px-0 pl-0 [&_.p-6]:py-0 [&_h3]:hidden">
+                            <div className="flex-1 w-full bg-transparent mb-6 overflow-hidden">
                                 <CoachNotes athleteId={id} initialNotes={athlete.athleteProfile?.coachNotes || ''} onSave={handleSaveNotes} />
                             </div>
                         </div>
@@ -566,8 +616,13 @@ export function AthleteDetailsView({
 
                     <div className="lg:col-span-8 h-full">
                         <div className="flex items-center justify-between mb-2">
-                            <h3 className="text-xl font-display font-medium text-foreground px-2">{t("races.athlete.upcomingTitle")}</h3>
-                            <Button variant="ghost" size="sm" onClick={() => setIsAssignRaceModalOpen(true)} className="text-primary font-bold text-[10px] uppercase tracking-wider gap-1.5"><Plus className="h-3 w-3" />{t("races.athlete.addRace")}</Button>
+                            <h3
+                                className="text-xl font-medium text-foreground px-2 uppercase"
+                                style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                            >
+                                {t("races.athlete.upcomingTitle")}
+                            </h3>
+                            <Button variant="ghost" size="sm" onClick={() => setIsAssignRaceModalOpen(true)} className="text-endurix-orange font-bold text-[10px] uppercase tracking-wider gap-1.5"><Plus className="h-3 w-3" />{t("races.athlete.addRace")}</Button>
                         </div>
 
                         {upcomingRaces.length > 0 ? (
@@ -576,46 +631,58 @@ export function AthleteDetailsView({
                                     const raceDate = parseISO(race.date);
                                     const daysLeft = differenceInDays(raceDate, startOfDay(new Date()));
                                     return (
-                                        <div key={race.id} className={`${index === 0 ? 'bg-primary dark:bg-primary/80 text-primary-foreground shadow-[0_20px_40px_rgba(108,126,142,0.2)]' : 'bg-card dark:border dark:border-white/5 text-card-foreground shadow-sm'} rounded-3xl p-6 relative overflow-hidden flex flex-col min-h-[180px]`}>
+                                        <div key={race.id} className={`${index === 0 ? 'bg-endurix-orange text-white' : 'bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border text-card-foreground'} p-6 relative overflow-hidden flex flex-col min-h-[180px] ${index === 0 ? 'border-l-4 border-l-endurix-black/30' : ''}`}>
                                             <div className="relative z-10 flex-1 flex flex-col">
                                                 <div className="flex justify-between items-start mb-4">
                                                     <div>
-                                                        <h4 className={`text-lg font-display font-medium mb-0.5 ${index === 0 ? 'text-white' : 'text-foreground'}`}>{race.name_override || race.race?.name || tRaces('defaultRaceName')}</h4>
-                                                        <p className={`text-xs ${index === 0 ? 'text-white/80' : 'text-muted-foreground'} font-medium`}>{format(raceDate, "d 'de' MMMM, yyyy", { locale: es })}{race.race?.distance && ` • ${race.race.distance}`}</p>
+                                                        <h4
+                                                            className={`text-lg font-medium mb-0.5 ${index === 0 ? 'text-white' : 'text-foreground'}`}
+                                                            style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                                                        >
+                                                            {race.name_override || race.race?.name || tRaces('defaultRaceName')}
+                                                        </h4>
+                                                        <p className={`text-xs ${index === 0 ? 'text-white/85' : 'text-muted-foreground'} font-medium`}>{format(raceDate, "d 'de' MMMM, yyyy", { locale: es })}{race.race?.distance && ` • ${race.race.distance}`}</p>
                                                     </div>
-                                                    <Badge className={`${index === 0 ? 'bg-white/20 text-white hover:bg-white/30' : 'bg-primary/10 text-primary hover:bg-primary/20'} border-none font-bold text-[10px]`}>{t("races.athlete.priority", { priority: race.priority })}</Badge>
+                                                    <Badge className={`${index === 0 ? 'bg-white/20 text-white hover:bg-white/30' : 'bg-endurix-orange/10 text-endurix-orange'} border-0 font-bold text-[10px]`}>{t("races.athlete.priority", { priority: race.priority })}</Badge>
                                                 </div>
                                                 <div className="mt-auto flex justify-between items-end">
                                                     <div>
-                                                        <p className={`text-[9px] uppercase tracking-widest font-bold ${index === 0 ? 'text-white/60' : 'text-muted-foreground'} mb-1`}>{daysLeft > 0 ? tRaces('countdownLabel') : tRaces('todayLabel')}</p>
+                                                        <p className={`text-[9px] uppercase tracking-widest font-bold ${index === 0 ? 'text-white/80' : 'text-muted-foreground'} mb-1`}>{daysLeft > 0 ? tRaces('countdownLabel') : tRaces('todayLabel')}</p>
                                                         <div className="flex items-baseline gap-2">
-                                                            <span className="text-3xl font-display leading-none tracking-tight">{Math.max(0, daysLeft)}</span>
-                                                            <span className={`text-xs ${index === 0 ? 'text-white/80' : 'text-muted-foreground'} font-medium`}>{tRaces('daysLeftLabel')}</span>
+                                                            <span
+                                                                className="text-3xl leading-none tracking-tight"
+                                                                style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                                                            >
+                                                                {Math.max(0, daysLeft)}
+                                                            </span>
+                                                            <span className={`text-xs ${index === 0 ? 'text-white/85' : 'text-muted-foreground'} font-medium`}>{tRaces('daysLeftLabel')}</span>
                                                         </div>
                                                     </div>
                                                     {race.target_time && (
                                                         <div className="text-right">
-                                                            <p className={`text-[9px] uppercase tracking-widest font-bold ${index === 0 ? 'text-white/60' : 'text-muted-foreground'} mb-1`}>{tRaces('targetLabel')}</p>
-                                                            <p className="text-sm font-mono font-bold">{race.target_time}</p>
+                                                            <p className={`text-[9px] uppercase tracking-widest font-bold ${index === 0 ? 'text-white/80' : 'text-muted-foreground'} mb-1`}>{tRaces('targetLabel')}</p>
+                                                            <p
+                                                                className="text-sm font-bold"
+                                                                style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                                                            >
+                                                                {race.target_time}
+                                                            </p>
                                                         </div>
                                                     )}
                                                 </div>
                                             </div>
                                             {index === 0 && (
-                                                <>
-                                                    <div className="absolute right-[-16px] top-4 opacity-20 pointer-events-none text-white mix-blend-overlay"><Trophy className="w-24 h-24" /></div>
-                                                    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
-                                                </>
+                                                <div className="absolute right-[-16px] top-4 opacity-20 pointer-events-none text-white"><Trophy className="w-24 h-24" /></div>
                                             )}
                                         </div>
                                     );
                                 })}
                             </div>
                         ) : (
-                            <div className="bg-muted/50 dark:bg-white/5 rounded-3xl p-8 flex flex-col items-center justify-center text-center min-h-[200px] border-2 border-dashed border-muted/50">
+                            <div className="bg-endurix-black/5 dark:bg-white/5 p-8 flex flex-col items-center justify-center text-center min-h-[200px] border border-dashed border-endurix-black/15 dark:border-white/20">
                                 <Trophy className="w-12 h-12 text-muted-foreground/30 mb-4" />
                                 <h4 className="text-foreground font-medium mb-2">{t("races.athlete.noRaces")}</h4>
-                                <Button variant="outline" onClick={() => setIsAssignRaceModalOpen(true)} className="mt-2 border-primary/20 text-primary font-bold text-xs uppercase tracking-wider">{t("races.athlete.addRace")}</Button>
+                                <Button variant="outline-brand" onClick={() => setIsAssignRaceModalOpen(true)} className="mt-2 uppercase tracking-wider">{t("races.athlete.addRace")}</Button>
                             </div>
                         )}
                     </div>

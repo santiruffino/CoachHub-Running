@@ -102,10 +102,15 @@ export function RacesList({ initialRaces, initialAthleteRaces, isCoach, userId }
       <div className="p-4 sm:p-6 lg:p-8 space-y-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">{t('library.title')}</h1>
+            <h1
+              className="text-2xl sm:text-3xl font-bold text-endurix-black dark:text-foreground tracking-tight uppercase"
+              style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+            >
+              {t('library.title')}
+            </h1>
             <p className="text-muted-foreground mt-1">{t('library.subtitle')}</p>
           </div>
-          <Button onClick={() => { setSelectedRace(null); setIsRaceDialogOpen(true); }} className="rounded-xl font-bold shadow-md">
+          <Button variant="orange" onClick={() => { setSelectedRace(null); setIsRaceDialogOpen(true); }} className="font-bold uppercase tracking-widest">
             <Plus className="h-4 w-4 mr-2" />
             {t('library.createTemplate')}
           </Button>
@@ -114,21 +119,22 @@ export function RacesList({ initialRaces, initialAthleteRaces, isCoach, userId }
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
+            variant="boxed"
             placeholder={t('library.searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 bg-card border-none shadow-sm h-11 rounded-xl focus-visible:ring-1 focus-visible:ring-primary/20"
+            className="pl-10 h-11"
           />
         </div>
 
         {filteredRaces.length === 0 ? (
-          <Card className="border-dashed bg-muted/20 border-2 rounded-[2rem] py-20">
+          <Card className="border-dashed border-2 border-endurix-black/15 dark:border-white/15 bg-endurix-black/5 dark:bg-white/5 py-20">
             <CardContent className="flex flex-col items-center justify-center text-center">
-              <div className="bg-muted p-4 rounded-full mb-4">
+              <div className="bg-endurix-black/8 dark:bg-white/8 p-4 mb-4">
                 <Trophy className="h-8 w-8 text-muted-foreground" />
               </div>
-              <p className="text-muted-foreground font-manrope font-medium">{t('library.noRaces')}</p>
-              <Button variant="ghost" onClick={() => setIsRaceDialogOpen(true)} className="mt-4 text-primary font-bold">
+              <p className="text-muted-foreground font-medium">{t('library.noRaces')}</p>
+              <Button variant="ghost" onClick={() => setIsRaceDialogOpen(true)} className="mt-4 text-endurix-orange font-bold uppercase tracking-wider text-xs">
                 {t('library.createFirstTemplate')}
               </Button>
             </CardContent>
@@ -136,28 +142,36 @@ export function RacesList({ initialRaces, initialAthleteRaces, isCoach, userId }
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredRaces.map((race) => (
-              <Card key={race.id} className="bg-card border-border/40 rounded-[2rem] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group">
+              <Card key={race.id} className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border overflow-hidden hover:border-endurix-orange/40 transition-colors group">
                 <CardHeader className="p-6 pb-2 flex flex-row items-start justify-between space-y-0">
                   <div className="space-y-1">
-                    <CardTitle className="text-xl font-bold font-manrope group-hover:text-primary transition-colors">{race.name}</CardTitle>
-                    <div className="flex items-center text-primary font-bold text-sm bg-primary/5 px-2 py-0.5 rounded-lg w-fit">
+                    <CardTitle
+                      className="text-xl font-medium group-hover:text-endurix-orange transition-colors uppercase tracking-tight"
+                      style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                    >
+                      {race.name}
+                    </CardTitle>
+                    <div
+                      className="flex items-center text-endurix-orange font-bold text-sm bg-endurix-orange/10 px-2 py-0.5 border border-endurix-orange/30 w-fit uppercase tracking-wider"
+                      style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                    >
                       <Trophy className="h-3.5 w-3.5 mr-1.5" />
                       {race.distance || '-'}
                     </div>
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="rounded-xl border-none shadow-xl">
-                      <DropdownMenuItem onClick={() => { setSelectedRace(race); setIsRaceDialogOpen(true); }} className="rounded-lg">
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => { setSelectedRace(race); setIsRaceDialogOpen(true); }}>
                         <Edit className="h-4 w-4 mr-2" />
                         {t('library.edit')}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-red-600 focus:text-red-600 rounded-lg" onClick={() => setDeleteId(race.id)}>
+                      <DropdownMenuItem className="text-red-600 focus:text-red-600" onClick={() => setDeleteId(race.id)}>
                         <Trash2 className="h-4 w-4 mr-2" />
                         {t('library.delete')}
                       </DropdownMenuItem>
@@ -167,7 +181,7 @@ export function RacesList({ initialRaces, initialAthleteRaces, isCoach, userId }
                 <CardContent className="p-6 pt-2 space-y-4">
                   {race.location && (
                     <div className="flex items-center text-sm text-muted-foreground">
-                      <MapPin className="h-4 w-4 mr-1.5 text-primary/60" />
+                      <MapPin className="h-4 w-4 mr-1.5 text-endurix-orange/70" />
                       <span className="truncate">{race.location}</span>
                     </div>
                   )}
@@ -182,11 +196,11 @@ export function RacesList({ initialRaces, initialAthleteRaces, isCoach, userId }
           </div>
         )}
 
-        <RaceDialog 
-          open={isRaceDialogOpen} 
-          onOpenChange={setIsRaceDialogOpen} 
-          race={selectedRace} 
-          onSuccess={fetchRaces} 
+        <RaceDialog
+          open={isRaceDialogOpen}
+          onOpenChange={setIsRaceDialogOpen}
+          race={selectedRace}
+          onSuccess={fetchRaces}
         />
 
         <AlertDialog
@@ -216,23 +230,31 @@ export function RacesList({ initialRaces, initialAthleteRaces, isCoach, userId }
             <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">{t('athlete.upcomingTitle')}</h1>
+          <h1
+            className="text-2xl sm:text-3xl font-bold text-endurix-black dark:text-foreground tracking-tight uppercase"
+            style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+          >
+            {t('athlete.upcomingTitle')}
+          </h1>
           <p className="text-muted-foreground mt-1">{t('athlete.manageSubtitle')}</p>
         </div>
       </div>
 
       {/* Active Races */}
       <div className="space-y-6">
-            <h2 className="text-lg font-bold flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+            <h2
+              className="text-lg font-bold flex items-center gap-2 uppercase tracking-tight"
+              style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+            >
+              <span className="w-2 h-2 bg-endurix-orange animate-pulse" />
               {t('athlete.activeRaces')}
             </h2>
-        
+
         {activeRaces.length === 0 ? (
-          <Card className="border-dashed bg-muted/10 border-2 rounded-[2rem] py-12">
+          <Card className="border-dashed border-2 border-endurix-black/15 dark:border-white/15 bg-endurix-black/5 dark:bg-white/5 py-12">
             <CardContent className="flex flex-col items-center justify-center text-center">
               <Trophy className="h-8 w-8 text-muted-foreground/40 mb-3" />
-              <p className="text-muted-foreground font-manrope italic">{t('athlete.noRaces')}</p>
+              <p className="text-muted-foreground italic">{t('athlete.noRaces')}</p>
             </CardContent>
           </Card>
         ) : (
@@ -253,8 +275,11 @@ export function RacesList({ initialRaces, initialAthleteRaces, isCoach, userId }
       {/* History */}
       {pastRaces.length > 0 && (
         <div className="space-y-6">
-          <h2 className="text-lg font-bold font-display tracking-tight flex items-center gap-2 text-muted-foreground">
-            <span className="w-2 h-2 rounded-full bg-muted-foreground/40" />
+          <h2
+            className="text-lg font-medium flex items-center gap-2 text-muted-foreground uppercase tracking-tight"
+            style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+          >
+            <span className="w-2 h-2 bg-muted-foreground/40" />
             {t('library.finishedRaces')}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -271,7 +296,7 @@ export function RacesList({ initialRaces, initialAthleteRaces, isCoach, userId }
         </div>
       )}
 
-      <RecordRaceResultModal 
+      <RecordRaceResultModal
         open={isResultModalOpen}
         onOpenChange={setIsResultModalOpen}
         race={selectedAthleteRace}

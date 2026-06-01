@@ -112,24 +112,29 @@ export function AssignRaceModal({ open, onOpenChange, athleteId, onSuccess }: As
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] border-none bg-white dark:bg-[#1a232c] shadow-2xl">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="font-manrope text-2xl font-bold">{t('title')}</DialogTitle>
+          <DialogTitle
+            className="text-2xl font-bold uppercase tracking-tight"
+            style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+          >
+            {t('title')}
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6 py-4">
-          <div className="grid grid-cols-2 gap-2 rounded-lg bg-muted p-1">
+          <div className="grid grid-cols-2 gap-2 bg-endurix-black/8 dark:bg-white/8 p-1 border border-endurix-black/10 dark:border-border">
             <Button
               type="button"
-              variant={mode === 'template' ? 'default' : 'ghost'}
-              className="h-9"
+              variant={mode === 'template' ? 'orange' : 'ghost'}
+              className="h-9 uppercase tracking-widest text-[10px] font-bold"
               onClick={() => setMode('template')}
             >
               {t('useExisting')}
             </Button>
             <Button
               type="button"
-              variant={mode === 'custom' ? 'default' : 'ghost'}
-              className="h-9"
+              variant={mode === 'custom' ? 'orange' : 'ghost'}
+              className="h-9 uppercase tracking-widest text-[10px] font-bold"
               onClick={() => setMode('custom')}
             >
               {t('createNew')}
@@ -145,10 +150,11 @@ export function AssignRaceModal({ open, onOpenChange, athleteId, onSuccess }: As
                 <div className="relative">
                   <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
+                    variant="boxed"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder={t('searchPlaceholder')}
-                    className="bg-surface-container-low dark:bg-[#131b23] border-none h-11 pl-10 focus:ring-1 focus:ring-primary/20"
+                    className="h-11 pl-10"
                   />
                 </div>
 
@@ -156,7 +162,7 @@ export function AssignRaceModal({ open, onOpenChange, athleteId, onSuccess }: As
                   value={formData.race_id}
                   onValueChange={(value) => setFormData({ ...formData, race_id: value })}
                 >
-                  <SelectTrigger className="bg-surface-container-low dark:bg-[#131b23] border-none h-12 focus:ring-1 focus:ring-primary/20">
+                  <SelectTrigger className="h-12">
                     <SelectValue placeholder={t('selectTemplatePlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
@@ -174,10 +180,11 @@ export function AssignRaceModal({ open, onOpenChange, athleteId, onSuccess }: As
               </>
             ) : (
               <Input
+                variant="boxed"
                 value={formData.name_override}
                 onChange={(e) => setFormData({ ...formData, name_override: e.target.value })}
                 placeholder={t('raceNamePlaceholder')}
-                className="bg-surface-container-low dark:bg-[#131b23] border-none h-12 focus:ring-1 focus:ring-primary/20"
+                className="h-12"
                 required
               />
             )}
@@ -189,10 +196,11 @@ export function AssignRaceModal({ open, onOpenChange, athleteId, onSuccess }: As
                 {t('dateLabel')}
               </Label>
               <Input
+                variant="boxed"
                 type="date"
                 value={formData.date}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                className="bg-surface-container-low dark:bg-[#131b23] border-none h-12 focus:ring-1 focus:ring-primary/20"
+                className="h-12"
                 required
               />
             </div>
@@ -200,11 +208,11 @@ export function AssignRaceModal({ open, onOpenChange, athleteId, onSuccess }: As
               <Label className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase opacity-70">
                 {t('priorityLabel')}
               </Label>
-              <Select 
-                value={formData.priority} 
+              <Select
+                value={formData.priority}
                 onValueChange={(value: RacePriority) => setFormData({ ...formData, priority: value })}
               >
-                <SelectTrigger className="bg-surface-container-low dark:bg-[#131b23] border-none h-12 focus:ring-1 focus:ring-primary/20">
+                <SelectTrigger className="h-12">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -221,6 +229,7 @@ export function AssignRaceModal({ open, onOpenChange, athleteId, onSuccess }: As
               {t('targetTimeLabel')}
             </Label>
             <Input
+              variant="boxed"
               value={formData.target_time}
               onChange={(e) => {
                 setFormData({ ...formData, target_time: e.target.value });
@@ -243,7 +252,7 @@ export function AssignRaceModal({ open, onOpenChange, athleteId, onSuccess }: As
                 setTargetTimeError('');
               }}
               placeholder={t('targetTimePlaceholder')}
-              className="bg-surface-container-low dark:bg-[#131b23] border-none h-12 focus:ring-1 focus:ring-primary/20"
+              className="h-12"
             />
             {targetTimeError && <p className="text-xs font-medium text-red-500">{targetTimeError}</p>}
           </div>
@@ -253,10 +262,11 @@ export function AssignRaceModal({ open, onOpenChange, athleteId, onSuccess }: As
               {t('notesLabel')}
             </Label>
             <Textarea
+              variant="boxed"
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               placeholder={t('notesPlaceholder')}
-              className="bg-surface-container-low dark:bg-[#131b23] border-none resize-none focus:ring-1 focus:ring-primary/20"
+              className="resize-none"
               rows={4}
             />
           </div>
@@ -267,6 +277,7 @@ export function AssignRaceModal({ open, onOpenChange, athleteId, onSuccess }: As
             </Button>
             <Button
               type="submit"
+              variant="orange"
               disabled={
                 loading ||
                 !formData.date ||

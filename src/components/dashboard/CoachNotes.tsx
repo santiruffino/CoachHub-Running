@@ -3,10 +3,9 @@ import { appLogger } from '@/lib/app-logger';
 
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { FileText } from 'lucide-react';
+import { MonospaceLabel } from '@/components/dashboard';
 import { useTranslations } from 'next-intl';
 
 interface CoachNotesProps {
@@ -25,20 +24,20 @@ export function CoachNotes({ athleteId, initialNotes = '', onSave, readOnly = fa
 
   const handleSave = async () => {
     if (!onSave) return;
-    
+
     setIsSaving(true);
     try {
       await onSave(notes);
       const now = new Date();
-      
-      const dateStr = now.toLocaleDateString('es-ES', { 
-        month: 'short', 
-        day: 'numeric' 
+
+      const dateStr = now.toLocaleDateString('es-ES', {
+        month: 'short',
+        day: 'numeric',
       });
-      const timeStr = now.toLocaleTimeString('es-ES', { 
-        hour: '2-digit', 
+      const timeStr = now.toLocaleTimeString('es-ES', {
+        hour: '2-digit',
         minute: '2-digit',
-        hour12: true 
+        hour12: true,
       });
       setLastEdited(t('lastEdited', { date: dateStr, time: timeStr }));
     } catch (error) {
@@ -48,40 +47,41 @@ export function CoachNotes({ athleteId, initialNotes = '', onSave, readOnly = fa
     }
   };
 
+  if (readOnly) {
+    return (
+      <div>
+        <p className="text-sm text-endurix-black/70 dark:text-muted-foreground whitespace-pre-wrap leading-relaxed">
+          {notes || (
+            <span className="text-endurix-black/40 dark:text-muted-foreground/60 italic">
+              {t('placeholder')}
+            </span>
+          )}
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <Card className={readOnly ? "border-0 shadow-none bg-transparent" : ""}>
-      <CardHeader className={readOnly ? "px-0 pt-0" : ""}>
-        <CardTitle className="flex items-center gap-2 text-base">
-          <FileText className="h-4 w-4" />
-          {t('title')}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className={readOnly ? "px-0 space-y-3" : "space-y-3"}>
-        {readOnly ? (
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed italic">
-                {notes || t('placeholder')}
-            </p>
-        ) : (
-            <>
-                <Textarea
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder={t('placeholder')}
-                    className="min-h-32 resize-none text-sm"
-                />
-                {lastEdited && (
-                    <p className="text-xs text-muted-foreground">{lastEdited}</p>
-                )}
-                <Button
-                    onClick={handleSave}
-                    disabled={isSaving}
-                    className="w-full"
-                >
-                    {isSaving ? t('saving') : t('save')}
-                </Button>
-            </>
-        )}
-      </CardContent>
-    </Card>
+    <div className="space-y-4">
+      <Textarea
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        placeholder={t('placeholder')}
+        className="min-h-32 resize-none text-sm"
+      />
+      {lastEdited && (
+        <MonospaceLabel color="muted" size="xs">
+          {lastEdited}
+        </MonospaceLabel>
+      )}
+      <Button
+        variant="orange"
+        onClick={handleSave}
+        disabled={isSaving}
+        className="w-full uppercase tracking-widest"
+      >
+        {isSaving ? t('saving') : t('save')}
+      </Button>
+    </div>
   );
 }

@@ -15,12 +15,12 @@ interface GroupWeeklyCalendarProps {
     assignments: TrainingAssignment[];
 }
 
-function GroupWorkoutCard({ 
-    assignment, 
-    affectedCount 
-}: { 
-    assignment: TrainingAssignment; 
-    affectedCount: number 
+function GroupWorkoutCard({
+    assignment,
+    affectedCount
+}: {
+    assignment: TrainingAssignment;
+    affectedCount: number
 }) {
     const t = useTranslations();
     const typeText = assignment.training.type;
@@ -28,22 +28,31 @@ function GroupWorkoutCard({
 
     return (
         <Link href={`/workouts/${assignment.id}?fromGroup=true`} className="block group">
-            <div className="bg-card dark:bg-card border border-border/40 dark:border-white/5 rounded-xl p-4 flex flex-col gap-2 relative overflow-hidden transition-all group-hover:border-primary/40 group-hover:-translate-y-0.5 group-hover:shadow-lg">
+            <div className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border p-4 flex flex-col gap-2 relative overflow-hidden transition-colors group-hover:border-endurix-orange/40">
                 {/* Left accent */}
-                <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl bg-primary" />
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-endurix-orange" />
 
                 {/* Header row */}
                 <div className="flex items-center justify-between pl-2">
-                    <span className="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-widest bg-primary/10 text-primary border border-primary/20">
+                    <span
+                        className="px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-widest bg-endurix-orange/10 text-endurix-orange border border-endurix-orange/30"
+                        style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                    >
                         {typeText}
                     </span>
-                    <div className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground uppercase tracking-wider">
+                    <div
+                        className="flex items-center gap-1 text-[9px] font-bold text-muted-foreground uppercase tracking-wider"
+                        style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                    >
                         <Users className="w-3 h-3" />
                         {affectedCount}
                     </div>
                 </div>
 
-                <h4 className="text-sm font-bold text-foreground leading-tight px-2 line-clamp-2">
+                <h4
+                    className="text-sm font-medium text-foreground leading-tight px-2 line-clamp-2 uppercase"
+                    style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                >
                     {nameText}
                 </h4>
 
@@ -51,11 +60,9 @@ function GroupWorkoutCard({
                     {assignment.training.description || t('calendar.customWorkout')}
                 </p>
 
-                {/* Progress bar – partial/full? For group, maybe show % compliance? */}
-                {/* For now, just a styled container */}
                 <div className="mt-1 px-2">
-                    <div className="h-0.5 w-full bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-primary/40 rounded-full" style={{ width: '100%' }} />
+                    <div className="h-0.5 w-full bg-endurix-black/10 dark:bg-border">
+                        <div className="h-full bg-endurix-orange/60" style={{ width: '100%' }} />
                     </div>
                 </div>
             </div>
@@ -105,19 +112,22 @@ export function GroupWeeklyCalendar({ groupId, assignments }: GroupWeeklyCalenda
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between bg-muted/30 p-2 rounded-lg border border-border/40">
+            <div className="flex items-center justify-between bg-endurix-black/5 dark:bg-white/5 p-2 border border-endurix-black/10 dark:border-border">
                 <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon" onClick={() => navigateWeek(-1)} className="h-8 w-8 rounded-full">
+                    <Button variant="ghost" size="icon" onClick={() => navigateWeek(-1)} className="h-8 w-8">
                         <ChevronLeft className="h-4 w-4" />
                     </Button>
-                    <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground min-w-[200px] text-center">
+                    <span
+                        className="text-xs font-bold uppercase tracking-widest text-muted-foreground min-w-[200px] text-center"
+                        style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                    >
                         {format(weekStart, 'd MMM')} - {format(addDays(weekStart, 6), 'd MMM yyyy')}
                     </span>
-                    <Button variant="ghost" size="icon" onClick={() => navigateWeek(1)} className="h-8 w-8 rounded-full">
+                    <Button variant="ghost" size="icon" onClick={() => navigateWeek(1)} className="h-8 w-8">
                         <ChevronRight className="h-4 w-4" />
                     </Button>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => setWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }))} className="h-8 text-[10px] font-bold uppercase tracking-wider">
+                <Button variant="outline-brand" size="sm" onClick={() => setWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }))} className="h-8 text-[10px] font-bold uppercase tracking-wider">
                     {t('common.today')}
                 </Button>
             </div>
@@ -133,35 +143,40 @@ export function GroupWeeklyCalendar({ groupId, assignments }: GroupWeeklyCalenda
                             <div
                                 key={day.toISOString()}
                                 className={cn(
-                                    'flex flex-col gap-3 p-3 rounded-xl transition-colors min-h-[400px]',
-                                    isToday ? 'bg-muted/30 border border-primary/10' : 'bg-muted/5 border border-transparent'
+                                    'flex flex-col gap-3 p-3 transition-colors min-h-[400px] border-l-2',
+                                    isToday ? 'bg-endurix-black/5 dark:bg-white/5 border-l-endurix-orange' : 'bg-transparent border-l-transparent'
                                 )}
                             >
                                 {/* Day header */}
                                 <div className="mb-2">
-                                    <span className="text-[10px] text-muted-foreground uppercase font-semibold tracking-wider block leading-none mb-1">
+                                    <span
+                                        className="text-[10px] text-muted-foreground uppercase font-semibold tracking-wider block leading-none mb-1"
+                                        style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                                    >
                                         {format(day, 'EEE', { locale: es }).slice(0, 3)}
                                     </span>
                                     <span className={cn(
-                                        'text-xl font-bold font-display leading-none',
-                                        isToday ? 'text-primary' : 'text-foreground'
-                                    )}>
+                                        'text-xl font-medium leading-none',
+                                        isToday ? 'text-endurix-orange' : 'text-foreground'
+                                    )}
+                                        style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                                    >
                                         {format(day, 'd')}
                                     </span>
                                 </div>
 
                                 <div className="space-y-3 flex-1">
                                     {dayWorkouts.length === 0 ? (
-                                        <div className="h-32 mt-6 rounded-xl border border-dashed border-border/40 flex flex-col gap-2 items-center justify-center bg-transparent opacity-50">
+                                        <div className="h-32 mt-6 border border-dashed border-endurix-black/15 dark:border-white/15 flex flex-col gap-2 items-center justify-center bg-transparent opacity-50">
                                             <Moon className="w-4 h-4 text-muted-foreground/30" />
                                             <span className="text-[9px] text-muted-foreground font-semibold uppercase tracking-widest">{t("calendar.restDay")}</span>
                                         </div>
                                     ) : (
                                         dayWorkouts.map(({ assignment, count }) => (
-                                            <GroupWorkoutCard 
-                                                key={assignment.id} 
-                                                assignment={assignment} 
-                                                affectedCount={count} 
+                                            <GroupWorkoutCard
+                                                key={assignment.id}
+                                                assignment={assignment}
+                                                affectedCount={count}
                                             />
                                         ))
                                     )}

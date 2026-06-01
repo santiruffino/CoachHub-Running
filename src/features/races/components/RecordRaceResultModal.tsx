@@ -69,9 +69,14 @@ export function RecordRaceResultModal({ open, onOpenChange, race, onSuccess }: R
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[450px] border-none bg-white dark:bg-[#1a232c] shadow-2xl">
+      <DialogContent className="sm:max-w-[450px]">
         <DialogHeader>
-          <DialogTitle className="font-manrope text-2xl font-bold">{t('recordResult')}</DialogTitle>
+          <DialogTitle
+            className="text-2xl font-bold uppercase tracking-tight"
+            style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+          >
+            {t('recordResult')}
+          </DialogTitle>
           <p className="text-sm text-muted-foreground">
             {race.name_override || race.race?.name || t('athlete.defaultRaceName')}
           </p>
@@ -82,6 +87,7 @@ export function RecordRaceResultModal({ open, onOpenChange, race, onSuccess }: R
               {t('athlete.resultTime')}
             </Label>
             <Input
+              variant="boxed"
               value={formData.result_time}
               onChange={(e) => {
                 setFormData({ ...formData, result_time: e.target.value });
@@ -101,7 +107,8 @@ export function RecordRaceResultModal({ open, onOpenChange, race, onSuccess }: R
                 setTimeError('');
               }}
               placeholder={t('athlete.resultTimePlaceholder')}
-              className="bg-surface-container-low dark:bg-[#131b23] border-none h-12 focus:ring-1 focus:ring-primary/20 font-mono"
+              className="h-12"
+              style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
               required
             />
             {timeError && <p className="text-xs font-medium text-red-500">{timeError}</p>}
@@ -112,10 +119,11 @@ export function RecordRaceResultModal({ open, onOpenChange, race, onSuccess }: R
               {t('assign.notesLabel')}
             </Label>
             <Textarea
+              variant="boxed"
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               placeholder={t('assign.notesPlaceholder')}
-              className="bg-surface-container-low dark:bg-[#131b23] border-none resize-none focus:ring-1 focus:ring-primary/20"
+              className="resize-none"
               rows={4}
             />
           </div>
@@ -124,7 +132,7 @@ export function RecordRaceResultModal({ open, onOpenChange, race, onSuccess }: R
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} className="font-semibold text-xs uppercase tracking-wider">
               {t('dialog.cancel')}
             </Button>
-            <Button type="submit" disabled={loading} className="px-8 font-bold text-xs uppercase tracking-wider">
+            <Button type="submit" variant="orange" disabled={loading} className="px-8 font-bold text-xs uppercase tracking-wider">
               {loading ? t('dialog.saving') : t('dialog.save')}
             </Button>
           </DialogFooter>

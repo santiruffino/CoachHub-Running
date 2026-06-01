@@ -102,9 +102,19 @@ export function GroupDetailsView({ id, initialGroup, initialAthletes, initialAss
       setGroup(groupData);
       setGroupAssignments(calendarRes.data);
 
-      const groupMemberIds = new Set((groupData.members as Record<string, any>[]).map((member) => member.athlete.id));
+      const groupMemberIds = new Set((groupData.members as Array<{ athlete: { id: string } }>).map((member) => member.athlete.id));
 
-      const filteredAthletes: GroupAthleteData[] = (athletesRes.data as Record<string, any>[])
+      const filteredAthletes: GroupAthleteData[] = (athletesRes.data as Array<{
+        id: string;
+        name: string;
+        email: string;
+        stats?: {
+          totalAssignments?: number;
+          plannedAssignments?: number;
+          completedAssignments?: number;
+          completionPercentage?: number;
+        };
+      }>)
         .filter((athlete) => groupMemberIds.has(athlete.id))
         .map((athlete) => ({
           id: athlete.id,
@@ -146,10 +156,15 @@ export function GroupDetailsView({ id, initialGroup, initialAthletes, initialAss
             </Link>
           </Button>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">{group.name}</h1>
+            <h1
+              className="text-2xl sm:text-3xl font-bold text-endurix-black dark:text-foreground tracking-tight uppercase"
+              style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+            >
+              {group.name}
+            </h1>
             {group.group_type === 'RACE' && (
               <div className="flex items-center gap-3 mt-1">
-                <Badge variant="secondary" className="bg-primary/10 text-primary border-none">
+                <Badge className="bg-endurix-orange/10 text-endurix-orange border border-endurix-orange/30">
                   <Trophy className="h-3 w-3 mr-1" />
                   {group.race_name}
                 </Badge>
@@ -163,7 +178,7 @@ export function GroupDetailsView({ id, initialGroup, initialAthletes, initialAss
             )}
           </div>
         </div>
-        <Button variant="outline" size="sm" onClick={() => setIsEditModalOpen(true)}>
+        <Button variant="outline-brand" size="sm" onClick={() => setIsEditModalOpen(true)} className="uppercase tracking-widest">
           <Settings className="h-4 w-4 mr-2" />
           {tGroupDetail('editGroup')}
         </Button>
@@ -176,11 +191,17 @@ export function GroupDetailsView({ id, initialGroup, initialAthletes, initialAss
       </Card>
 
       <Tabs defaultValue="members" className="w-full">
-        <TabsList className="bg-muted/50 p-1 mb-6">
-          <TabsTrigger value="members" className="px-8 font-bold uppercase tracking-widest text-[10px]">
+        <TabsList className="bg-endurix-black/8 dark:bg-white/8 p-1 mb-6 border border-endurix-black/10 dark:border-border">
+          <TabsTrigger
+            value="members"
+            className="px-8 font-bold uppercase tracking-widest text-[10px] data-[state=active]:bg-white data-[state=active]:text-endurix-black data-[state=active]:dark:bg-card data-[state=active]:dark:text-foreground"
+          >
             {t('groups.athletes')}
           </TabsTrigger>
-          <TabsTrigger value="calendar" className="px-8 font-bold uppercase tracking-widest text-[10px]">
+          <TabsTrigger
+            value="calendar"
+            className="px-8 font-bold uppercase tracking-widest text-[10px] data-[state=active]:bg-white data-[state=active]:text-endurix-black data-[state=active]:dark:bg-card data-[state=active]:dark:text-foreground"
+          >
             {t('nav.trainings')}
           </TabsTrigger>
         </TabsList>
@@ -191,11 +212,11 @@ export function GroupDetailsView({ id, initialGroup, initialAthletes, initialAss
               <div className="flex justify-between items-center">
                 <CardTitle>{t('groups.detail.membersCount', { count: groupAthletes.length })}</CardTitle>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setIsAssignModalOpen(true)}>
+                  <Button variant="outline-brand" size="sm" onClick={() => setIsAssignModalOpen(true)} className="uppercase tracking-widest text-[10px]">
                     <Plus className="h-4 w-4 mr-2" />
                     {t('groups.detail.assignWorkout')}
                   </Button>
-                  <Button size="sm" onClick={() => setIsAddModalOpen(true)}>
+                  <Button variant="orange" size="sm" onClick={() => setIsAddModalOpen(true)} className="uppercase tracking-widest text-[10px]">
                     <UserPlus className="h-4 w-4 mr-2" />
                     {t('groups.detail.addMember')}
                   </Button>
@@ -209,7 +230,7 @@ export function GroupDetailsView({ id, initialGroup, initialAthletes, initialAss
                 onClose={() => setIsAssignModalOpen(false)}
                 onSuccess={fetchGroupData}
               />
-              
+
               {/* Mobile Cards View */}
               <div className="lg:hidden space-y-3 p-4">
                 {groupAthletes.length === 0 ? (
@@ -253,12 +274,12 @@ export function GroupDetailsView({ id, initialGroup, initialAthletes, initialAss
                           </DropdownMenu>
                         </div>
                         <div className="flex gap-2">
-                          <Button asChild variant="outline" size="sm" className="flex-1">
+                          <Button asChild variant="outline-brand" size="sm" className="flex-1 uppercase tracking-widest text-[10px]">
                             <Link href={`/athletes/${athlete.id}`}>
                               {tAthletes('viewProfile')}
                             </Link>
                           </Button>
-                          <Button asChild size="sm" className="flex-1">
+                          <Button asChild variant="orange" size="sm" className="flex-1 uppercase tracking-widest text-[10px]">
                             <Link href={`/workouts/assign?athleteId=${athlete.id}`}>
                               {tAthletes('assignWorkout')}
                             </Link>
@@ -271,7 +292,7 @@ export function GroupDetailsView({ id, initialGroup, initialAthletes, initialAss
               </div>
 
               {/* Desktop Table View */}
-              <div className="hidden lg:block border rounded-md">
+              <div className="hidden lg:block border border-endurix-black/10 dark:border-border">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -319,18 +340,16 @@ export function GroupDetailsView({ id, initialGroup, initialAthletes, initialAss
                             <div className="flex items-center justify-center gap-1.5">
                               <span className="font-medium">{athlete.plannedTrainings}</span>
                               {athlete.plannedTrainings < 3 && (
-                                <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0" />
+                                <AlertTriangle className="h-4 w-4 text-endurix-orange flex-shrink-0" />
                               )}
                             </div>
                           </TableCell>
                           <TableCell>
-                            <div className="space-y-1">
-                              <div className="flex items-center justify-between text-sm">
-                                <span className="font-medium text-xs">{athlete.completionPercentage}%</span>
-                              </div>
-                              <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-xs tabular-nums w-10">{athlete.completionPercentage}%</span>
+                              <div className="flex-1 h-1.5 bg-endurix-black/10 dark:bg-border">
                                 <div
-                                  className="h-full bg-foreground transition-all rounded-full"
+                                  className="h-full bg-endurix-orange"
                                   style={{ width: `${athlete.completionPercentage}%` }}
                                 />
                               </div>
@@ -338,7 +357,7 @@ export function GroupDetailsView({ id, initialGroup, initialAthletes, initialAss
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-2">
-                              <Button asChild variant="outline" size="sm">
+                              <Button asChild variant="outline-brand" size="sm" className="uppercase tracking-widest text-[10px]">
                                 <Link href={`/athletes/${athlete.id}`}>{tAthletes('viewProfile')}</Link>
                               </Button>
                               <DropdownMenu>
@@ -377,7 +396,7 @@ export function GroupDetailsView({ id, initialGroup, initialAthletes, initialAss
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle>{tGroupDetail('groupPlanning')}</CardTitle>
-                <Button size="sm" onClick={() => setIsAssignModalOpen(true)}>
+                <Button variant="orange" size="sm" onClick={() => setIsAssignModalOpen(true)} className="uppercase tracking-widest text-[10px]">
                   <Plus className="h-4 w-4 mr-2" />
                   {tGroupDetail('scheduleTraining')}
                 </Button>

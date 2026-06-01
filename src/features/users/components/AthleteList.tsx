@@ -71,13 +71,14 @@ export function AthleteList() {
             <CardContent>
                 <div className="mb-4">
                     <Input
+                        variant="boxed"
                         placeholder={tAthletes('searchPlaceholder')}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="max-w-sm"
                     />
                 </div>
-                <div className="rounded-md border">
+                <div className="border border-endurix-black/10 dark:border-border">
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -103,7 +104,7 @@ export function AthleteList() {
                                     <TableCell>{athlete.email}</TableCell>
                                     <TableCell>
                                         {athlete.weeklyStats ? (
-                                            <span className="text-sm">
+                                            <span className="text-sm tabular-nums">
                                                 {athlete.weeklyStats.completed}/{athlete.weeklyStats.planned}
                                             </span>
                                         ) : (
@@ -113,16 +114,16 @@ export function AthleteList() {
                                     <TableCell>
                                         {athlete.weeklyStats && athlete.weeklyStats.planned > 0 ? (
                                             <div className="flex items-center gap-2">
-                                                <div className="w-20 h-2 bg-muted rounded-full overflow-hidden">
+                                                <div className="w-20 h-1.5 bg-endurix-black/10 dark:bg-border overflow-hidden">
                                                     <div
-                                                        className={`h-full ${athlete.weeklyStats.completionRate >= 80 ? 'bg-green-500' :
-                                                                athlete.weeklyStats.completionRate >= 50 ? 'bg-yellow-500' :
-                                                                    'bg-red-500'
+                                                        className={`h-full ${athlete.weeklyStats.completionRate >= 80 ? 'bg-emerald-500' :
+                                                                athlete.weeklyStats.completionRate >= 50 ? 'bg-amber-500' :
+                                                                    'bg-endurix-orange'
                                                             }`}
                                                         style={{ width: `${athlete.weeklyStats.completionRate}%` }}
                                                     />
                                                 </div>
-                                                <span className="text-xs text-muted-foreground">
+                                                <span className="text-xs text-muted-foreground tabular-nums">
                                                     {athlete.weeklyStats.completionRate}%
                                                 </span>
                                             </div>
@@ -131,7 +132,7 @@ export function AthleteList() {
                                         )}
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <Button asChild variant="ghost" size="sm">
+                                        <Button asChild variant="outline-brand" size="sm" className="uppercase tracking-widest text-[10px]">
                                             <Link href={`/athletes/${athlete.id}`}>
                                                 {tAthletes('viewProfile')}
                                             </Link>

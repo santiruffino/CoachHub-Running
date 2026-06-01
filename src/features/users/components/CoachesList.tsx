@@ -66,10 +66,15 @@ export function CoachesList({ initialCoaches }: CoachesListProps) {
   );
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">{t('coaches.title')}</h1>
-        <Button onClick={() => setIsInviteModalOpen(true)}>
+        <h1
+          className="text-2xl sm:text-3xl font-bold text-endurix-black dark:text-foreground tracking-tight uppercase"
+          style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+        >
+          {t('coaches.title')}
+        </h1>
+        <Button variant="orange" onClick={() => setIsInviteModalOpen(true)} className="uppercase tracking-widest">
             {t('coaches.inviteCoach')}
         </Button>
       </div>
@@ -77,6 +82,7 @@ export function CoachesList({ initialCoaches }: CoachesListProps) {
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
+          variant="boxed"
           placeholder={t('coaches.searchPlaceholder')}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -84,8 +90,8 @@ export function CoachesList({ initialCoaches }: CoachesListProps) {
         />
       </div>
 
-      <AlertDialog 
-        open={!!deleteId} 
+      <AlertDialog
+        open={!!deleteId}
         onClose={() => { if (!isDeleting) setDeleteId(null); }}
         onConfirm={handleDelete}
         type="warning"
@@ -97,7 +103,7 @@ export function CoachesList({ initialCoaches }: CoachesListProps) {
 
       <Card>
         <CardContent className="p-0">
-          <div className="rounded-md border">
+          <div className="border border-endurix-black/10 dark:border-border">
             <Table>
               <TableHeader>
                 <TableRow>

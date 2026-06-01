@@ -18,6 +18,8 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useTranslations } from 'next-intl';
 import { buildNavigation, getSettingsPathForRole } from './navigation';
 
+const FONT_DISPLAY = { fontFamily: 'var(--font-exo-2, sans-serif)' } as const;
+
 export function Navbar() {
     const pathname = usePathname();
     const router = useRouter();
@@ -39,20 +41,23 @@ export function Navbar() {
     };
 
     return (
-        <nav className="hidden md:flex h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <nav className="hidden md:flex h-16 border-b border-endurix-black/10 dark:border-border bg-endurix-paper/95 dark:bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-endurix-paper/80 dark:supports-[backdrop-filter]:bg-background/60">
             <div className="w-full px-4 sm:px-6 lg:px-8">
                 <div className="flex h-16 items-center justify-between">
-                    {/* Logo and Navigation */}
                     <div className="flex items-center gap-8">
-                        {/* Logo */}
                         <Link href="/dashboard" className="flex items-center gap-2">
-                            <div className="font-bold text-lg">{t('brand')}</div>
+                            <div className="w-2 h-2 bg-endurix-orange" />
+                            <span
+                                className="font-bold text-base uppercase tracking-widest text-endurix-black dark:text-foreground"
+                                style={FONT_DISPLAY}
+                            >
+                                {t('brand')}
+                            </span>
                         </Link>
 
-                        {/* Navigation Links */}
                         <div className="hidden lg:flex items-center gap-1">
                             {navigation
-                                .filter(item => item.roles.includes(userRole))
+                                .filter((item) => item.roles.includes(userRole))
                                 .map((item) => {
                                     const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
                                     const Icon = item.icon;
@@ -61,10 +66,10 @@ export function Navbar() {
                                             key={item.href}
                                             href={item.href}
                                             className={cn(
-                                                'flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                                                'flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors',
                                                 isActive
-                                                    ? 'bg-muted text-foreground'
-                                                    : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
+                                                    ? 'bg-endurix-black/8 dark:bg-white/8 text-endurix-black dark:text-foreground'
+                                                    : 'text-endurix-black/60 dark:text-muted-foreground hover:bg-endurix-black/5 dark:hover:bg-white/5 hover:text-endurix-black dark:hover:text-foreground',
                                             )}
                                         >
                                             <Icon className="h-4 w-4" />
@@ -75,7 +80,6 @@ export function Navbar() {
                         </div>
                     </div>
 
-                    {/* User Menu */}
                     <div className="flex items-center gap-2">
                         <ThemeToggle />
                         <DropdownMenu>

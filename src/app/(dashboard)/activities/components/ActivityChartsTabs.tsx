@@ -39,6 +39,11 @@ const ActivityChart = dynamic(
   { ssr: false, loading: () => <ActivityChartLoading /> }
 );
 
+const TrailRunningChart = dynamic(
+  () => import('@/app/(dashboard)/activities/components/TrailRunningChart').then(mod => ({ default: mod.TrailRunningChart })),
+  { ssr: false, loading: () => <ActivityChartLoading /> }
+);
+
 interface ActivityChartsTabsProps {
   activity: ActivityDetail;
   internalId: string;
@@ -129,7 +134,11 @@ export function ActivityChartsTabs({
         {/* Tab: Streams */}
         {activeTab === 'streams' && !isWeight && (
           <div className="h-[460px] lg:h-[560px] w-full bg-endurix-paper dark:bg-muted overflow-hidden relative -m-6 mt-0">
-            <ActivityChart activityId={internalId} laps={activity.laps} hrZones={heartrateZones?.zones} isRunning={isRun} />
+            {activity.sport_type === 'TrailRun' ? (
+              <TrailRunningChart activityId={internalId} laps={activity.laps} hrZones={heartrateZones?.zones} />
+            ) : (
+              <ActivityChart activityId={internalId} laps={activity.laps} hrZones={heartrateZones?.zones} isRunning={isRun} />
+            )}
           </div>
         )}
 

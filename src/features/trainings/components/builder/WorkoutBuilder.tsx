@@ -188,8 +188,8 @@ export function WorkoutBuilder({
     <div className="h-full w-full bg-[#f8f9fa] dark:bg-[#0a0f14] flex font-inter overflow-hidden relative">
       {/* Left Sidebar - Always Visible */}
       <div
-        className="w-64 shrink-0 bg-white dark:bg-[#0d1117] border-r border-[#e2e8f0] dark:border-white/5 overflow-hidden z-10">
-        <div className="h-full overflow-y-auto p-6">
+        className="w-64 shrink-0 bg-white dark:bg-[#0d1117] border-r border-[#e2e8f0] dark:border-white/5 overflow-hidden z-10 flex flex-col">
+        <div className="flex-1 overflow-y-auto p-6">
           {/* Add Step Buttons */}
           <div className="mb-6">
             <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#8b9bb4] mb-4">
@@ -304,7 +304,6 @@ export function WorkoutBuilder({
             </div>
           </div>
         </div>
-        {footerContent}
       </div>
     </div>
   );

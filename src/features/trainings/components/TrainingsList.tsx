@@ -1,11 +1,12 @@
 'use client';
 import { appLogger } from '@/lib/app-logger';
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 import { Training } from '@/interfaces/training';
 import { trainingsService } from '@/features/trainings/services/trainings.service';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { AssignTrainingModal } from '@/features/trainings/components/AssignTrainingModal';
 import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
 import { useTranslations } from 'next-intl';
@@ -66,10 +67,15 @@ export function TrainingsList({ initialTrainings }: TrainingsListProps) {
         <div className="container mx-auto">
             <div className="flex items-center justify-between mb-8">
                 <div>
-                    <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">{t('title')}</h1>
+                    <h1
+                        className="text-2xl sm:text-3xl font-bold text-endurix-black dark:text-foreground tracking-tight uppercase"
+                        style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                    >
+                        {t('title')}
+                    </h1>
                 </div>
                 <Link href="/workouts/builder">
-                    <Button size="sm" className="sm:size-default">
+                    <Button variant="orange" size="sm" className="sm:size-default uppercase tracking-widest">
                         <Plus className="h-4 w-4 sm:mr-2" />
                         <span className="hidden sm:inline">{t('createTraining')}</span>
                     </Button>
@@ -79,18 +85,19 @@ export function TrainingsList({ initialTrainings }: TrainingsListProps) {
             <div className="mb-8">
                 <div className="relative max-w-md">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <input
+                    <Input
+                        variant="boxed"
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder={tCommon('search')}
-                        className="w-full pl-10 pr-4 h-11 border border-border rounded-full bg-card text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none text-sm"
+                        className="pl-10 h-11"
                     />
                 </div>
             </div>
 
             {filteredTrainings.length === 0 ? (
-                <div className="text-center py-20 bg-muted/20 rounded-3xl border border-dashed border-border">
+                <div className="text-center py-20 bg-endurix-black/5 dark:bg-white/5 border border-dashed border-endurix-black/15 dark:border-white/15">
                     <p className="text-muted-foreground">{t('noTrainings')}</p>
                 </div>
             ) : (
@@ -98,9 +105,12 @@ export function TrainingsList({ initialTrainings }: TrainingsListProps) {
                     {filteredTrainings.map((training) => (
                         <div
                             key={training.id}
-                            className="bg-card border border-border rounded-2xl p-5 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all group flex flex-col h-full"
+                            className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border p-5 hover:border-endurix-orange/50 transition-colors group flex flex-col h-full"
                         >
-                            <h3 className="text-lg font-bold font-display tracking-tight text-foreground mb-2 group-hover:text-primary transition-colors">
+                            <h3
+                                className="text-lg font-medium text-endurix-black dark:text-foreground tracking-tight mb-2 group-hover:text-endurix-orange transition-colors uppercase"
+                                style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                            >
                                 {training.title}
                             </h3>
                             {training.description && (
@@ -109,24 +119,27 @@ export function TrainingsList({ initialTrainings }: TrainingsListProps) {
                                 </p>
                             )}
 
-                            <div className="flex items-center justify-between mt-auto pt-4 border-t border-border/50">
-                                <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
+                            <div className="flex items-center justify-between mt-auto pt-4 border-t border-endurix-black/10 dark:border-border">
+                                <span
+                                    className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground"
+                                    style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                                >
                                     {t('blocks', { count: training.blocks?.length || 0 })}
                                 </span>
                                 <div className="flex gap-2">
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-8 w-8 rounded-full hover:text-primary hover:bg-primary/5"
+                                        className="h-8 w-8 hover:text-endurix-orange hover:bg-endurix-orange/5"
                                         onClick={() => router.push(`/workouts/builder?id=${training.id}`)}
                                         title={tCommon('edit')}
                                     >
                                         <Edit className="w-4 h-4" />
                                     </Button>
                                     <Button
-                                        variant="ghost"
+                                        variant="outline-brand"
                                         size="sm"
-                                        className="h-8 px-3 rounded-full hover:text-primary hover:bg-primary/5 font-bold text-xs"
+                                        className="h-8 px-3 font-bold text-xs uppercase tracking-wider"
                                         onClick={() => handleAssignClick(training.id)}
                                     >
                                         {t('assignToAthlete')}
@@ -134,7 +147,7 @@ export function TrainingsList({ initialTrainings }: TrainingsListProps) {
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-8 w-8 rounded-full text-destructive hover:bg-destructive/5"
+                                        className="h-8 w-8 text-red-500 hover:bg-red-50"
                                         onClick={() => handleDelete(training.id, training.title)}
                                     >
                                         <Trash2 className="w-4 h-4" />

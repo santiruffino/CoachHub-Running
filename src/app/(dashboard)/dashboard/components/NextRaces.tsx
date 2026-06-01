@@ -15,6 +15,10 @@ import { differenceInDays } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { RecordRaceResultModal } from '@/features/races/components/RecordRaceResultModal';
 import { motion } from 'framer-motion';
+import { DashboardCard, DashboardCardHeaderDots, MonospaceLabel } from '@/components/dashboard';
+
+const FONT_MONO = { fontFamily: 'var(--font-ibm-plex-mono, monospace)' } as const;
+const FONT_DISPLAY = { fontFamily: 'var(--font-exo-2, sans-serif)' } as const;
 
 interface NextRacesProps {
     athleteRaces?: AthleteRace[];
@@ -55,40 +59,55 @@ export function NextRaces({ athleteRaces, onSuccess }: NextRacesProps) {
 
     if (loading) {
         return (
-            <div className="bg-muted p-6 rounded-2xl animate-pulse">
-                <div className="h-6 w-32 bg-border rounded mb-6"></div>
-                <div className="space-y-4">
-                    <div className="h-16 bg-border rounded-xl"></div>
-                    <div className="h-16 bg-border rounded-xl"></div>
+            <DashboardCard headerLabel="Loading" headerAccessory={<DashboardCardHeaderDots />}>
+                <div className="space-y-3">
+                    <div className="h-16 bg-endurix-black/8 dark:bg-white/8 animate-pulse" />
+                    <div className="h-16 bg-endurix-black/8 dark:bg-white/8 animate-pulse" />
                 </div>
-            </div>
+            </DashboardCard>
         );
     }
 
     const now = new Date();
-    
-    // Process personal races
+
     const safeAthleteRaces = athleteRaces || [];
-    const sortedAthleteRaces = [...safeAthleteRaces].sort((a, b) => 
-        new Date(a.date).getTime() - new Date(b.date).getTime()
+    const sortedAthleteRaces = [...safeAthleteRaces].sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
     );
 
     const hasRaces = sortedAthleteRaces.length > 0 || groupRaces.length > 0;
 
     if (!hasRaces) {
         return (
-            <div className="bg-muted p-6 rounded-2xl">
-                <h2 className="text-xl font-bold font-display tracking-tight text-foreground mb-6">{t("dashboard.alerts.nextRaces")}</h2>
-                <p className="text-sm text-muted-foreground">{t("dashboard.alerts.noNextRaces")}</p>
-            </div>
+            <DashboardCard
+                headerLabel="Upcoming"
+                headerAccessory={<DashboardCardHeaderDots />}
+            >
+                <h3
+                    className="text-xl font-bold text-endurix-black dark:text-foreground uppercase tracking-tight mb-4"
+                    style={FONT_DISPLAY}
+                >
+                    {t('dashboard.alerts.nextRaces')}
+                </h3>
+                <p className="text-sm text-endurix-black/50 dark:text-muted-foreground">
+                    {t('dashboard.alerts.noNextRaces')}
+                </p>
+            </DashboardCard>
         );
     }
 
     return (
-        <div className="bg-muted p-6 rounded-2xl">
-            <h2 className="text-xl font-bold font-display tracking-tight text-foreground mb-6">{t("dashboard.alerts.nextRaces")}</h2>
-            <div className="space-y-4">
-                {/* Personal Athlete Races */}
+        <DashboardCard
+            headerLabel="Upcoming"
+            headerAccessory={<DashboardCardHeaderDots />}
+        >
+            <h3
+                className="text-xl font-bold text-endurix-black dark:text-foreground uppercase tracking-tight mb-6"
+                style={FONT_DISPLAY}
+            >
+                {t('dashboard.alerts.nextRaces')}
+            </h3>
+            <div className="space-y-3">
                 {sortedAthleteRaces.map((race) => {
                     const raceDate = new Date(race.date);
                     const isPast = raceDate < now;
@@ -96,41 +115,44 @@ export function NextRaces({ athleteRaces, onSuccess }: NextRacesProps) {
                     const name = race.name_override || race.race?.name || t('races.athlete.defaultRaceName');
 
                     return (
-                        <div key={race.id} className={cn(
-                            "p-4 rounded-xl transition-all border",
-                            isPast 
-                            ? 'bg-background/30 border-border/30' 
-                            : 'bg-background/50 border-border/50 hover:border-violet-500/30'
-                        )}>
+                        <div
+                            key={race.id}
+                            className={cn(
+                                'p-4 transition-colors border',
+                                isPast
+                                    ? 'bg-endurix-paper/30 dark:bg-muted/30 border-endurix-black/8 dark:border-border'
+                                    : 'bg-endurix-paper/50 dark:bg-muted/50 border-endurix-black/8 dark:border-border hover:border-endurix-orange/40',
+                            )}
+                        >
                             <div className="flex items-start gap-3">
-                                <div className={cn(
-                                    "mt-1 p-2 rounded-lg",
-                                    isPast 
-                                    ? 'bg-muted text-muted-foreground' 
-                                    : 'bg-violet-100 text-violet-600'
-                                )}>
+                                <div
+                                    className={cn(
+                                        'mt-0.5 p-2',
+                                        isPast
+                                            ? 'bg-endurix-black/8 dark:bg-white/8 text-endurix-black/40 dark:text-muted-foreground'
+                                            : 'bg-endurix-orange/10 text-endurix-orange',
+                                    )}
+                                >
                                     {isPast ? <CheckCircle2 className="h-4 w-4" /> : <Trophy className="h-4 w-4" />}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <div className="flex items-center justify-between mb-1">
-                                        <h3 className={cn(
-                                            "text-sm font-semibold truncate",
-                                            isPast ? 'text-muted-foreground' : 'text-foreground'
-                                        )}>
+                                    <div className="flex items-center justify-between mb-1 gap-2">
+                                        <h3
+                                            className={cn(
+                                                'text-sm font-semibold truncate',
+                                                isPast
+                                                    ? 'text-endurix-black/40 dark:text-muted-foreground'
+                                                    : 'text-endurix-black dark:text-foreground',
+                                            )}
+                                        >
                                             {name}
                                         </h3>
                                         {!isPast && race.priority === 'A' && daysRemaining <= 30 && (
-                                            <motion.span 
-                                                animate={{ 
-                                                    opacity: [0.6, 1, 0.6],
-                                                    scale: [0.98, 1, 0.98]
-                                                }}
-                                                transition={{ 
-                                                    duration: 2, 
-                                                    repeat: Infinity,
-                                                    ease: "easeInOut"
-                                                }}
-                                                className="flex items-center gap-1 text-[10px] font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded shadow-sm"
+                                            <motion.span
+                                                animate={{ opacity: [0.6, 1, 0.6], scale: [0.98, 1, 0.98] }}
+                                                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                                                className="flex items-center gap-1 text-[9px] font-bold text-endurix-orange border border-endurix-orange/30 px-2 py-0.5 uppercase tracking-wider"
+                                                style={FONT_MONO}
                                             >
                                                 <Clock className="h-3 w-3" />
                                                 {t('races.athlete.countdown', { days: daysRemaining })}
@@ -138,31 +160,32 @@ export function NextRaces({ athleteRaces, onSuccess }: NextRacesProps) {
                                         )}
                                     </div>
                                     <div className="flex flex-wrap gap-x-4 gap-y-1">
-                                        <div className="flex items-center gap-1.5 text-[12px] text-muted-foreground">
+                                        <div className="flex items-center gap-1.5 text-[12px] text-endurix-black/50 dark:text-muted-foreground">
                                             <Calendar className="h-3 w-3" />
-                                            <span>
-                                                {format.dateTime(raceDate, { day: 'numeric', month: 'short' })}
-                                            </span>
+                                            <span>{format.dateTime(raceDate, { day: 'numeric', month: 'short' })}</span>
                                         </div>
-                                        
+
                                         {!isPast && (
-                                            <div className="flex items-center">
-                                                <span className={cn(
-                                                    "text-[10px] font-bold px-1.5 py-0.5 rounded",
-                                                    race.priority === 'A' ? 'bg-red-500/10 text-red-500' :
-                                                    race.priority === 'B' ? 'bg-orange-500/10 text-orange-500' :
-                                                    'bg-blue-500/10 text-blue-500'
-                                                )}>
-                                                    {t('races.athlete.priorityBadge', { priority: race.priority })}
-                                                </span>
-                                            </div>
+                                            <span
+                                                className={cn(
+                                                    'text-[9px] font-bold px-1.5 py-0.5 border tracking-widest uppercase',
+                                                    race.priority === 'A'
+                                                        ? 'text-endurix-orange border-endurix-orange/30'
+                                                        : race.priority === 'B'
+                                                            ? 'text-endurix-black/70 dark:text-muted-foreground border-endurix-black/20 dark:border-border'
+                                                            : 'text-endurix-black/50 dark:text-muted-foreground border-endurix-black/15 dark:border-border',
+                                                )}
+                                                style={FONT_MONO}
+                                            >
+                                                {t('races.athlete.priorityBadge', { priority: race.priority })}
+                                            </span>
                                         )}
 
                                         {isPast && race.status === 'PLANNED' && (
-                                            <Button 
-                                                variant="link" 
-                                                size="sm" 
-                                                className="h-auto p-0 text-[11px] text-primary font-bold uppercase"
+                                            <Button
+                                                variant="link"
+                                                size="sm"
+                                                className="h-auto p-0 text-[11px] text-endurix-orange font-bold uppercase"
                                                 onClick={() => {
                                                     setSelectedRace(race);
                                                     setIsModalOpen(true);
@@ -173,7 +196,7 @@ export function NextRaces({ athleteRaces, onSuccess }: NextRacesProps) {
                                         )}
 
                                         {isPast && race.status === 'COMPLETED' && race.result_time && (
-                                            <div className="flex items-center gap-1 text-[11px] text-emerald-600 font-bold">
+                                            <div className="flex items-center gap-1 text-[11px] text-endurix-orange font-bold">
                                                 <Award className="h-3 w-3" />
                                                 {race.result_time}
                                             </div>
@@ -185,7 +208,7 @@ export function NextRaces({ athleteRaces, onSuccess }: NextRacesProps) {
                     );
                 })}
 
-                <RecordRaceResultModal 
+                <RecordRaceResultModal
                     open={isModalOpen}
                     onOpenChange={setIsModalOpen}
                     race={selectedRace}
@@ -195,45 +218,52 @@ export function NextRaces({ athleteRaces, onSuccess }: NextRacesProps) {
                     }}
                 />
 
-                {/* Group Races (only if no personal races or if needed as extra) */}
                 {safeAthleteRaces.length === 0 && groupRaces.map((race) => {
                     const isPast = new Date(race.race_date!) < now;
                     return (
-                        <Link key={race.id} href={`/groups/${race.id}`} className="block">
-                            <div className={`p-4 rounded-xl transition-all group border ${
-                                isPast 
-                                ? 'bg-background/30 border-border/30 grayscale-[0.5]' 
-                                : 'bg-background/50 border-border/50 hover:bg-background hover:border-primary/30'
-                            }`}>
+                        <Link key={race.id} href={`/groups/${race.id}`} className="block group">
+                            <div
+                                className={cn(
+                                    'p-4 transition-colors border',
+                                    isPast
+                                        ? 'bg-endurix-paper/30 dark:bg-muted/30 border-endurix-black/8 dark:border-border grayscale-[0.5]'
+                                        : 'bg-endurix-paper/50 dark:bg-muted/50 border-endurix-black/8 dark:border-border hover:border-endurix-orange/40',
+                                )}
+                            >
                                 <div className="flex items-start gap-3">
-                                    <div className={`mt-1 p-2 rounded-lg transition-colors ${
-                                        isPast 
-                                        ? 'bg-muted text-muted-foreground' 
-                                        : 'bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground'
-                                    }`}>
+                                    <div
+                                        className={cn(
+                                            'mt-0.5 p-2 transition-colors',
+                                            isPast
+                                                ? 'bg-endurix-black/8 dark:bg-white/8 text-endurix-black/40 dark:text-muted-foreground'
+                                                : 'bg-endurix-black/8 dark:bg-white/8 text-endurix-black dark:text-foreground group-hover:bg-endurix-orange group-hover:text-white',
+                                        )}
+                                    >
                                         {isPast ? <CheckCircle2 className="h-4 w-4" /> : <Trophy className="h-4 w-4" />}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <div className="flex items-center justify-between mb-1">
-                                            <h3 className={`text-sm font-semibold truncate transition-colors ${
-                                                isPast ? 'text-muted-foreground' : 'text-foreground group-hover:text-primary'
-                                            }`}>
+                                        <div className="flex items-center justify-between mb-1 gap-2">
+                                            <h3
+                                                className={cn(
+                                                    'text-sm font-semibold truncate',
+                                                    isPast
+                                                        ? 'text-endurix-black/40 dark:text-muted-foreground'
+                                                        : 'text-endurix-black dark:text-foreground group-hover:text-endurix-orange',
+                                                )}
+                                            >
                                                 {race.race_name || race.name}
                                             </h3>
-                                            <ChevronRight className="h-3 w-3 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
+                                            <ChevronRight className="h-3 w-3 text-endurix-black/40 dark:text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
                                         </div>
                                         <div className="flex flex-wrap gap-x-4 gap-y-1">
-                                            <div className="flex items-center gap-1.5 text-[12px] text-muted-foreground">
+                                            <div className="flex items-center gap-1.5 text-[12px] text-endurix-black/50 dark:text-muted-foreground">
                                                 <Calendar className="h-3 w-3" />
                                                 <span>
-                                                    {format.dateTime(new Date(race.race_date!), { 
-                                                        day: 'numeric', 
-                                                        month: 'short' 
-                                                    })}
+                                                    {format.dateTime(new Date(race.race_date!), { day: 'numeric', month: 'short' })}
                                                 </span>
                                             </div>
                                             {!isPast && race.race_distance && (
-                                                <div className="flex items-center gap-1.5 text-[12px] text-muted-foreground">
+                                                <div className="flex items-center gap-1.5 text-[12px] text-endurix-black/50 dark:text-muted-foreground">
                                                     <MapPin className="h-3 w-3" />
                                                     <span>{race.race_distance}</span>
                                                 </div>
@@ -245,7 +275,13 @@ export function NextRaces({ athleteRaces, onSuccess }: NextRacesProps) {
                         </Link>
                     );
                 })}
+
+                {sortedAthleteRaces.length === 0 && groupRaces.length === 0 && (
+                    <MonospaceLabel color="muted" className="block py-4 text-center">
+                        {t('dashboard.alerts.noNextRaces')}
+                    </MonospaceLabel>
+                )}
             </div>
-        </div>
+        </DashboardCard>
     );
 }
