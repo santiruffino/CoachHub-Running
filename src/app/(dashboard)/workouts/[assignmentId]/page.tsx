@@ -180,8 +180,8 @@ export default function WorkoutDetailsPage() {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-[calc(100vh-theme(spacing.16))] w-[calc(100%+2rem)] md:w-[calc(100%+4rem)] -mx-4 md:-mx-8 -my-4 md:-my-8 bg-background dark:bg-background">
-                <div className="text-center font-inter tracking-widest text-xs uppercase text-muted-foreground">
+            <div className="flex items-center justify-center h-[calc(100vh-theme(spacing.16))] w-[calc(100%+2rem)] md:w-[calc(100%+4rem)] -mx-4 md:-mx-8 -my-4 md:-my-8 bg-endurix-paper dark:bg-background">
+                <div className="text-center tracking-widest text-xs uppercase text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                     {t('establishingLink')}
                 </div>
             </div>
@@ -190,13 +190,14 @@ export default function WorkoutDetailsPage() {
 
     if (error && !assignment) {
         return (
-             <div className="flex items-center justify-center h-[calc(100vh-theme(spacing.16))] w-[calc(100%+2rem)] md:w-[calc(100%+4rem)] -mx-4 md:-mx-8 -my-4 md:-my-8 bg-background dark:bg-background">
+             <div className="flex items-center justify-center h-[calc(100vh-theme(spacing.16))] w-[calc(100%+2rem)] md:w-[calc(100%+4rem)] -mx-4 md:-mx-8 -my-4 md:-my-8 bg-endurix-paper dark:bg-background">
                 <div className="max-w-md text-center">
-                    <p className="text-red-500 font-semibold mb-6">{error}</p>
+                    <p className="text-red-600 dark:text-red-400 font-semibold mb-6">{error}</p>
                     <Button
                         variant="ghost"
                         onClick={() => router.back()}
-                        className="text-muted-foreground hover:text-foreground uppercase tracking-wider text-xs font-bold"
+                        className="text-endurix-black/60 dark:text-muted-foreground hover:text-endurix-orange uppercase tracking-widest text-xs font-bold"
+                        style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
                     >
                         <ArrowLeft className="w-4 h-4 mr-2" /> {t('navigateBack')}
                     </Button>
@@ -212,32 +213,32 @@ export default function WorkoutDetailsPage() {
 
     const leftSidebarContent = (
         <div className="p-12 pb-4 flex flex-col h-full overflow-y-auto">
-            <Button variant="ghost" onClick={() => router.back()} className="w-min text-muted-foreground hover:text-foreground transition-colors p-0 hover:bg-transparent tracking-widest uppercase text-xs font-semibold mb-12">
+            <Button variant="ghost" onClick={() => router.back()} className="w-min text-endurix-black/60 dark:text-muted-foreground hover:text-endurix-orange transition-colors p-0 hover:bg-transparent tracking-widest uppercase text-xs font-semibold mb-12" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                  <ArrowLeft className="w-4 h-4 mr-2" /> {t('backToDashboard')}
             </Button>
-            
+
             <div className="mb-4 flex flex-wrap gap-2">
                 {assignment.completed ? (
-                    <span className="inline-flex items-center gap-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-3 py-1 rounded text-[10px] font-bold tracking-widest uppercase">
+                    <span className="inline-flex items-center gap-2 bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 px-3 py-1 text-[10px] font-bold tracking-widest uppercase" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                         <CheckCircle2 className="w-3 h-3" /> {t('executed')}
                     </span>
                 ) : (
-                    <span className="inline-flex items-center gap-2 bg-muted dark:bg-white/5 text-muted-foreground px-3 py-1 rounded text-[10px] font-bold tracking-widest uppercase">
+                    <span className="inline-flex items-center gap-2 bg-endurix-black/8 dark:bg-white/8 text-endurix-black/60 dark:text-muted-foreground border border-endurix-black/15 dark:border-white/15 px-3 py-1 text-[10px] font-bold tracking-widest uppercase" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                        {t('pendingExecution')}
                     </span>
                 )}
 
                 {assignment.source_group_id && (
-                    <span className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded text-[10px] font-bold tracking-widest uppercase border border-primary/20">
+                    <span className="inline-flex items-center gap-2 bg-endurix-orange/10 text-endurix-orange border border-endurix-orange/30 px-3 py-1 text-[10px] font-bold tracking-widest uppercase" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                         <Users className="w-3 h-3" /> {assignment.groupName || 'Grupo'}
                     </span>
                 )}
             </div>
-            
-            <h1 className="text-4xl font-extrabold font-display leading-tight tracking-tight text-foreground mb-4">
+
+            <h1 className="text-4xl font-bold uppercase leading-tight tracking-tight text-endurix-black dark:text-foreground mb-4" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>
                 {assignment.training.title}
             </h1>
-            
+
             {assignment.training.description && (
                 <p className="text-muted-foreground font-medium leading-relaxed mb-12">
                     {assignment.training.description}
@@ -246,12 +247,12 @@ export default function WorkoutDetailsPage() {
 
             <div className="space-y-8 pb-12">
                 <div className="flex gap-4 items-center">
-                    <div className="w-12 h-12 rounded-full bg-muted dark:bg-white/5 flex items-center justify-center text-primary shrink-0">
+                    <div className="w-12 h-12 bg-endurix-orange/10 flex items-center justify-center text-endurix-orange shrink-0">
                         <Calendar className="w-5 h-5" />
                     </div>
                     <div>
-                        <div className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-1">{t('scheduled')}</div>
-                         <div className="text-sm font-bold text-foreground">
+                        <div className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase mb-1" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{t('scheduled')}</div>
+                         <div className="text-sm font-bold text-endurix-black dark:text-foreground">
                             {format(new Date(assignment.scheduledDate), 'EEEE dd/MM/yyyy')}
                         </div>
                     </div>
@@ -259,12 +260,12 @@ export default function WorkoutDetailsPage() {
 
                 {isCoach && (
                      <div className="flex gap-4 items-center">
-                        <div className="w-12 h-12 rounded-full bg-muted dark:bg-white/5 flex items-center justify-center text-primary shrink-0">
+                        <div className="w-12 h-12 bg-endurix-black/8 dark:bg-white/8 flex items-center justify-center text-endurix-orange shrink-0">
                             <User className="w-5 h-5" />
                         </div>
                         <div>
-                            <div className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-1">{t('targetAthlete')}</div>
-                             <div className="text-sm font-bold text-foreground">
+                            <div className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase mb-1" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{t('targetAthlete')}</div>
+                             <div className="text-sm font-bold text-endurix-black dark:text-foreground">
                                 {assignment.athlete?.name || assignment.athlete?.email || 'N/A'}
                             </div>
                         </div>
@@ -272,15 +273,15 @@ export default function WorkoutDetailsPage() {
                 )}
 
                 {/* Global Expected RPE */}
-                 <div className="pt-8 border-t border-border dark:border-white/5">
-                    <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-4 flex items-center justify-between">
+                 <div className="pt-8 border-t border-endurix-black/10 dark:border-white/10">
+                    <label className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase mb-4 flex items-center justify-between" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                         {t('targetRpeConstraint')}
-                        <span className="text-primary font-bold text-sm bg-muted dark:bg-white/5 px-2 py-0.5 rounded">{editedExpectedRpe}/10</span>
+                        <span className="text-endurix-orange font-bold text-sm bg-endurix-orange/10 border border-endurix-orange/30 px-2 py-0.5">{editedExpectedRpe}/10</span>
                     </label>
-                    
+
                     {readOnly ? (
-                        <div className="h-1 bg-muted dark:bg-white/5 rounded-full mt-6 mb-2">
-                             <div className="h-full bg-primary dark:bg-white rounded-full" style={{ width: `${(editedExpectedRpe / 10) * 100}%` }} />
+                        <div className="h-1 bg-endurix-black/10 dark:bg-white/10 mt-6 mb-2">
+                             <div className="h-full bg-endurix-orange" style={{ width: `${(editedExpectedRpe / 10) * 100}%` }} />
                         </div>
                     ) : (
                         <Slider
@@ -292,19 +293,20 @@ export default function WorkoutDetailsPage() {
                             className="my-6"
                         />
                     )}
-                     <div className="flex justify-between text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                     <div className="flex justify-between text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground uppercase tracking-widest" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                         <span>{t('enduranceLoad')}</span>
                         <span>{t('maxOutput')}</span>
                     </div>
                 </div>
 
                 {!readOnly && (
-                    <div className="pt-8 mt-8 border-t border-border dark:border-white/5">
-                        <Button 
-                            variant="ghost" 
+                    <div className="pt-8 mt-8 border-t border-endurix-black/10 dark:border-white/10">
+                        <Button
+                            variant="ghost"
                             onClick={confirmDelete}
                             disabled={deleting}
-                            className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 uppercase tracking-widest text-[10px] font-bold p-0 h-10 px-4 rounded-lg"
+                            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/15 uppercase tracking-widest text-[10px] font-bold p-0 h-10 px-4"
+                            style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
                         >
                             <Trash2 className="w-4 h-4 mr-2" /> {t('deleteAssignment')}
                         </Button>
@@ -312,14 +314,14 @@ export default function WorkoutDetailsPage() {
                 )}
 
                 {readOnly && (
-                    <div className="bg-muted dark:bg-white/5 rounded-lg p-6">
-                        <span className="font-semibold text-sm text-foreground mb-1 block">{t('readOnlyMode')}</span>
-                        <p className="text-xs text-muted-foreground leading-relaxed">{t('readOnlyDesc')}</p>
+                    <div className="bg-endurix-black/5 dark:bg-white/5 border border-endurix-black/10 dark:border-white/10 p-6">
+                        <span className="font-bold text-sm text-endurix-black dark:text-foreground mb-1 block uppercase tracking-widest" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{t('readOnlyMode')}</span>
+                        <p className="text-xs text-muted-foreground leading-relaxed" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{t('readOnlyDesc')}</p>
                     </div>
                 )}
 
                 {error && (
-                    <div className="bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 rounded-lg p-4 text-sm font-semibold border-l-4 border-red-500">
+                    <div className="bg-red-500/10 dark:bg-red-500/15 text-red-700 dark:text-red-400 p-4 text-sm font-semibold border-l-4 border-red-500">
                         {error}
                     </div>
                 )}
@@ -328,15 +330,16 @@ export default function WorkoutDetailsPage() {
     );
 
     const footerContent = hasChanges && !readOnly ? (
-         <div className="w-full flex items-center justify-between mx-auto px-12 bg-foreground py-6 rounded-xl relative shadow-2xl -top-6 translate-y-6 animate-in slide-in-from-bottom-12">
+         <div className="w-full flex items-center justify-between mx-auto px-12 bg-endurix-orange py-6 -top-6 translate-y-6 animate-in slide-in-from-bottom-12">
             <div className="flex flex-col">
-                <span className="text-base font-bold font-display text-white">{t('uncommittedAdjustments')}</span>
-                <span className="text-xs text-muted-foreground/60">{t('pushUpdates')}</span>
+                <span className="text-base font-bold text-white uppercase tracking-tight" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{t('uncommittedAdjustments')}</span>
+                <span className="text-xs text-white/70" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{t('pushUpdates')}</span>
             </div>
-            <Button 
+            <Button
                 onClick={confirmSave}
                 disabled={saving}
-                className="bg-white text-foreground hover:bg-background uppercase tracking-wider text-xs font-bold px-8 py-5 rounded"
+                className="bg-white text-endurix-orange hover:bg-endurix-paper uppercase tracking-widest text-xs font-bold px-8 py-5"
+                style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
             >
                 {saving ? t('synchronizing') : t('commitSave')}
             </Button>
@@ -344,8 +347,8 @@ export default function WorkoutDetailsPage() {
     ) : null;
 
     return (
-        <div className="h-[calc(100vh-theme(spacing.16))] w-[calc(100%+2rem)] md:w-[calc(100%+4rem)] overflow-hidden -mx-4 md:-mx-8 -my-4 md:-my-8 bg-background dark:bg-background font-inter flex relative">
-            <div className="w-[380px] lg:w-[480px] flex-shrink-0 bg-card dark:bg-muted border-r border-border dark:border-white/5 overflow-y-auto z-10">
+        <div className="h-[calc(100vh-theme(spacing.16))] w-[calc(100%+2rem)] md:w-[calc(100%+4rem)] overflow-hidden -mx-4 md:-mx-8 -my-4 md:-my-8 bg-endurix-paper dark:bg-background flex relative">
+            <div className="w-[380px] lg:w-[480px] flex-shrink-0 bg-endurix-paper dark:bg-card border-r border-endurix-black/10 dark:border-white/10 overflow-y-auto z-10">
                 {leftSidebarContent}
             </div>
             <div className="flex-1 overflow-hidden relative">

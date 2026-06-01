@@ -96,11 +96,11 @@ export function WeeklyVolumeChart({ activities, assignments, athleteProfile }: W
     }, [activities, assignments, athleteProfile]);
 
     return (
-            <Card>
-            <CardHeader className="pb-2">
-                <CardTitle className="text-lg font-medium">{t('title')}</CardTitle>
+            <Card className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border">
+            <CardHeader className="pb-2 border-b border-endurix-black/10 dark:border-border">
+                <CardTitle className="text-base uppercase tracking-widest" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{t('title')}</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-6">
                 <div className="h-64 w-full">
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart
@@ -115,28 +115,32 @@ export function WeeklyVolumeChart({ activities, assignments, athleteProfile }: W
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                             <XAxis
                                 dataKey="name"
-                                tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                                tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))', fontFamily: 'var(--font-plex-mono, monospace)' }}
                                 axisLine={{ stroke: 'hsl(var(--border))' }}
                             />
                             <YAxis
-                                tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                                tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))', fontFamily: 'var(--font-plex-mono, monospace)' }}
                                 axisLine={{ stroke: 'hsl(var(--border))' }}
-                                label={{ value: t('unitKm'), angle: -90, position: 'insideLeft', style: { fill: 'hsl(var(--muted-foreground))' } }}
+                                label={{ value: t('unitKm'), angle: -90, position: 'insideLeft', style: { fill: 'hsl(var(--muted-foreground))', fontFamily: 'var(--font-plex-mono, monospace)', fontSize: 10 } }}
                             />
                             <Tooltip
                                 cursor={{ fill: 'hsl(var(--muted))', opacity: 0.4 }}
                                 contentStyle={{
                                     backgroundColor: 'hsl(var(--card))',
                                     borderColor: 'hsl(var(--border))',
-                                    borderRadius: '8px',
+                                    borderRadius: '0px',
                                     color: 'hsl(var(--foreground))',
-                                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                                    boxShadow: 'none',
+                                    fontFamily: 'var(--font-plex-mono, monospace)',
+                                    fontSize: '11px',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.05em',
                                 }}
                                 itemStyle={{ color: 'hsl(var(--foreground))' }}
                             />
-                            <Legend wrapperStyle={{ paddingTop: '10px' }} />
-                            <Bar dataKey="planned" name={t('planned')} fill="hsl(var(--muted))" radius={[4, 4, 0, 0]} />
-                            <Bar dataKey="actual" name={t('completed')} fill="#EA580C" radius={[4, 4, 0, 0]} />
+                            <Legend wrapperStyle={{ paddingTop: '10px', fontFamily: 'var(--font-plex-mono, monospace)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em' }} />
+                            <Bar dataKey="planned" name={t('planned')} fill="hsl(var(--muted))" radius={[2, 2, 0, 0]} />
+                            <Bar dataKey="actual" name={t('completed')} fill="#EA580C" radius={[2, 2, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>

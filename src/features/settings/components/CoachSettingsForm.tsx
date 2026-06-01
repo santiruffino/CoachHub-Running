@@ -9,10 +9,14 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Loader2, ShieldAlert, Cpu } from 'lucide-react';
+import { SectionHeader, DashboardCardHeaderDots } from '@/components/dashboard';
 
 interface CoachSettingsFormProps {
     initialSettings: CoachSettings;
 }
+
+const FIELD_LABEL = 'text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground';
+const PAPER_BG = 'bg-endurix-paper dark:bg-card';
 
 export function CoachSettingsForm({ initialSettings }: CoachSettingsFormProps) {
   const [settings, setSettings] = useState<CoachSettings>(initialSettings);
@@ -31,26 +35,29 @@ export function CoachSettingsForm({ initialSettings }: CoachSettingsFormProps) {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-20">
-      <div>
-        <h1 className="text-3xl font-bold font-display tracking-tight text-foreground">Ajustes de Entrenador</h1>
-        <p className="text-muted-foreground mt-1">Configura tus propios umbrales y modelos preferidos para el seguimiento.</p>
-      </div>
+      <SectionHeader
+        eyebrow="Ajustes"
+        title="Entrenador"
+        description="Configura tus propios umbrales y modelos preferidos para el seguimiento."
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <Card className="rounded-[2rem] overflow-hidden border-none shadow-xl shadow-primary/5 h-full">
-          <CardHeader className="bg-muted/30 pt-8 px-8 pb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className={`${PAPER_BG} border border-endurix-black/10 dark:border-border`}>
+          <CardHeader className="border-b border-endurix-black/10 dark:border-border flex flex-row items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-amber-500/10 rounded-xl">
-                <ShieldAlert className="h-5 w-5 text-amber-600" />
+              <div className="p-2 bg-endurix-black/8 dark:bg-white/8">
+                <ShieldAlert className="h-4 w-4 text-endurix-orange" />
               </div>
-              <CardTitle className="text-xl">Umbrales de Alerta</CardTitle>
+              <CardTitle className="text-base uppercase tracking-widest" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>Umbrales de Alerta</CardTitle>
             </div>
+            <DashboardCardHeaderDots />
           </CardHeader>
-          <CardContent className="p-8 space-y-6">
+          <CardContent className="p-6 space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="rpeMismatchThreshold" className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Desviación RPE</Label>
+              <Label htmlFor="rpeMismatchThreshold" className={FIELD_LABEL} style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>Desviación RPE</Label>
               <Input
                 id="rpeMismatchThreshold"
+                variant="boxed"
                 type="number"
                 min={1}
                 max={10}
@@ -64,15 +71,15 @@ export function CoachSettingsForm({ initialSettings }: CoachSettingsFormProps) {
                     },
                   }))
                 }
-                className="rounded-xl h-12 bg-muted/20 border-muted"
                 disabled={saving}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="lowComplianceThreshold" className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Cumplimiento Mínimo (%)</Label>
+              <Label htmlFor="lowComplianceThreshold" className={FIELD_LABEL} style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>Cumplimiento Mínimo (%)</Label>
               <Input
                 id="lowComplianceThreshold"
+                variant="boxed"
                 type="number"
                 min={1}
                 max={100}
@@ -86,27 +93,28 @@ export function CoachSettingsForm({ initialSettings }: CoachSettingsFormProps) {
                     },
                   }))
                 }
-                className="rounded-xl h-12 bg-muted/20 border-muted"
                 disabled={saving}
               />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="rounded-[2rem] overflow-hidden border-none shadow-xl shadow-primary/5 h-full">
-          <CardHeader className="bg-muted/30 pt-8 px-8 pb-6">
+        <Card className={`${PAPER_BG} border border-endurix-black/10 dark:border-border`}>
+          <CardHeader className="border-b border-endurix-black/10 dark:border-border flex flex-row items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-500/10 rounded-xl">
-                <Cpu className="h-5 w-5 text-blue-600" />
+              <div className="p-2 bg-endurix-black/8 dark:bg-white/8">
+                <Cpu className="h-4 w-4 text-endurix-orange" />
               </div>
-              <CardTitle className="text-xl">Modelos de IA</CardTitle>
+              <CardTitle className="text-base uppercase tracking-widest" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>Modelos de IA</CardTitle>
             </div>
+            <DashboardCardHeaderDots />
           </CardHeader>
-          <CardContent className="p-8 space-y-6">
+          <CardContent className="p-6 space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="workoutMatcherModel" className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Motor de Emparejamiento</Label>
+              <Label htmlFor="workoutMatcherModel" className={FIELD_LABEL} style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>Motor de Emparejamiento</Label>
               <Input
                 id="workoutMatcherModel"
+                variant="boxed"
                 value={settings.defaultModels.workoutMatcherModel}
                 onChange={(e) =>
                   setSettings((current) => ({
@@ -117,15 +125,15 @@ export function CoachSettingsForm({ initialSettings }: CoachSettingsFormProps) {
                     },
                   }))
                 }
-                className="rounded-xl h-12 bg-muted/20 border-muted"
                 disabled={saving}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="complianceModel" className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Motor de Cumplimiento</Label>
+              <Label htmlFor="complianceModel" className={FIELD_LABEL} style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>Motor de Cumplimiento</Label>
               <Input
                 id="complianceModel"
+                variant="boxed"
                 value={settings.defaultModels.complianceModel}
                 onChange={(e) =>
                   setSettings((current) => ({
@@ -136,7 +144,6 @@ export function CoachSettingsForm({ initialSettings }: CoachSettingsFormProps) {
                     },
                   }))
                 }
-                className="rounded-xl h-12 bg-muted/20 border-muted"
                 disabled={saving}
               />
             </div>
@@ -146,11 +153,13 @@ export function CoachSettingsForm({ initialSettings }: CoachSettingsFormProps) {
 
       <div className="flex justify-end pt-4">
         <Button
+          variant="orange"
           disabled={saving}
           onClick={handleSave}
-          className="h-14 px-10 rounded-2xl font-bold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all text-base"
+          className="px-8 uppercase tracking-widest text-xs"
+          size="lg"
         >
-          {saving ? <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Guardando...</> : 'Guardar Preferencias'}
+          {saving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Guardando...</> : 'Guardar Preferencias'}
         </Button>
       </div>
     </div>

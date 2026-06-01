@@ -56,7 +56,7 @@ export function SessionList({ sessions }: SessionListProps) {
 
     if (sessions.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center py-10 text-gray-400 bg-white dark:bg-gray-800 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
+            <div className="flex flex-col items-center justify-center py-10 text-muted-foreground bg-endurix-paper dark:bg-card border border-dashed border-endurix-black/15 dark:border-white/15">
                 <Activity className="w-10 h-10 mb-2 opacity-20" />
                 <p>{t('empty')}</p>
             </div>
@@ -67,25 +67,31 @@ export function SessionList({ sessions }: SessionListProps) {
         <div className="space-y-4">
             {sessions.map((session) => {
                 const CardContent = (
-                    <Card key={session.id} className="overflow-hidden border-orange-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow dark:bg-gray-800">
+                    <Card key={session.id} className="overflow-hidden border-endurix-black/10 dark:border-border hover:border-endurix-orange/40 transition-colors bg-endurix-paper dark:bg-card">
                         {/* Header Strip */}
-                        <div className="h-2 w-full bg-gradient-to-r from-orange-400 to-red-400" />
+                        <div className="h-1 w-full bg-endurix-orange" />
 
                         <div className="p-5">
                             <div className="flex items-start justify-between mb-4">
                                 <div className="flex gap-3">
-                                    <div className="p-2 bg-orange-50 dark:bg-orange-900/20 rounded-lg text-orange-500">
+                                    <div className="p-2 bg-endurix-orange/10 text-endurix-orange">
                                         <Activity className="w-6 h-6" />
                                     </div>
                                     <div>
-                                        <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                                        <p
+                                            className="text-xs font-semibold text-muted-foreground uppercase tracking-widest"
+                                            style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                                        >
                                             {session.subtitle || t('workout')}
                                         </p>
-                                        <h3 className="text-lg font-bold text-gray-900 dark:text-white leading-tight">
+                                        <h3
+                                            className="text-lg font-bold text-endurix-black dark:text-foreground leading-tight uppercase tracking-tight"
+                                            style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                                        >
                                             {session.title}
                                         </h3>
                                         {session.description && (
-                                            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">
+                                            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
                                                 {session.description}
                                             </p>
                                         )}
@@ -105,7 +111,7 @@ export function SessionList({ sessions }: SessionListProps) {
                                         </button>
                                     )}
                                     {session.type === 'COMPLETED' && (
-                                        <Badge variant="secondary" className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/30">
+                                        <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-500 border border-emerald-500/30">
                                             {t('completed')}
                                         </Badge>
                                     )}
@@ -113,39 +119,69 @@ export function SessionList({ sessions }: SessionListProps) {
                             </div>
 
                             {session.type === 'COMPLETED' && session.stats && (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 pt-4 border-t border-endurix-black/10 dark:border-border">
                                     {/* Only show distance for non-weight training */}
                                     {session.subtitle !== 'WeightTraining' && (
                                         <div className="flex items-center gap-3">
-                                            <div className="p-1.5 bg-gray-50 dark:bg-gray-700 rounded-full text-gray-400">
+                                            <div className="p-1.5 bg-endurix-black/8 dark:bg-white/10 text-muted-foreground">
                                                 <MapPin className="w-4 h-4" />
                                             </div>
                                             <div>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400">{t('distance')}</p>
-                                                <p className="font-bold text-gray-900 dark:text-white">{((session.stats.distance || 0) / 1000).toFixed(2)} km</p>
+                                                <p
+                                                    className="text-xs text-muted-foreground uppercase tracking-wider"
+                                                    style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                                                >
+                                                    {t('distance')}
+                                                </p>
+                                                <p
+                                                    className="font-bold text-endurix-black dark:text-foreground tabular-nums"
+                                                    style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                                                >
+                                                    {((session.stats.distance || 0) / 1000).toFixed(2)} km
+                                                </p>
                                             </div>
                                         </div>
                                     )}
 
                                     <div className="flex items-center gap-3">
-                                        <div className="p-1.5 bg-gray-50 dark:bg-gray-700 rounded-full text-gray-400">
+                                        <div className="p-1.5 bg-endurix-black/8 dark:bg-white/10 text-muted-foreground">
                                             <Clock className="w-4 h-4" />
                                         </div>
                                         <div>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">{t('time')}</p>
-                                            <p className="font-bold text-gray-900 dark:text-white">{formatDuration(session.stats.duration || 0)}</p>
+                                            <p
+                                                className="text-xs text-muted-foreground uppercase tracking-wider"
+                                                style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                                            >
+                                                {t('time')}
+                                            </p>
+                                            <p
+                                                className="font-bold text-endurix-black dark:text-foreground tabular-nums"
+                                                style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                                            >
+                                                {formatDuration(session.stats.duration || 0)}
+                                            </p>
                                         </div>
                                     </div>
 
                                     {/* Only show pace for non-weight training */}
                                     {session.subtitle !== 'WeightTraining' && session.stats.pace && (
                                         <div className="flex items-center gap-3">
-                                            <div className="p-1.5 bg-gray-50 dark:bg-gray-700 rounded-full text-gray-400">
+                                            <div className="p-1.5 bg-endurix-black/8 dark:bg-white/10 text-muted-foreground">
                                                 <TrendingUp className="w-4 h-4" />
                                             </div>
                                             <div>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400">{t('pace')}</p>
-                                                <p className="font-bold text-gray-900 dark:text-white">{session.stats.pace}</p>
+                                                <p
+                                                    className="text-xs text-muted-foreground uppercase tracking-wider"
+                                                    style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                                                >
+                                                    {t('pace')}
+                                                </p>
+                                                <p
+                                                    className="font-bold text-endurix-black dark:text-foreground tabular-nums"
+                                                    style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                                                >
+                                                    {session.stats.pace}
+                                                </p>
                                             </div>
                                         </div>
                                     )}
@@ -153,12 +189,22 @@ export function SessionList({ sessions }: SessionListProps) {
                                     {/* Show heart rate if available - now for all workouts */}
                                     {session.stats.average_heartrate !== undefined && (
                                         <div className="flex items-center gap-3">
-                                            <div className="p-1.5 bg-gray-50 dark:bg-gray-700 rounded-full text-gray-400">
+                                            <div className="p-1.5 bg-endurix-black/8 dark:bg-white/10 text-muted-foreground">
                                                 <Heart className="w-4 h-4" />
                                             </div>
                                             <div>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400">{t('avgHr')}</p>
-                                                <p className="font-bold text-gray-900 dark:text-white">{Math.round(session.stats.average_heartrate)} ppm</p>
+                                                <p
+                                                    className="text-xs text-muted-foreground uppercase tracking-wider"
+                                                    style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                                                >
+                                                    {t('avgHr')}
+                                                </p>
+                                                <p
+                                                    className="font-bold text-endurix-black dark:text-foreground tabular-nums"
+                                                    style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                                                >
+                                                    {Math.round(session.stats.average_heartrate)} ppm
+                                                </p>
                                             </div>
                                         </div>
                                     )}
@@ -166,24 +212,44 @@ export function SessionList({ sessions }: SessionListProps) {
                                     {/* Show effort score if available - for all workouts */}
                                     {session.stats.effort_score !== undefined && (
                                         <div className="flex items-center gap-3">
-                                            <div className="p-1.5 bg-gray-50 dark:bg-gray-700 rounded-full text-gray-400">
+                                            <div className="p-1.5 bg-endurix-black/8 dark:bg-white/10 text-muted-foreground">
                                                 <Zap className="w-4 h-4" />
                                             </div>
                                             <div>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400">{t('effortScore')}</p>
-                                                <p className="font-bold text-gray-900 dark:text-white">{Math.round(session.stats.effort_score)}</p>
+                                                <p
+                                                    className="text-xs text-muted-foreground uppercase tracking-wider"
+                                                    style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                                                >
+                                                    {t('effortScore')}
+                                                </p>
+                                                <p
+                                                    className="font-bold text-endurix-black dark:text-foreground tabular-nums"
+                                                    style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                                                >
+                                                    {Math.round(session.stats.effort_score)}
+                                                </p>
                                             </div>
                                         </div>
                                     )}
 
                                     {session.subtitle !== 'WeightTraining' && session.stats.elevation !== undefined && session.stats.elevation > 0 && (
                                         <div className="flex items-center gap-3">
-                                            <div className="p-1.5 bg-gray-50 dark:bg-gray-700 rounded-full text-gray-400">
+                                            <div className="p-1.5 bg-endurix-black/8 dark:bg-white/10 text-muted-foreground">
                                                 <TrendingUp className="w-4 h-4" />
                                             </div>
                                             <div>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400">{t('elevation')}</p>
-                                                <p className="font-bold text-gray-900 dark:text-white">{Math.round(session.stats.elevation)} m</p>
+                                                <p
+                                                    className="text-xs text-muted-foreground uppercase tracking-wider"
+                                                    style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                                                >
+                                                    {t('elevation')}
+                                                </p>
+                                                <p
+                                                    className="font-bold text-endurix-black dark:text-foreground tabular-nums"
+                                                    style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                                                >
+                                                    {Math.round(session.stats.elevation)} m
+                                                </p>
                                             </div>
                                         </div>
                                     )}
@@ -191,12 +257,22 @@ export function SessionList({ sessions }: SessionListProps) {
                             )}
 
                             {session.type === 'PLANNED' && (
-                                <div className="flex items-center justify-between mt-3 text-sm text-gray-500 dark:text-gray-400">
+                                <div className="flex items-center justify-between mt-3 text-sm text-muted-foreground">
                                     <div className="flex items-center gap-1">
                                         <Clock className="w-4 h-4" />
-                                        <span>~ {formatDuration(session.stats?.duration || 3600)}</span>
+                                        <span
+                                            className="tabular-nums"
+                                            style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                                        >
+                                            ~ {formatDuration(session.stats?.duration || 3600)}
+                                        </span>
                                     </div>
-                                    <span className="text-orange-500 font-medium cursor-pointer hover:underline">{t('viewDetails')}</span>
+                                    <span
+                                        className="text-endurix-orange font-semibold cursor-pointer hover:underline uppercase tracking-widest text-[10px]"
+                                        style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                                    >
+                                        {t('viewDetails')}
+                                    </span>
                                 </div>
                             )}
                         </div>

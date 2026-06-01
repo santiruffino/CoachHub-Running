@@ -35,7 +35,7 @@ export default async function AssignWorkoutPage({
     ]);
 
     return (
-        <div className="p-0">
+        <div className="min-h-screen bg-endurix-paper dark:bg-background p-0">
             <AssignWorkoutView
                 initialAthletes={(athletesRes.data || []) as any}
                 initialGroups={(groupsRes.data || []) as any}

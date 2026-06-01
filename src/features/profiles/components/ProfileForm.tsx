@@ -168,17 +168,17 @@ function ChangePasswordSection() {
             </Field>
 
             {msg && (
-                <Alert className="bg-green-500/10 border-green-500/20">
-                    <AlertDescription className="text-green-700 dark:text-green-400">{msg}</AlertDescription>
+                <Alert className="bg-emerald-500/10 border-emerald-500/30">
+                    <AlertDescription className="text-emerald-700 dark:text-emerald-400">{msg}</AlertDescription>
                 </Alert>
             )}
             {err && (
-                <Alert variant="destructive" className="bg-destructive/10 border-destructive/20">
+                <Alert variant="destructive" className="bg-red-500/10 border-red-500/30">
                     <AlertDescription>{err}</AlertDescription>
                 </Alert>
             )}
 
-            <Button type="submit" variant="outline" size="sm" className="rounded-full px-6">
+            <Button type="submit" variant="outline-brand" size="sm" className="px-6 uppercase tracking-widest text-xs">
                 {t('submit')}
             </Button>
         </form>
@@ -247,14 +247,14 @@ export function ProfileForm({ profile }: { profile: ProfileDetails }) {
     return (
         <>
             {message === 'success' && (
-                <Alert className="mb-6 bg-green-500/10 border-green-500/20">
-                    <AlertDescription className="text-green-700 dark:text-green-400">
+                <Alert className="mb-6 bg-emerald-500/10 border-emerald-500/30">
+                    <AlertDescription className="text-emerald-700 dark:text-emerald-400">
                         {t('successUpdate')}
                     </AlertDescription>
                 </Alert>
             )}
             {message === 'error' && (
-                <Alert variant="destructive" className="mb-6 bg-destructive/10 border-destructive/20">
+                <Alert variant="destructive" className="mb-6 bg-red-500/10 border-red-500/30">
                     <AlertDescription>{errorMessage || t('errorUpdate')}</AlertDescription>
                 </Alert>
             )}
@@ -411,7 +411,7 @@ export function ProfileForm({ profile }: { profile: ProfileDetails }) {
                                 <Textarea
                                     rows={3}
                                     placeholder={t('fields.injuriesPlaceholder')}
-                                    className="bg-background border-0 border-b border-border/40 rounded-none px-0 focus-visible:ring-0 focus-visible:border-foreground/50 resize-none text-sm"
+                                    className="resize-none"
                                     {...register('injuries')}
                                 />
                             </Field>
@@ -431,7 +431,7 @@ export function ProfileForm({ profile }: { profile: ProfileDetails }) {
                                 <Textarea
                                     rows={4}
                                     placeholder={t('fields.bioPlaceholder')}
-                                    className="bg-background border-0 border-b border-border/40 rounded-none px-0 focus-visible:ring-0 focus-visible:border-foreground/50 resize-none text-sm"
+                                    className="resize-none"
                                     {...register('bio')}
                                 />
                             </Field>

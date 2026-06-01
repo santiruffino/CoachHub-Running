@@ -86,25 +86,25 @@ export function LinkWorkoutModal({ isOpen, onClose, activityId, activityTitle, o
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                <DialogHeader>
-                    <DialogTitle className="text-xl font-bold flex items-center gap-2">
-                        <LinkIcon className="w-5 h-5" />
+            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto bg-endurix-paper dark:bg-card border-endurix-black/15 dark:border-white/15">
+                <DialogHeader className="border-b border-endurix-black/10 dark:border-border">
+                    <DialogTitle className="text-xl font-bold flex items-center gap-2 uppercase tracking-tight" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>
+                        <LinkIcon className="w-5 h-5 text-endurix-orange" />
                         {t('title')}
                     </DialogTitle>
                     <p className="text-sm text-muted-foreground">
-                        {t('activityLabel')}: <span className="font-medium text-foreground">{activityTitle}</span>
+                        {t('activityLabel')}: <span className="font-bold text-endurix-black dark:text-foreground">{activityTitle}</span>
                     </p>
                 </DialogHeader>
 
                 {error && (
-                    <div className="p-3 bg-red-50 text-red-600 rounded-md text-sm">
+                    <div className="p-3 bg-red-500/10 text-red-700 dark:text-red-400 border border-red-500/30 text-sm">
                         {error}
                     </div>
                 )}
 
                 {loading ? (
-                    <div className="py-12 text-center text-muted-foreground">
+                    <div className="py-12 text-center text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                         {t('loading')}
                     </div>
                 ) : (
@@ -118,34 +118,34 @@ export function LinkWorkoutModal({ isOpen, onClose, activityId, activityTitle, o
                                 {candidates.map(assignment => (
                                     <div
                                         key={assignment.id}
-                                        className={`p-4 border rounded-lg flex items-center justify-between ${assignment.isLinkedToThis ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800' : 'hover:bg-accent/50'
+                                        className={`p-4 border flex items-center justify-between ${assignment.isLinkedToThis ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-endurix-paper dark:bg-card border-endurix-black/15 dark:border-white/15 hover:border-endurix-orange'
                                             }`}
                                     >
                                         <div className="flex-1">
                                             <div className="flex items-center gap-2">
-                                                <span className="font-medium text-base">
+                                                <span className="font-bold text-base text-endurix-black dark:text-foreground uppercase tracking-tight" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>
                                                     {assignment.title}
                                                 </span>
                                                 {assignment.isLinkedToThis && (
-                                                        <Badge variant="secondary" className="bg-green-100 text-green-700 hover:bg-green-100 flex items-center gap-1 text-xs">
+                                                        <Badge variant="solid" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/15 flex items-center gap-1 text-[10px] uppercase tracking-widest">
                                                             <CheckCircle2 className="w-3 h-3" />
                                                             {t('linked')}
                                                         </Badge>
                                                     )}
                                                     {assignment.isLinked && !assignment.isLinkedToThis && (
-                                                        <Badge variant="outline" className="text-muted-foreground text-xs flex items-center gap-1">
+                                                        <Badge variant="outline" className="text-muted-foreground text-[10px] uppercase tracking-widest flex items-center gap-1">
                                                             <AlertCircle className="w-3 h-3" />
                                                             {t('linkedToAnother')}
                                                         </Badge>
                                                     )}
                                                 </div>
-                                            <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
+                                            <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                                                 <div className="flex items-center gap-1">
-                                                    <Calendar className="w-3 h-3" />
+                                                    <Calendar className="w-3 h-3 text-endurix-orange" />
                                                     {new Date(assignment.scheduledDate).toLocaleDateString(locale)}
                                                 </div>
                                                 {assignment.type && (
-                                                    <Badge variant="outline" className="text-xs py-0 h-5">
+                                                    <Badge variant="outline" className="text-[10px] py-0 h-5 uppercase tracking-widest">
                                                         {assignment.type}
                                                     </Badge>
                                                 )}
@@ -156,20 +156,20 @@ export function LinkWorkoutModal({ isOpen, onClose, activityId, activityTitle, o
                                             {assignment.isLinkedToThis ? (
                                                 <Button
                                                     size="sm"
-                                                    variant="outline"
+                                                    variant="outline-brand"
                                                     onClick={() => handleUnlink(assignment.id)}
                                                     disabled={actionLoading === assignment.id}
-                                                    className="text-red-600 hover:text-red-700 border-red-200 hover:bg-red-50"
+                                                    className="text-red-600 hover:text-red-700 border-red-500/30 hover:bg-red-500/10 uppercase tracking-widest text-[10px]"
                                                 >
                                                     {actionLoading === assignment.id ? t('unlinking') : t('unlink')}
                                                 </Button>
                                             ) : (
                                                 <Button
                                                     size="sm"
-                                                    variant={assignment.isLinked ? "outline" : "default"}
+                                                    variant={assignment.isLinked ? "outline-brand" : "orange"}
                                                     onClick={() => handleLink(assignment.id)}
                                                     disabled={actionLoading === assignment.id || (assignment.isLinked && !assignment.isLinkedToThis)}
-                                                    className={assignment.isLinked ? "opacity-50" : ""}
+                                                    className={`${assignment.isLinked ? "opacity-50" : ""} uppercase tracking-widest text-[10px]`}
                                                 >
                                                     {actionLoading === assignment.id ? t('linking') : t('link')}
                                                 </Button>

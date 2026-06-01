@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { trainingsService } from '@/features/trainings/services/trainings.service';
 import api from '@/lib/axios';
 import { Training } from '@/interfaces/training';
@@ -42,6 +43,9 @@ type CreatableTraining = {
 };
 
 const FALLBACK_TRAINING_TYPE: Training['type'] = 'RUNNING' as Training['type'];
+
+const FIELD_LABEL_CLS = 'text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground';
+const FIELD_LABEL_STYLE = { fontFamily: 'var(--font-plex-mono, monospace)' } as const;
 
 export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, onClose, onSuccess }: AssignTrainingModalProps) {
     const t = useTranslations('trainings.assign');
@@ -286,12 +290,12 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                 <>
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                            <Label className={FIELD_LABEL_CLS} style={FIELD_LABEL_STYLE}>
                                 {t('selectDate')}
-                            </label>
-                            <input
+                            </Label>
+                            <Input
                                 type="date"
-                                className="flex h-10 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-primary outline-none dark:text-white"
+                                variant="boxed"
                                 value={scheduledDate}
                                 onChange={(e) => setScheduledDate(e.target.value)}
                             />
@@ -299,7 +303,7 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
 
                         {/* Expected RPE Selector */}
                         <div className="space-y-2">
-                            <Label htmlFor="expected-rpe">{t('expectedRpe')}</Label>
+                            <Label htmlFor="expected-rpe" className={FIELD_LABEL_CLS} style={FIELD_LABEL_STYLE}>{t('expectedRpe')}</Label>
                             <div className="flex items-center gap-4">
                                 <Slider
                                     id="expected-rpe"
@@ -310,35 +314,36 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                                     onValueChange={(value) => setExpectedRpe(value[0])}
                                     className="flex-1"
                                 />
-                                <Badge variant="secondary" className="text-lg min-w-[45px] justify-center">
+                                <Badge variant="solid" className="text-lg min-w-[45px] justify-center bg-endurix-orange/15 text-endurix-orange border border-endurix-orange/30">
                                     {expectedRpe}
                                 </Badge>
                             </div>
-                            <p className="text-xs text-muted-foreground">{getRpeLabel(expectedRpe)}</p>
+                            <p className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={FIELD_LABEL_STYLE}>{getRpeLabel(expectedRpe)}</p>
                         </div>
 
                         {/* Workout Name Input */}
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                            <Label className={FIELD_LABEL_CLS} style={FIELD_LABEL_STYLE}>
                                 {t('workoutName')}
-                            </label>
-                            <input
+                            </Label>
+                            <Input
                                 type="text"
-                                className="flex h-10 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-primary outline-none dark:text-white"
+                                variant="boxed"
                                 placeholder={t('workoutNamePlaceholder')}
                                 value={workoutName}
                                 onChange={(e) => setWorkoutName(e.target.value)}
                             />
-                            <p className="text-xs text-muted-foreground">{t('workoutNameHint')}</p>
+                            <p className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={FIELD_LABEL_STYLE}>{t('workoutNameHint')}</p>
                         </div>
 
-                        {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
+                        {error && <p className="text-sm text-red-600 dark:text-red-400 font-medium">{error}</p>}
                     </div>
-                    <DialogFooter className="mt-6 border-t pt-4">
-                        <Button variant="outline" onClick={onClose}>{t('cancel')}</Button>
+                    <DialogFooter className="mt-6 border-t border-endurix-black/10 dark:border-border pt-4">
+                        <Button variant="outline-brand" onClick={onClose} className="uppercase tracking-widest text-[10px]">{t('cancel')}</Button>
                         <Button
+                            variant="orange"
                             onClick={() => setCurrentStep('source')}
-                            className="bg-brand-primary text-white hover:bg-brand-deep"
+                            className="uppercase tracking-widest text-[10px]"
                         >
                             {t('next')}
                         </Button>
@@ -353,9 +358,9 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                 <>
                     <div className="space-y-4">
                         <div className="space-y-3">
-                            <label className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                            <Label className={FIELD_LABEL_CLS} style={FIELD_LABEL_STYLE}>
                                 {t('chooseWorkoutType')}
-                            </label>
+                            </Label>
                             <div className="grid grid-cols-2 gap-4">
                                 <button
                                     onClick={() => {
@@ -363,11 +368,11 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                                         loadTemplates();
                                         setCurrentStep('workout');
                                     }}
-                                    className="p-6 border-2 border-gray-300 dark:border-gray-700 rounded-lg hover:border-brand-primary hover:bg-brand-primary/5 transition-all text-center"
+                                    className="p-6 border-2 border-endurix-black/15 dark:border-white/15 hover:border-endurix-orange hover:bg-endurix-orange/5 transition-all text-center"
                                 >
                                     <div className="text-2xl mb-2">📋</div>
-                                    <div className="font-medium text-gray-900 dark:text-gray-100">{t('useTemplate')}</div>
-                                    <div className="text-xs text-muted-foreground mt-1">{t('useTemplateDesc')}</div>
+                                    <div className="font-bold uppercase tracking-widest text-sm text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{t('useTemplate')}</div>
+                                    <div className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground mt-1" style={FIELD_LABEL_STYLE}>{t('useTemplateDesc')}</div>
                                 </button>
                                 <button
                                     onClick={() => {
@@ -375,18 +380,18 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                                         setEditedBlocks([]);
                                         setCurrentStep('workout');
                                     }}
-                                    className="p-6 border-2 border-gray-300 dark:border-gray-700 rounded-lg hover:border-brand-primary hover:bg-brand-primary/5 transition-all text-center"
+                                    className="p-6 border-2 border-endurix-black/15 dark:border-white/15 hover:border-endurix-orange hover:bg-endurix-orange/5 transition-all text-center"
                                 >
                                     <div className="text-2xl mb-2">✨</div>
-                                    <div className="font-medium text-gray-900 dark:text-gray-100">{t('createNew')}</div>
-                                    <div className="text-xs text-muted-foreground mt-1">{t('createNewDesc')}</div>
+                                    <div className="font-bold uppercase tracking-widest text-sm text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{t('createNew')}</div>
+                                    <div className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground mt-1" style={FIELD_LABEL_STYLE}>{t('createNewDesc')}</div>
                                 </button>
                             </div>
                         </div>
                     </div>
-                    <DialogFooter className="mt-6 border-t pt-4">
-                        <Button variant="outline" onClick={() => setCurrentStep('date')}>{t('back')}</Button>
-                        <Button variant="outline" onClick={onClose}>{t('cancel')}</Button>
+                    <DialogFooter className="mt-6 border-t border-endurix-black/10 dark:border-border pt-4">
+                        <Button variant="outline-brand" onClick={() => setCurrentStep('date')} className="uppercase tracking-widest text-[10px]">{t('back')}</Button>
+                        <Button variant="outline-brand" onClick={onClose} className="uppercase tracking-widest text-[10px]">{t('cancel')}</Button>
                     </DialogFooter>
                 </>
             );
@@ -399,10 +404,10 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                     <>
                         <div className="space-y-4 flex-1 overflow-y-auto">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                <Label className={FIELD_LABEL_CLS} style={FIELD_LABEL_STYLE}>
                                     {t('selectTemplate')}
-                                </label>
-                                <div className="space-y-2 max-h-[400px] overflow-y-auto border border-gray-300 dark:border-gray-700 rounded-md p-3">
+                                </Label>
+                                <div className="space-y-2 max-h-[400px] overflow-y-auto border border-endurix-black/15 dark:border-white/15 p-3 bg-endurix-black/5 dark:bg-white/5">
                                     {availableTemplates.length === 0 && (
                                         <p className="text-sm text-muted-foreground text-center py-8">
                                             {t('noTemplates')}
@@ -415,15 +420,15 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                                                 setSelectedTrainingId(template.id);
                                                 loadTraining(template.id);
                                             }}
-                                            className={`p-4 border rounded-lg cursor-pointer transition-all ${selectedTrainingId === template.id
-                                                ? 'border-brand-primary bg-brand-primary/10'
-                                                : 'border-gray-300 dark:border-gray-700 hover:border-brand-primary/50'
+                                            className={`p-4 border cursor-pointer transition-all ${selectedTrainingId === template.id
+                                                ? 'border-endurix-orange bg-endurix-orange/10'
+                                                : 'border-endurix-black/15 dark:border-white/15 hover:border-endurix-orange/50'
                                                 }`}
                                         >
-                                            <div className="font-medium text-gray-900 dark:text-gray-100">
+                                            <div className="font-bold uppercase tracking-widest text-sm text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>
                                                 {template.title}
                                             </div>
-                                            <div className="text-xs text-muted-foreground mt-1">
+                                            <div className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground mt-1" style={FIELD_LABEL_STYLE}>
                                                 {template.type} • {template.description || t('noDescription')}
                                             </div>
                                         </div>
@@ -435,34 +440,36 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                             {selectedTraining && (
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between">
-                                        <label className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                        <Label className={FIELD_LABEL_CLS} style={FIELD_LABEL_STYLE}>
                                             {t('workout', { title: selectedTraining.title })}
-                                        </label>
+                                        </Label>
                                         <Button
-                                            variant="outline"
+                                            variant="outline-brand"
                                             size="sm"
                                             onClick={() => setIsEditingWorkout(!isEditingWorkout)}
+                                            className="uppercase tracking-widest text-[10px]"
                                         >
                                             {isEditingWorkout ? t('viewOriginal') : t('editWorkout')}
                                         </Button>
                                     </div>
                                     {isEditingWorkout && (
-                                        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-2 h-[300px] overflow-hidden">
+                                        <div className="border border-endurix-black/15 dark:border-white/15 p-2 h-[300px] overflow-hidden bg-endurix-paper dark:bg-card">
                                             <WorkoutBuilder initialBlocks={editedBlocks} onChange={setEditedBlocks} athleteId={athleteId} />
                                         </div>
                                     )}
                                 </div>
                             )}
 
-                            {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
+                            {error && <p className="text-sm text-red-600 dark:text-red-400 font-medium">{error}</p>}
                         </div>
-                        <DialogFooter className="mt-4 border-t pt-4">
-                            <Button variant="outline" onClick={() => setCurrentStep('source')}>{t('back')}</Button>
-                            <Button variant="outline" onClick={onClose}>{t('cancel')}</Button>
+                        <DialogFooter className="mt-4 border-t border-endurix-black/10 dark:border-border pt-4">
+                            <Button variant="outline-brand" onClick={() => setCurrentStep('source')} className="uppercase tracking-widest text-[10px]">{t('back')}</Button>
+                            <Button variant="outline-brand" onClick={onClose} className="uppercase tracking-widest text-[10px]">{t('cancel')}</Button>
                             <Button
+                                variant="orange"
                                 onClick={handleAssign}
                                 disabled={loading || !selectedTrainingId}
-                                className="bg-brand-primary text-white hover:bg-brand-deep"
+                                className="uppercase tracking-widest text-[10px]"
                             >
                                 {loading ? t('assigning') : t('assignWorkout')}
                             </Button>
@@ -476,10 +483,10 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                     <>
                         <div className="space-y-4 flex-1 flex flex-col">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                <Label className={FIELD_LABEL_CLS} style={FIELD_LABEL_STYLE}>
                                     {t('buildWorkout')}
-                                </label>
-                                <p className="text-xs text-muted-foreground">
+                                </Label>
+                                <p className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={FIELD_LABEL_STYLE}>
                                     {t('scheduledFor', {
                                         date: scheduledDate ? (() => {
                                             const [year, month, day] = scheduledDate.split('-');
@@ -488,18 +495,19 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                                     })}
                                 </p>
                             </div>
-                            <div className="border border-gray-200 dark:border-gray-700 rounded-lg flex-1 min-h-[400px] overflow-hidden">
+                            <div className="border border-endurix-black/15 dark:border-white/15 flex-1 min-h-[400px] overflow-hidden bg-endurix-paper dark:bg-card">
                                 <WorkoutBuilder initialBlocks={editedBlocks} onChange={setEditedBlocks} athleteId={athleteId} />
                             </div>
-                            {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
+                            {error && <p className="text-sm text-red-600 dark:text-red-400 font-medium">{error}</p>}
                         </div>
-                        <DialogFooter className="mt-4 border-t pt-4">
-                            <Button variant="outline" onClick={() => setCurrentStep('source')}>{t('back')}</Button>
-                            <Button variant="outline" onClick={onClose}>{t('cancel')}</Button>
+                        <DialogFooter className="mt-4 border-t border-endurix-black/10 dark:border-border pt-4">
+                            <Button variant="outline-brand" onClick={() => setCurrentStep('source')} className="uppercase tracking-widest text-[10px]">{t('back')}</Button>
+                            <Button variant="outline-brand" onClick={onClose} className="uppercase tracking-widest text-[10px]">{t('cancel')}</Button>
                             <Button
+                                variant="orange"
                                 onClick={handleAssign}
                                 disabled={loading}
-                                className="bg-brand-primary text-white hover:bg-brand-deep"
+                                className="uppercase tracking-widest text-[10px]"
                             >
                                 {loading ? t('creatingAndAssigning') : t('createAndAssign')}
                             </Button>
@@ -514,9 +522,9 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[900px] h-[90vh] flex flex-col overflow-hidden">
-                <DialogHeader>
-                    <DialogTitle>
+            <DialogContent className="sm:max-w-[900px] h-[90vh] flex flex-col overflow-hidden bg-endurix-paper dark:bg-card border-endurix-black/15 dark:border-white/15">
+                <DialogHeader className="border-b border-endurix-black/10 dark:border-border">
+                    <DialogTitle className="uppercase tracking-widest text-lg" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>
                         {athleteId ? t('titleAthlete') : t('title')}
                     </DialogTitle>
                 </DialogHeader>
@@ -529,16 +537,18 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                         /* Otherwise, use the original flow for groups/multiple athletes */
                         <>
                             {/* Assignment Type Tabs */}
-                            <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700 pb-2">
+                            <div className="flex gap-2 border-b border-endurix-black/10 dark:border-border pb-2">
                                 <button
-                                    className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${assignmentType === 'athlete' ? 'bg-brand-primary text-white' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'}`}
+                                    className={`px-4 py-2 text-[10px] uppercase tracking-widest font-bold transition-colors ${assignmentType === 'athlete' ? 'bg-endurix-orange text-white' : 'text-endurix-black/60 dark:text-muted-foreground hover:bg-endurix-black/5 dark:hover:bg-white/5'}`}
                                     onClick={() => setAssignmentType('athlete')}
+                                    style={FIELD_LABEL_STYLE}
                                 >
                                     {t('assignToAthletes')}
                                 </button>
                                 <button
-                                    className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${assignmentType === 'group' ? 'bg-brand-primary text-white' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'}`}
+                                    className={`px-4 py-2 text-[10px] uppercase tracking-widest font-bold transition-colors ${assignmentType === 'group' ? 'bg-endurix-orange text-white' : 'text-endurix-black/60 dark:text-muted-foreground hover:bg-endurix-black/5 dark:hover:bg-white/5'}`}
                                     onClick={() => setAssignmentType('group')}
+                                    style={FIELD_LABEL_STYLE}
                                 >
                                     {t('assignToGroups')}
                                 </button>
@@ -546,10 +556,10 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
 
                             {/* Date Selection */}
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-900 dark:text-gray-100">{t('scheduledDate')}</label>
-                                <input
+                                <Label className={FIELD_LABEL_CLS} style={FIELD_LABEL_STYLE}>{t('scheduledDate')}</Label>
+                                <Input
                                     type="date"
-                                    className="flex h-10 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-primary outline-none dark:text-white"
+                                    variant="boxed"
                                     value={scheduledDate}
                                     onChange={(e) => setScheduledDate(e.target.value)}
                                 />
@@ -557,7 +567,7 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
 
                             {/* Expected RPE Selector */}
                             <div className="space-y-2">
-                                <Label htmlFor="expected-rpe-group">{t('expectedRpe')}</Label>
+                                <Label htmlFor="expected-rpe-group" className={FIELD_LABEL_CLS} style={FIELD_LABEL_STYLE}>{t('expectedRpe')}</Label>
                                 <div className="flex items-center gap-4">
                                     <Slider
                                         id="expected-rpe-group"
@@ -568,33 +578,33 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                                         onValueChange={(value) => setExpectedRpe(value[0])}
                                         className="flex-1"
                                     />
-                                    <Badge variant="secondary" className="text-lg min-w-[45px] justify-center">
+                                    <Badge variant="solid" className="text-lg min-w-[45px] justify-center bg-endurix-orange/15 text-endurix-orange border border-endurix-orange/30">
                                         {expectedRpe}
                                     </Badge>
                                 </div>
-                                <p className="text-xs text-muted-foreground">{getRpeLabel(expectedRpe)}</p>
+                                <p className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={FIELD_LABEL_STYLE}>{getRpeLabel(expectedRpe)}</p>
                             </div>
 
                             {/* Workout Name Input */}
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                <Label className={FIELD_LABEL_CLS} style={FIELD_LABEL_STYLE}>
                                     {t('workoutName')}
-                                </label>
-                                <input
+                                </Label>
+                                <Input
                                     type="text"
-                                    className="flex h-10 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-primary outline-none dark:text-white"
+                                    variant="boxed"
                                     placeholder={t('workoutNamePlaceholder')}
                                     value={workoutName}
                                     onChange={(e) => setWorkoutName(e.target.value)}
                                 />
-                                <p className="text-xs text-muted-foreground">{t('workoutNameHintTemplate')}</p>
+                                <p className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={FIELD_LABEL_STYLE}>{t('workoutNameHintTemplate')}</p>
                             </div>
 
                             {/* Athlete/Group Selection */}
                             {assignmentType === 'athlete' ? (
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-900 dark:text-gray-100">{t('selectAthletes')}</label>
-                                    <div className="border border-gray-300 dark:border-gray-700 rounded-md p-3 max-h-32 overflow-y-auto space-y-2">
+                                    <Label className={FIELD_LABEL_CLS} style={FIELD_LABEL_STYLE}>{t('selectAthletes')}</Label>
+                                    <div className="border border-endurix-black/15 dark:border-white/15 p-3 max-h-32 overflow-y-auto space-y-2 bg-endurix-black/5 dark:bg-white/5">
                                         {athletes.map((athlete) => (
                                             <label key={athlete.id} className="flex items-center gap-2 cursor-pointer">
                                                 <input
@@ -607,9 +617,9 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                                                             setSelectedAthleteIds(selectedAthleteIds.filter(id => id !== athlete.id));
                                                         }
                                                     }}
-                                                    className="h-4 w-4 rounded border-gray-300"
+                                                    className="h-4 w-4 accent-endurix-orange"
                                                 />
-                                                <span className="text-sm text-gray-900 dark:text-gray-100">{athlete.name || athlete.email}</span>
+                                                <span className="text-sm text-endurix-black dark:text-foreground">{athlete.name || athlete.email}</span>
                                             </label>
                                         ))}
                                         {athletes.length === 0 && (
@@ -619,8 +629,8 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                                 </div>
                             ) : (
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-900 dark:text-gray-100">{t('selectGroups')}</label>
-                                    <div className="border border-gray-300 dark:border-gray-700 rounded-md p-3 max-h-32 overflow-y-auto space-y-2">
+                                    <Label className={FIELD_LABEL_CLS} style={FIELD_LABEL_STYLE}>{t('selectGroups')}</Label>
+                                    <div className="border border-endurix-black/15 dark:border-white/15 p-3 max-h-32 overflow-y-auto space-y-2 bg-endurix-black/5 dark:bg-white/5">
                                         {groups.map((group) => (
                                             <label key={group.id} className="flex items-center gap-2 cursor-pointer">
                                                 <input
@@ -633,9 +643,9 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                                                             setSelectedGroupIds(selectedGroupIds.filter(id => id !== group.id));
                                                         }
                                                     }}
-                                                    className="h-4 w-4 rounded border-gray-300"
+                                                    className="h-4 w-4 accent-endurix-orange"
                                                 />
-                                                <span className="text-sm text-gray-900 dark:text-gray-100">{group.name}</span>
+                                                <span className="text-sm text-endurix-black dark:text-foreground">{group.name}</span>
                                             </label>
                                         ))}
                                         {groups.length === 0 && (
@@ -649,30 +659,31 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                             {selectedTraining && (
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between">
-                                        <label className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                        <Label className={FIELD_LABEL_CLS} style={FIELD_LABEL_STYLE}>
                                             {t('workout', { title: selectedTraining.title })}
-                                        </label>
+                                        </Label>
                                         <Button
-                                            variant="outline"
+                                            variant="outline-brand"
                                             size="sm"
                                             onClick={() => setIsEditingWorkout(!isEditingWorkout)}
+                                            className="uppercase tracking-widest text-[10px]"
                                         >
                                             {isEditingWorkout ? t('viewOriginal') : t('editWorkout')}
                                         </Button>
                                     </div>
                                     {isEditingWorkout && (
-                                        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-2 h-[300px]">
+                                        <div className="border border-endurix-black/15 dark:border-white/15 p-2 h-[300px] bg-endurix-paper dark:bg-card">
                                             <WorkoutBuilder initialBlocks={editedBlocks} onChange={setEditedBlocks} athleteId={athleteId} />
                                         </div>
                                     )}
                                 </div>
                             )}
 
-                            {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
+                            {error && <p className="text-sm text-red-600 dark:text-red-400 font-medium">{error}</p>}
 
-                            <DialogFooter className="mt-4 border-t pt-4">
-                                <Button variant="outline" onClick={onClose}>{t('cancel')}</Button>
-                                <Button onClick={handleAssign} disabled={loading} className="bg-brand-primary text-white hover:bg-brand-deep">
+                            <DialogFooter className="mt-4 border-t border-endurix-black/10 dark:border-border pt-4">
+                                <Button variant="outline-brand" onClick={onClose} className="uppercase tracking-widest text-[10px]">{t('cancel')}</Button>
+                                <Button variant="orange" onClick={handleAssign} disabled={loading} className="uppercase tracking-widest text-[10px]">
                                     {loading ? t('assigning') : t('assignWorkout')}
                                 </Button>
                             </DialogFooter>

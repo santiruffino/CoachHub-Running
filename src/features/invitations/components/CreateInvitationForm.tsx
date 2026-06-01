@@ -35,37 +35,38 @@ export function CreateInvitationForm() {
     };
 
     return (
-        <Card className="max-w-md">
-            <CardHeader>
-                <CardTitle>{t('title')}</CardTitle>
+        <Card className="max-w-md bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border">
+            <CardHeader className="border-b border-endurix-black/10 dark:border-border">
+                <CardTitle className="text-base uppercase tracking-widest" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{t('title')}</CardTitle>
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="email">{t('email')}</Label>
+                        <Label htmlFor="email" className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{t('email')}</Label>
                         <Input
                             {...register('email', { required: t('emailRequired') })}
                             type="email"
                             id="email"
                             placeholder={t('emailPlaceholder')}
+                            variant="boxed"
                         />
                         {errors.email && (
                             <p className="text-sm text-destructive">{errors.email.message}</p>
                         )}
                     </div>
 
-                    <Button type="submit" className="w-full">
+                    <Button type="submit" variant="orange" className="w-full uppercase tracking-widest text-xs">
                         {t('send')}
                     </Button>
 
                     {success && (
-                        <Alert>
-                            <AlertDescription>{success}</AlertDescription>
+                        <Alert className="bg-emerald-500/10 border-emerald-500/30">
+                            <AlertDescription className="text-emerald-700 dark:text-emerald-400">{success}</AlertDescription>
                         </Alert>
                     )}
 
                     {error && (
-                        <Alert variant="destructive">
+                        <Alert variant="destructive" className="bg-red-500/10 border-red-500/30">
                             <AlertDescription>{error}</AlertDescription>
                         </Alert>
                     )}

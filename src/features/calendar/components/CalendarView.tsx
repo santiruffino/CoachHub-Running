@@ -82,29 +82,35 @@ export function CalendarView({ events, onDateChange, onEventDrop, onSelectEvent 
 
     const eventStyleGetter = (event: CalendarEvent) => {
         const type = event.resource?.type;
-        let backgroundColor = '#3b82f6'; // Default Blue for Planned
-        
+        let backgroundColor = '#1A1A1A';
+
         if (type === 'COMPLETED') {
-            backgroundColor = '#f97316'; // Orange for Completed
+            backgroundColor = '#FF6800';
         } else if (type === 'RACE') {
-            backgroundColor = '#8b5cf6'; // Violet for Race
+            backgroundColor = '#1A1A1A';
         }
 
         return {
             style: {
                 backgroundColor,
-                borderRadius: '4px',
-                opacity: 0.9,
+                borderRadius: '2px',
+                opacity: 1,
                 color: 'white',
                 border: '0px',
                 display: 'block',
-                fontWeight: type === 'RACE' ? '700' : '400'
+                fontWeight: type === 'RACE' ? '700' : '500',
+                borderLeft: type === 'RACE' ? '3px solid #FF6800' : 'none',
+                fontFamily: 'var(--font-ibm-plex-mono, monospace)',
+                fontSize: '11px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.04em',
+                padding: '2px 4px',
             }
         };
     };
 
     return (
-        <div className="h-[calc(100vh-200px)] w-full bg-white p-4 rounded-lg shadow-sm">
+        <div className="h-[calc(100vh-200px)] w-full bg-endurix-paper dark:bg-card p-4 border border-endurix-black/10 dark:border-border">
             <DragAndDropCalendar
                 localizer={localizer}
                 events={events}

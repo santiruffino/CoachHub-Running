@@ -45,22 +45,22 @@ export default function ForgotPasswordForm() {
     };
 
     return (
-        <Card className="w-full max-w-md">
-            <CardHeader>
-                <CardTitle className="text-2xl">{t('title')}</CardTitle>
+        <Card className="w-full max-w-md bg-endurix-paper dark:bg-card border border-endurix-black/15 dark:border-border">
+            <CardHeader className="border-b border-endurix-black/10 dark:border-border">
+                <CardTitle className="text-2xl uppercase tracking-tight" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{t('title')}</CardTitle>
                 <CardDescription>
                     {t('description')}
                 </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-6">
                 {error && (
-                    <Alert variant="destructive" className="mb-4">
+                    <Alert variant="destructive" className="mb-4 bg-red-500/10 border-red-500/30">
                         <AlertDescription>{error}</AlertDescription>
                     </Alert>
                 )}
 
                 {success && (
-                    <Alert className="mb-4 bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800">
+                    <Alert className="mb-4 bg-emerald-500/10 text-emerald-700 border-emerald-500/30 dark:text-emerald-400">
                         <AlertDescription>
                             {t('successMessage')}
                         </AlertDescription>
@@ -69,11 +69,12 @@ export default function ForgotPasswordForm() {
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="email">{t('emailLabel')}</Label>
+                        <Label htmlFor="email" className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{t('emailLabel')}</Label>
                         <Input
                             id="email"
                             type="email"
                             placeholder={t('emailPlaceholder')}
+                            variant="boxed"
                             {...register('email')}
                             disabled={success}
                         />
@@ -84,15 +85,16 @@ export default function ForgotPasswordForm() {
 
                     <Button
                         type="submit"
+                        variant="orange"
                         disabled={isSubmitting || success}
-                        className="w-full"
+                        className="w-full uppercase tracking-widest text-xs"
                     >
                         {isSubmitting ? t('submittingButton') : t('submitButton')}
                     </Button>
                 </form>
 
                 <div className="mt-6 text-center text-sm">
-                    <Link href="/login" className="text-primary hover:underline">
+                    <Link href="/login" className="text-[10px] uppercase tracking-widest text-endurix-black/60 dark:text-muted-foreground hover:text-endurix-orange transition-colors" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                         {t('backToLogin')}
                     </Link>
                 </div>

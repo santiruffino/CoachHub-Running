@@ -7,6 +7,7 @@ const FONT_DISPLAY = { fontFamily: 'var(--font-exo-2, sans-serif)' } as const;
 export interface SectionHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
     eyebrow?: string;
     title: string;
+    description?: string;
     action?: React.ReactNode;
     size?: 'sm' | 'md' | 'lg';
 }
@@ -20,6 +21,7 @@ const titleSizeMap = {
 export function SectionHeader({
     eyebrow,
     title,
+    description,
     action,
     size = 'md',
     className,
@@ -48,6 +50,9 @@ export function SectionHeader({
                 >
                     {title}
                 </h3>
+                {description && (
+                    <p className="text-sm text-muted-foreground mt-1 max-w-2xl">{description}</p>
+                )}
             </div>
             {action && <div className="flex-shrink-0">{action}</div>}
         </div>

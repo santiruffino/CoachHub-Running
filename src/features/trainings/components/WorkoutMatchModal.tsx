@@ -109,22 +109,22 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                    <DialogTitle className="text-xl font-bold">
+            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-endurix-paper dark:bg-card border-endurix-black/15 dark:border-white/15">
+                <DialogHeader className="border-b border-endurix-black/10 dark:border-border">
+                    <DialogTitle className="text-xl font-bold uppercase tracking-tight" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>
                         {t('title')}
                     </DialogTitle>
-                    <p className="text-sm text-muted-foreground">{workoutTitle}</p>
+                    <p className="text-sm text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{workoutTitle}</p>
                 </DialogHeader>
 
                 {loading && (
-                    <div className="py-12 text-center text-muted-foreground">
+                    <div className="py-12 text-center text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                         {t('loading')}
                     </div>
                 )}
 
                 {error && (
-                    <div className="py-12 text-center text-red-500">
+                    <div className="py-12 text-center text-red-600 dark:text-red-400">
                         {error}
                     </div>
                 )}
@@ -139,9 +139,10 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
                         </div>
                         <div className="pt-4">
                             <Button
-                                variant="outline"
+                                variant="outline-brand"
                                 onClick={handleFetchCandidates}
                                 disabled={loadingCandidates}
+                                className="uppercase tracking-widest text-[10px]"
                             >
                                 {loadingCandidates ? t('searching') : t('linkManual')}
                             </Button>
@@ -152,8 +153,8 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
                 {!loading && !error && showCandidates && (
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                            <h3 className="text-sm font-semibold">{t('selectActivity')}</h3>
-                            <Button variant="ghost" size="sm" onClick={() => setShowCandidates(false)}>{t('cancel')}</Button>
+                            <h3 className="text-sm font-bold uppercase tracking-widest" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{t('selectActivity')}</h3>
+                            <Button variant="ghost" size="sm" onClick={() => setShowCandidates(false)} className="uppercase tracking-widest text-[10px]">{t('cancel')}</Button>
                         </div>
                         <div className="space-y-2 max-h-[300px] overflow-y-auto">
                             {candidates.length === 0 ? (
@@ -165,15 +166,15 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
                                     <div
                                         key={activity.id}
                                         onClick={() => handleSelectCandidate(activity.id)}
-                                        className="p-3 border rounded-lg hover:bg-accent cursor-pointer flex items-center justify-between"
+                                        className="p-3 border border-endurix-black/15 dark:border-white/15 hover:bg-endurix-orange/5 hover:border-endurix-orange cursor-pointer flex items-center justify-between"
                                     >
                                         <div>
-                                            <div className="font-medium">{activity.title}</div>
-                                            <div className="text-sm text-muted-foreground">
+                                            <div className="font-bold text-endurix-black dark:text-foreground uppercase tracking-tight" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{activity.title}</div>
+                                            <div className="text-sm text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                                                 {new Date(activity.start_date).toLocaleDateString(locale)} • {(activity.distance / 1000).toFixed(2)} km
                                             </div>
                                         </div>
-                                        <Button size="sm" variant="ghost">{t('link')}</Button>
+                                        <Button size="sm" variant="orange" className="uppercase tracking-widest text-[10px]">{t('link')}</Button>
                                     </div>
                                 ))
                             )}
@@ -184,35 +185,35 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
                 {!loading && !error && match && match.matched && match.matchQuality && (
                     <div className="space-y-6">
                         {/* Overall Score Card */}
-                        <Card className="p-6 bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border-orange-200 dark:border-orange-800">
+                        <Card className="p-6 bg-endurix-orange/10 border border-endurix-orange/30">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide mb-2">
+                                    <h3 className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground uppercase tracking-widest mb-2" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                                         {t('overallScore')}
                                     </h3>
                                     <div className="flex items-center gap-3">
-                                        <span className={`text-4xl font-bold ${getMatchScoreColor(match.matchQuality.overallScore)}`}>
+                                        <span className={`text-4xl font-bold ${getMatchScoreColor(match.matchQuality.overallScore)}`} style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>
                                             {match.matchQuality.overallScore}%
                                         </span>
-                                        <span className="text-xl text-gray-600 dark:text-gray-400">
+                                        <span className="text-xl text-endurix-black/60 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                                             {getMatchCategory(match.matchQuality.overallScore)}
                                         </span>
                                     </div>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                                        {t('objective')} <span className="font-semibold capitalize">{match.matchQuality.objectiveType === 'distance' ? t('objectiveDistance') : t('objectiveTime')}</span>
+                                    <p className="text-sm text-endurix-black/60 dark:text-muted-foreground mt-2" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
+                                        {t('objective')} <span className="font-bold uppercase tracking-widest text-endurix-black dark:text-foreground">{match.matchQuality.objectiveType === 'distance' ? t('objectiveDistance') : t('objectiveTime')}</span>
                                     </p>
                                 </div>
-                                <div className={`p-4 rounded-full ${getMatchScoreBgColor(match.matchQuality.overallScore)}`}>
+                                <div className={`p-4 ${getMatchScoreBgColor(match.matchQuality.overallScore)}`}>
                                     <CheckCircle2 className={`w-12 h-12 ${getMatchScoreColor(match.matchQuality.overallScore)}`} />
                                 </div>
                             </div>
                             {match.isManualMatch && (
                                 <div className="mt-4 flex justify-end">
                                     <Button
-                                        variant="outline"
+                                        variant="outline-brand"
                                         size="sm"
                                         onClick={handleUnlink}
-                                        className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                                        className="text-red-600 hover:text-red-700 hover:bg-red-500/10 border-red-500/30 uppercase tracking-widest text-[10px]"
                                     >
                                         {t('unlinkActivity')}
                                     </Button>
@@ -223,31 +224,31 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
                         {/* Stats Comparison */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {/* Distance */}
-                            <Card className="p-5">
+                            <Card className="p-5 bg-endurix-paper dark:bg-card border border-endurix-black/15 dark:border-white/15">
                                 <div className="flex items-start gap-3">
-                                    <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                                        <MapPin className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                    <div className="p-2 bg-endurix-orange/10">
+                                        <MapPin className="w-5 h-5 text-endurix-orange" />
                                     </div>
                                     <div className="flex-1">
-                                        <h4 className="text-sm font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide mb-2">
+                                        <h4 className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground uppercase tracking-widest mb-2" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                                             {t('distance')}
                                         </h4>
                                         <div className="space-y-1">
                                             <div className="flex justify-between items-center">
-                                                <span className="text-xs text-gray-500 dark:text-gray-400">{t('planned')}</span>
-                                                <span className="font-semibold text-gray-900 dark:text-white">
+                                                <span className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{t('planned')}</span>
+                                                <span className="font-bold text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                                                     {formatDistance(match.matchQuality.plannedDistance || 0)}
                                                 </span>
                                             </div>
                                             <div className="flex justify-between items-center">
-                                                <span className="text-xs text-gray-500 dark:text-gray-400">{t('actual')}</span>
-                                                <span className="font-semibold text-gray-900 dark:text-white">
+                                                <span className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{t('actual')}</span>
+                                                <span className="font-bold text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                                                     {formatDistance(match.matchQuality.actualDistance || 0)}
                                                 </span>
                                             </div>
-                                            <div className="flex justify-between items-center pt-2 border-t border-gray-200 dark:border-gray-700">
-                                                <span className="text-xs text-gray-500 dark:text-gray-400">{t('difference')}</span>
-                                                <span className={`font-bold ${getDifferenceColor(match.matchQuality.distanceMatch || 0)}`}>
+                                            <div className="flex justify-between items-center pt-2 border-t border-endurix-black/10 dark:border-border">
+                                                <span className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{t('difference')}</span>
+                                                <span className={`font-bold ${getDifferenceColor(match.matchQuality.distanceMatch || 0)}`} style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                                                     {formatDifference(match.matchQuality.distanceMatch || 0)}
                                                 </span>
                                             </div>
@@ -257,31 +258,31 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
                             </Card>
 
                             {/* Duration */}
-                            <Card className="p-5">
+                            <Card className="p-5 bg-endurix-paper dark:bg-card border border-endurix-black/15 dark:border-white/15">
                                 <div className="flex items-start gap-3">
-                                    <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                                        <Clock className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                                    <div className="p-2 bg-endurix-black/8 dark:bg-white/8">
+                                        <Clock className="w-5 h-5 text-endurix-orange" />
                                     </div>
                                     <div className="flex-1">
-                                        <h4 className="text-sm font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide mb-2">
+                                        <h4 className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground uppercase tracking-widest mb-2" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                                             {t('duration')}
                                         </h4>
                                         <div className="space-y-1">
                                             <div className="flex justify-between items-center">
-                                                <span className="text-xs text-gray-500 dark:text-gray-400">{t('planned')}</span>
-                                                <span className="font-semibold text-gray-900 dark:text-white">
+                                                <span className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{t('planned')}</span>
+                                                <span className="font-bold text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                                                     {formatDuration(match.matchQuality.plannedDuration || 0)}
                                                 </span>
                                             </div>
                                             <div className="flex justify-between items-center">
-                                                <span className="text-xs text-gray-500 dark:text-gray-400">{t('actual')}</span>
-                                                <span className="font-semibold text-gray-900 dark:text-white">
+                                                <span className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{t('actual')}</span>
+                                                <span className="font-bold text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                                                     {formatDuration(match.matchQuality.actualDuration || 0)}
                                                 </span>
                                             </div>
-                                            <div className="flex justify-between items-center pt-2 border-t border-gray-200 dark:border-gray-700">
-                                                <span className="text-xs text-gray-500 dark:text-gray-400">{t('difference')}</span>
-                                                <span className={`font-bold ${getDifferenceColor(match.matchQuality.durationMatch || 0)}`}>
+                                            <div className="flex justify-between items-center pt-2 border-t border-endurix-black/10 dark:border-border">
+                                                <span className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{t('difference')}</span>
+                                                <span className={`font-bold ${getDifferenceColor(match.matchQuality.durationMatch || 0)}`} style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                                                     {formatDifference(match.matchQuality.durationMatch || 0)}
                                                 </span>
                                             </div>
@@ -293,10 +294,11 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
 
                         {/* Activity Link */}
                         {match.activityId && (
-                            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <div className="pt-4 border-t border-endurix-black/10 dark:border-border">
                                 <Link
                                     href={`/activities/${match.activityId}`}
-                                    className="text-orange-600 dark:text-orange-400 hover:underline font-medium flex items-center gap-2"
+                                    className="text-endurix-orange hover:underline font-bold flex items-center gap-2 uppercase tracking-widest text-[10px]"
+                                    style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
                                 >
                                     <TrendingUp className="w-4 h-4" />
                                     {t('viewDetails')}
@@ -306,25 +308,25 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
 
                         {/* Block Comparison (if available) */}
                         {match.blockComparison && match.blockComparison.length > 0 && (
-                            <Card className="p-5">
-                                <h4 className="text-sm font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide mb-4">
+                            <Card className="p-5 bg-endurix-paper dark:bg-card border border-endurix-black/15 dark:border-white/15">
+                                <h4 className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground uppercase tracking-widest mb-4" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                                     {t('workoutBlocks')}
                                 </h4>
                                 <div className="space-y-2">
                                     {match.blockComparison.map((block, index) => (
                                         <div
                                             key={block.blockId}
-                                            className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                                            className="p-3 bg-endurix-black/5 dark:bg-white/5 border border-endurix-black/10 dark:border-white/10"
                                         >
                                             <div className="flex items-center gap-2 mb-1">
-                                                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                                                <span className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                                                     {index + 1}.
                                                 </span>
-                                                <span className="text-sm font-semibold text-gray-900 dark:text-white capitalize">
+                                                <span className="text-sm font-bold text-endurix-black dark:text-foreground uppercase tracking-tight" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>
                                                     {block.blockName || block.blockType}
                                                 </span>
                                             </div>
-                                            <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 dark:text-gray-400">
+                                            <div className="grid grid-cols-2 gap-2 text-xs text-endurix-black/60 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                                                 {block.planned.distance && block.planned.distance > 0 && (
                                                     <span>📏 {formatDistance(block.planned.distance)}</span>
                                                 )}

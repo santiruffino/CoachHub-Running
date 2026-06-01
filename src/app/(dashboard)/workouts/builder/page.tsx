@@ -49,9 +49,11 @@ export default async function WorkoutBuilderPage({
     }
 
     return (
-        <WorkoutBuilderView 
-            initialWorkout={initialWorkout as any} 
-            athleteId={athleteId} 
-        />
+        <div className="min-h-screen bg-endurix-paper dark:bg-background">
+            <WorkoutBuilderView
+                initialWorkout={initialWorkout as any}
+                athleteId={athleteId}
+            />
+        </div>
     );
 }

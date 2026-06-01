@@ -59,15 +59,24 @@ export function ProfileView({ initialProfile, user }: ProfileViewProps) {
                     </div>
                     <div className="flex items-center gap-5 mb-8">
                         <Avatar className="h-14 w-14 shrink-0">
-                            <AvatarFallback className="text-xl font-bold bg-muted text-foreground">
+                            <AvatarFallback
+                                className="text-xl font-bold bg-endurix-black/8 dark:bg-white/10 text-endurix-black dark:text-foreground"
+                                style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                            >
                                 {initials}
                             </AvatarFallback>
                         </Avatar>
                         <div>
-                            <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground mb-0.5">
+                            <p
+                                className="text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground mb-0.5"
+                                style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                            >
                                 {t('headerTag')}
                             </p>
-                            <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">
+                            <h1
+                                className="text-2xl sm:text-3xl font-bold text-endurix-black dark:text-foreground tracking-tight uppercase"
+                                style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                            >
                                 {displayName}
                             </h1>
                             <p className="text-sm text-muted-foreground">{profile.email}</p>
@@ -107,15 +116,16 @@ export function ProfileView({ initialProfile, user }: ProfileViewProps) {
                 </div>
             </div>
 
-            <div className="fixed bottom-16 md:bottom-0 inset-x-0 bg-background/80 backdrop-blur-md border-t border-border/20 z-40">
+            <div className="fixed bottom-16 md:bottom-0 inset-x-0 bg-endurix-paper/90 dark:bg-background/90 backdrop-blur-md border-t border-endurix-black/10 dark:border-border z-40">
                 <div className="max-w-6xl mx-auto px-6 md:px-10 py-4 flex items-center justify-between">
                     <p className="text-xs text-muted-foreground hidden sm:block">
                         {t('saveHint')}
                     </p>
                     <Button
                         type="submit"
+                        variant="orange"
                         form="profile-form"
-                        className="ml-auto h-10 px-8 rounded-full font-medium text-sm"
+                        className="ml-auto h-10 px-8 font-medium text-sm uppercase tracking-widest"
                     >
                         {tCommon('save')}
                     </Button>

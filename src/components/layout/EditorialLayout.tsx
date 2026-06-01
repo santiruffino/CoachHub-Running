@@ -81,13 +81,13 @@ export function Field({
     );
 }
 
-/** Borderless underline input class string */
+/** Borderless underline input class string - now the default for Input, kept for legacy callers */
 export const underlineInput =
-    'bg-background border-0 border-b border-border/40 rounded-none h-10 px-0 focus-visible:ring-0 focus-visible:border-foreground/50 transition-colors text-sm';
+    'bg-transparent border-0 border-b border-endurix-black/20 dark:border-white/15 rounded-none h-10 px-0 focus-visible:ring-0 focus-visible:border-endurix-orange transition-colors text-sm';
 
 /** Disabled/locked input class string */
 export const disabledInput =
-    'bg-muted/60 border-0 border-b border-border/20 rounded-none h-10 px-0 focus-visible:ring-0 text-muted-foreground cursor-not-allowed text-sm';
+    'bg-endurix-black/5 dark:bg-white/5 border-0 border-b border-endurix-black/15 dark:border-white/10 rounded-none h-10 px-0 focus-visible:ring-0 text-muted-foreground cursor-not-allowed text-sm';
 
 /** Gender toggle options */
 export const GENDER_OPTIONS = [

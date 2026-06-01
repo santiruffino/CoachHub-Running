@@ -25,17 +25,20 @@ export function WeekCalendar({ date, onDateSelect, events }: WeekCalendarProps) 
     const handleNextWeek = () => onDateSelect(addDays(date, 7));
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-3 sm:p-4 border border-gray-100 dark:border-gray-700">
+        <div className="bg-endurix-paper dark:bg-card p-3 sm:p-4 border border-endurix-black/10 dark:border-border">
             <div className="flex items-center justify-between mb-3 sm:mb-4">
-                <span className="text-lg font-semibold capitalize text-gray-900 dark:text-white">
+                <span
+                    className="text-lg font-semibold capitalize text-endurix-black dark:text-foreground"
+                    style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                >
                     {format(currentWeekStart, 'MMMM yyyy', { locale: es })}
                 </span>
                 <div className="flex gap-2">
-                    <button onClick={handlePrevWeek} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
-                        <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                    <button onClick={handlePrevWeek} className="p-1 hover:bg-endurix-black/8 dark:hover:bg-white/8">
+                        <ChevronLeft className="w-5 h-5 text-muted-foreground" />
                     </button>
-                    <button onClick={handleNextWeek} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full">
-                        <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                    <button onClick={handleNextWeek} className="p-1 hover:bg-endurix-black/8 dark:hover:bg-white/8">
+                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
                     </button>
                 </div>
             </div>
@@ -52,24 +55,34 @@ export function WeekCalendar({ date, onDateSelect, events }: WeekCalendarProps) 
 
                     return (
                         <div key={day.toISOString()} className="flex flex-col items-center gap-1 cursor-pointer" onClick={() => onDateSelect(day)}>
-                            <span className="text-xs text-gray-400 dark:text-gray-500 capitalize">
+                            <span
+                                className="text-xs text-muted-foreground capitalize uppercase tracking-wider"
+                                style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                            >
                                 {format(day, 'EEEEE', { locale: es })}
                             </span>
                             <div className={cn(
-                                "flex flex-col items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full transition-all relative",
-                                isSelected ? "bg-orange-500 text-white shadow-md scale-110" : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700",
-                                isToday && !isSelected && "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 font-bold"
+                                "flex flex-col items-center justify-center w-9 h-9 sm:w-10 sm:h-10 transition-all relative",
+                                isSelected
+                                    ? "bg-endurix-orange text-white"
+                                    : "text-endurix-black dark:text-foreground hover:bg-endurix-black/8 dark:hover:bg-white/8",
+                                isToday && !isSelected && "bg-endurix-orange/10 text-endurix-orange font-bold border border-endurix-orange/30"
                             )}>
-                                <span className="text-sm font-medium">{format(day, 'd')}</span>
+                                <span
+                                    className="text-sm font-medium"
+                                    style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                                >
+                                    {format(day, 'd')}
+                                </span>
 
                                 {/* Event indicators - show both if both exist */}
                                 {!isSelected && (hasPlanned || hasCompleted) && (
                                     <div className="absolute -bottom-1 flex gap-0.5">
                                         {hasPlanned && (
-                                            <div className="w-1 h-1 bg-blue-500 rounded-full" />
+                                            <div className="w-1 h-1 bg-endurix-black" />
                                         )}
                                         {hasCompleted && (
-                                            <div className="w-1 h-1 bg-orange-500 rounded-full" />
+                                            <div className="w-1 h-1 bg-endurix-orange" />
                                         )}
                                     </div>
                                 )}

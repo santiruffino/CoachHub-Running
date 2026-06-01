@@ -147,9 +147,9 @@ export function InviteAthleteModal({ open, onClose }: InviteAthleteModalProps) {
 
     return (
         <Dialog open={open} onOpenChange={handleClose}>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-md bg-endurix-paper dark:bg-card border border-endurix-black/15 dark:border-border">
                 <DialogHeader>
-                    <DialogTitle>{tAthlete('title')}</DialogTitle>
+                    <DialogTitle className="uppercase tracking-widest text-base" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{tAthlete('title')}</DialogTitle>
                     <DialogDescription>
                         {invitationLink
                             ? tAthlete('descriptionCreated')
@@ -159,19 +159,20 @@ export function InviteAthleteModal({ open, onClose }: InviteAthleteModalProps) {
 
                 {!invitationLink && !bulkSummary && (
                     <Tabs defaultValue="single" className="w-full mt-4">
-                        <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="single">{tAthlete('tabs.single')}</TabsTrigger>
-                            <TabsTrigger value="bulk">{tAthlete('tabs.bulk')}</TabsTrigger>
+                        <TabsList className="grid w-full grid-cols-2 bg-endurix-black/8 dark:bg-white/8">
+                            <TabsTrigger value="single" className="uppercase tracking-widest text-[10px] data-[state=active]:bg-endurix-orange data-[state=active]:text-white" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{tAthlete('tabs.single')}</TabsTrigger>
+                            <TabsTrigger value="bulk" className="uppercase tracking-widest text-[10px] data-[state=active]:bg-endurix-orange data-[state=active]:text-white" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{tAthlete('tabs.bulk')}</TabsTrigger>
                         </TabsList>
-                        
+
                         <TabsContent value="single" className="pt-4 space-y-4">
                             <form onSubmit={handleSubmit(onSubmitSingle)} className="space-y-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="email">{tCommon('email')}</Label>
+                                    <Label htmlFor="email" className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{tCommon('email')}</Label>
                                     <Input
                                         id="email"
                                         type="email"
                                         placeholder={tAthlete('emailPlaceholder')}
+                                        variant="boxed"
                                         {...register('email', {
                                             required: tCommon('emailRequired'),
                                             pattern: {
@@ -185,10 +186,10 @@ export function InviteAthleteModal({ open, onClose }: InviteAthleteModalProps) {
                                     )}
                                 </div>
                                 <div className="flex justify-end gap-2 pt-2">
-                                    <Button type="button" variant="outline" onClick={handleClose}>
+                                    <Button type="button" variant="outline-brand" className="uppercase tracking-widest text-[10px]" onClick={handleClose}>
                                         {tCommon('cancel')}
                                     </Button>
-                                    <Button type="submit" disabled={creating}>
+                                    <Button type="submit" variant="orange" className="uppercase tracking-widest text-[10px]" disabled={creating}>
                                         {creating ? (
                                             <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {tCommon('creating')}</>
                                         ) : tAthlete('create')}
@@ -198,37 +199,39 @@ export function InviteAthleteModal({ open, onClose }: InviteAthleteModalProps) {
                         </TabsContent>
 
                         <TabsContent value="bulk" className="pt-4 space-y-4">
-                            <div 
-                                className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:bg-muted/50 transition-colors"
+                            <div
+                                className="border-2 border-dashed border-endurix-black/20 dark:border-white/20 p-8 text-center cursor-pointer hover:bg-endurix-black/5 dark:hover:bg-white/5 transition-colors"
                                 onClick={() => fileInputRef.current?.click()}
                             >
-                                <input 
-                                    type="file" 
-                                    ref={fileInputRef} 
-                                    className="hidden" 
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    className="hidden"
                                     accept=".csv,.txt"
                                     onChange={handleFileChange}
                                 />
                                 <div className="flex flex-col items-center gap-2">
-                                    <Upload className="h-8 w-8 text-muted-foreground" />
-                                    <p className="text-sm font-medium">{bulkFile ? tAthlete('bulk.fileSelected', { name: bulkFile.name }) : tAthlete('bulk.dropzone')}</p>
+                                    <Upload className="h-8 w-8 text-endurix-orange" />
+                                    <p className="text-sm font-medium uppercase tracking-widest" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{bulkFile ? tAthlete('bulk.fileSelected', { name: bulkFile.name }) : tAthlete('bulk.dropzone')}</p>
                                     <p className="text-xs text-muted-foreground">{tAthlete('bulk.description')}</p>
                                 </div>
                             </div>
 
                             {bulkEmails.length > 0 && (
-                                <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 dark:bg-green-950/20 p-2 rounded">
+                                <div className="flex items-center gap-2 text-sm text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 p-2">
                                     <Check className="h-4 w-4" />
-                                    <span>{bulkEmails.length} correos detectados</span>
+                                    <span className="font-mono text-xs uppercase tracking-wider">{bulkEmails.length} correos detectados</span>
                                 </div>
                             )}
 
                             <div className="flex justify-end gap-2 pt-2">
-                                <Button type="button" variant="outline" onClick={handleClose}>
+                                <Button type="button" variant="outline-brand" className="uppercase tracking-widest text-[10px]" onClick={handleClose}>
                                     {tCommon('cancel')}
                                 </Button>
-                                <Button 
-                                    onClick={onSubmitBulk} 
+                                <Button
+                                    variant="orange"
+                                    className="uppercase tracking-widest text-[10px]"
+                                    onClick={onSubmitBulk}
                                     disabled={isProcessingBulk || bulkEmails.length === 0}
                                 >
                                     {isProcessingBulk ? (
@@ -243,17 +246,17 @@ export function InviteAthleteModal({ open, onClose }: InviteAthleteModalProps) {
                 {invitationLink && (
                     <div className="space-y-4 pt-4">
                         <div className="space-y-2">
-                            <Label>{tCommon('linkLabel')}</Label>
+                            <Label className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{tCommon('linkLabel')}</Label>
                             <div className="flex gap-2">
-                                <Input value={invitationLink} readOnly className="font-mono text-xs" />
+                                <Input value={invitationLink} readOnly variant="boxed" className="font-mono text-xs" />
                                 <Button
                                     type="button"
                                     size="icon"
-                                    variant="outline"
+                                    variant="outline-brand"
                                     onClick={copyToClipboard}
                                 >
                                     {copied ? (
-                                        <Check className="h-4 w-4 text-green-500" />
+                                        <Check className="h-4 w-4 text-emerald-600" />
                                     ) : (
                                         <Copy className="h-4 w-4" />
                                     )}
@@ -265,7 +268,7 @@ export function InviteAthleteModal({ open, onClose }: InviteAthleteModalProps) {
                         </div>
 
                         <div className="flex justify-end gap-2 pt-2">
-                            <Button asChild className="bg-green-600 hover:bg-green-700 text-white">
+                            <Button asChild className="bg-emerald-600 hover:bg-emerald-700 text-white uppercase tracking-widest text-[10px]">
                                 <a
                                     href={getWhatsAppShareUrl()}
                                     target="_blank"
@@ -275,41 +278,41 @@ export function InviteAthleteModal({ open, onClose }: InviteAthleteModalProps) {
                                     {tCommon('sendWhatsapp')}
                                 </a>
                             </Button>
-                            <Button onClick={handleClose}>{tCommon('close')}</Button>
+                            <Button variant="orange" className="uppercase tracking-widest text-[10px]" onClick={handleClose}>{tCommon('close')}</Button>
                         </div>
                     </div>
                 )}
 
                 {bulkSummary && (
                     <div className="space-y-6 pt-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="p-3 bg-muted rounded-lg text-center">
-                                <p className="text-xs text-muted-foreground uppercase font-bold">{tAthlete('bulk.summary.total')}</p>
-                                <p className="text-2xl font-bold">{bulkSummary.total}</p>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="p-3 bg-endurix-black/8 dark:bg-white/8 text-center">
+                                <p className="text-[10px] text-muted-foreground uppercase tracking-widest" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{tAthlete('bulk.summary.total')}</p>
+                                <p className="text-2xl font-bold text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{bulkSummary.total}</p>
                             </div>
-                            <div className="p-3 bg-green-100 dark:bg-green-950/30 rounded-lg text-center">
-                                <p className="text-xs text-green-600 dark:text-green-400 uppercase font-bold">{tAthlete('bulk.summary.success')}</p>
-                                <p className="text-2xl font-bold text-green-600 dark:text-green-400">{bulkSummary.success}</p>
+                            <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 text-center">
+                                <p className="text-[10px] text-emerald-700 dark:text-emerald-400 uppercase tracking-widest" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{tAthlete('bulk.summary.success')}</p>
+                                <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-400" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{bulkSummary.success}</p>
                             </div>
-                            <div className="p-3 bg-blue-100 dark:bg-blue-950/30 rounded-lg text-center">
-                                <p className="text-xs text-blue-600 dark:text-blue-400 uppercase font-bold">{tAthlete('bulk.summary.pending')}</p>
-                                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{bulkSummary.pending}</p>
+                            <div className="p-3 bg-blue-500/10 border border-blue-500/30 text-center">
+                                <p className="text-[10px] text-blue-700 dark:text-blue-400 uppercase tracking-widest" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{tAthlete('bulk.summary.pending')}</p>
+                                <p className="text-2xl font-bold text-blue-700 dark:text-blue-400" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{bulkSummary.pending}</p>
                             </div>
-                            <div className="p-3 bg-amber-100 dark:bg-amber-950/30 rounded-lg text-center">
-                                <p className="text-xs text-amber-600 dark:text-amber-400 uppercase font-bold">{tAthlete('bulk.summary.exists')}</p>
-                                <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{bulkSummary.exists}</p>
+                            <div className="p-3 bg-amber-500/10 border border-amber-500/30 text-center">
+                                <p className="text-[10px] text-amber-700 dark:text-amber-400 uppercase tracking-widest" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{tAthlete('bulk.summary.exists')}</p>
+                                <p className="text-2xl font-bold text-amber-700 dark:text-amber-400" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{bulkSummary.exists}</p>
                             </div>
                         </div>
 
                         {bulkSummary.failed > 0 && (
-                            <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 dark:bg-red-950/20 p-3 rounded-lg">
+                            <div className="flex items-center gap-2 text-sm text-red-700 dark:text-red-400 bg-red-500/10 border border-red-500/30 p-3">
                                 <AlertCircle className="h-4 w-4" />
-                                <span>{tAthlete('bulk.summary.failed')}: {bulkSummary.failed}</span>
+                                <span className="font-mono text-xs uppercase tracking-wider">{tAthlete('bulk.summary.failed')}: {bulkSummary.failed}</span>
                             </div>
                         )}
 
                         <div className="flex justify-end pt-2">
-                            <Button onClick={handleClose} className="w-full sm:w-auto">{tCommon('close')}</Button>
+                            <Button variant="orange" className="w-full sm:w-auto uppercase tracking-widest text-[10px]" onClick={handleClose}>{tCommon('close')}</Button>
                         </div>
                     </div>
                 )}

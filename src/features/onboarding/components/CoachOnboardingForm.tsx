@@ -66,18 +66,18 @@ export default function CoachOnboardingForm() {
   }
 
   return (
-    <div className="min-h-screen bg-background px-4 py-10">
+    <div className="min-h-screen bg-endurix-paper dark:bg-background px-4 py-10">
       <div className="max-w-3xl mx-auto space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Coach Onboarding</CardTitle>
+        <Card className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border">
+          <CardHeader className="border-b border-endurix-black/10 dark:border-border">
+            <CardTitle className="text-xl uppercase tracking-tight" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>Coach Onboarding</CardTitle>
             <CardDescription>
               Complete your coaching profile and we will bootstrap starter templates for your team.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-6 p-6">
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm text-muted-foreground">
+              <div className="flex items-center justify-between text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                 <span>Completion tracker</span>
                 <span>{completionPercent}%</span>
               </div>
@@ -85,9 +85,10 @@ export default function CoachOnboardingForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="bio">Coach bio</Label>
+              <Label htmlFor="bio" className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>Coach bio</Label>
               <Input
                 id="bio"
+                variant="boxed"
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 placeholder="Your coaching background"
@@ -99,9 +100,10 @@ export default function CoachOnboardingForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="specialty">Specialty</Label>
+              <Label htmlFor="specialty" className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>Specialty</Label>
               <Input
                 id="specialty"
+                variant="boxed"
                 value={specialty}
                 onChange={(e) => setSpecialty(e.target.value)}
                 placeholder="e.g. Marathon, Trail, 10K progression"
@@ -109,19 +111,21 @@ export default function CoachOnboardingForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="experience">Experience</Label>
+              <Label htmlFor="experience" className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>Experience</Label>
               <Input
                 id="experience"
+                variant="boxed"
                 value={experience}
                 onChange={(e) => setExperience(e.target.value)}
                 placeholder="e.g. 8 years, federation certified"
               />
             </div>
 
-            {error ? <p className="text-sm text-destructive">{error}</p> : null}
+            {error ? <p className="text-sm text-red-600 dark:text-red-400">{error}</p> : null}
 
             <div className="flex justify-end">
               <Button
+                variant="orange"
                 onClick={async () => {
                   try {
                     setSaving(true);
@@ -142,6 +146,7 @@ export default function CoachOnboardingForm() {
                   }
                 }}
                 disabled={saving}
+                className="uppercase tracking-widest text-xs"
               >
                 {saving ? 'Saving...' : 'Complete Onboarding'}
               </Button>

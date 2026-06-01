@@ -36,10 +36,15 @@ export function StudentFilter({
     const t = useTranslations('calendar.studentFilter');
 
     return (
-        <div className="w-64 bg-white p-4 rounded-lg shadow-sm h-full overflow-y-auto">
+        <div className="w-64 bg-endurix-paper dark:bg-card p-4 border border-endurix-black/10 dark:border-border h-full overflow-y-auto">
             {/* Groups Section */}
             <div className="mb-6">
-                <h3 className="font-semibold text-gray-700 mb-2">{t('groups')}</h3>
+                <h3
+                    className="font-semibold text-endurix-black dark:text-foreground mb-2 uppercase tracking-widest text-xs"
+                    style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                >
+                    {t('groups')}
+                </h3>
                 <div className="space-y-2">
                     {groups.map((group) => (
                         <div key={group.id} className="flex items-center space-x-2">
@@ -48,25 +53,30 @@ export function StudentFilter({
                                 id={`group-${group.id}`}
                                 checked={selectedGroupIds.includes(group.id)}
                                 onChange={() => onToggleGroup(group.id)}
-                                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                className="border-endurix-black/20 text-endurix-orange focus:ring-endurix-orange"
                             />
-                            <label htmlFor={`group-${group.id}`} className="text-sm text-gray-700 cursor-pointer truncate font-medium">
+                            <label htmlFor={`group-${group.id}`} className="text-sm text-endurix-black dark:text-foreground cursor-pointer truncate font-medium">
                                 {group.name}
                             </label>
                         </div>
                     ))}
-                    {groups.length === 0 && <p className="text-xs text-gray-400">{t('noGroups')}</p>}
+                    {groups.length === 0 && <p className="text-xs text-muted-foreground">{t('noGroups')}</p>}
                 </div>
             </div>
 
-            <div className="border-t border-gray-100 my-4"></div>
+            <div className="border-t border-endurix-black/10 dark:border-border my-4"></div>
 
             {/* Students Section */}
             <div className="flex justify-between items-center mb-4">
-                <h3 className="font-semibold text-gray-700">{t('students')}</h3>
+                <h3
+                    className="font-semibold text-endurix-black dark:text-foreground uppercase tracking-widest text-xs"
+                    style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                >
+                    {t('students')}
+                </h3>
                 <div className="text-xs space-x-2">
-                    <button onClick={onSelectAllStudents} className="text-blue-600 hover:text-blue-800">{t('all')}</button>
-                    <button onClick={onDeselectAllStudents} className="text-gray-500 hover:text-gray-700">{t('none')}</button>
+                    <button onClick={onSelectAllStudents} className="text-endurix-orange hover:text-endurix-orange/80 font-semibold uppercase tracking-wider">{t('all')}</button>
+                    <button onClick={onDeselectAllStudents} className="text-muted-foreground hover:text-endurix-black uppercase tracking-wider">{t('none')}</button>
                 </div>
             </div>
             <div className="space-y-2">
@@ -77,9 +87,9 @@ export function StudentFilter({
                             id={`student-${student.id}`}
                             checked={selectedStudentIds.includes(student.id)}
                             onChange={() => onToggleStudent(student.id)}
-                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            className="border-endurix-black/20 text-endurix-orange focus:ring-endurix-orange"
                         />
-                        <label htmlFor={`student-${student.id}`} className="text-sm text-gray-700 cursor-pointer truncate">
+                        <label htmlFor={`student-${student.id}`} className="text-sm text-endurix-black dark:text-foreground cursor-pointer truncate">
                             {student.name || student.id}
                         </label>
                     </div>

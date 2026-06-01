@@ -46,16 +46,22 @@ export function HeartRateZones({ zones }: HeartRateZonesProps) {
 
                     return (
                         <div key={originalIndex} className="flex items-center gap-3">
-                            <div className={`w-2 h-2 rounded-full shrink-0 ${color}`} />
-                            <span className="text-xs font-medium text-muted-foreground w-36 shrink-0">
+                            <div className={`w-2 h-2 shrink-0 ${color}`} />
+                            <span
+                                className="text-xs font-medium text-muted-foreground w-36 shrink-0 uppercase tracking-wider"
+                                style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                            >
                                 {label}
                             </span>
-                            <span className="text-xs font-semibold text-foreground w-20 text-right">
+                            <span
+                                className="text-xs font-semibold text-endurix-black dark:text-foreground w-20 text-right tabular-nums"
+                                style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                            >
                                 {zone.min}–{zone.max}
                             </span>
-                            <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                            <div className="flex-1 h-1.5 bg-endurix-black/10 dark:bg-border">
                                 <div
-                                    className={`h-full ${color} rounded-full transition-all duration-500`}
+                                    className={`h-full ${color} transition-all duration-500`}
                                     style={{ width: `${percentage}%` }}
                                 />
                             </div>

@@ -85,9 +85,9 @@ export function InviteCoachModal({ open, onClose }: InviteCoachModalProps) {
 
     return (
         <Dialog open={open} onOpenChange={handleClose}>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-md bg-endurix-paper dark:bg-card border border-endurix-black/15 dark:border-border">
                 <DialogHeader>
-                    <DialogTitle>{tCoach('title')}</DialogTitle>
+                    <DialogTitle className="uppercase tracking-widest text-base" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{tCoach('title')}</DialogTitle>
                     <DialogDescription>
                         {invitationLink
                             ? tCoach('descriptionCreated')
@@ -98,12 +98,13 @@ export function InviteCoachModal({ open, onClose }: InviteCoachModalProps) {
                 {!invitationLink ? (
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-4">
                         <div className="space-y-2">
-                            <Label htmlFor="email">{tCommon('email')}</Label>
+                            <Label htmlFor="email" className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{tCommon('email')}</Label>
                             <div className="flex gap-2">
                                 <Input
                                     id="email"
                                     type="email"
                                     placeholder={tCoach('emailPlaceholder')}
+                                    variant="boxed"
                                     {...register('email', {
                                         required: tCommon('emailRequired'),
                                         pattern: {
@@ -119,10 +120,10 @@ export function InviteCoachModal({ open, onClose }: InviteCoachModalProps) {
                         </div>
 
                         <div className="flex justify-end gap-2 pt-2">
-                            <Button type="button" variant="outline" onClick={handleClose}>
+                            <Button type="button" variant="outline-brand" className="uppercase tracking-widest text-[10px]" onClick={handleClose}>
                                 {tCommon('cancel')}
                             </Button>
-                            <Button type="submit" disabled={creating}>
+                            <Button type="submit" variant="orange" className="uppercase tracking-widest text-[10px]" disabled={creating}>
                                 {creating ? tCommon('creating') : tCoach('create')}
                             </Button>
                         </div>
@@ -130,17 +131,17 @@ export function InviteCoachModal({ open, onClose }: InviteCoachModalProps) {
                 ) : (
                     <div className="space-y-4 pt-4">
                         <div className="space-y-2">
-                            <Label>{tCommon('linkLabel')}</Label>
+                            <Label className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{tCommon('linkLabel')}</Label>
                             <div className="flex gap-2">
-                                <Input value={invitationLink} readOnly className="font-mono text-xs" />
+                                <Input value={invitationLink} readOnly variant="boxed" className="font-mono text-xs" />
                                 <Button
                                     type="button"
                                     size="icon"
-                                    variant="outline"
+                                    variant="outline-brand"
                                     onClick={copyToClipboard}
                                 >
                                     {copied ? (
-                                        <Check className="h-4 w-4 text-green-500" />
+                                        <Check className="h-4 w-4 text-emerald-600" />
                                     ) : (
                                         <Copy className="h-4 w-4" />
                                     )}
@@ -152,7 +153,7 @@ export function InviteCoachModal({ open, onClose }: InviteCoachModalProps) {
                         </div>
 
                         <div className="flex justify-end gap-2 pt-2">
-                            <Button asChild className="bg-green-600 hover:bg-green-700 text-white">
+                            <Button asChild className="bg-emerald-600 hover:bg-emerald-700 text-white uppercase tracking-widest text-[10px]">
                                 <a
                                     href={getWhatsAppShareUrl()}
                                     target="_blank"
@@ -162,7 +163,7 @@ export function InviteCoachModal({ open, onClose }: InviteCoachModalProps) {
                                     {tCommon('sendWhatsapp')}
                                 </a>
                             </Button>
-                            <Button onClick={handleClose}>{tCommon('close')}</Button>
+                            <Button variant="orange" className="uppercase tracking-widest text-[10px]" onClick={handleClose}>{tCommon('close')}</Button>
                         </div>
                     </div>
                 )}

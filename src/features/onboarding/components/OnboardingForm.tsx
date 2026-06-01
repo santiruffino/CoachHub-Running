@@ -133,10 +133,10 @@ export default function OnboardingForm() {
                 <div className="max-w-4xl mx-auto px-6 md:px-10 pt-12">
                     {/* Page header */}
                     <div className="mb-6">
-                        <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground mb-3">
+                        <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-endurix-orange mb-3" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                             {t('tag')}
                         </p>
-                        <h1 className="text-3xl md:text-4xl font-display font-light text-foreground mb-2">
+                        <h1 className="text-3xl md:text-4xl font-light text-endurix-black dark:text-foreground mb-2 uppercase tracking-tight" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>
                             {t('title')}
                         </h1>
                         <p className="text-sm text-muted-foreground max-w-md">
@@ -145,7 +145,7 @@ export default function OnboardingForm() {
                     </div>
 
                     {error && (
-                        <Alert variant="destructive" className="mb-6 bg-destructive/10 border-destructive/20">
+                        <Alert variant="destructive" className="mb-6 bg-red-500/10 border-red-500/30">
                             <AlertDescription>{error}</AlertDescription>
                         </Alert>
                     )}
@@ -271,29 +271,29 @@ export default function OnboardingForm() {
                                     />
                                     
                                     <div className="mt-6">
-                                        <p className="text-sm text-muted-foreground mb-3">{t('fields.level')}</p>
+                                        <p className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground mb-3" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{t('fields.level')}</p>
                                         <div className="flex flex-col gap-2">
-                                            <Button 
-                                                type="button" 
-                                                variant={watch('vam') === '6:30' ? 'default' : 'outline'}
+                                            <Button
+                                                type="button"
+                                                variant={watch('vam') === '6:30' ? 'orange' : 'outline-brand'}
                                                 onClick={() => setValue('vam', '6:30', { shouldValidate: true })}
-                                                className="justify-start"
+                                                className="justify-start uppercase tracking-widest text-[10px]"
                                             >
                                                 {t('levels.beginner')}
                                             </Button>
-                                            <Button 
-                                                type="button" 
-                                                variant={watch('vam') === '5:30' ? 'default' : 'outline'}
+                                            <Button
+                                                type="button"
+                                                variant={watch('vam') === '5:30' ? 'orange' : 'outline-brand'}
                                                 onClick={() => setValue('vam', '5:30', { shouldValidate: true })}
-                                                className="justify-start"
+                                                className="justify-start uppercase tracking-widest text-[10px]"
                                             >
                                                 {t('levels.intermediate')}
                                             </Button>
-                                            <Button 
-                                                type="button" 
-                                                variant={watch('vam') === '4:30' ? 'default' : 'outline'}
+                                            <Button
+                                                type="button"
+                                                variant={watch('vam') === '4:30' ? 'orange' : 'outline-brand'}
                                                 onClick={() => setValue('vam', '4:30', { shouldValidate: true })}
-                                                className="justify-start"
+                                                className="justify-start uppercase tracking-widest text-[10px]"
                                             >
                                                 {t('levels.expert')}
                                             </Button>
@@ -307,7 +307,7 @@ export default function OnboardingForm() {
             </div>
 
             {/* ── Sticky bottom action bar ── */}
-            <div className="fixed bottom-0 inset-x-0 bg-background/80 backdrop-blur-md border-t border-border/20 z-50">
+            <div className="fixed bottom-0 inset-x-0 bg-endurix-paper/95 dark:bg-background/95 backdrop-blur-md border-t border-endurix-black/10 dark:border-border z-50">
                 <div className="max-w-4xl mx-auto px-6 md:px-10 py-4 flex items-center justify-between">
                     <p className="text-xs text-muted-foreground hidden sm:block">
                         {t('footer')}
@@ -315,8 +315,9 @@ export default function OnboardingForm() {
                     <Button
                         type="submit"
                         form="onboarding-form"
+                        variant="orange"
                         disabled={submitting}
-                        className="ml-auto h-10 px-8 rounded-full font-medium text-sm"
+                        className="ml-auto h-10 px-8 uppercase tracking-widest text-xs"
                     >
                         {submitting ? t('submitting') : t('submit')}
                     </Button>

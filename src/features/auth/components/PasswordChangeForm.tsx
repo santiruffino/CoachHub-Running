@@ -59,33 +59,34 @@ export default function PasswordChangeForm() {
     };
 
     return (
-        <Card className="w-full max-w-md">
-            <CardHeader>
-                <CardTitle className="text-2xl">{t('title')}</CardTitle>
+        <Card className="w-full max-w-md bg-endurix-paper dark:bg-card border border-endurix-black/15 dark:border-border">
+            <CardHeader className="border-b border-endurix-black/10 dark:border-border">
+                <CardTitle className="text-2xl uppercase tracking-tight" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{t('title')}</CardTitle>
                 <CardDescription>
                     {t('description')}
                 </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-6">
                 {error && (
-                    <Alert variant="destructive" className="mb-4">
+                    <Alert variant="destructive" className="mb-4 bg-red-500/10 border-red-500/30">
                         <AlertDescription>{error}</AlertDescription>
                     </Alert>
                 )}
 
                 {success && (
-                    <Alert className="mb-4">
+                    <Alert className="mb-4 bg-emerald-500/10 text-emerald-700 border-emerald-500/30 dark:text-emerald-400">
                         <AlertDescription>{t('success')}</AlertDescription>
                     </Alert>
                 )}
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="currentPassword">{t('currentPassword')}</Label>
+                        <Label htmlFor="currentPassword" className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{t('currentPassword')}</Label>
                         <Input
                             id="currentPassword"
                             type="password"
                             placeholder={t('passwordPlaceholder')}
+                            variant="boxed"
                             {...register('currentPassword')}
                         />
                         {errors.currentPassword && (
@@ -94,11 +95,12 @@ export default function PasswordChangeForm() {
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="newPassword">{t('newPassword')}</Label>
+                        <Label htmlFor="newPassword" className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{t('newPassword')}</Label>
                         <Input
                             id="newPassword"
                             type="password"
                             placeholder={t('passwordPlaceholder')}
+                            variant="boxed"
                             {...register('newPassword')}
                         />
                         {errors.newPassword && (
@@ -107,11 +109,12 @@ export default function PasswordChangeForm() {
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="confirmPassword">{t('confirmPassword')}</Label>
+                        <Label htmlFor="confirmPassword" className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{t('confirmPassword')}</Label>
                         <Input
                             id="confirmPassword"
                             type="password"
                             placeholder={t('passwordPlaceholder')}
+                            variant="boxed"
                             {...register('confirmPassword')}
                         />
                         {errors.confirmPassword && (
@@ -121,8 +124,9 @@ export default function PasswordChangeForm() {
 
                     <Button
                         type="submit"
+                        variant="orange"
                         disabled={isSubmitting || success}
-                        className="w-full"
+                        className="w-full uppercase tracking-widest text-xs"
                     >
                         {isSubmitting ? t('submit') + '...' : t('submit')}
                     </Button>

@@ -19,17 +19,23 @@ import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
 import { useApiError } from '@/hooks/useApiError';
 
+const PLEX = { fontFamily: 'var(--font-plex-mono, monospace)' } as const;
+const EXO = { fontFamily: 'var(--font-exo-2, sans-serif)' } as const;
+const LABEL_CLS = 'text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground';
+const CARD_CLS = 'bg-endurix-paper dark:bg-card border border-endurix-black/15 dark:border-white/15';
+const ROW_CLS = 'flex items-center gap-3 p-4 bg-endurix-black/5 dark:bg-white/5 border border-endurix-black/10 dark:border-white/10';
+
 // Custom Searchable Dropdown for Performance Curator aesthetic
-function SearchableMultiSelect({ 
-    items, 
-    selectedIds, 
-    onChange, 
+function SearchableMultiSelect({
+    items,
+    selectedIds,
+    onChange,
     placeholder,
     noMatchesLabel,
-}: { 
-    items: { id: string; label: string; subLabel?: string }[]; 
-    selectedIds: string[]; 
-    onChange: (ids: string[]) => void; 
+}: {
+    items: { id: string; label: string; subLabel?: string }[];
+    selectedIds: string[];
+    onChange: (ids: string[]) => void;
     placeholder: string;
     noMatchesLabel: string;
 }) {
@@ -38,8 +44,8 @@ function SearchableMultiSelect({
 
     const filtered = useMemo(() => {
         if (!search) return items;
-        return items.filter(item => 
-            item.label.toLowerCase().includes(search.toLowerCase()) || 
+        return items.filter(item =>
+            item.label.toLowerCase().includes(search.toLowerCase()) ||
             (item.subLabel && item.subLabel.toLowerCase().includes(search.toLowerCase()))
         );
     }, [items, search]);
@@ -65,9 +71,9 @@ function SearchableMultiSelect({
                         const item = items.find(i => i.id === id);
                         if (!item) return null;
                         return (
-                            <div key={id} className="flex items-center bg-muted dark:bg-card text-foreground px-3 py-1 rounded text-xs font-semibold tracking-wide">
+                            <div key={id} className="flex items-center bg-endurix-orange/10 text-endurix-orange border border-endurix-orange/30 px-3 py-1 text-xs font-semibold tracking-wide" style={PLEX}>
                                 {item.label}
-                                <button type="button" onClick={(e) => removeSelectedItem(e, id)} className="ml-2 text-muted-foreground hover:text-primary">
+                                <button type="button" onClick={(e) => removeSelectedItem(e, id)} className="ml-2 text-endurix-orange/70 hover:text-endurix-orange">
                                     <X className="w-3 h-3" />
                                 </button>
                             </div>
@@ -75,9 +81,9 @@ function SearchableMultiSelect({
                     })}
                 </div>
             )}
-            
+
             <div className="relative">
-                <Search className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Search className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-endurix-orange" />
                 <input
                     type="text"
                     value={search}
@@ -87,19 +93,19 @@ function SearchableMultiSelect({
                     }}
                     onFocus={() => setIsOpen(true)}
                     placeholder={placeholder}
-                    className="w-full bg-transparent border-0 border-b border-border/30 pl-8 pr-0 py-2 text-foreground focus:ring-0 focus:border-primary placeholder-muted-foreground/50 transition-colors"
+                    className="w-full bg-transparent border-0 border-b border-endurix-black/20 dark:border-white/20 pl-8 pr-0 py-2 text-endurix-black dark:text-foreground focus:ring-0 focus:border-endurix-orange placeholder-endurix-black/30 dark:placeholder:text-muted-foreground/50 transition-colors"
                 />
             </div>
 
             {isOpen && (
                 <>
-                    <div 
-                        className="fixed inset-0 z-10" 
+                    <div
+                        className="fixed inset-0 z-10"
                         onClick={() => setIsOpen(false)}
                     />
-                    <div className="absolute top-full left-0 right-0 mt-2 z-20 bg-card dark:bg-muted border border-gray-100 dark:border-white/5 shadow-[0_20px_40px_rgba(43,52,55,0.08)] rounded-lg max-h-60 overflow-y-auto w-full">
+                    <div className="absolute top-full left-0 right-0 mt-2 z-20 bg-endurix-paper dark:bg-card border border-endurix-black/15 dark:border-white/15 max-h-60 overflow-y-auto w-full">
                         {filtered.length === 0 ? (
-                            <div className="p-4 text-xs tracking-wider text-muted-foreground uppercase font-semibold text-center">
+                            <div className="p-4 text-xs tracking-widest text-endurix-black/50 dark:text-muted-foreground uppercase font-bold text-center" style={PLEX}>
                                 {noMatchesLabel}
                             </div>
                         ) : (
@@ -111,20 +117,20 @@ function SearchableMultiSelect({
                                         type="button"
                                         onClick={() => toggleItem(item.id)}
                                         className={cn(
-                                            "w-full flex items-center justify-between px-4 py-3 hover:bg-muted dark:hover:bg-card transition-colors text-left",
-                                            isSelected && "bg-background dark:bg-white/5"
+                                            "w-full flex items-center justify-between px-4 py-3 hover:bg-endurix-orange/5 dark:hover:bg-endurix-orange/10 transition-colors text-left border-b border-endurix-black/8 dark:border-white/8 last:border-b-0",
+                                            isSelected && "bg-endurix-orange/10"
                                         )}
                                     >
                                         <div className="flex flex-col">
                                             <span className={cn(
                                                 "text-sm font-semibold transition-colors",
-                                                isSelected ? "text-primary dark:text-white" : "text-foreground"
+                                                isSelected ? "text-endurix-orange" : "text-endurix-black dark:text-foreground"
                                             )}>
                                                 {item.label}
                                             </span>
                                             {item.subLabel && <span className="text-xs text-muted-foreground">{item.subLabel}</span>}
                                         </div>
-                                        {isSelected && <Check className="w-4 h-4 text-primary dark:text-white" />}
+                                        {isSelected && <Check className="w-4 h-4 text-endurix-orange" />}
                                     </button>
                                 )
                             })
@@ -350,12 +356,12 @@ export function AssignWorkoutView({
 
     if (step === 'select-source') {
         return (
-             <div className="bg-background dark:bg-background flex flex-col font-inter">
+             <div className="bg-endurix-paper dark:bg-background flex flex-col">
                 <div className="flex-none p-12">
-                    <Button variant="ghost" onClick={() => router.back()} className="text-muted-foreground hover:text-foreground transition-colors p-0 hover:bg-transparent tracking-widest uppercase text-xs font-semibold">
+                    <Button variant="ghost" onClick={() => router.back()} className="text-endurix-black/60 dark:text-muted-foreground hover:text-endurix-orange hover:bg-transparent tracking-widest uppercase text-xs font-semibold p-0" style={PLEX}>
                         <ArrowLeft className="w-4 h-4 mr-2" /> {tAssign('navigateBack')}
                     </Button>
-                    <h1 className="text-4xl lg:text-5xl font-extrabold font-display text-foreground mt-12 mb-4">
+                    <h1 className="text-4xl lg:text-5xl font-bold text-endurix-black dark:text-foreground mt-12 mb-4 uppercase tracking-tight" style={EXO}>
                         {tAssign('pageTitle')}
                     </h1>
                     <p className="text-muted-foreground text-lg max-w-lg leading-relaxed">
@@ -363,24 +369,21 @@ export function AssignWorkoutView({
                     </p>
                 </div>
 
-                <div className="flex-1 flex px-12 pb-12 gap-8 mt-8">
+                <div className="flex-1 flex px-12 pb-12 gap-6 mt-8">
                     <button
                         type="button"
                         onClick={() => {
                             setWorkoutSource('template');
                             setStep('select-template');
                         }}
-                        className="flex-1 bg-card shadow-[0_4px_24px_rgba(43,52,55,0.04)] hover:shadow-[0_20px_40px_rgba(43,52,55,0.06)] rounded-xl border border-transparent dark:border-white/5 p-12 text-left group transition-all duration-300 relative overflow-hidden"
+                        className={`flex-1 ${CARD_CLS} hover:border-endurix-orange p-12 text-left group transition-all relative overflow-hidden`}
                     >
-                        <div className="absolute top-0 right-0 p-12 opacity-5">
-                            <LayoutTemplate className="w-64 h-64 text-primary -rotate-12" />
-                        </div>
                         <div className="relative z-10 flex flex-col h-full justify-between">
-                            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
-                                <LayoutTemplate className="w-8 h-8 text-primary" />
+                            <div className="w-16 h-16 bg-endurix-orange/10 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
+                                <LayoutTemplate className="w-8 h-8 text-endurix-orange" />
                             </div>
                             <div>
-                                <h2 className="text-3xl font-display font-bold text-foreground tracking-tight mb-2">{tAssign('fromLibrary')}</h2>
+                                <h2 className="text-3xl font-bold text-endurix-black dark:text-foreground tracking-tight mb-2 uppercase" style={EXO}>{tAssign('fromLibrary')}</h2>
                                 <p className="text-muted-foreground font-medium leading-relaxed">
                                     {tAssign('fromLibraryDesc')}
                                 </p>
@@ -394,17 +397,14 @@ export function AssignWorkoutView({
                             setWorkoutSource('new');
                             setStep('build');
                         }}
-                        className="flex-1 bg-card shadow-[0_4px_24px_rgba(43,52,55,0.04)] hover:shadow-[0_20px_40px_rgba(43,52,55,0.06)] rounded-xl border border-transparent dark:border-white/5 p-12 text-left group transition-all duration-300 relative overflow-hidden"
+                        className={`flex-1 ${CARD_CLS} hover:border-endurix-orange p-12 text-left group transition-all relative overflow-hidden`}
                     >
-                        <div className="absolute top-0 right-0 p-12 opacity-5">
-                            <Sparkles className="w-64 h-64 text-emerald-500 rotate-12" />
-                        </div>
                         <div className="relative z-10 flex flex-col h-full justify-between">
-                            <div className="w-16 h-16 rounded-full bg-muted  flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
-                                <Sparkles className="w-8 h-8 text-emerald-500" />
+                            <div className="w-16 h-16 bg-endurix-black/8 dark:bg-white/8 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
+                                <Sparkles className="w-8 h-8 text-endurix-orange" />
                             </div>
                             <div>
-                                <h2 className="text-3xl font-display font-bold text-foreground tracking-tight mb-2">{tAssign('blankSlate')}</h2>
+                                <h2 className="text-3xl font-bold text-endurix-black dark:text-foreground tracking-tight mb-2 uppercase" style={EXO}>{tAssign('blankSlate')}</h2>
                                 <p className="text-muted-foreground font-medium leading-relaxed">
                                     {tAssign('blankSlateDesc')}
                                 </p>
@@ -418,18 +418,18 @@ export function AssignWorkoutView({
 
     if (step === 'select-template') {
         return (
-            <div className="bg-background dark:bg-background flex flex-col font-inter h-[calc(100vh-64px)] overflow-hidden">
-                <div className="p-10 lg:p-12 border-b border-border dark:border-white/5 shrink-0">
-                    <Button variant="ghost" onClick={() => setStep('select-source')} className="text-muted-foreground hover:text-foreground transition-colors p-0 hover:bg-transparent tracking-widest uppercase text-xs font-semibold mb-8">
+            <div className="bg-endurix-paper dark:bg-background flex flex-col h-[calc(100vh-64px)] overflow-hidden">
+                <div className="p-10 lg:p-12 border-b border-endurix-black/10 dark:border-white/10 shrink-0">
+                    <Button variant="ghost" onClick={() => setStep('select-source')} className="text-endurix-black/60 dark:text-muted-foreground hover:text-endurix-orange hover:bg-transparent tracking-widest uppercase text-xs font-semibold p-0 mb-8" style={PLEX}>
                         <ArrowLeft className="w-4 h-4 mr-2" /> {tAssign('backToPhase1')}
                     </Button>
-                    <h1 className="text-4xl font-extrabold font-display text-foreground tracking-tight mb-2">
+                    <h1 className="text-4xl font-bold text-endurix-black dark:text-foreground tracking-tight mb-2 uppercase" style={EXO}>
                         {tAssign('templateMatrix')}
                     </h1>
                     <p className="text-muted-foreground">{tAssign('templateMatrixSubtitle')}</p>
                 </div>
                 <div className="flex-1 overflow-y-auto p-10 lg:p-12">
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                         {templates.map((template) => (
                             <button
                                 key={template.id}
@@ -439,11 +439,11 @@ export function AssignWorkoutView({
                                     setWorkoutSource('template');
                                     setStep('assign-details');
                                 }}
-                                className="w-full text-left bg-card shadow-[0_2px_8px_rgba(43,52,55,0.02)] hover:shadow-[0_8px_24px_rgba(43,52,55,0.06)] rounded-lg p-6 flex justify-between group transition-all relative overflow-hidden"
+                                className={`w-full text-left ${CARD_CLS} hover:border-endurix-orange p-6 flex justify-between group transition-all relative overflow-hidden`}
                             >
-                                <div className="absolute left-0 top-0 bottom-0 w-1 bg-transparent group-hover:bg-primary transition-colors" />
+                                <div className="absolute left-0 top-0 bottom-0 w-1 bg-transparent group-hover:bg-endurix-orange transition-colors" />
                                 <div>
-                                    <h3 className="text-xl font-bold font-display tracking-tight text-foreground mb-1">
+                                    <h3 className="text-xl font-bold text-endurix-black dark:text-foreground mb-1 uppercase tracking-tight" style={EXO}>
                                         {template.title}
                                     </h3>
                                     <p className="text-sm text-muted-foreground max-w-2xl line-clamp-1">
@@ -451,7 +451,7 @@ export function AssignWorkoutView({
                                     </p>
                                 </div>
                                 <div className="flex flex-col items-end justify-center">
-                                    <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground bg-muted dark:bg-white/5 px-3 py-1 rounded">
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-endurix-orange bg-endurix-orange/10 border border-endurix-orange/30 px-3 py-1" style={PLEX}>
                                         {template.blocks?.length || 0} {tAssign('intervals')}
                                     </span>
                                 </div>
@@ -468,12 +468,12 @@ export function AssignWorkoutView({
 
     if (step === 'build') {
         return (
-            <div className="bg-background dark:bg-background flex flex-col font-inter h-[calc(100vh-64px)] overflow-hidden">
-                <div className="p-5 px-10 border-b border-border/40 flex items-center shrink-0">
-                    <Button variant="ghost" onClick={() => setStep('select-source')} className="text-muted-foreground hover:text-foreground transition-colors p-0 hover:bg-transparent tracking-widest uppercase text-xs font-semibold">
+            <div className="bg-endurix-paper dark:bg-background flex flex-col h-[calc(100vh-64px)] overflow-hidden">
+                <div className="p-5 px-10 border-b border-endurix-black/10 dark:border-white/10 flex items-center shrink-0">
+                    <Button variant="ghost" onClick={() => setStep('select-source')} className="text-endurix-black/60 dark:text-muted-foreground hover:text-endurix-orange hover:bg-transparent tracking-widest uppercase text-xs font-semibold p-0" style={PLEX}>
                         <ArrowLeft className="w-4 h-4 mr-2" /> {tAssign('restart')}
                     </Button>
-                    <div className="ml-auto text-xs font-semibold text-muted-foreground tracking-[0.05em] uppercase">
+                    <div className="ml-auto text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase" style={PLEX}>
                         {tAssign('editorPhase')}
                     </div>
                 </div>
@@ -484,9 +484,10 @@ export function AssignWorkoutView({
                         athleteId={builderAthleteId}
                         footerContent={
                             <Button
+                                variant="orange"
                                 onClick={() => setStep('assign-details')}
                                 disabled={blocks.length === 0}
-                                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground uppercase tracking-wider text-xs font-bold py-4 rounded transition-colors"
+                                className="w-full uppercase tracking-widest text-xs font-bold py-4"
                             >
                                 {tAssign('continueToAssignment')}
                                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -502,16 +503,17 @@ export function AssignWorkoutView({
     const preselectedAthlete = preselectedAthleteId ? athletes.find(a => a.id === preselectedAthleteId) : null;
 
     return (
-        <div className="bg-background dark:bg-background flex flex-col font-inter h-[calc(100vh-64px)] overflow-hidden">
-            <div className="p-5 px-10 border-b border-border/40 flex items-center shrink-0">
+        <div className="bg-endurix-paper dark:bg-background flex flex-col h-[calc(100vh-64px)] overflow-hidden">
+            <div className="p-5 px-10 border-b border-endurix-black/10 dark:border-white/10 flex items-center shrink-0">
                 <Button
                     variant="ghost"
                     onClick={handleBack}
-                    className="text-muted-foreground hover:text-foreground transition-colors p-0 hover:bg-transparent tracking-widest uppercase text-xs font-semibold"
+                    className="text-endurix-black/60 dark:text-muted-foreground hover:text-endurix-orange hover:bg-transparent tracking-widest uppercase text-xs font-semibold p-0"
+                    style={PLEX}
                 >
                     <ArrowLeft className="w-4 h-4 mr-2" /> {tAssign('modifyBlueprint')}
                 </Button>
-                <div className="ml-auto text-xs font-semibold text-muted-foreground tracking-[0.05em] uppercase">
+                <div className="ml-auto text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase" style={PLEX}>
                     {tAssign('editorPhase')}
                 </div>
             </div>
@@ -519,38 +521,38 @@ export function AssignWorkoutView({
             <div className="flex-1 overflow-y-auto">
                 <div className="max-w-4xl mx-auto px-10 py-12 space-y-10">
                     {/* Workout Summary Card */}
-                    <div className="rounded-xl border border-border dark:border-white/10 bg-card dark:bg-muted p-6 lg:p-8">
-                        <p className="text-xs uppercase tracking-[0.08em] font-semibold text-muted-foreground mb-3">Resumen del entrenamiento</p>
-                        <h2 className="text-3xl lg:text-4xl font-display font-extrabold text-foreground mb-5">
+                    <div className={`${CARD_CLS} p-6 lg:p-8`}>
+                        <p className={`${LABEL_CLS} mb-3 font-bold`} style={PLEX}>Resumen del entrenamiento</p>
+                        <h2 className="text-3xl lg:text-4xl font-bold text-endurix-black dark:text-foreground mb-5 uppercase tracking-tight" style={EXO}>
                             {selectedTemplate ? selectedTemplate.title : (workoutName || tAssign('customProtocol'))}
                         </h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                            <div className="flex items-center gap-3 rounded-lg bg-background dark:bg-background/60 p-4 border border-border/60 dark:border-white/10">
-                                <CalendarDays className="w-4 h-4 text-primary" />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                            <div className={ROW_CLS}>
+                                <CalendarDays className="w-4 h-4 text-endurix-orange" />
                                 <div>
-                                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Fecha objetivo</p>
-                                    <p className="font-semibold text-foreground">{format(new Date(`${scheduledDate}T00:00:00`), "EEEE dd/MM/yyyy", { locale: es })}</p>
+                                    <p className={`${LABEL_CLS}`} style={PLEX}>Fecha objetivo</p>
+                                    <p className="font-bold text-endurix-black dark:text-foreground">{format(new Date(`${scheduledDate}T00:00:00`), "EEEE dd/MM/yyyy", { locale: es })}</p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-3 rounded-lg bg-background dark:bg-background/60 p-4 border border-border/60 dark:border-white/10">
-                                <Users className="w-4 h-4 text-primary" />
+                            <div className={ROW_CLS}>
+                                <Users className="w-4 h-4 text-endurix-orange" />
                                 <div>
-                                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Destinatarios</p>
-                                    <p className="font-semibold text-foreground">{recipientsSummaryLabel}</p>
+                                    <p className={`${LABEL_CLS}`} style={PLEX}>Destinatarios</p>
+                                    <p className="font-bold text-endurix-black dark:text-foreground">{recipientsSummaryLabel}</p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-3 rounded-lg bg-background dark:bg-background/60 p-4 border border-border/60 dark:border-white/10">
-                                <Clock className="w-4 h-4 text-primary" />
+                            <div className={ROW_CLS}>
+                                <Clock className="w-4 h-4 text-endurix-orange" />
                                 <div>
-                                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Duración estimada</p>
-                                    <p className="font-semibold text-foreground">~{estTimeMinutes} min</p>
+                                    <p className={`${LABEL_CLS}`} style={PLEX}>Duración estimada</p>
+                                    <p className="font-bold text-endurix-black dark:text-foreground">~{estTimeMinutes} min</p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-3 rounded-lg bg-background dark:bg-background/60 p-4 border border-border/60 dark:border-white/10">
-                                <Gauge className="w-4 h-4 text-primary" />
+                            <div className={ROW_CLS}>
+                                <Gauge className="w-4 h-4 text-endurix-orange" />
                                 <div>
-                                    <p className="text-xs text-muted-foreground uppercase tracking-wide">RPE objetivo</p>
-                                    <p className="font-semibold text-foreground">{expectedRpe}/10</p>
+                                    <p className={`${LABEL_CLS}`} style={PLEX}>RPE objetivo</p>
+                                    <p className="font-bold text-endurix-black dark:text-foreground">{expectedRpe}/10</p>
                                 </div>
                             </div>
                         </div>
@@ -558,21 +560,21 @@ export function AssignWorkoutView({
 
                     {/* Block Breakdown */}
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                        <div className="rounded-lg border border-border dark:border-white/10 p-4 bg-card dark:bg-muted">
-                            <p className="text-xs text-muted-foreground uppercase tracking-wide">Bloques totales</p>
-                            <p className="text-2xl font-bold text-foreground mt-1">{blocks.length}</p>
+                        <div className={`${CARD_CLS} p-4`}>
+                            <p className={`${LABEL_CLS}`} style={PLEX}>Bloques totales</p>
+                            <p className="text-2xl font-bold text-endurix-black dark:text-foreground mt-1" style={EXO}>{blocks.length}</p>
                         </div>
-                        <div className="rounded-lg border border-border dark:border-white/10 p-4 bg-card dark:bg-muted">
-                            <p className="text-xs text-muted-foreground uppercase tracking-wide">Intervalos</p>
-                            <p className="text-2xl font-bold text-foreground mt-1">{workoutSummary.byType.interval}</p>
+                        <div className={`${CARD_CLS} p-4`}>
+                            <p className={`${LABEL_CLS}`} style={PLEX}>Intervalos</p>
+                            <p className="text-2xl font-bold text-endurix-black dark:text-foreground mt-1" style={EXO}>{workoutSummary.byType.interval}</p>
                         </div>
-                        <div className="rounded-lg border border-border dark:border-white/10 p-4 bg-card dark:bg-muted">
-                            <p className="text-xs text-muted-foreground uppercase tracking-wide">Recuperación + descanso</p>
-                            <p className="text-2xl font-bold text-foreground mt-1">{workoutSummary.byType.recovery + workoutSummary.byType.rest}</p>
+                        <div className={`${CARD_CLS} p-4`}>
+                            <p className={`${LABEL_CLS}`} style={PLEX}>Recuperación + descanso</p>
+                            <p className="text-2xl font-bold text-endurix-black dark:text-foreground mt-1" style={EXO}>{workoutSummary.byType.recovery + workoutSummary.byType.rest}</p>
                         </div>
-                        <div className="rounded-lg border border-border dark:border-white/10 p-4 bg-card dark:bg-muted">
-                            <p className="text-xs text-muted-foreground uppercase tracking-wide">Distancia planificada</p>
-                            <p className="text-2xl font-bold text-foreground mt-1">
+                        <div className={`${CARD_CLS} p-4`}>
+                            <p className={`${LABEL_CLS}`} style={PLEX}>Distancia planificada</p>
+                            <p className="text-2xl font-bold text-endurix-black dark:text-foreground mt-1" style={EXO}>
                                 {workoutSummary.totalDistanceMeters > 0
                                     ? `${(workoutSummary.totalDistanceMeters / 1000).toFixed(1)} km`
                                     : '—'}
@@ -581,24 +583,24 @@ export function AssignWorkoutView({
                     </div>
 
                     {/* Block Details */}
-                    <div className="rounded-xl border border-border dark:border-white/10 bg-card dark:bg-muted p-6">
+                    <div className={`${CARD_CLS} p-6`}>
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-bold text-foreground">Desglose de bloques</h3>
-                            <span className="text-xs uppercase tracking-wide text-muted-foreground">Vista rápida</span>
+                            <h3 className="text-lg font-bold text-endurix-black dark:text-foreground uppercase tracking-tight" style={EXO}>Desglose de bloques</h3>
+                            <span className={`${LABEL_CLS}`} style={PLEX}>Vista rápida</span>
                         </div>
                         {blocks.length === 0 ? (
                             <p className="text-sm text-muted-foreground">Aun no hay bloques cargados en esta sesión.</p>
                         ) : (
                             <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
                                 {blocks.map((block, index) => (
-                                    <div key={block.id || `${block.type}-${index}`} className="flex items-center justify-between rounded-lg border border-border/60 dark:border-white/10 px-3 py-2 bg-background dark:bg-background/60">
+                                    <div key={block.id || `${block.type}-${index}`} className="flex items-center justify-between px-3 py-2 bg-endurix-black/5 dark:bg-white/5 border border-endurix-black/10 dark:border-white/10">
                                         <div className="min-w-0">
-                                            <p className="text-sm font-semibold text-foreground truncate">{index + 1}. {block.stepName || blockTypeLabel[block.type]}</p>
-                                            <p className="text-xs text-muted-foreground">{blockTypeLabel[block.type]}{block.group?.reps ? ` · x${block.group.reps}` : ''}</p>
+                                            <p className="text-sm font-bold text-endurix-black dark:text-foreground truncate" style={EXO}>{index + 1}. {block.stepName || blockTypeLabel[block.type]}</p>
+                                            <p className="text-xs text-muted-foreground" style={PLEX}>{blockTypeLabel[block.type]}{block.group?.reps ? ` · x${block.group.reps}` : ''}</p>
                                         </div>
                                         <div className="text-right shrink-0 ml-4">
-                                            <p className="text-sm font-semibold text-foreground">{formatBlockDuration(block)}</p>
-                                            <p className="text-xs text-muted-foreground">{formatBlockTarget(block)}</p>
+                                            <p className="text-sm font-bold text-endurix-black dark:text-foreground" style={PLEX}>{formatBlockDuration(block)}</p>
+                                            <p className="text-xs text-muted-foreground" style={PLEX}>{formatBlockTarget(block)}</p>
                                         </div>
                                     </div>
                                 ))}
@@ -609,9 +611,9 @@ export function AssignWorkoutView({
                     {workoutSource === 'template' && (
                         <div className="pt-1">
                             <Button
-                                variant="outline"
+                                variant="outline-brand"
                                 onClick={() => setEditingTemplate(true)}
-                                className="border-gray-200 dark:border-white/10 text-foreground dark:text-white hover:bg-muted dark:hover:bg-white/5 uppercase tracking-wider text-xs font-bold"
+                                className="uppercase tracking-widest text-xs font-bold"
                             >
                                 {tAssign('overruleBlockStructure')}
                             </Button>
@@ -619,27 +621,28 @@ export function AssignWorkoutView({
                     )}
 
                     {/* Assignment Form */}
-                    <div className="rounded-xl border border-border dark:border-white/10 bg-card dark:bg-muted p-6 lg:p-8">
-                        <h2 className="text-2xl font-extrabold font-display tracking-tight text-foreground mb-8">
+                    <div className={`${CARD_CLS} p-6 lg:p-8`}>
+                        <h2 className="text-2xl font-bold text-endurix-black dark:text-foreground mb-8 uppercase tracking-tight" style={EXO}>
                             Planificación de la sesión
                         </h2>
 
                         <div className="space-y-8">
                             <div>
-                                <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-4 block">
-                                    {tAssign('executionDate')} <span className="text-emerald-500">*</span>
+                                <label className={`${LABEL_CLS} font-bold block mb-4`} style={PLEX}>
+                                    {tAssign('executionDate')} <span className="text-endurix-orange">*</span>
                                 </label>
                                 <input
                                     type="date"
                                     value={scheduledDate}
                                     onChange={(e) => setScheduledDate(e.target.value)}
-                                    className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-2 text-xl font-bold font-display text-foreground focus:ring-0 focus:border-primary transition-colors"
+                                    className="w-full bg-transparent border-0 border-b border-endurix-black/20 dark:border-white/20 px-0 py-2 text-xl font-bold text-endurix-black dark:text-foreground focus:ring-0 focus:border-endurix-orange transition-colors"
+                                    style={EXO}
                                 />
                             </div>
 
                             {isNew && (
                                 <div>
-                                    <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-4 block">
+                                    <label className={`${LABEL_CLS} font-bold block mb-4`} style={PLEX}>
                                         {tAssign('objectiveTitle')}
                                     </label>
                                     <input
@@ -647,14 +650,14 @@ export function AssignWorkoutView({
                                         value={workoutName}
                                         onChange={(e) => setWorkoutName(e.target.value)}
                                         placeholder={tAssign('exampleLongRun')}
-                                        className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-2 text-lg font-medium text-foreground focus:ring-0 focus:border-primary placeholder-muted-foreground/50 transition-colors"
+                                        className="w-full bg-transparent border-0 border-b border-endurix-black/20 dark:border-white/20 px-0 py-2 text-lg font-medium text-endurix-black dark:text-foreground focus:ring-0 focus:border-endurix-orange placeholder-endurix-black/30 dark:placeholder:text-muted-foreground/50 transition-colors"
                                     />
                                 </div>
                             )}
 
                             {!isNew && (
                                 <div>
-                                    <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-4 block">
+                                    <label className={`${LABEL_CLS} font-bold block mb-4`} style={PLEX}>
                                         {tAssign('assignmentNameOverride')}
                                     </label>
                                     <input
@@ -662,30 +665,30 @@ export function AssignWorkoutView({
                                         value={workoutName}
                                         onChange={(e) => setWorkoutName(e.target.value)}
                                         placeholder={tAssign('overwritesTemplateName')}
-                                        className="w-full bg-transparent border-0 border-b border-border/30 px-0 py-2 text-lg font-medium text-foreground focus:ring-0 focus:border-primary placeholder-muted-foreground/50 transition-colors"
+                                        className="w-full bg-transparent border-0 border-b border-endurix-black/20 dark:border-white/20 px-0 py-2 text-lg font-medium text-endurix-black dark:text-foreground focus:ring-0 focus:border-endurix-orange placeholder-endurix-black/30 dark:placeholder:text-muted-foreground/50 transition-colors"
                                     />
                                 </div>
                             )}
 
                             {preselectedAthlete ? (
                                 <div>
-                                    <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-4 block">
+                                    <label className={`${LABEL_CLS} font-bold block mb-4`} style={PLEX}>
                                         {tAssign('targetAthletes')}
                                     </label>
-                                    <div className="flex items-center gap-3 border-b border-border/30 pb-3">
-                                        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                                            <span className="text-sm font-bold text-primary">{(preselectedAthlete.name || preselectedAthlete.email || '?').charAt(0).toUpperCase()}</span>
+                                    <div className="flex items-center gap-3 border-b border-endurix-black/15 dark:border-white/15 pb-3">
+                                        <div className="w-9 h-9 bg-endurix-orange/15 flex items-center justify-center shrink-0">
+                                            <span className="text-sm font-bold text-endurix-orange" style={EXO}>{(preselectedAthlete.name || preselectedAthlete.email || '?').charAt(0).toUpperCase()}</span>
                                         </div>
                                         <div>
-                                            <p className="text-sm font-semibold text-foreground">{preselectedAthlete.name}</p>
-                                            <p className="text-xs text-muted-foreground">{preselectedAthlete.email}</p>
+                                            <p className="text-sm font-bold text-endurix-black dark:text-foreground">{preselectedAthlete.name}</p>
+                                            <p className="text-xs text-muted-foreground" style={PLEX}>{preselectedAthlete.email}</p>
                                         </div>
                                     </div>
                                 </div>
                             ) : (
                                 <>
                                     <div>
-                                        <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-4 block">
+                                        <label className={`${LABEL_CLS} font-bold block mb-4`} style={PLEX}>
                                             {tAssign('targetAthletes')}
                                         </label>
                                         <SearchableMultiSelect
@@ -697,7 +700,7 @@ export function AssignWorkoutView({
                                         />
                                     </div>
                                     <div>
-                                        <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-4 block">
+                                        <label className={`${LABEL_CLS} font-bold block mb-4`} style={PLEX}>
                                             {tAssign('targetRunningTeams')}
                                         </label>
                                         <SearchableMultiSelect
@@ -712,9 +715,9 @@ export function AssignWorkoutView({
                             )}
 
                             <div>
-                                <label className="text-[10px] font-semibold text-muted-foreground tracking-[0.05em] uppercase mb-4 flex items-center justify-between">
+                                <label className={`${LABEL_CLS} font-bold flex items-center justify-between mb-4`} style={PLEX}>
                                     {tAssign('globalTargetRpe')}
-                                    <span className="text-primary font-bold text-sm bg-muted dark:bg-white/5 px-2 py-0.5 rounded">{expectedRpe}/10</span>
+                                    <span className="text-endurix-orange font-bold text-sm bg-endurix-orange/10 px-2 py-0.5 border border-endurix-orange/30" style={PLEX}>{expectedRpe}/10</span>
                                 </label>
                                 <Slider
                                     value={[expectedRpe]}
@@ -724,23 +727,23 @@ export function AssignWorkoutView({
                                     onValueChange={(val) => setExpectedRpe(val[0])}
                                     className="my-6"
                                 />
-                                <div className="flex justify-between text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                <div className="flex justify-between text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground uppercase tracking-widest" style={PLEX}>
                                     <span>{tAssign('endurance')}</span>
                                     <span>{tAssign('maxOutput')}</span>
                                 </div>
                             </div>
 
                             {isNew && (
-                                <div className="bg-background dark:bg-white/5 rounded-lg p-6">
+                                <div className="bg-endurix-black/5 dark:bg-white/5 p-6 border border-endurix-black/10 dark:border-white/10">
                                     <label className="flex items-start gap-4 cursor-pointer">
                                         <input
                                             type="checkbox"
                                             checked={saveAsTemplate}
                                             onChange={(e) => setSaveAsTemplate(e.target.checked)}
-                                            className="w-5 h-5 mt-0.5 rounded border-gray-300 text-primary focus:ring-[#4e6073]"
+                                            className="w-5 h-5 mt-0.5 accent-endurix-orange"
                                         />
                                         <div className="flex flex-col">
-                                            <span className="font-semibold text-sm text-foreground mb-1">{tAssign('catalogStructure')}</span>
+                                            <span className="font-bold text-sm text-endurix-black dark:text-foreground mb-1 uppercase tracking-widest" style={EXO}>{tAssign('catalogStructure')}</span>
                                             <p className="text-xs text-muted-foreground leading-relaxed">{tAssign('catalogStructureDesc')}</p>
                                         </div>
                                     </label>
@@ -750,7 +753,7 @@ export function AssignWorkoutView({
                                             value={templateTitle}
                                             onChange={(e) => setTemplateTitle(e.target.value)}
                                             placeholder={tAssign('enterLibraryTitle')}
-                                            className="mt-6 w-full bg-white dark:bg-background border border-border dark:border-white/10 rounded px-4 py-3 text-sm font-medium text-foreground focus:outline-none focus:border-primary transition-colors"
+                                            className="mt-6 w-full bg-endurix-paper dark:bg-background border border-endurix-black/15 dark:border-white/15 px-4 py-3 text-sm font-medium text-endurix-black dark:text-foreground focus:outline-none focus:border-endurix-orange transition-colors"
                                         />
                                     )}
                                 </div>
@@ -761,23 +764,24 @@ export function AssignWorkoutView({
                     {/* Action Buttons */}
                     <div className="pt-4 pb-8 space-y-3">
                         <div className="flex flex-col mb-4">
-                            <span className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">{tAssign('actionStatus')}</span>
-                            <span className="text-sm font-semibold text-foreground mt-1">
+                            <span className={`${LABEL_CLS} font-bold`} style={PLEX}>{tAssign('actionStatus')}</span>
+                            <span className="text-sm font-bold text-endurix-black dark:text-foreground mt-1" style={EXO}>
                                 {!scheduledDate ? tAssign('awaitingScheduling') :
                                  !canConfirm ? tAssign('awaitingRecipients') :
                                  tAssign('readyToDistribute')}
                             </span>
                         </div>
                         <Button
+                            variant="orange"
                             onClick={handleAssign}
                             disabled={loading || !canConfirm}
-                            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground uppercase tracking-wider text-xs font-bold py-6 rounded shadow-[0_8px_24px_rgba(78,96,115,0.3)] transition-all"
+                            className="w-full uppercase tracking-widest text-xs font-bold py-6"
                         >
                             {loading ? tAssign('transmittingData') : tAssign('commitAssignment')}
                         </Button>
                         <Button
-                            variant="outline"
-                            className="w-full"
+                            variant="outline-brand"
+                            className="w-full uppercase tracking-widest text-xs font-bold"
                             onClick={() => router.back()}
                         >
                             {tAssign('cancelExit') || 'Cancelar'}
