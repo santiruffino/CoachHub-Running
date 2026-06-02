@@ -22,15 +22,15 @@ export function RepetitionDialog({ patternName, onConfirm, onCancel }: Repetitio
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full">
+            <div className="bg-white dark:bg-card border border-endurix-black/15 dark:border-border max-w-md w-full">
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                <div className="flex items-center justify-between p-4 border-b border-endurix-black/10 dark:border-border bg-endurix-paper dark:bg-muted">
+                    <h3 className="text-base font-bold uppercase tracking-widest text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>
                         {t('howManyRepeats')}
                     </h3>
                     <button
                         onClick={onCancel}
-                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                        className="text-endurix-black/50 dark:text-muted-foreground hover:text-endurix-black dark:hover:text-foreground transition-colors"
                     >
                         <X className="w-5 h-5" />
                     </button>

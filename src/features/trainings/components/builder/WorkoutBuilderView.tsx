@@ -221,7 +221,7 @@ export function WorkoutBuilderView({ initialWorkout, athleteId }: WorkoutBuilder
                                 <Button
                                     onClick={handleSave}
                                     disabled={saving || !workoutTitle.trim() || blocks.length === 0}
-                                    className="w-full bg-endurix-orange hover:bg-brand-primary-dark text-white uppercase tracking-wider text-xs font-semibold py-5 rounded shadow-lg transition-colors"
+                                    className="w-full bg-endurix-orange hover:bg-brand-primary-dark text-white uppercase tracking-widest text-xs font-bold py-5 transition-colors"
                                 >
                                     {saving ? t('saving') : t('finalizeWorkout')}
                                 </Button>

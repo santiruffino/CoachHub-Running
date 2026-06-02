@@ -33,7 +33,7 @@ export function Sidebar() {
             {/* Mobile menu button */}
             <button
                 type="button"
-                className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-background border border-border shadow-lg hover:bg-muted transition-colors"
+                className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-endurix-paper dark:bg-card border border-endurix-black/15 dark:border-border hover:bg-endurix-black/10 dark:hover:bg-muted transition-colors"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 aria-label={tA11y('toggleMenu')}
             >

@@ -204,21 +204,21 @@ export function WorkoutInsightsPanel({
 
     return (
         <div className="space-y-6">
-            <section className="rounded-2xl bg-[#f1f4f6] dark:bg-[#131b23] p-6">
+            <section className="bg-endurix-paper dark:bg-[#131b23] border border-endurix-black/10 dark:border-white/10 p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                    <h3 className="text-xs font-bold text-[#4e6073] dark:text-[#8b9bb4] uppercase tracking-widest">
+                    <h3 className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground uppercase tracking-widest" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
                         {t('workoutVisualization')}
                     </h3>
-                    <div className="flex flex-wrap items-center gap-4 text-sm font-semibold text-[#4e6073] dark:text-[#f8f9fa]">
+                    <div className="flex flex-wrap items-center gap-4 text-[10px] font-bold uppercase tracking-widest text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
                         <span>{t('total')}: {formatClock(totals.duration)}</span>
                         <span>{t('estTssShort')}: {totals.tss}</span>
                         <span>{t('steps')}: {rows.length}</span>
                     </div>
                 </div>
 
-                <p className="mt-1 text-sm text-[#8b9bb4]">{t('stepDurationBlocks')}</p>
+                <p className="mt-1 text-sm text-endurix-black/50 dark:text-muted-foreground">{t('stepDurationBlocks')}</p>
 
-                <div className="mt-5 flex h-20 overflow-hidden rounded-xl bg-white/70 dark:bg-[#1a232c]">
+                <div className="mt-5 flex h-20 overflow-hidden bg-white/70 dark:bg-[#1a232c]">
                     {durationByType.map((item) => {
                         const width = Math.max((item.seconds / totalSeconds) * 100, 10);
                         return (
@@ -230,7 +230,7 @@ export function WorkoutInsightsPanel({
                                     backgroundColor: BLOCK_COLORS[item.type]
                                 }}
                             >
-                                <span className="text-xs font-bold text-[#2b3437] uppercase tracking-wide">
+                                <span className="text-xs font-bold text-endurix-black uppercase tracking-wide" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
                                     {Math.round(item.seconds / 60)}m
                                 </span>
                             </div>
@@ -238,18 +238,18 @@ export function WorkoutInsightsPanel({
                     })}
                 </div>
 
-                <div className="mt-3 grid grid-cols-2 md:grid-cols-5 gap-2 text-xs font-semibold text-[#4e6073] dark:text-[#8b9bb4]">
+                <div className="mt-3 grid grid-cols-2 md:grid-cols-5 gap-2 text-[10px] font-bold uppercase tracking-widest text-endurix-black/60 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
                     {durationByType.map((item) => (
                         <div key={item.type} className="flex items-center gap-2">
-                            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: BLOCK_COLORS[item.type] }} />
+                            <span className="h-2 w-2" style={{ backgroundColor: BLOCK_COLORS[item.type] }} />
                             <span>{t(`labels.${item.type}`)}</span>
                         </div>
                     ))}
                 </div>
             </section>
 
-            <section className="rounded-2xl bg-[#f1f4f6] dark:bg-[#131b23] p-6">
-                <h3 className="text-xs font-bold text-[#4e6073] dark:text-[#8b9bb4] uppercase tracking-widest mb-4">
+            <section className="bg-endurix-paper dark:bg-[#131b23] border border-endurix-black/10 dark:border-white/10 p-6">
+                <h3 className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground uppercase tracking-widest mb-4" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
                     {t('zoneDistribution')}
                 </h3>
 
@@ -258,16 +258,16 @@ export function WorkoutInsightsPanel({
                         const width = (item.seconds / totalSeconds) * 100;
                         return (
                             <div key={item.type} className="grid grid-cols-[140px_1fr_72px] items-center gap-3">
-                                <span className="text-sm font-semibold text-[#2b3437] dark:text-[#f8f9fa]">
+                                <span className="text-sm font-semibold text-endurix-black dark:text-foreground">
                                     {t(`labels.${item.type}`)}
                                 </span>
-                                <div className="h-2 rounded-full bg-white/70 dark:bg-[#1a232c] overflow-hidden">
+                                <div className="h-1.5 bg-white/70 dark:bg-[#1a232c] overflow-hidden">
                                     <div
-                                        className="h-full rounded-full"
+                                        className="h-full"
                                         style={{ width: `${Math.max(width, 4)}%`, backgroundColor: BLOCK_COLORS[item.type] }}
                                     />
                                 </div>
-                                <span className="text-sm font-semibold text-[#4e6073] dark:text-[#8b9bb4] text-right">
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground text-right" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
                                     {Math.round(width)}%
                                 </span>
                             </div>
@@ -276,27 +276,27 @@ export function WorkoutInsightsPanel({
                 </div>
             </section>
 
-            <section className="rounded-2xl bg-[#f1f4f6] dark:bg-[#131b23] p-6 overflow-x-auto">
-                <h3 className="text-xs font-bold text-[#4e6073] dark:text-[#8b9bb4] uppercase tracking-widest mb-4">
+            <section className="bg-endurix-paper dark:bg-[#131b23] border border-endurix-black/10 dark:border-white/10 p-6 overflow-x-auto">
+                <h3 className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground uppercase tracking-widest mb-4" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
                     {t('stepSummaryTitle')}
                 </h3>
 
                 <table className="w-full min-w-[720px] text-sm">
                     <thead>
-                        <tr className="text-left text-[#8b9bb4] uppercase tracking-wider text-[10px]">
-                            <th className="pb-3 font-semibold">{t('stage')}</th>
-                            <th className="pb-3 font-semibold">{t('duration')}</th>
-                            <th className="pb-3 font-semibold">{t('target')}</th>
-                            <th className="pb-3 font-semibold">{t('repetitions')}</th>
-                            <th className="pb-3 font-semibold">{t('intensity')}</th>
+                        <tr className="text-left text-endurix-black/40 dark:text-muted-foreground uppercase tracking-widest text-[10px] border-b border-endurix-black/10 dark:border-white/10" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
+                            <th className="pb-3 font-bold">{t('stage')}</th>
+                            <th className="pb-3 font-bold">{t('duration')}</th>
+                            <th className="pb-3 font-bold">{t('target')}</th>
+                            <th className="pb-3 font-bold">{t('repetitions')}</th>
+                            <th className="pb-3 font-bold">{t('intensity')}</th>
                         </tr>
                     </thead>
-                    <tbody className="text-[#2b3437] dark:text-[#f8f9fa]">
+                    <tbody className="text-endurix-black dark:text-foreground">
                         {rows.map((row) => (
-                            <tr key={row.id} className="align-top">
+                            <tr key={row.id} className="align-top border-b border-endurix-black/8 dark:border-white/5">
                                 <td className="py-2 font-semibold">{row.label}</td>
                                 <td className="py-2 font-medium">{row.durationLabel}</td>
-                                <td className="py-2 text-[#4e6073] dark:text-[#8b9bb4]">{row.targetLabel}</td>
+                                <td className="py-2 text-endurix-black/50 dark:text-muted-foreground">{row.targetLabel}</td>
                                 <td className="py-2">{row.reps}x</td>
                                 <td className="py-2">{row.intensityLabel}</td>
                             </tr>

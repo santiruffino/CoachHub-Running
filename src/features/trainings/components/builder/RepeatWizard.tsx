@@ -64,13 +64,13 @@ export function RepeatWizard({ onAdd, onClose }: RepeatWizardProps) {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden">
-                <div className="flex justify-between items-center p-4 border-b border-gray-100">
-                    <h3 className="text-lg font-bold text-gray-900 flex items-center">
-                        <Repeat className="w-5 h-5 mr-2 text-brand-primary" />
+            <div className="bg-white dark:bg-card border border-endurix-black/15 dark:border-border w-full max-w-2xl overflow-hidden">
+                <div className="flex justify-between items-center p-4 border-b border-endurix-black/10 dark:border-border bg-endurix-paper dark:bg-muted">
+                    <h3 className="text-base font-bold uppercase tracking-widest text-endurix-black dark:text-foreground flex items-center" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>
+                        <Repeat className="w-5 h-5 mr-2 text-endurix-orange" />
                         {t('repeatWizard')}
                     </h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+                    <button onClick={onClose} className="text-endurix-black/50 dark:text-muted-foreground hover:text-endurix-black dark:hover:text-foreground">
                         <X className="w-5 h-5" />
                     </button>
                 </div>

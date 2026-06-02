@@ -228,10 +228,10 @@ export default function CreateGroupPage() {
                 </div>
 
                 <div className="flex justify-end gap-4">
-                    <Button variant="ghost" type="button" onClick={() => router.back()} disabled={loading} className="rounded-xl font-bold uppercase tracking-wider text-xs">
+                    <Button variant="ghost" type="button" onClick={() => router.back()} disabled={loading} className="font-bold uppercase tracking-widest text-xs">
                         {tCommon('cancel')}
                     </Button>
-                    <Button type="submit" disabled={loading} className="rounded-xl px-8 font-bold uppercase tracking-wider text-xs shadow-lg shadow-primary/20">
+                    <Button type="submit" disabled={loading} variant="orange" className="px-8 font-bold uppercase tracking-widest text-xs">
                         {loading ? (
                             <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> {tForm('creating')} </>
                         ) : (

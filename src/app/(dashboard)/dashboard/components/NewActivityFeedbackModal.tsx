@@ -85,16 +85,19 @@ export function NewActivityFeedbackModal({
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogOverlay className="fixed inset-0 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-            <DialogContent className="sm:max-w-140 max-h-[90vh] overflow-y-auto border-none bg-surface p-0 overflow-hidden shadow-[0_20px_40px_rgba(43,52,55,0.08)] dark:bg-[#0a0f14]">
-                <DialogHeader className="space-y-2 bg-surface-container-low px-6 pb-6 pt-7 text-left dark:bg-[#131b23]">
-                    <DialogTitle className="font-display text-2xl font-bold tracking-tight text-foreground">
+            <DialogContent className="sm:max-w-140 max-h-[90vh] overflow-y-auto border border-endurix-black/10 dark:border-border bg-white dark:bg-[#0a0f14] p-0 overflow-hidden">
+                <DialogHeader className="space-y-2 bg-endurix-paper dark:bg-[#131b23] border-b border-endurix-black/10 dark:border-white/5 px-6 pb-6 pt-7 text-left">
+                    <DialogTitle
+                        className="text-2xl font-bold uppercase tracking-tight text-foreground"
+                        style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                    >
                         {t('title')}
                     </DialogTitle>
-                    <DialogDescription className="text-sm leading-relaxed text-muted-foreground">
+                    <DialogDescription className="text-sm leading-relaxed text-endurix-black/60 dark:text-muted-foreground">
                         {t('description')}
                     </DialogDescription>
                     {activity && (
-                        <p className="pt-3 text-xs font-semibold uppercase tracking-widest text-primary/90">
+                        <p className="pt-3 text-[10px] font-bold uppercase tracking-widest text-endurix-orange" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
                             {activity.title} • {format(new Date(activity.start_date), 'd MMM yyyy', { locale: es })}
                         </p>
                     )}
@@ -102,10 +105,10 @@ export function NewActivityFeedbackModal({
 
                 <div className="space-y-7 bg-background px-6 pb-6 pt-6 dark:bg-[#0a0f14]">
                     <div className="space-y-3">
-                        <Label className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                        <Label className="text-[11px] font-bold uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
                             {t('rpeLabel')}
                         </Label>
-                        <div className="space-y-3 rounded-2xl bg-surface-container-low px-4 py-4 dark:bg-[#131b23]">
+                        <div className="space-y-3 border border-endurix-black/12 dark:border-border bg-endurix-paper dark:bg-[#131b23] px-4 py-4">
                             <div className="flex items-center gap-4">
                                 <Slider
                                     min={1}
@@ -114,17 +117,17 @@ export function NewActivityFeedbackModal({
                                     value={[form.rpe]}
                                     onValueChange={(value) => setForm((prev) => ({ ...prev, rpe: value[0] }))}
                                 />
-                                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white text-xl font-display font-medium text-foreground dark:bg-[#1a232c] dark:border dark:border-white/5">
+                                <div className="flex h-12 w-12 items-center justify-center border border-endurix-black/15 dark:border-white/15 bg-white dark:bg-[#1a232c] text-xl font-bold text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>
                                     {form.rpe}
                                 </div>
                             </div>
-                            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-primary">{getScaleLabel(form.rpe)}</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-endurix-orange" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>{getScaleLabel(form.rpe)}</p>
                         </div>
                     </div>
 
 
                     <div className="space-y-3">
-                        <Label htmlFor="quick-feedback-comments" className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                        <Label htmlFor="quick-feedback-comments" className="text-[11px] font-bold uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
                             {t('commentsLabel')}
                         </Label>
                         <Textarea
@@ -133,7 +136,7 @@ export function NewActivityFeedbackModal({
                             value={form.comments}
                             onChange={(event) => setForm((prev) => ({ ...prev, comments: event.target.value }))}
                             placeholder={t('commentsPlaceholder')}
-                            className="resize-none rounded-xl border-none bg-surface-container-low px-4 py-3 text-sm text-foreground focus-visible:ring-1 focus-visible:ring-primary/30 dark:bg-[#131b23]"
+                            className="resize-none border-endurix-black/12 dark:border-border bg-endurix-paper dark:bg-[#131b23] px-4 py-3 text-sm text-foreground focus-visible:ring-1 focus-visible:ring-endurix-orange/30"
                         />
                     </div>
 
@@ -141,7 +144,7 @@ export function NewActivityFeedbackModal({
                         <Button
                             type="button"
                             variant="ghost"
-                            className="text-xs font-semibold uppercase tracking-[0.08em]"
+                            className="text-xs font-bold uppercase tracking-widest text-endurix-black/60 dark:text-muted-foreground"
                             onClick={() => onOpenChange(false)}
                         >
                             {t('later')}
@@ -150,7 +153,7 @@ export function NewActivityFeedbackModal({
                             type="button"
                             onClick={handleSubmit}
                             disabled={saving || !activity}
-                            className="bg-[linear-gradient(135deg,#4e6073,#425467)] text-primary-foreground hover:opacity-95"
+                            className="bg-endurix-orange text-white hover:bg-brand-primary-dark"
                         >
                             {saving ? t('saving') : t('submit')}
                         </Button>

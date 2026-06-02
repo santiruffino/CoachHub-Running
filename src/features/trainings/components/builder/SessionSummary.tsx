@@ -201,34 +201,34 @@ export function SessionSummary({ blocks, athleteProfile, trainingType = Training
     }
 
     return (
-        <div className="bg-[#4e6073] dark:bg-[#131b23] rounded-2xl p-6 text-white w-full shadow-sm">
+        <div className="bg-endurix-black dark:bg-[#131b23] p-6 text-white w-full border border-endurix-black dark:border-white/10">
             <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-display font-bold">{t('sessionSummary')}</h2>
+                <h2 className="text-xl font-bold uppercase tracking-widest text-white" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{t('sessionSummary')}</h2>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 <div className="flex flex-col border-r border-white/10 pr-6">
-                    <span className="text-sm font-medium text-gray-300 mb-2">{t('duration')}</span>
-                    <span className="text-3xl font-display font-bold tracking-tight">{totals.duration > 0 ? durationStr : '00:00'}</span>
+                    <span className="text-[10px] uppercase tracking-widest text-white/60 mb-2" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>{t('duration')}</span>
+                    <span className="text-3xl font-bold tracking-tight text-white" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{totals.duration > 0 ? durationStr : '00:00'}</span>
                 </div>
 
                 <div className="flex flex-col border-r border-white/10 px-6">
-                    <span className="text-sm font-medium text-gray-300 mb-2">{t('tss')}</span>
-                    <span className="text-3xl font-display font-bold tracking-tight">{totals.tss}</span>
+                    <span className="text-[10px] uppercase tracking-widest text-white/60 mb-2" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>{t('tss')}</span>
+                    <span className="text-3xl font-bold tracking-tight text-white" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{totals.tss}</span>
                 </div>
 
                 <div className="flex flex-col md:border-r border-white/10 md:px-6 pr-6">
-                    <span className="text-sm font-medium text-gray-300 mb-2">{t('if')}</span>
-                    <span className="text-3xl font-display font-bold tracking-tight">{avgIF}</span>
+                    <span className="text-[10px] uppercase tracking-widest text-white/60 mb-2" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>{t('if')}</span>
+                    <span className="text-3xl font-bold tracking-tight text-white" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{avgIF}</span>
                 </div>
 
                 <div className="flex flex-col md:pl-6 justify-center">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-bold uppercase tracking-wider text-gray-300">{t('estimatedLoad')}</span>
-                        <span className="text-xs font-bold uppercase tracking-wider text-white">{t(loadData.label as 'low' | 'medium' | 'high' | 'veryHigh')}</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-white/60" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>{t('estimatedLoad')}</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-white" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>{t(loadData.label as 'low' | 'medium' | 'high' | 'veryHigh')}</span>
                     </div>
-                    <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-                        <div className="h-full bg-white rounded-full transition-all duration-500 ease-in-out" style={{ width: `${loadData.percent}%` }} />
+                    <div className="w-full h-1.5 bg-white/15 overflow-hidden">
+                        <div className="h-full bg-endurix-orange transition-all duration-500 ease-in-out" style={{ width: `${loadData.percent}%` }} />
                     </div>
                 </div>
             </div>
