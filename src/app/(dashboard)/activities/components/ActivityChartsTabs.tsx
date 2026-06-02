@@ -114,7 +114,7 @@ export function ActivityChartsTabs({
       </div>
       <div className="p-6">
         {/* Tab Switcher */}
-        <div className="flex items-center gap-2 border border-endurix-black/15 dark:border-border bg-endurix-paper dark:bg-muted p-1 mb-6 w-fit">
+        <div className="flex items-center gap-2 border border-endurix-black/15 dark:border-border bg-white dark:bg-card p-1 mb-6 w-fit">
           {visibleTabs.map((tab) => (
             <button
               key={tab.key}
