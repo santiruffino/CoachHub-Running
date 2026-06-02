@@ -1,6 +1,6 @@
 'use client';
 
-import { WorkoutBlock, AthleteProfile } from './types';
+import { WorkoutBlock, AthleteProfile, BlockType } from './types';
 import { useMemo, useRef, useEffect, useCallback } from 'react';
 import * as echarts from 'echarts';
 import { BLOCK_COLORS } from './constants';
@@ -251,19 +251,27 @@ export function WorkoutIntensityChart({ blocks, selectedId, onBlockClick, athlet
         );
     }
 
+    const blockTypes: BlockType[] = ['warmup', 'interval', 'recovery', 'rest', 'cooldown'];
+    const presentTypes = blockTypes.filter(type =>
+        blocks.some(block => block.type === type)
+    );
+
     return (
         <div className="w-full">
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center justify-between mb-8 gap-4 flex-wrap">
                 <h3 className="text-xs font-bold text-[#8b9bb4] uppercase tracking-widest">{t('projectedProfile')}</h3>
-                <div className="flex gap-4">
-                    <div className="flex items-center gap-1.5">
-                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: BLOCK_COLORS.interval }} />
-                        <span className="text-[10px] font-semibold text-[#2b3437] dark:text-[#f8f9fa]">{t('intensity')}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: BLOCK_COLORS.recovery }} />
-                        <span className="text-[10px] font-semibold text-[#8b9bb4]">{t('recovery')}</span>
-                    </div>
+                <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+                    {presentTypes.map(type => (
+                        <div key={type} className="flex items-center gap-1.5">
+                            <div
+                                className="w-3 h-3 rounded-full"
+                                style={{ backgroundColor: BLOCK_COLORS[type] }}
+                            />
+                            <span className="text-[10px] font-semibold text-[#2b3437] dark:text-[#f8f9fa] uppercase tracking-widest">
+                                {t(`labels.${type}`)}
+                            </span>
+                        </div>
+                    ))}
                 </div>
             </div>
             <div ref={chartRef} className="w-full h-56" />
