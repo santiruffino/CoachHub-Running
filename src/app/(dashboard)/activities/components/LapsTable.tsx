@@ -112,8 +112,9 @@ export function LapsTable({
                             type="button"
                             variant={isBulkEditMode ? 'default' : 'outline'}
                             size="sm"
-                            className="gap-1.5 text-[10px] uppercase tracking-wider font-bold"
+                            className="gap-1.5 text-[10px] uppercase tracking-widest font-bold"
                             onClick={toggleBulkEditMode}
+                            style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
                         >
                             <Pencil className="w-3.5 h-3.5" />
                             {t('common.edit')}
@@ -121,27 +122,29 @@ export function LapsTable({
                     </div>
 
                     {isBulkEditMode && (
-                        <div className="sticky top-2 z-20 mt-3 rounded-xl border bg-card/95 backdrop-blur p-3 shadow-sm">
+                        <div className="sticky top-2 z-20 mt-3 border border-endurix-black/15 dark:border-border bg-endurix-paper dark:bg-muted p-3">
                             <div className="flex flex-wrap items-center gap-2">
                                 <Button
                                     type="button"
                                     variant="ghost"
                                     size="sm"
-                                    className="h-7 px-2 text-[10px] font-semibold"
+                                    className="h-7 px-2 text-[10px] font-bold uppercase tracking-widest"
                                     onClick={toggleSelectAllVisible}
+                                    style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
                                 >
                                     {allVisibleSelected ? (t('common.clear') || 'Clear') : (t('common.selectAll') || 'Select all')}
                                 </Button>
-                                <span className="text-xs text-muted-foreground">{selectedLapIndices.length} selected</span>
+                                <span className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>{selectedLapIndices.length} selected</span>
                                 {Object.entries(overrideLabels).map(([key, label]) => (
                                     <Button
                                         key={`bulk-override-${key}`}
                                         type="button"
                                         variant="outline"
                                         size="sm"
-                                        className="h-7 px-2 text-[10px] font-semibold"
+                                        className="h-7 px-2 text-[10px] font-bold uppercase tracking-widest"
                                         onClick={() => applyBulkOverride(key)}
                                         disabled={selectedLapIndices.length === 0}
+                                        style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
                                     >
                                         {label}
                                     </Button>
@@ -150,8 +153,9 @@ export function LapsTable({
                                     type="button"
                                     variant="ghost"
                                     size="sm"
-                                    className="h-7 px-2 text-[10px] font-semibold ml-auto"
+                                    className="h-7 px-2 text-[10px] font-bold uppercase tracking-widest ml-auto"
                                     onClick={toggleBulkEditMode}
+                                    style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
                                 >
                                     <X className="w-3.5 h-3.5 mr-1" />
                                     {t('common.cancel')}
@@ -164,7 +168,7 @@ export function LapsTable({
 
             <Table className="w-full">
                 <TableHeader>
-                    <TableRow className="border-b border-muted hover:bg-transparent">
+                    <TableRow className="border-b border-endurix-black/12 dark:border-border hover:bg-transparent">
                         {!isAthlete && onBulkOverrideStepType && isBulkEditMode && (
                             <TableHead className="w-10 pl-0">
                                 <input
@@ -175,18 +179,39 @@ export function LapsTable({
                                 />
                             </TableHead>
                         )}
-                        <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4 pl-0">{t('table.lap')}</TableHead>
-                        <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.time')}</TableHead>
-                        <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.distance')}</TableHead>
-                        <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.avgPace')}</TableHead>
+                        <TableHead
+                            className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase h-auto pb-4 pl-0"
+                            style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                        >{t('table.lap')}</TableHead>
+                        <TableHead
+                            className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase h-auto pb-4"
+                            style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                        >{t('table.time')}</TableHead>
+                        <TableHead
+                            className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase h-auto pb-4"
+                            style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                        >{t('table.distance')}</TableHead>
+                        <TableHead
+                            className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase h-auto pb-4"
+                            style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                        >{t('table.avgPace')}</TableHead>
                         {!!laps[0]?.average_heartrate && (
-                            <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.avgHr')}</TableHead>
+                            <TableHead
+                                className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase h-auto pb-4"
+                                style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                            >{t('table.avgHr')}</TableHead>
                         )}
                         {!!laps[0]?.average_cadence && (
-                            <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.cadence')}</TableHead>
+                            <TableHead
+                                className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase h-auto pb-4"
+                                style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                            >{t('table.cadence')}</TableHead>
                         )}
-                        <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4">{t('table.elevGain')}</TableHead>
-                        <TableHead className="text-[10px] font-semibold text-muted-foreground tracking-widest uppercase h-auto pb-4 text-right pr-0"></TableHead>
+                        <TableHead
+                            className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase h-auto pb-4"
+                            style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                        >{t('table.elevGain')}</TableHead>
+                        <TableHead className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase h-auto pb-4 text-right pr-0"></TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>

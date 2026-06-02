@@ -122,11 +122,16 @@ export function PaceZonesChart({ laps, splits, isRunning }: PaceZonesChartProps)
         .reverse();
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>{t('paceTitle')}</CardTitle>
+        <Card className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border">
+            <CardHeader className="border-b border-endurix-black/10 dark:border-border">
+                <CardTitle
+                    className="text-base uppercase tracking-widest font-bold text-endurix-black dark:text-foreground"
+                    style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                >
+                    {t('paceTitle')}
+                </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-3 p-6">
                 {distribution.map((item, index) => {
                     if (item.time === 0) return null;
 
@@ -135,17 +140,26 @@ export function PaceZonesChart({ laps, splits, isRunning }: PaceZonesChartProps)
                     return (
                         <div key={index} className="space-y-1">
                             <div className="flex items-center justify-between text-sm">
-                                <span className="font-medium">{reversedNames[index]}</span>
+                                <span
+                                    className="font-bold text-[10px] uppercase tracking-widest text-endurix-black dark:text-foreground"
+                                    style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                                >{reversedNames[index]}</span>
                                 <div className="flex items-center gap-3">
-                                    <span className="text-muted-foreground">
+                                    <span
+                                        className="text-[10px] text-endurix-black/50 dark:text-muted-foreground uppercase tracking-widest"
+                                        style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                                    >
                                         {formatTime(item.time)} ({item.percentage.toFixed(1)}%)
                                     </span>
-                                    <span className="text-xs text-muted-foreground">
+                                    <span
+                                        className="text-[10px] text-endurix-black/40 dark:text-muted-foreground uppercase tracking-widest"
+                                        style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                                    >
                                         {formatPaceTime(zone.max)} - {formatPaceTime(zone.min)} min/km
                                     </span>
                                 </div>
                             </div>
-                            <div className="relative h-6 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                            <div className="relative h-1.5 bg-endurix-black/15 dark:bg-border overflow-hidden">
                                 <div
                                     className={`absolute top-0 left-0 h-full ${zoneColors[index]} transition-all duration-500`}
                                     style={{ width: `${item.percentage}%` }}
@@ -156,7 +170,7 @@ export function PaceZonesChart({ laps, splits, isRunning }: PaceZonesChartProps)
                 })}
 
                 {totalTime === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-8">
+                    <p className="text-sm text-endurix-black/50 dark:text-muted-foreground text-center py-8">
                         {t('noPaceData')}
                     </p>
                 )}

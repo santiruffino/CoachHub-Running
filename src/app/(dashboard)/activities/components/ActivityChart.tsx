@@ -529,11 +529,11 @@ const [showLaps, setShowLaps] = useState(false);
 
     if (loading) {
         return (
-            <Card className="w-full h-full border-gray-800 bg-gray-950/50 flex flex-col justify-between p-6 min-h-[460px] lg:min-h-[560px]">
+            <Card className="w-full h-full bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border flex flex-col justify-between p-6 min-h-[460px] lg:min-h-[560px]">
                 <div className="flex items-center justify-between mb-4">
                     {/* Title skeleton */}
                     <div className="flex items-center gap-2">
-                        <Skeleton className="h-5 w-5 rounded-full" />
+                        <Skeleton className="h-5 w-5" />
                         <Skeleton className="h-6 w-32" />
                     </div>
                     {/* Controls skeleton */}
@@ -544,14 +544,14 @@ const [showLaps, setShowLaps] = useState(false);
                 </div>
                 {/* Metric toggles skeleton */}
                 <div className="flex gap-2 mb-6">
-                    <Skeleton className="h-7 w-16 rounded-full" />
-                    <Skeleton className="h-7 w-24 rounded-full" />
-                    <Skeleton className="h-7 w-20 rounded-full" />
+                    <Skeleton className="h-7 w-16" />
+                    <Skeleton className="h-7 w-24" />
+                    <Skeleton className="h-7 w-20" />
                 </div>
                 {/* Chart area skeleton */}
                 <div className="w-full flex-1 min-h-[260px] relative mt-4 overflow-hidden">
                     <svg
-                        className="w-full h-full text-muted/20 animate-pulse"
+                        className="w-full h-full text-endurix-black/15 dark:text-white/15 animate-pulse"
                         viewBox="0 0 500 200"
                         preserveAspectRatio="none"
                     >
@@ -598,19 +598,19 @@ const [showLaps, setShowLaps] = useState(false);
     }
 
     return (
-        <Card>
-            <CardHeader>
+        <Card className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border">
+            <CardHeader className="border-b border-endurix-black/10 dark:border-border">
                 <div className="flex items-start justify-between flex-wrap gap-4">
-                    <CardTitle className="flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2 text-base uppercase tracking-widest" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>
                         <span>📊</span>
                         {t('title')}
                     </CardTitle>
 
                     <div className="flex flex-wrap gap-3 items-center">
                         <div className="flex items-center gap-2">
-                            <span className="text-sm text-muted-foreground">{t('xAxis')}:</span>
+                            <span className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{t('xAxis')}:</span>
                             <Select value={xAxisType} onValueChange={(value: XAxisType) => setXAxisType(value)}>
-                                <SelectTrigger className="w-[120px] h-8">
+                                <SelectTrigger className="w-[120px] h-8 border-endurix-black/15 dark:border-border">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -622,9 +622,9 @@ const [showLaps, setShowLaps] = useState(false);
 
                         {streams && (
                             <div className="flex items-center gap-2">
-                                <span className="text-sm text-muted-foreground">{t('detail')}:</span>
+                                <span className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{t('detail')}:</span>
                                 <Select value={resolution} onValueChange={(value: Resolution) => setResolution(value)}>
-                                    <SelectTrigger className="w-[120px] h-8">
+                                    <SelectTrigger className="w-[120px] h-8 border-endurix-black/15 dark:border-border">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -638,9 +638,9 @@ const [showLaps, setShowLaps] = useState(false);
 
                         {laps && laps.length > 0 && (
                             <div className="flex items-center gap-2">
-                                <span className="text-sm text-muted-foreground">{t('laps')}:</span>
+                                <span className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{t('laps')}:</span>
                                 <Select value={showLaps ? "show" : "hide"} onValueChange={(value) => setShowLaps(value === "show")}>
-                                    <SelectTrigger className="w-[100px] h-8">
+                                    <SelectTrigger className="w-[100px] h-8 border-endurix-black/15 dark:border-border">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -653,7 +653,7 @@ const [showLaps, setShowLaps] = useState(false);
                     </div>
                 </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-6">
                 <ReactECharts
                     option={option}
                     onEvents={onChartEvents}

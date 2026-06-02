@@ -41,36 +41,36 @@ function ElevationTooltip({ active, payload }: TooltipContentProps) {
   const elevationColor = point.elevation >= 0 ? 'text-green-500' : 'text-red-500';
 
   return (
-    <div className="bg-card border border-border p-4 rounded-xl shadow-xl">
+    <div className="bg-card border border-border p-3">
       <p
-        className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2"
-        style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+        className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground uppercase tracking-widest mb-2"
+        style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
       >
         KM {point.km}
       </p>
       <div className="space-y-1">
         <div className="flex items-center justify-between gap-6">
-          <span className="text-sm font-medium text-muted-foreground">Elevation</span>
-          <span className={`text-sm font-bold ${elevationColor}`}>
+          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>Elevation</span>
+          <span className={`text-xs font-bold ${elevationColor}`} style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
             {point.elevation >= 0 ? '+' : ''}{point.elevation.toFixed(1)} m
           </span>
         </div>
         <div className="flex items-center justify-between gap-6">
-          <span className="text-sm font-medium text-muted-foreground">Cumulative</span>
-          <span className="text-sm font-bold text-foreground">
+          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>Cumulative</span>
+          <span className="text-xs font-bold text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
             {point.cumulative.toFixed(0)} m
           </span>
         </div>
         <div className="flex items-center justify-between gap-6">
-          <span className="text-sm font-medium text-muted-foreground">Pace</span>
-          <span className="text-sm font-bold text-foreground">
+          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>Pace</span>
+          <span className="text-xs font-bold text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
             {point.pace} /km
           </span>
         </div>
         {point.hr !== null && (
           <div className="flex items-center justify-between gap-6">
-            <span className="text-sm font-medium text-muted-foreground">HR</span>
-            <span className="text-sm font-bold text-foreground">
+            <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>HR</span>
+            <span className="text-xs font-bold text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
               {point.hr} bpm
             </span>
           </div>
@@ -123,18 +123,18 @@ export function SplitElevationChart({ splits, totalElevationGain }: SplitElevati
     <div className="w-full space-y-6">
       <div className="flex items-center justify-between px-2">
         <h3
-          className="text-lg font-semibold text-foreground"
+          className="text-base uppercase tracking-widest font-bold text-endurix-black dark:text-foreground"
           style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
         >
           {t('charts.elevationProfile')}
         </h3>
-        <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+        <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
           <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-sm bg-green-500" />
+            <div className="w-2 h-2 bg-green-500" />
             <span>Uphill</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-sm bg-red-400" />
+            <div className="w-2 h-2 bg-red-400" />
             <span>Downhill</span>
           </div>
           <span

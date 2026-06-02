@@ -47,35 +47,35 @@ function ScatterTooltip({ active, payload }: TooltipContentProps) {
   const point = payload[0].payload;
 
   return (
-    <div className="bg-card border border-border p-4 rounded-xl shadow-xl">
+    <div className="bg-card border border-border p-3">
       <p
-        className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2"
-        style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+        className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground uppercase tracking-widest mb-2"
+        style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
       >
         Lap {point.lap}
       </p>
       <div className="space-y-1">
         <div className="flex items-center justify-between gap-6">
-          <span className="text-sm font-medium text-muted-foreground">Pace</span>
-          <span className="text-sm font-bold text-foreground">
+          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>Pace</span>
+          <span className="text-xs font-bold text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
             {point.paceLabel} /km
           </span>
         </div>
         <div className="flex items-center justify-between gap-6">
-          <span className="text-sm font-medium text-muted-foreground">Heart Rate</span>
-          <span className="text-sm font-bold text-foreground">
+          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>Heart Rate</span>
+          <span className="text-xs font-bold text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
             {point.hr} bpm
           </span>
         </div>
         <div className="flex items-center justify-between gap-6">
-          <span className="text-sm font-medium text-muted-foreground">Distance</span>
-          <span className="text-sm font-bold text-foreground">
+          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>Distance</span>
+          <span className="text-xs font-bold text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
             {(point.distance / 1000).toFixed(2)} km
           </span>
         </div>
         <div className="flex items-center justify-between gap-6">
-          <span className="text-sm font-medium text-muted-foreground">Efficiency</span>
-          <span className="text-sm font-bold text-endurix-orange">
+          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>Efficiency</span>
+          <span className="text-xs font-bold text-endurix-orange" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
             {(point.hr / point.pace).toFixed(2)}
           </span>
         </div>
@@ -131,22 +131,22 @@ export function PaceHrScatterChart({ laps, isRunning }: PaceHrScatterChartProps)
     <div className="w-full space-y-6">
       <div className="flex items-center justify-between px-2">
         <h3
-          className="text-lg font-semibold text-foreground"
+          className="text-base uppercase tracking-widest font-bold text-endurix-black dark:text-foreground"
           style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
         >
           {t('charts.paceVsHr')}
         </h3>
-        <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+        <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
           <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-sm bg-blue-500" />
+            <div className="w-2 h-2 bg-blue-500" />
             <span>Warmup</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-sm bg-orange-500" />
+            <div className="w-2 h-2 bg-orange-500" />
             <span>Active</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-sm bg-green-500" />
+            <div className="w-2 h-2 bg-green-500" />
             <span>Recovery</span>
           </div>
         </div>

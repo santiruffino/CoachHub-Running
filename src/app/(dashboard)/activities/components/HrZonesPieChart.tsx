@@ -53,29 +53,29 @@ function ZoneTooltip({ active, payload }: TooltipContentProps) {
   const secs = Math.round(data.time % 60);
 
   return (
-    <div className="bg-card border border-border p-4 rounded-xl shadow-xl">
+    <div className="bg-card border border-border p-3">
       <p
-        className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2"
-        style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+        className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground uppercase tracking-widest mb-2"
+        style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
       >
         {data.name}
       </p>
       <div className="space-y-1">
         <div className="flex items-center justify-between gap-6">
-          <span className="text-sm font-medium text-muted-foreground">Time</span>
-          <span className="text-sm font-bold text-foreground">
+          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>Time</span>
+          <span className="text-xs font-bold text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
             {mins}:{secs.toString().padStart(2, '0')}
           </span>
         </div>
         <div className="flex items-center justify-between gap-6">
-          <span className="text-sm font-medium text-muted-foreground">Share</span>
-          <span className="text-sm font-bold text-foreground">
+          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>Share</span>
+          <span className="text-xs font-bold text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
             {data.percentage.toFixed(1)}%
           </span>
         </div>
         <div className="flex items-center justify-between gap-6">
-          <span className="text-sm font-medium text-muted-foreground">Range</span>
-          <span className="text-sm font-bold text-foreground">
+          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>Range</span>
+          <span className="text-xs font-bold text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
             {data.bpmRange}
           </span>
         </div>
@@ -182,16 +182,16 @@ export function HrZonesPieChart({ laps, splits, zones, zoneNames }: HrZonesPieCh
     <div className="w-full space-y-6">
       <div className="flex items-center justify-between px-2">
         <h3
-          className="text-lg font-semibold text-foreground"
+          className="text-base uppercase tracking-widest font-bold text-endurix-black dark:text-foreground"
           style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
         >
           {t('hrZonesTitle')}
         </h3>
-        <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+        <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
           {data.map((d) => (
             <div key={d.zone} className="flex items-center gap-1.5">
               <div
-                className="w-2 h-2 rounded-sm"
+                className="w-2 h-2"
                 style={{ backgroundColor: ZONE_COLORS[d.zone - 1] }}
               />
               <span>Z{d.zone}</span>

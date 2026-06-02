@@ -120,7 +120,7 @@ export function HeartRateZonesChart({ laps, splits, zones, zoneNames }: HeartRat
                     <div key={index} className="flex items-center gap-4">
                         <div className="w-[180px] shrink-0">
                             <span
-                                className="text-[10px] font-semibold text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase"
+                                className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase"
                                 style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
                             >
                                 {actualZoneNames[index]}

@@ -97,9 +97,9 @@ function IntervalsTooltip({
   const color = BLOCK_COLORS[point.type] || BLOCK_COLORS.other;
 
   return (
-    <div className="bg-card border border-border p-4 rounded-xl shadow-xl">
+    <div className="bg-card border border-border p-3">
       <div className="flex items-center justify-between gap-4 mb-2">
-        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{label}</p>
+        <p className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground uppercase tracking-widest" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>{label}</p>
         <Badge
           variant="outline"
           className="text-[10px] h-5 px-1.5 font-bold uppercase tracking-tight"
@@ -139,10 +139,16 @@ function IntervalsTooltip({
 
           return (
             <div key={index} className="flex items-center gap-4 justify-between">
-              <span className="text-sm font-medium" style={{ color: entry.dataKey === 'hr' ? '' : entry.color }}>
-                {entryLabel}:
+              <span
+                className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider"
+                style={{
+                  fontFamily: 'var(--font-ibm-plex-mono, monospace)',
+                  color: entry.dataKey === 'hr' ? undefined : entry.color,
+                }}
+              >
+                {entryLabel}
               </span>
-              <span className="text-sm font-bold text-foreground">
+              <span className="text-xs font-bold text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
                 {renderedValue}
                 {unit}
               </span>
@@ -224,20 +230,23 @@ export function IntervalsAnalysisChart({
   return (
     <div className="w-full space-y-6">
       <div className="flex items-center justify-between px-2">
-        <h3 className="text-lg font-semibold font-display tracking-tight text-foreground">
+        <h3
+          className="text-base uppercase tracking-widest font-bold text-endurix-black dark:text-foreground"
+          style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+        >
           {t('charts.intervalsAnalysis') || 'Análisis de Intervalos'}
         </h3>
-        <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-tighter text-muted-foreground">
+        <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
            <div className="flex items-center gap-1.5">
-             <div className="w-2 h-2 rounded-sm bg-slate-400" />
+             <div className="w-2 h-2 bg-slate-400" />
               <span>{t('table.avgHr') || 'HR'}</span>
            </div>
            <div className="flex items-center gap-1.5">
-               <div className="w-2 h-2 rounded-sm bg-red-500" />
+               <div className="w-2 h-2 bg-red-500" />
                <span>{t('table.avgPace') || 'Pace'}</span>
             </div>
             <div className="flex items-center gap-1.5">
-               <div className="w-2 h-2 rounded-sm bg-cyan-400" />
+               <div className="w-2 h-2 bg-cyan-400" />
                <span>{t('table.cadence') || 'Cadence'}</span>
             </div>
          </div>
