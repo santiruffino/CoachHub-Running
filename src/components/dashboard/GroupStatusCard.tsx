@@ -12,23 +12,20 @@ function getStatusConfig(rate: number, t: (key: string, values?: Record<string, 
     if (rate >= 80) {
         return {
             label: t('dashboard.groupStatus.high'),
-            color: 'text-green-500',
-            bgColor: 'bg-green-500',
-            variant: 'default' as const
+            color: 'text-emerald-600 dark:text-emerald-400',
+            bgColor: 'bg-emerald-600 dark:bg-emerald-400',
         };
     } else if (rate >= 50) {
         return {
             label: t('dashboard.groupStatus.attentionNeeded'),
-            color: 'text-orange-500',
-            bgColor: 'bg-orange-500',
-            variant: 'warning' as const
+            color: 'text-endurix-orange',
+            bgColor: 'bg-endurix-orange',
         };
     } else {
         return {
             label: t('dashboard.groupStatus.critical') || 'Crítico',
-            color: 'text-red-500',
-            bgColor: 'bg-red-500',
-            variant: 'destructive' as const
+            color: 'text-endurix-orange',
+            bgColor: 'bg-endurix-orange',
         };
     }
 }
@@ -39,27 +36,42 @@ export function GroupStatusCard({ groupId, groupName, athleteCount, completionRa
     const status = getStatusConfig(completionRate, t);
 
     return (
-        <Card className="border-0 shadow-sm bg-card hover:shadow-[0_8px_30px_rgba(43,52,55,0.06)] transition-shadow">
+        <Card className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border">
             <CardContent className="p-4">
-                <div className="flex items-start justify-between mb-3">
+                <div className="flex items-start justify-between mb-3 gap-3">
                     <div className="flex-1">
-                        <h3 className="font-semibold text-sm mb-1 tracking-[0.01em]">{groupName}</h3>
-                        <p className="text-xs text-muted-foreground tracking-[0.01em]">
+                        <h3
+                            className="text-sm font-bold uppercase tracking-widest text-endurix-black dark:text-foreground"
+                            style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                        >{groupName}</h3>
+                        <p
+                            className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground mt-1"
+                            style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                        >
                             {t('dashboard.groupStatus.activeAthletes', { count: athleteCount })}
                         </p>
                     </div>
-                    <div className={`text-2xl font-display font-medium tracking-tight ${status.color}`}>
+                    <div
+                        className={`text-3xl font-bold tracking-tight ${status.color}`}
+                        style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                    >
                         {completionRate}%
                     </div>
                 </div>
 
                 <div className="space-y-2">
-                    <div className="flex items-center justify-between text-xs">
-                        <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{t('dashboard.groupStatus.compliance')}</span>
-                        <span className="text-[10px] uppercase font-semibold tracking-wider">{status.label}</span>
+                    <div className="flex items-center justify-between">
+                        <span
+                            className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground"
+                            style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                        >{t('dashboard.groupStatus.compliance')}</span>
+                        <span
+                            className={`text-[10px] uppercase font-bold tracking-widest ${status.color}`}
+                            style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                        >{status.label}</span>
                     </div>
 
-                    <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                    <div className="w-full h-1.5 bg-endurix-black/15 dark:bg-border overflow-hidden">
                         <div
                             className={`h-full ${status.bgColor} transition-all duration-300`}
                             style={{ width: `${completionRate}%` }}

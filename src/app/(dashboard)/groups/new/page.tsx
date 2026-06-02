@@ -94,64 +94,81 @@ export default function CreateGroupPage() {
                     <ArrowLeft className="h-5 w-5" />
                 </Button>
                 <div>
-                    <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">{t('createGroup')}</h1>
-                    <p className="text-sm text-muted-foreground">{tForm('subtitle')}</p>
+                    <h1
+                        className="text-2xl sm:text-3xl font-bold uppercase tracking-tight text-endurix-black dark:text-foreground"
+                        style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                    >{t('createGroup')}</h1>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground mt-1" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>{tForm('subtitle')}</p>
                 </div>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-8">
-                <div className="bg-card border border-border/40 rounded-[2rem] p-6 sm:p-8 shadow-sm space-y-6">
+                <div className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border p-6 sm:p-8 space-y-6">
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="name" className="text-xs font-bold tracking-widest uppercase opacity-70">{tForm('groupNameLabel')}</Label>
-                            <Input 
+                            <Label
+                                htmlFor="name"
+                                className="text-[10px] font-bold uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground"
+                                style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                            >{tForm('groupNameLabel')}</Label>
+                            <Input
                                 id="name"
-                                placeholder={tForm('groupNamePlaceholder')} 
-                                value={name} 
-                                onChange={(e) => setName(e.target.value)} 
-                                required 
-                                className="bg-muted/30 border-none h-12 rounded-xl focus-visible:ring-1 focus-visible:ring-primary/20"
+                                placeholder={tForm('groupNamePlaceholder')}
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                required
+                                className="bg-endurix-paper dark:bg-card border-endurix-black/15 dark:border-border h-12 focus-visible:ring-1 focus-visible:ring-endurix-orange/40"
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="description" className="text-xs font-bold tracking-widest uppercase opacity-70">{tForm('descriptionLabel')}</Label>
-                            <Textarea 
+                            <Label
+                                htmlFor="description"
+                                className="text-[10px] font-bold uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground"
+                                style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                            >{tForm('descriptionLabel')}</Label>
+                            <Textarea
                                 id="description"
-                                placeholder={tForm('descriptionPlaceholder')} 
-                                value={description} 
-                                onChange={(e) => setDescription(e.target.value)} 
-                                className="bg-muted/30 border-none rounded-xl focus-visible:ring-1 focus-visible:ring-primary/20 min-h-[100px]"
+                                placeholder={tForm('descriptionPlaceholder')}
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                className="bg-endurix-paper dark:bg-card border-endurix-black/15 dark:border-border focus-visible:ring-1 focus-visible:ring-endurix-orange/40 min-h-[100px]"
                             />
                         </div>
 
-                        <div className="flex items-center space-x-2 pt-4 border-t border-border/40">
-                            <Switch 
+                        <div className="flex items-center space-x-2 pt-4 border-t border-endurix-black/10 dark:border-border">
+                            <Switch
                                 id="is-race-group"
                                 checked={group_type === 'RACE'}
                                 onCheckedChange={(checked) => setGroupType(checked ? 'RACE' : 'REGULAR')}
                             />
-                            <Label htmlFor="is-race-group" className="font-semibold cursor-pointer">
+                            <Label
+                                htmlFor="is-race-group"
+                                className="text-[10px] font-bold uppercase tracking-widest text-endurix-black dark:text-foreground cursor-pointer"
+                                style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                            >
                                 {t('detail.isRaceGroup')}
                             </Label>
                         </div>
                     </div>
 
                     {group_type === 'RACE' && (
-                        <div className="space-y-6 pt-6 mt-6 border-t border-border/40 animate-in fade-in slide-in-from-top-2">
-                            <div className="flex p-1 bg-muted/30 rounded-xl">
-                                <Button 
+                        <div className="space-y-6 pt-6 mt-6 border-t border-endurix-black/10 dark:border-border animate-in fade-in slide-in-from-top-2">
+                            <div className="flex p-1 bg-endurix-black/8 dark:bg-white/8">
+                                <Button
                                     type="button"
-                                    variant={raceSelectionMode === 'EXISTING' ? 'secondary' : 'ghost'}
-                                    className="flex-1 rounded-lg text-xs font-bold uppercase tracking-wider"
+                                    variant={raceSelectionMode === 'EXISTING' ? 'default' : 'ghost'}
+                                    className="flex-1 text-xs font-bold uppercase tracking-widest"
+                                    style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
                                     onClick={() => setRaceSelectionMode('EXISTING')}
                                 >
                                     {t('detail.selectExistingRace')}
                                 </Button>
-                                <Button 
+                                <Button
                                     type="button"
-                                    variant={raceSelectionMode === 'NEW' ? 'secondary' : 'ghost'}
-                                    className="flex-1 rounded-lg text-xs font-bold uppercase tracking-wider"
+                                    variant={raceSelectionMode === 'NEW' ? 'default' : 'ghost'}
+                                    className="flex-1 text-xs font-bold uppercase tracking-widest"
+                                    style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
                                     onClick={() => setRaceSelectionMode('NEW')}
                                 >
                                     {t('detail.createNewRace')}
@@ -160,11 +177,14 @@ export default function CreateGroupPage() {
 
                             {raceSelectionMode === 'EXISTING' ? (
                                 <div className="space-y-2">
-                                    <Label className="text-xs font-bold tracking-widest uppercase opacity-70">{t('detail.pickFromLibrary')}</Label>
+                                    <Label
+                                        className="text-[10px] font-bold uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground"
+                                        style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                                    >{t('detail.pickFromLibrary')}</Label>
                                     <div className="relative">
-                                        <Trophy className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary" />
-                                        <select 
-                                            className="flex h-12 w-full rounded-xl border-none bg-muted/30 pl-11 pr-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/20 appearance-none cursor-pointer"
+                                        <Trophy className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-endurix-orange" />
+                                        <select
+                                            className="flex h-12 w-full border border-endurix-black/15 dark:border-border bg-endurix-paper dark:bg-card pl-11 pr-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-endurix-orange/40 appearance-none cursor-pointer"
                                             value={selectedRaceId}
                                         onChange={(e) => setSelectedRaceId(e.target.value)}
                                         required={group_type === 'RACE' && raceSelectionMode === 'EXISTING'}
@@ -178,47 +198,62 @@ export default function CreateGroupPage() {
                                         </select>
                                     </div>
                                     {raceLibrary.length === 0 && (
-                                        <p className="text-xs text-orange-500 mt-2">{tForm('emptyRaceLibrary')}</p>
+                                        <p
+                                            className="text-[10px] uppercase tracking-widest text-endurix-orange mt-2"
+                                            style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                                        >{tForm('emptyRaceLibrary')}</p>
                                     )}
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-1">
                                     <div className="space-y-2 col-span-1 md:col-span-2">
-                                        <Label className="text-xs font-bold tracking-widest uppercase opacity-70">{t('detail.raceName')}</Label>
-                                        <Input 
-                                            placeholder={tForm('raceNamePlaceholder')} 
-                                            value={race_name} 
-                                            onChange={(e) => setRaceName(e.target.value)} 
+                                        <Label
+                                            className="text-[10px] font-bold uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground"
+                                            style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                                        >{t('detail.raceName')}</Label>
+                                        <Input
+                                            placeholder={tForm('raceNamePlaceholder')}
+                                            value={race_name}
+                                            onChange={(e) => setRaceName(e.target.value)}
                                             required={group_type === 'RACE' && raceSelectionMode === 'NEW'}
-                                            className="bg-muted/30 border-none h-11 rounded-xl"
+                                            className="bg-endurix-paper dark:bg-card border-endurix-black/15 dark:border-border h-11"
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-xs font-bold tracking-widest uppercase opacity-70">{t('detail.raceDate')}</Label>
-                                        <Input 
-                                            type="date" 
-                                            value={race_date} 
-                                            onChange={(e) => setRaceDate(e.target.value)} 
+                                        <Label
+                                            className="text-[10px] font-bold uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground"
+                                            style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                                        >{t('detail.raceDate')}</Label>
+                                        <Input
+                                            type="date"
+                                            value={race_date}
+                                            onChange={(e) => setRaceDate(e.target.value)}
                                             required={group_type === 'RACE' && raceSelectionMode === 'NEW'}
-                                            className="bg-muted/30 border-none h-11 rounded-xl"
+                                            className="bg-endurix-paper dark:bg-card border-endurix-black/15 dark:border-border h-11"
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-xs font-bold tracking-widest uppercase opacity-70">{t('detail.raceDistance')}</Label>
-                                        <Input 
-                                            placeholder={tForm('raceDistancePlaceholder')} 
-                                            value={race_distance} 
-                                            onChange={(e) => setRaceDistance(e.target.value)} 
-                                            className="bg-muted/30 border-none h-11 rounded-xl"
+                                        <Label
+                                            className="text-[10px] font-bold uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground"
+                                            style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                                        >{t('detail.raceDistance')}</Label>
+                                        <Input
+                                            placeholder={tForm('raceDistancePlaceholder')}
+                                            value={race_distance}
+                                            onChange={(e) => setRaceDistance(e.target.value)}
+                                            className="bg-endurix-paper dark:bg-card border-endurix-black/15 dark:border-border h-11"
                                         />
                                     </div>
                                     <div className="space-y-2 col-span-1 md:col-span-2">
-                                        <Label className="text-xs font-bold tracking-widest uppercase opacity-70">{tForm('locationLabel')}</Label>
-                                        <Input 
-                                            placeholder={tForm('locationPlaceholder')} 
-                                            value={race_location} 
-                                            onChange={(e) => setRaceLocation(e.target.value)} 
-                                            className="bg-muted/30 border-none h-11 rounded-xl"
+                                        <Label
+                                            className="text-[10px] font-bold uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground"
+                                            style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                                        >{tForm('locationLabel')}</Label>
+                                        <Input
+                                            placeholder={tForm('locationPlaceholder')}
+                                            value={race_location}
+                                            onChange={(e) => setRaceLocation(e.target.value)}
+                                            className="bg-endurix-paper dark:bg-card border-endurix-black/15 dark:border-border h-11"
                                         />
                                     </div>
                                 </div>

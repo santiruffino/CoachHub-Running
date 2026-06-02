@@ -56,61 +56,85 @@ export function EstimatedTotals({ blocks }: EstimatedTotalsProps) {
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Total Duration */}
-            <div className="bg-white dark:bg-[#1a232c] rounded-xl p-8 shadow-[0_4px_24px_rgba(43,52,55,0.04)] relative overflow-hidden flex flex-col justify-between h-40">
-                <div className="text-[10px] font-semibold text-[#8b9bb4] uppercase tracking-[0.05em] mb-4">
+            <div className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border p-6 relative overflow-hidden flex flex-col justify-between h-40">
+                <div
+                    className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground uppercase tracking-widest mb-4"
+                    style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                >
                     {t('totalDuration')}
                 </div>
                 <div className="flex items-baseline gap-1 mt-auto">
                     {hours > 0 ? (
                         <>
-                            <span className="text-5xl font-display font-extrabold text-[#2b3437] dark:text-[#f8f9fa] tracking-tight">{hours}</span>
-                            <span className="text-sm font-semibold text-[#8b9bb4] mr-2">{t('units.h')}</span>
-                            <span className="text-5xl font-display font-extrabold text-[#2b3437] dark:text-[#f8f9fa] tracking-tight">{minutes.toString().padStart(2, '0')}</span>
-                            <span className="text-sm font-semibold text-[#8b9bb4]">{t('units.min')}</span>
+                            <span className="text-5xl font-extrabold text-endurix-black dark:text-foreground tracking-tight" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{hours}</span>
+                            <span
+                                className="text-sm font-bold text-endurix-black/50 dark:text-muted-foreground mr-2"
+                                style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                            >{t('units.h')}</span>
+                            <span className="text-5xl font-extrabold text-endurix-black dark:text-foreground tracking-tight" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{minutes.toString().padStart(2, '0')}</span>
+                            <span
+                                className="text-sm font-bold text-endurix-black/50 dark:text-muted-foreground"
+                                style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                            >{t('units.min')}</span>
                         </>
                     ) : (
                         <>
-                            <span className="text-5xl font-display font-extrabold text-[#2b3437] dark:text-[#f8f9fa] tracking-tight">{minutes}</span>
-                            <span className="text-sm font-semibold text-[#8b9bb4]">{t('units.min')}</span>
+                            <span className="text-5xl font-extrabold text-endurix-black dark:text-foreground tracking-tight" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{minutes}</span>
+                            <span
+                                className="text-sm font-bold text-endurix-black/50 dark:text-muted-foreground"
+                                style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                            >{t('units.min')}</span>
                         </>
                     )}
                 </div>
-                
+
                 {/* Visual Bar */}
-                <div className="absolute bottom-6 left-8 right-8 h-1 bg-[#f1f4f6] dark:bg-white/5 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-[#d1e4fb] to-[#4e6073] rounded-full" style={{ width: '60%' }} />
+                <div className="absolute bottom-6 left-6 right-6 h-1 bg-endurix-black/15 dark:bg-border overflow-hidden">
+                    <div className="h-full bg-endurix-orange" style={{ width: '60%' }} />
                 </div>
             </div>
 
             {/* Estimated TSS */}
-            <div className="bg-white dark:bg-[#1a232c] rounded-xl p-8 shadow-[0_4px_24px_rgba(43,52,55,0.04)] relative overflow-hidden flex flex-col justify-between h-40">
-                <div className="text-[10px] font-semibold text-[#8b9bb4] uppercase tracking-[0.05em] mb-4">
+            <div className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border p-6 relative overflow-hidden flex flex-col justify-between h-40">
+                <div
+                    className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground uppercase tracking-widest mb-4"
+                    style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                >
                     {t('estimatedTss')}
                 </div>
                 <div className="flex items-baseline gap-2 mt-auto">
-                    <span className="text-5xl font-display font-extrabold text-[#2b3437] dark:text-[#f8f9fa] tracking-tight">{totals.tss}</span>
-                    <span className="text-sm font-semibold text-[#8b9bb4]">{t('score')}</span>
+                    <span className="text-5xl font-extrabold text-endurix-black dark:text-foreground tracking-tight" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{totals.tss}</span>
+                    <span
+                        className="text-sm font-bold text-endurix-black/50 dark:text-muted-foreground"
+                        style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                    >{t('score')}</span>
                 </div>
-                
+
                 {/* Visual Bar */}
-                <div className="absolute bottom-6 left-8 right-8 h-1 bg-[#f1f4f6] dark:bg-white/5 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-[#8b9bb4] to-[#2b3437] dark:to-[#f8f9fa] rounded-full" style={{ width: '75%' }} />
+                <div className="absolute bottom-6 left-6 right-6 h-1 bg-endurix-black/15 dark:bg-border overflow-hidden">
+                    <div className="h-full bg-endurix-black dark:bg-foreground" style={{ width: '75%' }} />
                 </div>
             </div>
 
             {/* Distance Est */}
-            <div className="bg-white dark:bg-[#1a232c] rounded-xl p-8 shadow-[0_4px_24px_rgba(43,52,55,0.04)] relative overflow-hidden flex flex-col justify-between h-40">
-                <div className="text-[10px] font-semibold text-[#8b9bb4] uppercase tracking-[0.05em] mb-4">
+            <div className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border p-6 relative overflow-hidden flex flex-col justify-between h-40">
+                <div
+                    className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground uppercase tracking-widest mb-4"
+                    style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                >
                     {t('distanceEst')}
                 </div>
                 <div className="flex items-baseline gap-2 mt-auto">
-                    <span className="text-5xl font-display font-extrabold text-[#2b3437] dark:text-[#f8f9fa] tracking-tight">{(totals.distance > 0 ? totals.distance : 0).toFixed(1)}</span>
-                    <span className="text-sm font-semibold text-[#8b9bb4]">{t('units.km')}</span>
+                    <span className="text-5xl font-extrabold text-endurix-black dark:text-foreground tracking-tight" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{(totals.distance > 0 ? totals.distance : 0).toFixed(1)}</span>
+                    <span
+                        className="text-sm font-bold text-endurix-black/50 dark:text-muted-foreground"
+                        style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                    >{t('units.km')}</span>
                 </div>
-                
+
                 {/* Visual Bar */}
-                <div className="absolute bottom-6 left-8 right-8 h-1 bg-[#f1f4f6] dark:bg-white/5 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-[#abb3b7] to-emerald-500 rounded-full" style={{ width: '40%' }} />
+                <div className="absolute bottom-6 left-6 right-6 h-1 bg-endurix-black/15 dark:bg-border overflow-hidden">
+                    <div className="h-full bg-emerald-500" style={{ width: '40%' }} />
                 </div>
             </div>
         </div>

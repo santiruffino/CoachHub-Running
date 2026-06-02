@@ -223,7 +223,7 @@ export function WorkoutSequence({
                                             {t('repeats', { reps })}
                                         </div>
                                     </div>
-                                    <div className="space-y-3 bg-[#f8f9fa] dark:bg-white/5 p-4 rounded-xl ml-4">
+                                    <div className="space-y-3 bg-endurix-paper dark:bg-muted/50 border border-endurix-black/10 dark:border-white/10 p-4 ml-4">
                                         {item.blocks.map((block, idx) => {
                                             const isSelected = selectedBlockId === block.id;
 

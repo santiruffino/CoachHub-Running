@@ -42,11 +42,18 @@ export function LoadMetricsTrendChart({ data }: LoadMetricsTrendChartProps) {
           <Tooltip
             formatter={(value: number | undefined, name: string | undefined) => [Number(value ?? 0).toFixed(1), name ?? '']}
             contentStyle={{
-              backgroundColor: 'hsl(var(--popover))',
+              backgroundColor: 'hsl(var(--card))',
               border: '1px solid hsl(var(--border))',
-              borderRadius: '12px',
+              borderRadius: 0,
+              fontFamily: 'var(--font-ibm-plex-mono, monospace)',
+              fontSize: 12,
             }}
-            labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 600 }}
+            labelStyle={{
+              color: 'hsl(var(--foreground))',
+              fontWeight: 600,
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+            }}
           />
           <Line type="monotone" dataKey="ctl" name="CTL" stroke="#f59e0b" strokeWidth={2.25} dot={false} />
           <Line type="monotone" dataKey="atl" name="ATL" stroke="#f43f5e" strokeWidth={2.25} dot={false} />
