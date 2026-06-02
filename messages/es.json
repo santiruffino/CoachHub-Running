@@ -1378,6 +1378,50 @@
             "noExcuses": "SIN EXCUSAS.",
             "justData": "SOLO DATOS."
         },
+        "wishlist": {
+            "eyebrow": "ACCESO ANTICIPADO",
+            "badge": "CUPO LIMITADO · 50 PLAZAS",
+            "title1": "SUMATE A LA",
+            "title2": "LISTA.",
+            "subtitle": "Asegurá tu lugar antes del lanzamiento público. Estamos abriendo Endurix a coaches que quieran dar el salto con datos, sin esperar a la apertura general.",
+            "form": {
+                "nameLabel": "NOMBRE COMPLETO",
+                "namePlaceholder": "Ej: Santiago Ruffino",
+                "emailLabel": "EMAIL PROFESIONAL",
+                "emailPlaceholder": "tu@email.com",
+                "roleLabel": "TU ROL",
+                "rolePlaceholder": "Elegí una opción",
+                "teamSizeLabel": "TAMAÑO DE TU EQUIPO",
+                "teamSizePlaceholder": "Elegí un rango",
+                "submit": "SOLICITAR ACCESO",
+                "submitting": "ENVIANDO…",
+                "success": "¡LISTO! TE TENEMOS EN LA LISTA.",
+                "successDetail": "Te contactaremos por email en las próximas semanas con los siguientes pasos.",
+                "errorRequired": "Completá todos los campos.",
+                "errorInvalidEmail": "Ingresá un email válido.",
+                "errorDuplicate": "Este email ya está registrado. Te avisaremos pronto.",
+                "errorGeneric": "Algo salió mal. Intentá de nuevo en unos minutos."
+            },
+            "roles": {
+                "head_coach": "Head Coach",
+                "assistant_coach": "Coach Asistente",
+                "other": "Otro"
+            },
+            "teamSizes": {
+                "1_5": "1 — 5 atletas",
+                "6_15": "6 — 15 atletas",
+                "16_30": "16 — 30 atletas",
+                "30_plus": "30+ atletas"
+            },
+            "benefitsTitle": "QUÉ INCLUYE EL ACCESO ANTICIPADO",
+            "benefits": {
+                "pricing": "Precio bloqueado de lanzamiento con descuento fundador.",
+                "support": "Onboarding 1:1 con el equipo de Endurix.",
+                "roadmap": "Voto en la hoja de ruta del producto.",
+                "community": "Acceso al canal privado de coaches pioneros."
+            },
+            "trust": "Sin spam. Sin tarjeta. Cancelás la lista cuando quieras."
+        },
         "footer": {
             "privacy": "POLÍTICA DE PRIVACIDAD",
             "terms": "TÉRMINOS DE SERVICIO",

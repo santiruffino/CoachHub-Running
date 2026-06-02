@@ -4,6 +4,7 @@ import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { ProductFeaturesSection } from '@/components/landing/ProductFeaturesSection';
 import { RoadmapSection } from '@/components/landing/RoadmapSection';
 import { CTASection } from '@/components/landing/CTASection';
+import { WishlistSection } from '@/components/landing/WishlistSection';
 import { Footer } from '@/components/landing/Footer';
 
 export default function LandingPage() {
@@ -16,6 +17,7 @@ export default function LandingPage() {
         <ProductFeaturesSection />
         <RoadmapSection />
         <CTASection />
+        <WishlistSection />
       </main>
       <Footer />
     </div>
