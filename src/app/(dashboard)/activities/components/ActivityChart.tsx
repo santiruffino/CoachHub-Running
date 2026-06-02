@@ -529,7 +529,7 @@ const [showLaps, setShowLaps] = useState(false);
 
     if (loading) {
         return (
-            <Card className="w-full h-full bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border flex flex-col justify-between p-6 min-h-[460px] lg:min-h-[560px]">
+            <Card className="w-full h-full bg-white dark:bg-card border border-endurix-black/10 dark:border-border flex flex-col justify-between p-6 min-h-[460px] lg:min-h-[560px]">
                 <div className="flex items-center justify-between mb-4">
                     {/* Title skeleton */}
                     <div className="flex items-center gap-2">
@@ -598,7 +598,7 @@ const [showLaps, setShowLaps] = useState(false);
     }
 
     return (
-        <Card className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border">
+        <Card className="w-full bg-white dark:bg-card border border-endurix-black/10 dark:border-border">
             <CardHeader className="border-b border-endurix-black/10 dark:border-border">
                 <div className="flex items-start justify-between flex-wrap gap-4">
                     <CardTitle className="flex items-center gap-2 text-base uppercase tracking-widest" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>
