@@ -73,7 +73,7 @@ export function WorkoutBuilderView({ initialWorkout, athleteId }: WorkoutBuilder
     const canProceedToStep2 = blocks.length > 0;
 
     return (
-        <div className="h-[calc(100vh-theme(spacing.16))] w-[calc(100%+2rem)] md:w-[calc(100%+4rem)] overflow-hidden -mx-4 md:-mx-8 -my-4 md:-my-8 bg-background dark:bg-background font-inter flex flex-col relative">
+        <div className="h-[calc(100vh-theme(spacing.16))] w-full overflow-hidden bg-background dark:bg-background font-inter flex flex-col relative">
             {/* Step Indicator */}
             <div className="flex-none border-b border-border/30 dark:border-white/5 bg-card dark:bg-muted px-8 py-4">
                 <div className="flex items-center justify-between max-w-4xl mx-auto">
