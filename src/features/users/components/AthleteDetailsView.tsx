@@ -322,10 +322,22 @@ export function AthleteDetailsView({
                             label={t("athletes.detail.complianceRate")}
                             value={`${completionRate}%`}
                         />
-                        <div>
-                            <MonospaceLabel className="text-[10px]">{tAthlete('loadMonitoringTitle')}</MonospaceLabel>
-                            <Badge className={`${loadMetrics.riskClassName} border-0 text-[10px] uppercase tracking-wider mt-1`}>{tAthlete(`loadRisk.${loadMetrics.riskKey}`)}</Badge>
-                        </div>
+                        <StatCard
+                            label={tAthlete('loadMonitoringTitle')}
+                            value={loadMetrics.tsb > 0 ? `+${Math.round(loadMetrics.tsb)}` : Math.round(loadMetrics.tsb)}
+                            chip={tAthlete(`loadRisk.${loadMetrics.riskKey}`)}
+                            chipColor={
+                                loadMetrics.riskKey === 'high'
+                                    ? 'red'
+                                    : loadMetrics.riskKey === 'moderate'
+                                        ? 'orange'
+                                        : loadMetrics.riskKey === 'lowStimulus'
+                                            ? 'neutral'
+                                            : loadMetrics.riskKey === 'balanced'
+                                                ? 'green'
+                                                : 'neutral'
+                            }
+                        />
                         <StatCard
                             label={t("athletes.detail.weeklyVolume")}
                             value={
