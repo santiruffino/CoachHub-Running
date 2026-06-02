@@ -1892,7 +1892,26 @@
             "RACES_FETCH_FAILED": "Error al obtener el listado de carreras.",
             "RACE_ASSIGN_FAILED": "Error al asignar la carrera al atleta.",
             "RACE_UPDATE_FAILED": "Error al actualizar la carrera.",
-            "RACE_DELETE_FAILED": "Error al eliminar la carrera."
+             "RACE_DELETE_FAILED": "Error al eliminar la carrera."
         }
+    },
+    "notFound": {
+        "eyebrow": "Página no encontrada",
+        "headline1": "Te saliste",
+        "headline2": "del trazado.",
+        "subtitle": "La ruta que seguiste ya no existe. Vuelve a la línea de salida y retomá el plan desde el dashboard.",
+        "primary": "Volver al dashboard",
+        "secondary": "Ir al inicio",
+        "tip": "Tip: revisá la URL o usá la navegación principal para encontrar lo que buscás."
+    },
+    "errorPage": {
+        "eyebrow": "Error inesperado",
+        "headline1": "Algo se",
+        "headline2": "rompió en el camino.",
+        "subtitle": "Tuvimos un tropiezo técnico. El equipo ya fue notificado. Probá recargar o volvé a empezar.",
+        "primary": "Reintentar",
+        "secondary": "Ir al inicio",
+        "label": "Detalle del error",
+        "helpText": "Si el problema persiste, contactá a soporte con el identificador de arriba."
     }
 }

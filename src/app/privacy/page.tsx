@@ -1,231 +1,295 @@
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
+import { ArrowLeft } from 'lucide-react';
 
 export default async function PrivacyPage() {
     const t = await getTranslations('legal.privacy');
 
     return (
-        <div className="min-h-screen bg-white dark:bg-dark-navy">
+        <div className="min-h-screen bg-endurix-paper dark:bg-background">
             {/* Header */}
-            <header className="border-b border-gray-200 dark:border-white/10">
-                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <header className="border-b border-endurix-black/10 dark:border-border bg-endurix-paper dark:bg-background">
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                     <Link
                         href="/"
-                        className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-light hover:text-gray-900 dark:hover:text-white transition-colors"
+                        className="inline-flex items-center gap-2 text-endurix-black/70 dark:text-muted-foreground hover:text-endurix-orange transition-colors text-xs font-bold uppercase tracking-widest"
+                        style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
                     >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                        </svg>
+                        <ArrowLeft className="w-4 h-4" />
                         {t('backToHome')}
                     </Link>
                 </div>
             </header>
 
             {/* Content */}
-            <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">{t('title')}</h1>
-                <p className="text-sm text-gray-600 dark:text-gray-light mb-8">{t('lastUpdated')}</p>
+            <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+                {/* Title block */}
+                <div className="mb-12 pb-8 border-b border-endurix-black/10 dark:border-border">
+                    <span
+                        className="inline-block text-[10px] text-endurix-black/50 dark:text-muted-foreground tracking-widest mb-4"
+                        style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                    >
+                        LEGAL · {t('lastUpdated').toUpperCase()}
+                    </span>
+                    <h1
+                        className="font-bold text-endurix-black dark:text-foreground text-4xl lg:text-5xl leading-[1.05] tracking-tight uppercase"
+                        style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                    >
+                        {t('title')}
+                    </h1>
+                </div>
 
-                <div className="prose prose-gray dark:prose-invert max-w-none">
+                <article className="space-y-12">
                     {/* Introduction */}
-                    <section className="mb-8">
-                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">{t('sections.introduction.title')}</h2>
-                        <p className="text-gray-700 dark:text-gray-light mb-4">
-                            {t('sections.introduction.p1')}
-                        </p>
-                        <p className="text-gray-700 dark:text-gray-light">
-                            {t('sections.introduction.p2')}
-                        </p>
-                    </section>
+                    <PrivacySection title={t('sections.introduction.title')}>
+                        <PrivacyParagraph>{t('sections.introduction.p1')}</PrivacyParagraph>
+                        <PrivacyParagraph>{t('sections.introduction.p2')}</PrivacyParagraph>
+                    </PrivacySection>
 
                     {/* Information We Collect */}
-                    <section className="mb-8">
-                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">{t('sections.collect.title')}</h2>
+                    <PrivacySection title={t('sections.collect.title')}>
+                        <PrivacySubSection title={t('sections.collect.personal.title')} subtitle={t('sections.collect.personal.subtitle')}>
+                            <PrivacyList
+                                items={[
+                                    t('sections.collect.personal.items.account'),
+                                    t('sections.collect.personal.items.profile'),
+                                    t('sections.collect.personal.items.integrations'),
+                                    t('sections.collect.personal.items.support'),
+                                ]}
+                            />
+                        </PrivacySubSection>
 
-                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">{t('sections.collect.personal.title')}</h3>
-                        <p className="text-gray-700 dark:text-gray-light mb-2">{t('sections.collect.personal.subtitle')}</p>
-                        <ul className="list-disc pl-6 text-gray-700 dark:text-gray-light space-y-2 mb-4">
-                            <li>{t('sections.collect.personal.items.account')}</li>
-                            <li>{t('sections.collect.personal.items.profile')}</li>
-                            <li>{t('sections.collect.personal.items.integrations')}</li>
-                            <li>{t('sections.collect.personal.items.support')}</li>
-                        </ul>
+                        <PrivacySubSection title={t('sections.collect.activity.title')} subtitle={t('sections.collect.activity.subtitle')}>
+                            <PrivacyList
+                                items={[
+                                    t('sections.collect.activity.items.workout'),
+                                    t('sections.collect.activity.items.gps'),
+                                    t('sections.collect.activity.items.history'),
+                                    t('sections.collect.activity.items.device'),
+                                ]}
+                            />
+                        </PrivacySubSection>
 
-                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">{t('sections.collect.activity.title')}</h3>
-                        <p className="text-gray-700 dark:text-gray-light mb-2">{t('sections.collect.activity.subtitle')}</p>
-                        <ul className="list-disc pl-6 text-gray-700 dark:text-gray-light space-y-2 mb-4">
-                            <li>{t('sections.collect.activity.items.workout')}</li>
-                            <li>{t('sections.collect.activity.items.gps')}</li>
-                            <li>{t('sections.collect.activity.items.history')}</li>
-                            <li>{t('sections.collect.activity.items.device')}</li>
-                        </ul>
-
-                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">{t('sections.collect.usage.title')}</h3>
-                        <p className="text-gray-700 dark:text-gray-light mb-2">{t('sections.collect.usage.subtitle')}</p>
-                        <ul className="list-disc pl-6 text-gray-700 dark:text-gray-light space-y-2">
-                            <li>{t('sections.collect.usage.items.logData')}</li>
-                            <li>{t('sections.collect.usage.items.deviceInfo')}</li>
-                            <li>{t('sections.collect.usage.items.cookies')}</li>
-                        </ul>
-                    </section>
+                        <PrivacySubSection title={t('sections.collect.usage.title')} subtitle={t('sections.collect.usage.subtitle')}>
+                            <PrivacyList
+                                items={[
+                                    t('sections.collect.usage.items.logData'),
+                                    t('sections.collect.usage.items.deviceInfo'),
+                                    t('sections.collect.usage.items.cookies'),
+                                ]}
+                            />
+                        </PrivacySubSection>
+                    </PrivacySection>
 
                     {/* How We Use Your Information */}
-                    <section className="mb-8">
-                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">{t('sections.usage.title')}</h2>
-                        <p className="text-gray-700 dark:text-gray-light mb-2">{t('sections.usage.subtitle')}</p>
-                        <ul className="list-disc pl-6 text-gray-700 dark:text-gray-light space-y-2">
-                            <li><strong>{t('sections.usage.items.services.label')}:</strong> {t('sections.usage.items.services.text')}</li>
-                            <li><strong>{t('sections.usage.items.personalization.label')}:</strong> {t('sections.usage.items.personalization.text')}</li>
-                            <li><strong>{t('sections.usage.items.analytics.label')}:</strong> {t('sections.usage.items.analytics.text')}</li>
-                            <li><strong>{t('sections.usage.items.communication.label')}:</strong> {t('sections.usage.items.communication.text')}</li>
-                            <li><strong>{t('sections.usage.items.improvement.label')}:</strong> {t('sections.usage.items.improvement.text')}</li>
-                            <li><strong>{t('sections.usage.items.security.label')}:</strong> {t('sections.usage.items.security.text')}</li>
-                            <li><strong>{t('sections.usage.items.compliance.label')}:</strong> {t('sections.usage.items.compliance.text')}</li>
-                        </ul>
-                    </section>
+                    <PrivacySection title={t('sections.usage.title')}>
+                        <PrivacyParagraph>{t('sections.usage.subtitle')}</PrivacyParagraph>
+                        <PrivacyList
+                            items={[
+                                `${t('sections.usage.items.services.label')}: ${t('sections.usage.items.services.text')}`,
+                                `${t('sections.usage.items.personalization.label')}: ${t('sections.usage.items.personalization.text')}`,
+                                `${t('sections.usage.items.analytics.label')}: ${t('sections.usage.items.analytics.text')}`,
+                                `${t('sections.usage.items.communication.label')}: ${t('sections.usage.items.communication.text')}`,
+                                `${t('sections.usage.items.improvement.label')}: ${t('sections.usage.items.improvement.text')}`,
+                                `${t('sections.usage.items.security.label')}: ${t('sections.usage.items.security.text')}`,
+                                `${t('sections.usage.items.compliance.label')}: ${t('sections.usage.items.compliance.text')}`,
+                            ]}
+                        />
+                    </PrivacySection>
 
                     {/* Third-Party Integrations */}
-                    <section className="mb-8">
-                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">{t('sections.integrations.title')}</h2>
-                        <p className="text-gray-700 dark:text-gray-light mb-4">
-                            {t('sections.integrations.p1')}
-                        </p>
-                        <ul className="list-disc pl-6 text-gray-700 dark:text-gray-light space-y-2 mb-4">
-                            <li>{t('sections.integrations.items.auth')}</li>
-                            <li>{t('sections.integrations.items.policies')}</li>
-                            <li>{t('sections.integrations.items.disconnect')}</li>
-                        </ul>
-                        <p className="text-gray-700 dark:text-gray-light">
-                            {t('sections.integrations.p2')}
-                        </p>
+                    <PrivacySection title={t('sections.integrations.title')}>
+                        <PrivacyParagraph>{t('sections.integrations.p1')}</PrivacyParagraph>
+                        <PrivacyList
+                            items={[
+                                t('sections.integrations.items.auth'),
+                                t('sections.integrations.items.policies'),
+                                t('sections.integrations.items.disconnect'),
+                            ]}
+                        />
+                        <PrivacyParagraph>{t('sections.integrations.p2')}</PrivacyParagraph>
 
-                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">{t('sections.integrations.strava.title')}</h3>
-                        <p className="text-gray-700 dark:text-gray-light mb-2">{t('sections.integrations.strava.intro')}</p>
-                        <ul className="list-disc pl-6 text-gray-700 dark:text-gray-light space-y-2">
-                            <li>{t('sections.integrations.strava.items.consent')}</li>
-                            <li>{t('sections.integrations.strava.items.scope')}</li>
-                            <li>{t('sections.integrations.strava.items.withdrawal')}</li>
-                            <li>{t('sections.integrations.strava.items.deletion')}</li>
-                            <li>{t('sections.integrations.strava.items.usageData')}</li>
-                            <li>{t('sections.integrations.strava.items.attribution')}</li>
-                        </ul>
-                    </section>
+                        <PrivacySubSection title={t('sections.integrations.strava.title')}>
+                            <PrivacyParagraph>{t('sections.integrations.strava.intro')}</PrivacyParagraph>
+                            <PrivacyList
+                                items={[
+                                    t('sections.integrations.strava.items.consent'),
+                                    t('sections.integrations.strava.items.scope'),
+                                    t('sections.integrations.strava.items.withdrawal'),
+                                    t('sections.integrations.strava.items.deletion'),
+                                    t('sections.integrations.strava.items.usageData'),
+                                    t('sections.integrations.strava.items.attribution'),
+                                ]}
+                            />
+                        </PrivacySubSection>
+                    </PrivacySection>
 
                     {/* Data Sharing */}
-                    <section className="mb-8">
-                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">{t('sections.sharing.title')}</h2>
-                        <p className="text-gray-700 dark:text-gray-light mb-2">{t('sections.sharing.subtitle')}</p>
-
-                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">{t('sections.sharing.coach.title')}</h3>
-                        <p className="text-gray-700 dark:text-gray-light mb-4">
-                            {t('sections.sharing.coach.text')}
-                        </p>
-
-                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">{t('sections.sharing.providers.title')}</h3>
-                        <p className="text-gray-700 dark:text-gray-light mb-4">
-                            {t('sections.sharing.providers.text')}
-                        </p>
-
-                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 mt-6">{t('sections.sharing.legal.title')}</h3>
-                        <p className="text-gray-700 dark:text-gray-light mb-4">
-                            {t('sections.sharing.legal.text')}
-                        </p>
-
-                        <p className="text-gray-700 dark:text-gray-light font-semibold">
-                            {t('sections.sharing.noSell')}
-                        </p>
-                    </section>
+                    <PrivacySection title={t('sections.sharing.title')}>
+                        <PrivacyParagraph>{t('sections.sharing.subtitle')}</PrivacyParagraph>
+                        <PrivacySubSection title={t('sections.sharing.coach.title')}>
+                            <PrivacyParagraph>{t('sections.sharing.coach.text')}</PrivacyParagraph>
+                        </PrivacySubSection>
+                        <PrivacySubSection title={t('sections.sharing.providers.title')}>
+                            <PrivacyParagraph>{t('sections.sharing.providers.text')}</PrivacyParagraph>
+                        </PrivacySubSection>
+                        <PrivacySubSection title={t('sections.sharing.legal.title')}>
+                            <PrivacyParagraph>{t('sections.sharing.legal.text')}</PrivacyParagraph>
+                        </PrivacySubSection>
+                        <PrivacyCallout>{t('sections.sharing.noSell')}</PrivacyCallout>
+                    </PrivacySection>
 
                     {/* Data Security */}
-                    <section className="mb-8">
-                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">{t('sections.security.title')}</h2>
-                        <p className="text-gray-700 dark:text-gray-light mb-4">
-                            {t('sections.security.p1')}
-                        </p>
-                        <ul className="list-disc pl-6 text-gray-700 dark:text-gray-light space-y-2 mb-4">
-                            <li>{t('sections.security.items.encryption')}</li>
-                            <li>{t('sections.security.items.assessments')}</li>
-                            <li>{t('sections.security.items.accessControls')}</li>
-                            <li>{t('sections.security.items.infrastructure')}</li>
-                        </ul>
-                        <p className="text-gray-700 dark:text-gray-light">
-                            {t('sections.security.p2')}
-                        </p>
-                    </section>
+                    <PrivacySection title={t('sections.security.title')}>
+                        <PrivacyParagraph>{t('sections.security.p1')}</PrivacyParagraph>
+                        <PrivacyList
+                            items={[
+                                t('sections.security.items.encryption'),
+                                t('sections.security.items.assessments'),
+                                t('sections.security.items.accessControls'),
+                                t('sections.security.items.infrastructure'),
+                            ]}
+                        />
+                        <PrivacyParagraph>{t('sections.security.p2')}</PrivacyParagraph>
+                    </PrivacySection>
 
                     {/* Your Rights */}
-                    <section className="mb-8">
-                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">{t('sections.rights.title')}</h2>
-                        <p className="text-gray-700 dark:text-gray-light mb-2">{t('sections.rights.subtitle')}</p>
-                        <ul className="list-disc pl-6 text-gray-700 dark:text-gray-light space-y-2 mb-4">
-                            <li><strong>{t('sections.rights.items.access.label')}:</strong> {t('sections.rights.items.access.text')}</li>
-                            <li><strong>{t('sections.rights.items.correction.label')}:</strong> {t('sections.rights.items.correction.text')}</li>
-                            <li><strong>{t('sections.rights.items.deletion.label')}:</strong> {t('sections.rights.items.deletion.text')}</li>
-                            <li><strong>{t('sections.rights.items.portability.label')}:</strong> {t('sections.rights.items.portability.text')}</li>
-                            <li><strong>{t('sections.rights.items.optOut.label')}:</strong> {t('sections.rights.items.optOut.text')}</li>
-                            <li><strong>{t('sections.rights.items.withdraw.label')}:</strong> {t('sections.rights.items.withdraw.text')}</li>
-                        </ul>
-                        <p className="text-gray-700 dark:text-gray-light">
-                            {t('sections.rights.contact')}
-                        </p>
-                    </section>
+                    <PrivacySection title={t('sections.rights.title')}>
+                        <PrivacyParagraph>{t('sections.rights.subtitle')}</PrivacyParagraph>
+                        <PrivacyList
+                            items={[
+                                `${t('sections.rights.items.access.label')}: ${t('sections.rights.items.access.text')}`,
+                                `${t('sections.rights.items.correction.label')}: ${t('sections.rights.items.correction.text')}`,
+                                `${t('sections.rights.items.deletion.label')}: ${t('sections.rights.items.deletion.text')}`,
+                                `${t('sections.rights.items.portability.label')}: ${t('sections.rights.items.portability.text')}`,
+                                `${t('sections.rights.items.optOut.label')}: ${t('sections.rights.items.optOut.text')}`,
+                                `${t('sections.rights.items.withdraw.label')}: ${t('sections.rights.items.withdraw.text')}`,
+                            ]}
+                        />
+                        <PrivacyParagraph>{t('sections.rights.contact')}</PrivacyParagraph>
+                    </PrivacySection>
 
                     {/* Data Retention */}
-                    <section className="mb-8">
-                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">{t('sections.retention.title')}</h2>
-                        <p className="text-gray-700 dark:text-gray-light">
-                            {t('sections.retention.text')}
-                        </p>
-                        <p className="text-gray-700 dark:text-gray-light mt-4">
-                            {t('sections.retention.strava')}
-                        </p>
-                    </section>
+                    <PrivacySection title={t('sections.retention.title')}>
+                        <PrivacyParagraph>{t('sections.retention.text')}</PrivacyParagraph>
+                        <PrivacyParagraph>{t('sections.retention.strava')}</PrivacyParagraph>
+                    </PrivacySection>
 
                     {/* Children's Privacy */}
-                    <section className="mb-8">
-                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">{t('sections.children.title')}</h2>
-                        <p className="text-gray-700 dark:text-gray-light">
-                            {t('sections.children.text')}
-                        </p>
-                    </section>
+                    <PrivacySection title={t('sections.children.title')}>
+                        <PrivacyParagraph>{t('sections.children.text')}</PrivacyParagraph>
+                    </PrivacySection>
 
                     {/* International Transfers */}
-                    <section className="mb-8">
-                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">{t('sections.transfers.title')}</h2>
-                        <p className="text-gray-700 dark:text-gray-light">
-                            {t('sections.transfers.text')}
-                        </p>
-                    </section>
+                    <PrivacySection title={t('sections.transfers.title')}>
+                        <PrivacyParagraph>{t('sections.transfers.text')}</PrivacyParagraph>
+                    </PrivacySection>
 
                     {/* Changes to Privacy Policy */}
-                    <section className="mb-8">
-                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">{t('sections.changes.title')}</h2>
-                        <p className="text-gray-700 dark:text-gray-light">
-                            {t('sections.changes.text')}
-                        </p>
-                    </section>
+                    <PrivacySection title={t('sections.changes.title')}>
+                        <PrivacyParagraph>{t('sections.changes.text')}</PrivacyParagraph>
+                    </PrivacySection>
 
                     {/* Contact Us */}
-                    <section className="mb-8">
-                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">{t('sections.contact.title')}</h2>
-                        <p className="text-gray-700 dark:text-gray-light mb-2">
-                            {t('sections.contact.subtitle')}
-                        </p>
-                        <div className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg p-4 mt-4">
-                            <p className="text-gray-700 dark:text-gray-light"><strong>{t('sections.contact.emailLabel')}:</strong> privacy@endurix.app</p>
-                        </div>
-                    </section>
-                </div>
+                    <PrivacySection title={t('sections.contact.title')}>
+                        <PrivacyParagraph>{t('sections.contact.subtitle')}</PrivacyParagraph>
+                        <PrivacyCallout>
+                            <strong className="font-bold text-endurix-black dark:text-foreground">{t('sections.contact.emailLabel')}:</strong>{' '}
+                            <a
+                                href="mailto:privacy@endurix.app"
+                                className="text-endurix-orange hover:underline"
+                            >
+                                privacy@endurix.app
+                            </a>
+                        </PrivacyCallout>
+                    </PrivacySection>
+                </article>
             </main>
 
             {/* Footer */}
-            <footer className="border-t border-gray-200 dark:border-white/10 mt-16">
-                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                    <p className="text-center text-sm text-gray-600 dark:text-gray-light">
+            <footer className="border-t border-endurix-black/10 dark:border-border mt-16">
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    <p
+                        className="text-center text-[10px] text-endurix-black/50 dark:text-muted-foreground tracking-widest"
+                        style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                    >
                         {t('footer')}
                     </p>
                 </div>
             </footer>
+        </div>
+    );
+}
+
+function PrivacySection({ title, children }: { title: string; children: React.ReactNode }) {
+    return (
+        <section className="border-l-2 border-endurix-orange pl-6 space-y-4">
+            <h2
+                className="text-2xl lg:text-3xl font-bold uppercase tracking-tight text-endurix-black dark:text-foreground"
+                style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+            >
+                {title}
+            </h2>
+            <div className="space-y-4">{children}</div>
+        </section>
+    );
+}
+
+function PrivacySubSection({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
+    return (
+        <div className="mt-6 space-y-3">
+            <h3
+                className="text-base font-bold uppercase tracking-widest text-endurix-black dark:text-foreground"
+                style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+            >
+                {title}
+            </h3>
+            {subtitle && (
+                <p
+                    className="text-[10px] text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase"
+                    style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                >
+                    {subtitle}
+                </p>
+            )}
+            {children}
+        </div>
+    );
+}
+
+function PrivacyParagraph({ children }: { children: React.ReactNode }) {
+    return (
+        <p className="text-sm lg:text-base text-endurix-black/80 dark:text-foreground/80 leading-relaxed">
+            {children}
+        </p>
+    );
+}
+
+function PrivacyList({ items }: { items: string[] }) {
+    return (
+        <ul className="space-y-2 pl-0 list-none">
+            {items.map((item, i) => (
+                <li
+                    key={i}
+                    className="relative pl-5 text-sm lg:text-base text-endurix-black/80 dark:text-foreground/80 leading-relaxed"
+                >
+                    <span
+                        className="absolute left-0 top-2.5 w-2 h-px bg-endurix-orange"
+                        aria-hidden
+                    />
+                    {item}
+                </li>
+            ))}
+        </ul>
+    );
+}
+
+function PrivacyCallout({ children }: { children: React.ReactNode }) {
+    return (
+        <div className="bg-endurix-black dark:bg-muted p-5 border-l-4 border-endurix-orange">
+            <p className="text-sm text-white/90 leading-relaxed">
+                {children}
+            </p>
         </div>
     );
 }
