@@ -56,6 +56,7 @@ export function StepEditor({
         { value: 'warmup', label: t('labels.warmup') },
         { value: 'interval', label: t('labels.interval') },
         { value: 'recovery', label: t('labels.recoveryWithHint') },
+        { value: 'rest', label: t('labels.restWithHint') },
         { value: 'cooldown', label: t('labels.cooldown') },
     ];
 
