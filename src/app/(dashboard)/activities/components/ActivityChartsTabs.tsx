@@ -133,7 +133,7 @@ export function ActivityChartsTabs({
 
         {/* Tab: Streams */}
         {activeTab === 'streams' && !isWeight && (
-          <div className="h-[460px] lg:h-[560px] w-full bg-endurix-paper dark:bg-muted overflow-hidden relative -m-6 mt-0">
+          <div className="h-[460px] lg:h-[560px] w-full bg-white dark:bg-card overflow-hidden relative">
             {activity.sport_type === 'TrailRun' ? (
               <TrailRunningChart activityId={internalId} laps={activity.laps} hrZones={heartrateZones?.zones} />
             ) : (
