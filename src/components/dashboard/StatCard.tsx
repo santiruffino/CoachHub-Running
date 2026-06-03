@@ -26,14 +26,14 @@ export function StatCard({
     value,
     chip,
     chipColor = 'orange',
-    footerLabel = 'Live operating signal',
+    footerLabel = '',
     className,
     ...props
 }: StatCardProps) {
     return (
         <article
             className={cn(
-                'border border-endurix-black/12 dark:border-border bg-white dark:bg-card p-4',
+                'border border-endurix-black/20 dark:border-white/20 bg-white dark:bg-white/5 p-4',
                 className,
             )}
             {...props}

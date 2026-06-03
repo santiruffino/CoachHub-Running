@@ -23,7 +23,7 @@ interface LoadMetricsTrendChartProps {
 
 export function LoadMetricsTrendChart({ data }: LoadMetricsTrendChartProps) {
   return (
-    <div className="h-64 w-full sm:h-72">
+    <div className="h-64 w-full sm:h-72 px-2">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 8, right: 10, left: 0, bottom: 8 }}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" opacity={0.35} />
@@ -53,6 +53,9 @@ export function LoadMetricsTrendChart({ data }: LoadMetricsTrendChartProps) {
               fontWeight: 600,
               textTransform: 'uppercase',
               letterSpacing: '0.08em',
+            }}
+            itemStyle={{
+              color: 'hsl(var(--foreground))',
             }}
           />
           <Line type="monotone" dataKey="ctl" name="CTL" stroke="#f59e0b" strokeWidth={2.25} dot={false} />

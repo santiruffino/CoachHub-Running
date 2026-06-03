@@ -15,44 +15,33 @@ interface AuthContextType {
     loading: boolean;
     login: (email: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
+    setUser: (user: User | null) => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useState<User | null>(null);
-    const [loading, setLoading] = useState(true);
+export function AuthProvider({
+    children,
+    initialUser = null,
+}: {
+    children: React.ReactNode;
+    initialUser?: User | null;
+}) {
+    // The user is seeded server-side from the root layout, so the client
+    // never has to make a network call to determine auth state.
+    const [user, setUser] = useState<User | null>(initialUser);
+    const [loading, setLoading] = useState(false);
     const router = useRouter();
     // Use useState to ensure supabase client is only created once
     const [supabase] = useState(() => createClient());
 
     useEffect(() => {
-        // Get initial session
-        const initializeAuth = async () => {
-                try {
-                    const currentUser = await authService.getCurrentUser();
-                    setUser(currentUser);
-                    if (currentUser) {
-                        trackAuthenticatedSession({
-                            role: currentUser.role,
-                            onboardingCompleted: currentUser.isOnboardingCompleted,
-                        });
-                    }
-                } catch (error) {
-                    appLogger.error('Failed to get current user', error);
-                    setUser(null);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        initializeAuth();
-
-        // Listen for auth state changes
+        // Listen for auth state changes (login, logout, token refresh).
+        // We do NOT call getCurrentUser on mount — the server has already
+        // provided the initial user via the root layout.
         const {
             data: { subscription },
         } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
-
             if (event === 'PASSWORD_RECOVERY') {
                 router.push('/reset-password');
                 return;
@@ -130,7 +119,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 };
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, logout }}>
+        <AuthContext.Provider value={{ user, loading, login, logout, setUser }}>
             {children}
         </AuthContext.Provider>
     );

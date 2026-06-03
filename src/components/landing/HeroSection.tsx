@@ -6,6 +6,10 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { ArrowRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+const FONT_MONO = { fontFamily: 'var(--font-ibm-plex-mono, monospace)' } as const;
+const FONT_DISPLAY = { fontFamily: 'var(--font-exo-2, sans-serif)' } as const;
 
 const weeklyData = [
   { day: 'L', value: 38 },
@@ -17,48 +21,53 @@ const weeklyData = [
   { day: 'D', value: 44 },
 ];
 
-function TrainingLoadRing() {
-  const radius = 36;
-  const circumference = 2 * Math.PI * radius;
-  const progress = 0.78;
-  const dasharray = `${circumference * progress} ${circumference * (1 - progress)}`;
+type ChipColor = 'orange' | 'green' | 'red' | 'neutral';
 
+const chipColorMap: Record<ChipColor, string> = {
+  orange: 'text-endurix-orange border-endurix-orange/30',
+  green: 'text-green-600 dark:text-green-500 border-green-500/30',
+  red: 'text-red-600 dark:text-red-500 border-red-500/30',
+  neutral: 'text-endurix-black/60 dark:text-muted-foreground border-endurix-black/20 dark:border-border',
+};
+
+function MiniStatCard({
+  label,
+  value,
+  chip,
+  chipColor = 'orange',
+}: {
+  label: string;
+  value: React.ReactNode;
+  chip?: string;
+  chipColor?: ChipColor;
+}) {
   return (
-    <div className="relative w-20 h-20">
-      <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-        <circle
-          cx="50"
-          cy="50"
-          r={radius}
-          fill="none"
-          className="stroke-[#E0DED9] dark:stroke-border"
-          strokeWidth="10"
-        />
-        <circle
-          cx="50"
-          cy="50"
-          r={radius}
-          fill="none"
-          className="stroke-[#111317] dark:stroke-white"
-          strokeWidth="10"
-          strokeDasharray={dasharray}
-          strokeLinecap="round"
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
+    <div className="border border-endurix-black/20 dark:border-white/20 bg-white dark:bg-white/5 p-3 flex flex-col gap-1.5">
+      <div className="flex items-start justify-between gap-1">
         <span
-          className="text-sm font-bold text-endurix-black dark:text-foreground leading-none"
-          style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+          className="text-[8px] text-endurix-black/50 dark:text-muted-foreground tracking-widest font-semibold uppercase leading-tight"
+          style={FONT_MONO}
         >
-          487
+          {label}
         </span>
-        <span
-          className="text-[8px] text-endurix-orange font-bold tracking-wide mt-0.5"
-          style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
-        >
-          ÓPTIMO
-        </span>
+        {chip !== undefined && (
+          <span
+            className={cn(
+              'text-[7px] font-bold tracking-wider border px-1.5 py-px',
+              chipColorMap[chipColor],
+            )}
+            style={FONT_MONO}
+          >
+            {chip}
+          </span>
+        )}
       </div>
+      <p
+        className="text-xl font-bold text-endurix-black dark:text-foreground leading-none mt-1"
+        style={FONT_DISPLAY}
+      >
+        {value}
+      </p>
     </div>
   );
 }
@@ -90,41 +99,33 @@ function DashboardMock({ mounted, t }: { mounted: boolean, t: any }) {
         </div>
 
         {/* Stats row */}
-        <div className="grid grid-cols-2 border-b border-endurix-black/8 dark:border-border">
-          {/* Carga Semanal */}
-          <div className="p-4 border-r border-endurix-black/8 dark:border-border">
-            <p
-              className="text-[8px] text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase mb-1"
-              style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
-            >
-              {t('cargaSemanal')}
-            </p>
-            <p
-              className="text-4xl font-bold text-endurix-black dark:text-foreground leading-none"
-              style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
-            >
-              487
-            </p>
-            <span
-              className="inline-block bg-endurix-orange text-white text-[7px] font-bold tracking-widest px-2 py-0.5 mt-2"
-              style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
-            >
-              {t('optima')}
-            </span>
-          </div>
-
-          {/* Training Load */}
-          <div className="p-4 flex flex-col">
-            <p
-              className="text-[8px] text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase mb-2"
-              style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
-            >
-              {t('trainingLoad')}
-            </p>
-            <div className="flex items-center justify-center flex-1">
-              <TrainingLoadRing />
-            </div>
-          </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-endurix-black/8 dark:border-b border-endurix-black/8 dark:border-border border-b border-endurix-black/8">
+          <MiniStatCard
+            label={t('complianceRate')}
+            value="94%"
+          />
+          <MiniStatCard
+            label={t('loadMonitoring')}
+            value="+12"
+            chip={t('balanced')}
+            chipColor="green"
+          />
+          <MiniStatCard
+            label={t('weeklyVolume')}
+            value={
+              <>
+                52.4 <span className="text-[10px] text-muted-foreground font-sans">km</span>
+              </>
+            }
+          />
+          <MiniStatCard
+            label={t('nextRace')}
+            value={
+              <>
+                14 <span className="text-[10px] text-muted-foreground font-sans">dias</span>
+              </>
+            }
+          />
         </div>
 
         {/* Weekly summary chart */}
@@ -241,7 +242,7 @@ export function HeroSection() {
                   className="inline-flex items-center justify-center gap-2 bg-endurix-orange text-white text-xs font-bold tracking-widest px-8 py-4 transition-all hover:bg-endurix-orange/90 w-full sm:w-auto"
                   style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
                 >
-                  {t('viewTraining')} <ArrowRight className="w-4 h-4" />
+                  {t('start')} <ArrowRight className="w-4 h-4" />
                 </Link>
               </motion.div>
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>

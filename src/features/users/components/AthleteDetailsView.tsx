@@ -31,6 +31,20 @@ import { StatCard, SectionHeader, MonospaceLabel } from '@/components/dashboard'
 import { normalizeActivityType } from '@/utils/activity-utils';
 import { useRouter } from 'next/navigation';
 
+const FONT_MONO = { fontFamily: 'var(--font-ibm-plex-mono, monospace)' } as const;
+
+type AthleteSection = 'training' | 'overview' | 'health' | 'racesNotes' | 'trend';
+
+const ATHLETE_TABS: Array<{ value: AthleteSection; labelKey: 'trainingTab' | 'overviewTab' | 'healthTab' | 'racesNotesTab' | 'trendTab' }> = [
+    { value: 'training', labelKey: 'trainingTab' },
+    { value: 'overview', labelKey: 'overviewTab' },
+    { value: 'health', labelKey: 'healthTab' },
+    { value: 'trend', labelKey: 'trendTab' },
+    { value: 'racesNotes', labelKey: 'racesNotesTab' },
+];
+
+const TAB_TRIGGER_CLASS = 'text-[10px] font-bold uppercase tracking-widest py-2 text-endurix-black/60 dark:text-muted-foreground transition-colors hover:text-endurix-black dark:hover:text-foreground data-[state=active]:bg-endurix-orange data-[state=active]:text-white data-[state=active]:shadow-sm';
+
 interface AthleteDetailsViewProps {
     id: string;
     initialAthlete: AthleteDetails;
@@ -61,7 +75,7 @@ export function AthleteDetailsView({
     const [pendingDeleteAssignment, setPendingDeleteAssignment] = useState<string | null>(null);
     const [loadRange, setLoadRange] = useState<LoadMetricsRange>(30);
     const [isSwitchingLoadRange, setIsSwitchingLoadRange] = useState(false);
-    const [activeSection, setActiveSection] = useState<'overview' | 'training' | 'health' | 'racesNotes'>('training');
+    const [activeSection, setActiveSection] = useState<AthleteSection>('training');
     const [loadMetricsData, setLoadMetricsData] = useState<LoadMetricsResponse | null>(null);
     const [loadMetricsLoading, setLoadMetricsLoading] = useState(true);
     const { alertState, showAlert, closeAlert } = useAlertDialog();
@@ -362,29 +376,35 @@ export function AthleteDetailsView({
                 <div className="flex flex-col gap-3">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                         <Link href={'/workouts/assign?athleteId=' + id}>
-                            <Button variant="orange" className="gap-2 uppercase tracking-widest">
+                            <Button variant="orange" size="sm" className="gap-2 uppercase tracking-widest text-[10px]">
                                 <Plus className="h-4 w-4" />
                                 {t("trainings.assign.assignWorkout")}
                             </Button>
                         </Link>
                         <div className="flex flex-wrap gap-2">
-                            <Button variant="outline-brand" className="gap-2 uppercase tracking-widest" onClick={() => setIsAssignRaceModalOpen(true)}>
+                            <Button variant="outline-brand" size="sm" className="gap-2 uppercase tracking-widest text-[10px]" onClick={() => setIsAssignRaceModalOpen(true)}>
                                 <Trophy className="h-4 w-4" />
                                 {t("races.athlete.addRace")}
                             </Button>
-                            <Button variant="outline-brand" className="gap-2 uppercase tracking-widest" onClick={() => setActiveSection('racesNotes')}>
+                            <Button variant="outline-brand" size="sm" className="gap-2 uppercase tracking-widest text-[10px]" onClick={() => setActiveSection('racesNotes')}>
                                 <MessageSquare className="h-4 w-4" />
                                 {t("athletes.detail.coachComments")}
                             </Button>
                         </div>
                     </div>
 
-                    <Tabs value={activeSection} onValueChange={(value) => setActiveSection(value as 'training' | 'overview' | 'health' | 'racesNotes')}>
-                        <TabsList className="w-full h-auto grid grid-cols-2 md:grid-cols-4 gap-1 bg-endurix-black/8 dark:bg-white/8 p-1 border border-endurix-black/10 dark:border-border">
-                            <TabsTrigger value="training" className="text-xs font-semibold uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-endurix-black data-[state=active]:dark:bg-card data-[state=active]:dark:text-foreground">{tAthlete('trainingTab')}</TabsTrigger>
-                            <TabsTrigger value="overview" className="text-xs font-semibold uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-endurix-black data-[state=active]:dark:bg-card data-[state=active]:dark:text-foreground">{tAthlete('overviewTab')}</TabsTrigger>
-                            <TabsTrigger value="health" className="text-xs font-semibold uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-endurix-black data-[state=active]:dark:bg-card data-[state=active]:dark:text-foreground">{tAthlete('healthTab')}</TabsTrigger>
-                            <TabsTrigger value="racesNotes" className="text-xs font-semibold uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-endurix-black data-[state=active]:dark:bg-card data-[state=active]:dark:text-foreground">{tAthlete('racesNotesTab')}</TabsTrigger>
+                    <Tabs value={activeSection} onValueChange={(value) => setActiveSection(value as AthleteSection)}>
+                        <TabsList className="w-full h-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1 bg-endurix-black/8 dark:bg-white/8 p-1 border border-endurix-black/10 dark:border-border">
+                            {ATHLETE_TABS.map((tab) => (
+                                <TabsTrigger
+                                    key={tab.value}
+                                    value={tab.value}
+                                    className={TAB_TRIGGER_CLASS}
+                                    style={FONT_MONO}
+                                >
+                                    {tAthlete(tab.labelKey)}
+                                </TabsTrigger>
+                            ))}
                         </TabsList>
                     </Tabs>
                 </div>
@@ -486,14 +506,6 @@ export function AthleteDetailsView({
                     </div>
 
                     <AthleteWeeklyCalendar weekStart={currentWeekStart} assignments={assignments} activities={activities} />
-
-                    <div className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border p-6">
-                        <SectionHeader
-                            title={tAthlete('trainingComplianceTrend')}
-                            size="sm"
-                        />
-                        <PerformanceTrendChart data={performanceData} />
-                    </div>
                 </div>
             )}
 
@@ -605,6 +617,17 @@ export function AthleteDetailsView({
                     <div className="px-5 py-4 border-t border-endurix-black/10 dark:border-border">
                         <p className="text-xs text-muted-foreground leading-relaxed">{tAthlete('loadRiskHint', { tsb: Math.round(loadMetrics.tsb), atl: Math.round(loadMetrics.atl), ctl: Math.round(loadMetrics.ctl), acwr: loadMetrics.acwr.toFixed(2) })}</p>
                     </div>
+                </div>
+            )}
+
+            {activeSection === 'trend' && (
+                <div className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border p-6">
+                    <SectionHeader
+                        eyebrow={tAthlete('complianceTabSubtitle')}
+                        title={tAthlete('trainingComplianceTrend')}
+                        size="sm"
+                    />
+                    <PerformanceTrendChart data={performanceData} />
                 </div>
             )}
 

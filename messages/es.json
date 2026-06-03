@@ -236,11 +236,24 @@
             "trainingTab": "Entrenamiento",
             "healthTab": "Salud y Carga",
             "racesNotesTab": "Carreras y Notas",
+            "trendTab": "Tendencia",
             "athleteProfileTitle": "Perfil del atleta",
             "athleteProfileSubtitle": "Datos fisiologicos y pruebas de referencia",
             "showDetails": "Ver detalles",
             "hideDetails": "Ocultar detalles",
             "trainingComplianceTrend": "Tendencia de cumplimiento",
+            "complianceStats": {
+                "average": "Promedio",
+                "trend": "Tendencia",
+                "status": "Estado",
+                "statusLabel": {
+                    "good": "Bueno",
+                    "moderate": "Regular",
+                    "low": "Bajo"
+                },
+                "targetLabel": "Objetivo"
+            },
+            "complianceTabSubtitle": "Cumplimiento de las ultimas 6 semanas",
             "nextRace": "Proxima carrera",
             "daysShort": "dias",
             "showAdvancedMetrics": "Ver metricas avanzadas",
@@ -1302,7 +1315,8 @@
             "metrics": "MÉTRICAS",
             "coaching": "COACHING",
             "pricing": "PRECIOS",
-            "startTraining": "COMENZAR ENTRENAMIENTO"
+            "startTraining": "COMENZAR ENTRENAMIENTO",
+            "start": "COMENZAR"
         },
         "hero": {
             "somosEndurix": "SOMOS ENDURIX",
@@ -1315,7 +1329,13 @@
             "cargaSemanal": "CARGA SEMANAL",
             "optima": "ÓPTIMA",
             "trainingLoad": "TRAINING LOAD",
-            "resumenSemanal": "RESUMEN SEMANAL"
+            "resumenSemanal": "RESUMEN SEMANAL",
+            "complianceRate": "TASA DE CUMPLIMIENTO",
+            "loadMonitoring": "MONITOREO DE CARGA",
+            "weeklyVolume": "VOLUMEN SEMANAL",
+            "nextRace": "PRÓXIMA CARRERA",
+            "balanced": "Balanceado",
+            "start": "COMENZAR"
         },
         "features": {
             "tag1": "DATOS QUE GUÍAN",
@@ -1957,5 +1977,14 @@
         "secondary": "Ir al inicio",
         "label": "Detalle del error",
         "helpText": "Si el problema persiste, contactá a soporte con el identificador de arriba."
+    },
+    "globalError": {
+        "eyebrow": "Error crítico",
+        "headline1": "La app necesita",
+        "headline2": "un reinicio.",
+        "subtitle": "Detectamos un error crítico. Recargá la página o volvé al inicio. El equipo ya fue notificado.",
+        "primary": "Recargar",
+        "secondary": "Ir al inicio",
+        "errorId": "ID de error"
     }
 }

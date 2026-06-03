@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import {
-  Bell, Search, ArrowUpRight, ArrowDownRight, Minus,
+  Bell, Search, ArrowUp, ArrowUpRight, ArrowDownRight, Minus,
   AlertTriangle, Clock, ChevronRight, Activity, Users,
   BarChart2, CheckCircle, Zap,
 } from 'lucide-react';
@@ -205,7 +205,8 @@ export function EndurixDashboard() {
                 label: 'ATLETAS ACTIVOS',
                 value: 12,
                 suffix: '',
-                sub: '↑ 2 nuevos este mes',
+                sub: '2 nuevos este mes',
+                subIcon: ArrowUp,
                 subColor: 'text-endurix-orange',
               },
               {
@@ -221,7 +222,8 @@ export function EndurixDashboard() {
                 label: 'CUMPLIMIENTO',
                 value: 84,
                 suffix: '%',
-                sub: '↑ 3% esta semana',
+                sub: '3% esta semana',
+                subIcon: ArrowUp,
                 subColor: 'text-endurix-orange',
               },
               {
@@ -262,7 +264,10 @@ export function EndurixDashboard() {
                       {m.badge}
                     </span>
                   ) : (
-                    <p className={`text-[10px] ${m.subColor}`}>{m.sub}</p>
+                    <p className={`flex items-center gap-1 text-[10px] ${m.subColor}`}>
+                      {m.subIcon && <m.subIcon className="w-3 h-3" strokeWidth={2} />}
+                      {m.sub}
+                    </p>
                   )}
                 </Card>
               </motion.div>

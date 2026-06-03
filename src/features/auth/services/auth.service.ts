@@ -185,18 +185,29 @@ export const authService = {
     getCurrentUser: async (): Promise<User | null> => {
         const supabase = createClient();
 
-        const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+        // getSession() reads the local cookie. Prefer this over getUser() for
+        // the initial check — getUser() makes a network call that can hang
+        // when the auth endpoint is slow.
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        const authUser = session?.user ?? null;
 
-        if (authError || !authUser) {
+        if (sessionError || !authUser) {
             return null;
         }
 
-        // Fetch profile
-        const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', authUser.id)
-            .single();
+        // Fetch profile (with timeout safety net so the UI never hangs)
+        const profileResult = await Promise.race([
+            supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', authUser.id)
+                .single(),
+            new Promise<{ data: null; error: Error }>((resolve) =>
+                setTimeout(() => resolve({ data: null, error: new Error('Profile fetch timeout') }), 5000)
+            ),
+        ]);
+        const profile = profileResult.data;
+        const profileError = profileResult.error;
 
         if (profileError) {
             appLogger.error('getCurrentUser profile error:', profileError);

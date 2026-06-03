@@ -3,6 +3,9 @@
 import * as Sentry from '@sentry/nextjs';
 import Link from 'next/link';
 import { useEffect } from 'react';
+import messages from '../../messages/es.json';
+
+const t = messages.globalError;
 
 export default function GlobalError({ error }: { error: Error & { digest?: string } }) {
     useEffect(() => {
@@ -53,7 +56,7 @@ export default function GlobalError({ error }: { error: Error & { digest?: strin
                                 fontFamily: 'ui-monospace, SFMono-Regular, monospace',
                             }}
                         >
-                            Critical Error
+                            {t.eyebrow}
                         </span>
                         <h1
                             style={{
@@ -78,9 +81,9 @@ export default function GlobalError({ error }: { error: Error & { digest?: strin
                                 letterSpacing: '-0.01em',
                             }}
                         >
-                            La app necesita
+                            {t.headline1}
                             <br />
-                            un reinicio.
+                            {t.headline2}
                         </h2>
                         <p
                             style={{
@@ -90,8 +93,7 @@ export default function GlobalError({ error }: { error: Error & { digest?: strin
                                 lineHeight: 1.5,
                             }}
                         >
-                            Detectamos un error crítico. Recargá la página o volvé al inicio. El equipo ya
-                            fue notificado.
+                            {t.subtitle}
                         </p>
                         <div
                             style={{
@@ -121,7 +123,7 @@ export default function GlobalError({ error }: { error: Error & { digest?: strin
                                     cursor: 'pointer',
                                 }}
                             >
-                                Recargar
+                                {t.primary}
                             </button>
                             <Link
                                 href="/"
@@ -138,7 +140,7 @@ export default function GlobalError({ error }: { error: Error & { digest?: strin
                                     display: 'inline-block',
                                 }}
                             >
-                                Ir al inicio
+                                {t.secondary}
                             </Link>
                         </div>
                         {error?.digest && (
@@ -154,7 +156,7 @@ export default function GlobalError({ error }: { error: Error & { digest?: strin
                                     fontFamily: 'ui-monospace, SFMono-Regular, monospace',
                                 }}
                             >
-                                Error ID: <span style={{ color: '#FF6800' }}>{error.digest}</span>
+                                {t.errorId}: <span style={{ color: '#FF6800' }}>{error.digest}</span>
                             </p>
                         )}
                     </div>

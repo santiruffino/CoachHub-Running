@@ -12,10 +12,10 @@ export function Navbar() {
   const t = useTranslations('landing.navbar');
 
   const NAV_LINKS = [
-    { label: t('training'), href: '#training' },
-    { label: t('metrics'), href: '#metrics' },
-    { label: t('coaching'), href: '#coaching' },
-    { label: t('pricing'), href: '#pricing' },
+    { label: t('training'), href: '#features' },
+    { label: t('metrics'), href: '#product-features' },
+    { label: t('coaching'), href: '#roadmap' },
+    { label: t('pricing'), href: '#wishlist' },
   ];
 
   return (
@@ -60,7 +60,7 @@ export function Navbar() {
                 className="inline-flex items-center gap-2 bg-endurix-orange text-white text-xs font-bold tracking-widest px-5 py-2.5 transition-all hover:bg-endurix-orange/90"
                 style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
               >
-                {t('startTraining')} <ArrowRight className="w-4 h-4" />
+                {t('start')} <ArrowRight className="w-4 h-4" />
               </Link>
             </motion.div>
           </div>
@@ -103,7 +103,7 @@ export function Navbar() {
               className="inline-flex items-center gap-2 bg-endurix-orange text-white text-xs font-bold tracking-widest px-5 py-2.5 self-start"
               style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
             >
-              {t('startTraining')} <ArrowRight className="w-4 h-4" />
+              {t('start')} <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         </motion.div>

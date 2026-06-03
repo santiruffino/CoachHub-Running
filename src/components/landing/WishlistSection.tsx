@@ -139,14 +139,14 @@ export function WishlistSection() {
                             transition={{ duration: 0.6, delay: 0.3 }}
                         />
 
-                        <p className="mt-8 text-endurix-black/60 dark:text-muted-foreground text-base leading-relaxed max-w-md">
+                        <p className="mt-8 text-endurix-black/70 dark:text-foreground/75 text-base leading-relaxed max-w-md">
                             {t('subtitle')}
                         </p>
 
                         {/* Benefits */}
                         <div className="mt-10">
                             <span
-                                className="block text-[10px] text-endurix-black/40 dark:text-muted-foreground tracking-widest mb-4"
+                                className="block text-[10px] text-endurix-black/50 dark:text-foreground/60 tracking-widest mb-4"
                                 style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
                             >
                                 {t('benefitsTitle')}
@@ -163,13 +163,13 @@ export function WishlistSection() {
                                             transition={{ duration: 0.4, delay: 0.2 + i * 0.08 }}
                                             className="flex items-start gap-3"
                                         >
-                                            <span className="mt-0.5 w-7 h-7 border border-endurix-black/15 dark:border-border flex items-center justify-center shrink-0">
+                                            <span className="mt-0.5 w-7 h-7 border border-endurix-black/20 dark:border-white/15 flex items-center justify-center shrink-0">
                                                 <Icon
                                                     className="w-3.5 h-3.5 text-endurix-orange"
                                                     strokeWidth={1.75}
                                                 />
                                             </span>
-                                            <span className="text-sm text-endurix-black dark:text-foreground leading-relaxed">
+                                            <span className="text-sm text-endurix-black dark:text-foreground/90 leading-relaxed">
                                                 {benefit}
                                             </span>
                                         </motion.li>
@@ -180,7 +180,7 @@ export function WishlistSection() {
 
                         {/* Trust line */}
                         <p
-                            className="mt-8 text-[10px] text-endurix-black/40 dark:text-muted-foreground tracking-widest uppercase flex items-center gap-2"
+                            className="mt-8 text-[10px] text-endurix-black/50 dark:text-foreground/55 tracking-widest uppercase flex items-center gap-2"
                             style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
                         >
                             <Lock className="w-3 h-3" />
@@ -196,13 +196,13 @@ export function WishlistSection() {
                         transition={{ duration: 0.7, delay: 0.15, ease: easeOut }}
                         className="lg:col-span-7"
                     >
-                        <div className="relative bg-white dark:bg-card border border-endurix-black/12 dark:border-border p-8 lg:p-10">
+                        <div className="relative bg-white dark:bg-card border border-endurix-black/15 dark:border-white/10 p-8 lg:p-10 shadow-sm dark:shadow-[0_24px_60px_-20px_rgba(0,0,0,0.6)]">
                             {/* Orange corner mark */}
                             <div className="absolute top-0 left-0 w-12 h-1 bg-endurix-orange" />
 
                             <div className="flex items-center justify-between mb-8">
                                 <span
-                                    className="text-[10px] text-endurix-black/50 dark:text-muted-foreground tracking-widest"
+                                    className="text-[10px] text-endurix-black/60 dark:text-foreground/60 tracking-widest"
                                     style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
                                 >
                                     {t('badge')}
@@ -224,7 +224,7 @@ export function WishlistSection() {
                                     <div>
                                         <label
                                             htmlFor={nameId}
-                                            className="block text-[10px] font-bold text-endurix-black/60 dark:text-muted-foreground tracking-widest uppercase mb-2"
+                                            className="block text-[10px] font-bold text-endurix-black/70 dark:text-foreground/70 tracking-widest uppercase mb-2"
                                             style={{
                                                 fontFamily:
                                                     'var(--font-ibm-plex-mono, monospace)',
@@ -242,6 +242,7 @@ export function WishlistSection() {
                                             placeholder={t('form.namePlaceholder')}
                                             disabled={status === 'submitting'}
                                             required
+                                            className="border-endurix-black/20 dark:border-white/15 dark:bg-white/[0.02] dark:focus-visible:bg-white/[0.04] pl-3"
                                         />
                                     </div>
 
@@ -249,7 +250,7 @@ export function WishlistSection() {
                                     <div>
                                         <label
                                             htmlFor={emailId}
-                                            className="block text-[10px] font-bold text-endurix-black/60 dark:text-muted-foreground tracking-widest uppercase mb-2"
+                                            className="block text-[10px] font-bold text-endurix-black/70 dark:text-foreground/70 tracking-widest uppercase mb-2"
                                             style={{
                                                 fontFamily:
                                                     'var(--font-ibm-plex-mono, monospace)',
@@ -267,6 +268,7 @@ export function WishlistSection() {
                                             placeholder={t('form.emailPlaceholder')}
                                             disabled={status === 'submitting'}
                                             required
+                                            className="border-endurix-black/20 dark:border-white/15 dark:bg-white/[0.02] dark:focus-visible:bg-white/[0.04] pl-3"
                                         />
                                     </div>
 
@@ -275,7 +277,7 @@ export function WishlistSection() {
                                         <div>
                                             <label
                                                 htmlFor={roleId}
-                                                className="block text-[10px] font-bold text-endurix-black/60 dark:text-muted-foreground tracking-widest uppercase mb-2"
+                                                className="block text-[10px] font-bold text-endurix-black/70 dark:text-foreground/70 tracking-widest uppercase mb-2"
                                                 style={{
                                                     fontFamily:
                                                         'var(--font-ibm-plex-mono, monospace)',
@@ -288,19 +290,31 @@ export function WishlistSection() {
                                                 onValueChange={(v) => update('role')(v)}
                                                 disabled={status === 'submitting'}
                                             >
-                                                <SelectTrigger id={roleId} className="w-full">
+                                                <SelectTrigger
+                                                    id={roleId}
+                                                    className="w-full h-10 rounded-none border-0 border-b bg-transparent border-endurix-black/20 dark:border-white/15 dark:bg-white/[0.02] pl-3 pr-0 py-2 text-sm text-endurix-black dark:text-foreground focus:outline-none focus-visible:border-endurix-orange focus-visible:shadow-[0_4px_12px_rgba(255,104,0,0.08)] data-[placeholder]:text-endurix-black/30 dark:data-[placeholder]:text-white/30 [&>span]:line-clamp-1"
+                                                >
                                                     <SelectValue
                                                         placeholder={t('form.rolePlaceholder')}
                                                     />
                                                 </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="head_coach">
+                                                <SelectContent className="bg-white dark:bg-card border-endurix-black/15 dark:border-white/10">
+                                                    <SelectItem
+                                                        value="head_coach"
+                                                        className="text-endurix-black dark:text-foreground focus:bg-endurix-black/5 dark:focus:bg-white/5 focus:text-endurix-black dark:focus:text-foreground"
+                                                    >
                                                         {t('roles.head_coach')}
                                                     </SelectItem>
-                                                    <SelectItem value="assistant_coach">
+                                                    <SelectItem
+                                                        value="assistant_coach"
+                                                        className="text-endurix-black dark:text-foreground focus:bg-endurix-black/5 dark:focus:bg-white/5 focus:text-endurix-black dark:focus:text-foreground"
+                                                    >
                                                         {t('roles.assistant_coach')}
                                                     </SelectItem>
-                                                    <SelectItem value="other">
+                                                    <SelectItem
+                                                        value="other"
+                                                        className="text-endurix-black dark:text-foreground focus:bg-endurix-black/5 dark:focus:bg-white/5 focus:text-endurix-black dark:focus:text-foreground"
+                                                    >
                                                         {t('roles.other')}
                                                     </SelectItem>
                                                 </SelectContent>
@@ -311,7 +325,7 @@ export function WishlistSection() {
                                         <div>
                                             <label
                                                 htmlFor={teamSizeId}
-                                                className="block text-[10px] font-bold text-endurix-black/60 dark:text-muted-foreground tracking-widest uppercase mb-2"
+                                                className="block text-[10px] font-bold text-endurix-black/70 dark:text-foreground/70 tracking-widest uppercase mb-2"
                                                 style={{
                                                     fontFamily:
                                                         'var(--font-ibm-plex-mono, monospace)',
@@ -324,24 +338,39 @@ export function WishlistSection() {
                                                 onValueChange={(v) => update('teamSize')(v)}
                                                 disabled={status === 'submitting'}
                                             >
-                                                <SelectTrigger id={teamSizeId} className="w-full">
+                                                <SelectTrigger
+                                                    id={teamSizeId}
+                                                    className="w-full h-10 rounded-none border-0 border-b bg-transparent border-endurix-black/20 dark:border-white/15 dark:bg-white/[0.02] pl-3 pr-0 py-2 text-sm text-endurix-black dark:text-foreground focus:outline-none focus-visible:border-endurix-orange focus-visible:shadow-[0_4px_12px_rgba(255,104,0,0.08)] data-[placeholder]:text-endurix-black/30 dark:data-[placeholder]:text-white/30 [&>span]:line-clamp-1"
+                                                >
                                                     <SelectValue
                                                         placeholder={t(
                                                             'form.teamSizePlaceholder',
                                                         )}
                                                     />
                                                 </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="1_5">
+                                                <SelectContent className="bg-white dark:bg-card border-endurix-black/15 dark:border-white/10">
+                                                    <SelectItem
+                                                        value="1_5"
+                                                        className="text-endurix-black dark:text-foreground focus:bg-endurix-black/5 dark:focus:bg-white/5 focus:text-endurix-black dark:focus:text-foreground"
+                                                    >
                                                         {t('teamSizes.1_5')}
                                                     </SelectItem>
-                                                    <SelectItem value="6_15">
+                                                    <SelectItem
+                                                        value="6_15"
+                                                        className="text-endurix-black dark:text-foreground focus:bg-endurix-black/5 dark:focus:bg-white/5 focus:text-endurix-black dark:focus:text-foreground"
+                                                    >
                                                         {t('teamSizes.6_15')}
                                                     </SelectItem>
-                                                    <SelectItem value="16_30">
+                                                    <SelectItem
+                                                        value="16_30"
+                                                        className="text-endurix-black dark:text-foreground focus:bg-endurix-black/5 dark:focus:bg-white/5 focus:text-endurix-black dark:focus:text-foreground"
+                                                    >
                                                         {t('teamSizes.16_30')}
                                                     </SelectItem>
-                                                    <SelectItem value="30_plus">
+                                                    <SelectItem
+                                                        value="30_plus"
+                                                        className="text-endurix-black dark:text-foreground focus:bg-endurix-black/5 dark:focus:bg-white/5 focus:text-endurix-black dark:focus:text-foreground"
+                                                    >
                                                         {t('teamSizes.30_plus')}
                                                     </SelectItem>
                                                 </SelectContent>
@@ -350,16 +379,20 @@ export function WishlistSection() {
                                     </div>
 
                                     {errorMessage && (
-                                        <p
+                                        <div
                                             role="alert"
-                                            className="text-[11px] text-endurix-orange font-semibold tracking-wider uppercase"
-                                            style={{
-                                                fontFamily:
-                                                    'var(--font-ibm-plex-mono, monospace)',
-                                            }}
+                                            className="flex items-center gap-2 border-l-2 border-endurix-orange bg-endurix-orange/5 dark:bg-endurix-orange/10 px-3 py-2"
                                         >
-                                            {errorMessage}
-                                        </p>
+                                            <span
+                                                className="text-[11px] text-endurix-orange font-semibold tracking-wider uppercase"
+                                                style={{
+                                                    fontFamily:
+                                                        'var(--font-ibm-plex-mono, monospace)',
+                                                }}
+                                            >
+                                                {errorMessage}
+                                            </span>
+                                        </div>
                                     )}
 
                                     <Button
@@ -367,7 +400,7 @@ export function WishlistSection() {
                                         variant="orange"
                                         size="lg"
                                         disabled={status === 'submitting'}
-                                        className="w-full text-xs font-bold tracking-widest uppercase py-6"
+                                        className="w-full text-xs font-bold tracking-widest uppercase py-6 shadow-[0_8px_24px_-8px_rgba(255,104,0,0.5)] dark:shadow-[0_8px_32px_-8px_rgba(255,104,0,0.6)]"
                                         style={{
                                             fontFamily: 'var(--font-exo-2, sans-serif)',
                                         }}
@@ -403,7 +436,7 @@ function SuccessState({ title, detail }: { title: string; detail: string }) {
                     damping: 16,
                     delay: 0.05,
                 }}
-                className="mx-auto w-16 h-16 bg-endurix-orange flex items-center justify-center"
+                className="mx-auto w-16 h-16 bg-endurix-orange flex items-center justify-center shadow-[0_8px_24px_-4px_rgba(255,104,0,0.45)]"
             >
                 <Check className="w-8 h-8 text-white" strokeWidth={3} />
             </motion.div>
@@ -416,7 +449,7 @@ function SuccessState({ title, detail }: { title: string; detail: string }) {
             </h3>
 
             <p
-                className="mt-3 text-sm text-endurix-black/60 dark:text-muted-foreground max-w-sm mx-auto leading-relaxed"
+                className="mt-3 text-sm text-endurix-black/70 dark:text-foreground/70 max-w-sm mx-auto leading-relaxed"
                 style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
             >
                 {detail}

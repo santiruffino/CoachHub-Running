@@ -26,7 +26,14 @@ export function Navbar() {
     const { user, loading, logout } = useAuth();
     const t = useTranslations('nav');
 
-    if (loading) return null;
+    if (loading) {
+        return (
+            <nav
+                aria-hidden="true"
+                className="hidden md:flex h-16 border-b border-endurix-black/10 dark:border-border bg-endurix-paper/95 dark:bg-background/95"
+            />
+        );
+    }
 
     const navigation = buildNavigation(t);
 

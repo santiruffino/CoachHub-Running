@@ -10,7 +10,6 @@ export function Footer() {
 
   const FOOTER_LINKS = [
     { label: t('privacy'), href: '/privacy' },
-    { label: t('terms'), href: '/terms' },
   ];
 
   return (

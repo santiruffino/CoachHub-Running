@@ -144,8 +144,10 @@
     --color-surface-container-lowest: hsl(var(--surface-container-lowest));
 }
 
-* {
-  border-color: hsl(var(--border) / 0.15); /* Ghost Border */
+@layer base {
+  * {
+    border-color: hsl(var(--border) / 0.15); /* Ghost Border */
+  }
 }
 
 body {
