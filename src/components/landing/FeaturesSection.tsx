@@ -48,77 +48,18 @@ const getFeatures = (t: any) => [
     tag: t('tag1'),
     title: t('title1'),
     description: t('desc1'),
-    footer: (
-      <div className="mt-5 space-y-2">
-        <div className="flex items-center justify-between">
-          <span
-            className="text-[9px] text-endurix-black/50 dark:text-muted-foreground tracking-widest"
-            style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
-          >
-            {t('progreso')}
-          </span>
-          <span
-            className="text-[9px] text-endurix-black/50 dark:text-muted-foreground tracking-widest"
-            style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
-          >
-            <AnimatedPercent target={68} />
-          </span>
-        </div>
-        <ProgressBar value={68} />
-      </div>
-    ),
   },
   {
     icon: TrendingUp,
     tag: t('tag2'),
     title: t('title2'),
     description: t('desc2'),
-    footer: (
-      <div className="mt-5 flex items-center gap-2 flex-wrap">
-        <span className="inline-flex items-center gap-1.5 border border-endurix-black/20 dark:border-border px-3 py-1">
-          <span className="w-2 h-2 rounded-full bg-endurix-orange flex-shrink-0" />
-          <span
-            className="text-[9px] text-endurix-black dark:text-foreground font-medium tracking-wider"
-            style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
-          >
-            {t('zona4')}
-          </span>
-        </span>
-        <span className="inline-flex items-center border border-endurix-black/20 dark:border-border px-3 py-1">
-          <span
-            className="text-[9px] text-endurix-black dark:text-foreground font-medium tracking-wider"
-            style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
-          >
-            {t('bpm')}
-          </span>
-        </span>
-      </div>
-    ),
   },
   {
     icon: Users,
     tag: t('tag3'),
     title: t('title3'),
     description: t('desc3'),
-    footer: (
-      <div className="mt-5 border border-endurix-black/15 dark:border-border p-3">
-        <p
-          className="text-[8px] text-endurix-black/40 dark:text-muted-foreground tracking-widest mb-2"
-          style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
-        >
-          {t('inputCampo')}
-        </p>
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-endurix-black/60 dark:text-muted-foreground">{t('distancia')}</span>
-          <span
-            className="text-xl font-bold text-endurix-black dark:text-foreground"
-            style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
-          >
-            12.45
-          </span>
-        </div>
-      </div>
-    ),
   },
 ];
 
@@ -168,9 +109,6 @@ export function FeaturesSection() {
                 <p className="text-sm text-endurix-black/55 dark:text-muted-foreground leading-relaxed flex-1">
                   {feature.description}
                 </p>
-
-                {/* Footer widget */}
-                {feature.footer}
               </div>
             </motion.div>
           ))}
