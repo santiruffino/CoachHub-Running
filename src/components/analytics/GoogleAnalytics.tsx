@@ -3,7 +3,7 @@
 import Script from 'next/script';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
-import { GA_MEASUREMENT_ID, pageview } from '@/lib/analytics/ga';
+import { GA_MEASUREMENT_ID, pageview, stripLocale } from '@/lib/analytics/ga';
 
 export function GoogleAnalytics() {
   const pathname = usePathname();
@@ -11,7 +11,8 @@ export function GoogleAnalytics() {
 
   useEffect(() => {
     const query = searchParams.toString();
-    const url = query.length > 0 ? `${pathname}?${query}` : pathname;
+    const path = stripLocale(pathname);
+    const url = query.length > 0 ? `${path}?${query}` : path;
     pageview(url);
   }, [pathname, searchParams]);
 
@@ -31,7 +32,7 @@ export function GoogleAnalytics() {
           function gtag(){dataLayer.push(arguments);}
           window.gtag = gtag;
           gtag('js', new Date());
-          gtag('config', '${GA_MEASUREMENT_ID}');
+          gtag('config', '${GA_MEASUREMENT_ID}', { send_page_view: false });
         `}
       </Script>
     </>
