@@ -136,9 +136,9 @@ function DashboardMock({ mounted, t }: { mounted: boolean, t: any }) {
           >
             {t('resumenSemanal')}
           </p>
-          <div className="h-28">
+          <div className="h-28 w-full min-w-0 min-h-[7rem]">
             {mounted && (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                 <BarChart data={weeklyData} barCategoryGap="25%">
                   <XAxis
                     dataKey="day"
