@@ -23,4 +23,7 @@ export interface TeamSettings {
     workoutMatcherModel: string;
     complianceModel: string;
   };
+  limits: {
+    maxAthletes: number | null;
+  };
 }

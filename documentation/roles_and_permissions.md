@@ -9,13 +9,17 @@ Endurix uses a role model with team-scoped authorization.
 - Super-role inside a running team.
 - Can access coach-restricted endpoints through `requireRole` super-role behavior.
 - Can invite coaches and athletes within team constraints.
-- Can manage team settings (`/api/v2/settings/team`) and read admin audit logs (`/api/v2/admin/audit-logs`).
+- Can manage team settings (`/api/v2/settings/team`) including **athlete limit** (`max_athletes`) for pricing-tier caps.
+- Can manage **team invite links** (create, list, rotate, revoke all links in the team via `/settings/team`).
+- Can read admin audit logs (`/api/v2/admin/audit-logs`).
 
 ## `COACH`
 
 - Manages athletes/groups/trainings/assignments in the same team.
-- Can invite athletes.
+- Can invite athletes (per-email or bulk CSV).
+- Can create and manage **team invite links** (own links) via "Añadir Atletas → Enlace del Equipo" tab.
 - Cannot invite coaches (admin-only action).
+- Cannot set team-level athlete limit (admin-only).
 - Can manage own coach settings (`/api/v2/settings/coach`).
 
 ## `ATHLETE`

@@ -53,9 +53,11 @@ export function normalizeTeamSettings(input: {
   branding?: Record<string, unknown> | null;
   default_models?: Record<string, unknown> | null;
   defaultModels?: Record<string, unknown> | null;
+  limits?: Record<string, unknown> | null;
 }): TeamSettings {
   const coachSettings = normalizeCoachSettings(input);
   const branding = input.branding || {};
+  const limits = input.limits || {};
 
   return {
     thresholds: coachSettings.thresholds,
@@ -70,6 +72,14 @@ export function normalizeTeamSettings(input: {
         typeof branding.primaryColor === 'string' && branding.primaryColor.trim().length > 0
           ? branding.primaryColor
           : DEFAULT_TEAM_BRANDING.primaryColor,
+    },
+    limits: {
+      maxAthletes:
+        limits.maxAthletes === null || limits.maxAthletes === undefined
+          ? null
+          : typeof limits.maxAthletes === 'number' && limits.maxAthletes > 0
+            ? limits.maxAthletes
+            : null,
     },
   };
 }

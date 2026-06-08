@@ -39,7 +39,34 @@
             "defaultName": "Atleta"
         },
         "messages": {
-            "hi": "Hola, {name} 👋"
+            "hi": "Hola, {name}"
+        },
+        "fitness": {
+            "fitnessCard": "Forma Física (CTL)",
+            "fatigueCard": "Fatiga (ATL)",
+            "formCard": "Forma (TSB)",
+            "riskCard": "Riesgo (ACWR)",
+            "loadChartTitle": "Estado de Forma",
+            "loadChartSubtitle": "Carga crónica, aguda y balance",
+            "paceZonesTitle": "Zonas de Ritmo (VAM)",
+            "paceZonesEmpty": "Configura tu VAM en tu perfil para ver tus zonas de ritmo personalizadas.",
+            "paceZonesEmptyLink": "Ir al perfil",
+            "paceZonesVamLabel": "VAM",
+            "paceZonesVamUnit": "min/km",
+            "hrZonesTitle": "Zonas de Frecuencia Cardíaca",
+            "loadRisk": {
+                "insufficientData": "Sin datos",
+                "high": "Riesgo Alto",
+                "moderate": "Riesgo Moderado",
+                "balanced": "Balanceado",
+                "lowStimulus": "Estímulo Bajo"
+            },
+            "loadStatus": {
+                "loading": "Cargando métricas de carga...",
+                "syncing": "Sincronizando historial de Strava (90 días)...",
+                "partial": "Historial parcial ({days} días).",
+                "ready": "Métricas de carga actualizadas"
+            }
         },
         "athleteFeedbackModal": {
             "title": "Feedback de tu nueva actividad",
@@ -109,13 +136,38 @@
             "zone_violation": "Desviación de zona",
             "training_load": "Alerta de carga"
         },
+        "risk": {
+            "critical": "Crítico",
+            "atRisk": "En riesgo",
+            "monitor": "Monitorear",
+            "stable": "Estable"
+        },
         "groupStatus": {
             "activeAthletes": "{count, plural, =1 {1 Atleta Activo} other {# Atletas Activos}}",
             "compliance": "CUMPLIMIENTO",
             "high": "ALTO",
             "attentionNeeded": "ATENCIÓN NECESARIA",
             "optimal": "ÓPTIMO",
-            "critical": "Critico"
+            "critical": "Critico",
+            "eyebrow": "Grupos",
+            "noData": "No hay datos de grupos disponibles"
+        },
+        "priorityRoster": {
+            "eyebrow": "Inteligencia de atletas",
+            "title": "Priority Roster",
+            "operational": "Operativo",
+            "ctl": "CTL",
+            "tsb": "TSB",
+            "columns": {
+                "athlete": "Atleta",
+                "program": "Programa",
+                "load": "Carga",
+                "fitness": "Fitness",
+                "risk": "Riesgo"
+            }
+        },
+        "recentActivity": {
+            "eyebrow": "Cronología"
         },
         "planSubtitle": "{groupName} - {timeframe}",
         "alertActions": {
@@ -884,7 +936,7 @@
         "sequenceBuilder": "Constructor de Secuencia",
         "expandAll": "Expandir Todo",
         "autoBalance": "Auto-Balance",
-        "sequenceDescription": "Arrastra y suelta bloques para reorganizar el flujo de intensidad. Todas las métricas se actualizan en tiempo real.",
+        "sequenceDescription": "Todas las métricas se actualizan en tiempo real.",
         "stage": "Etapa",
         "duration": "Duración",
         "target": "Objetivo",
@@ -957,6 +1009,7 @@
         "expand": "Expandir",
         "collapse": "Colapsar",
         "deleteBlock": "Eliminar Bloque",
+        "skipLastRestRecovery": "Omitir último paso",
         "addStepToRepeat": "Añadir paso a la repetición",
         "stepDuration": "Duración del Paso",
         "durationInputPlaceholder": "MM:SS o HH:MM:SS",
@@ -974,8 +1027,11 @@
         "cadenceRange": "Rango de cadencia",
         "intervalRpeOptional": "RPE del Intervalo (Opcional)",
         "noRpeSet": "Sin RPE definido",
-        "noAthleteSelectedLthr": "Atleta sin LTHR configurado",
+        "noAthleteSelectedLthr": "No hay ningun atleta seleccionado",
+        "noAthleteLthrData": "Atleta sin LTHR configurado",
+        "noAthleteSelectedHrReserve": "No hay ningun atleta seleccionado",
         "noAthleteHrReserveData": "Atleta sin FC Reposo/Máxima configuradas",
+        "noAthleteSelectedVam": "No hay ningun atleta seleccionado",
         "noAthleteVamData": "VAM no disponible para este atleta",
         "noAthleteFtpData": "Sin datos de FTP",
         "totalDuration": "Duración Total",
@@ -1013,6 +1069,8 @@
         "coachNotesLabel": "Notas del Coach",
         "coachNotesPlaceholder": "Objetivo: umbral de lactato...",
         "expectedRpeLabel": "RPE Esperado",
+        "scheduledDateLabel": "Fecha programada",
+        "workoutDetails": "Detalles del Entrenamiento",
         "readyToPublish": "¿Listo para publicar?",
         "publishDescription": "Asegúrate de que todos los intervalos estén calibrados con tus métricas actuales.",
         "cancelExit": "Cancelar / Salir",
@@ -1277,6 +1335,7 @@
     },
     "common": {
         "loading": "Cargando...",
+        "upcoming": "Próximamente",
         "save": "Guardar",
         "cancel": "Cancelar",
         "confirm": "Confirmar",
@@ -1551,7 +1610,38 @@
                 "create": "Crear Invitación",
                 "tabs": {
                     "single": "Individual",
-                    "bulk": "Carga Masiva (CSV)"
+                    "bulk": "Carga Masiva (CSV)",
+                    "teamLink": "Enlace del Equipo"
+                },
+                "teamLink": {
+                    "createTitle": "Crear Enlace del Equipo",
+                    "createDescription": "Un único enlace reutilizable. Cualquier atleta que lo abra podrá unirse a tu equipo.",
+                    "label": "Etiqueta (opcional)",
+                    "labelPlaceholder": "Ej: Link para atletas nuevos",
+                    "expiry": "Expira en (días)",
+                    "expiryPlaceholder": "Sin expiración",
+                    "maxUses": "Máx. usos",
+                    "maxUsesPlaceholder": "Sin límite",
+                    "create": "Crear Enlace",
+                    "creating": "Creando...",
+                    "listTitle": "Enlaces del equipo",
+                    "loading": "Cargando enlaces...",
+                    "empty": "Aún no hay enlaces. Crea el primero arriba.",
+                    "defaultLabel": "Enlace del equipo",
+                    "statusActive": "Activo",
+                    "statusInactive": "Desactivado",
+                    "uses": "{count} usos / {max}",
+                    "expiresAt": "Expira: {date}",
+                    "noExpiry": "Sin expiración",
+                    "createdAt": "Creado: {date}",
+                    "copy": "Copiar",
+                    "copied": "Copiado",
+                    "copyError": "No se pudo copiar al portapapeles.",
+                    "whatsapp": "WhatsApp",
+                    "whatsappMessage": "Hola! Únete a nuestro equipo en Endurix usando este enlace:",
+                    "rotate": "Rotar",
+                    "revoke": "Desactivar",
+                    "close": "Cerrar"
                 },
                 "bulk": {
                     "description": "Sube un archivo .csv o .txt con una lista de correos electrónicos (uno por línea).",
@@ -1621,6 +1711,45 @@
             "suspenseLoading": "Cargando...",
             "signInFailedAfterCreate": "La cuenta se creó, pero no se pudo iniciar sesión. Intenta ingresar manualmente."
         },
+        "join": {
+            "loading": "Validando enlace del equipo...",
+            "title": "Unirse a {team}",
+            "subtitle": "Te estás uniendo como {role}. Crea tu cuenta para comenzar.",
+            "defaultTeamName": "el equipo",
+            "roleAthlete": "atleta",
+            "roleCoach": "entrenador",
+            "invalidTitle": "Enlace Inválido",
+            "invalidDescription": "Este enlace del equipo no es válido.",
+            "revokedTitle": "Enlace Desactivado",
+            "revokedDescription": "Este enlace del equipo fue desactivado por el coach. Pídele uno nuevo.",
+            "expiredTitle": "Enlace Expirado",
+            "expiredDescription": "Este enlace del equipo ya expiró. Pídele uno nuevo a tu coach.",
+            "maxUsesTitle": "Enlace Agotado",
+            "maxUsesDescription": "Este enlace del equipo alcanzó el máximo de usos. Pídele uno nuevo a tu coach.",
+            "goToLogin": "Ir al Login",
+            "successTitle": "¡Bienvenido!",
+            "successDescription": "Tu cuenta fue creada. Te llevamos al panel...",
+            "formLabel": "Formulario de alta de atleta",
+            "emailLabel": "Email",
+            "emailPlaceholder": "tu@email.com",
+            "emailRequired": "El email es requerido",
+            "emailInvalid": "Email inválido",
+            "fullName": "Nombre Completo",
+            "fullNamePlaceholder": "Juan Pérez",
+            "nameRequired": "El nombre es requerido",
+            "nameMin": "El nombre debe tener al menos 2 caracteres",
+            "password": "Contraseña",
+            "passwordPlaceholder": "Mínimo 6 caracteres",
+            "passwordRequired": "La contraseña es requerida",
+            "passwordMin": "La contraseña debe tener al menos 6 caracteres",
+            "confirmPassword": "Confirmar Contraseña",
+            "confirmPasswordPlaceholder": "Repite tu contraseña",
+            "confirmPasswordRequired": "Por favor confirma tu contraseña",
+            "passwordMismatch": "Las contraseñas no coinciden",
+            "creatingAccount": "Creando cuenta...",
+            "createAccount": "Crear Cuenta",
+            "loadError": "No se pudo crear la cuenta. Intenta de nuevo."
+        },
         "createForm": {
             "title": "Invitar Atleta",
             "email": "Email",
@@ -1629,6 +1758,36 @@
             "send": "Enviar Invitación",
             "success": "Invitación enviada a {email}. Comparte este enlace: {link}",
             "error": "No se pudo enviar la invitación"
+        },
+        "teamLinkCard": {
+            "eyebrow": "Ajustes",
+            "title": "Enlaces del Equipo",
+            "description": "Gestiona los enlaces compartibles que atletas pueden usar para unirse al equipo. Los coaches también pueden crear los suyos desde el modal de invitación.",
+            "cardTitle": "Enlaces activos",
+            "loading": "Cargando enlaces...",
+            "empty": "No hay enlaces. Crea uno desde el modal 'Añadir Atletas'.",
+            "defaultLabel": "Enlace del equipo",
+            "statusActive": "Activo",
+            "statusInactive": "Desactivado",
+            "uses": "{count} usos / {max}",
+            "expiresAt": "Expira: {date}",
+            "noExpiry": "Sin expiración",
+            "createdAt": "Creado: {date}",
+            "copy": "Copiar",
+            "copied": "Copiado",
+            "copyError": "No se pudo copiar al portapapeles.",
+            "rotate": "Rotar",
+            "revoke": "Desactivar"
+        },
+        "teamSettings": {
+            "limits": {
+                "title": "Límites del Equipo",
+                "maxAthletes": "Máx. atletas",
+                "maxAthletesPlaceholder": "Sin límite",
+                "maxAthletesHelp": "Dejar vacío para sin límite. Usado para control de precios por plan.",
+                "teamFullError": "El equipo ha alcanzado el límite de {max} atletas. Actualiza el plan para añadir más.",
+                "teamFullErrorJoin": "El equipo ha alcanzado el límite de {max} atletas. Contacta al administrador."
+            }
         }
     },
     "strava": {

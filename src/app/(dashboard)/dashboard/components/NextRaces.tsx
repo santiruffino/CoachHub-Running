@@ -59,7 +59,7 @@ export function NextRaces({ athleteRaces, onSuccess }: NextRacesProps) {
 
     if (loading) {
         return (
-            <DashboardCard headerLabel="Loading" headerAccessory={<DashboardCardHeaderDots />}>
+            <DashboardCard headerLabel={t('common.loading')} headerAccessory={<DashboardCardHeaderDots />}>
                 <div className="space-y-3">
                     <div className="h-16 bg-endurix-black/8 dark:bg-white/8 animate-pulse" />
                     <div className="h-16 bg-endurix-black/8 dark:bg-white/8 animate-pulse" />
@@ -80,7 +80,7 @@ export function NextRaces({ athleteRaces, onSuccess }: NextRacesProps) {
     if (!hasRaces) {
         return (
             <DashboardCard
-                headerLabel="Upcoming"
+                headerLabel={t('common.upcoming')}
                 headerAccessory={<DashboardCardHeaderDots />}
             >
                 <h3
@@ -98,7 +98,7 @@ export function NextRaces({ athleteRaces, onSuccess }: NextRacesProps) {
 
     return (
         <DashboardCard
-            headerLabel="Upcoming"
+            headerLabel={t('common.upcoming')}
             headerAccessory={<DashboardCardHeaderDots />}
         >
             <h3

@@ -56,12 +56,12 @@ async function main() {
 
     // Fetch existing teams
     const { data: existingTeams, error: teamsError } = await supabase
-        .from('running_teams')
+        .from('teams')
         .select('id, name')
         .order('name');
 
     if (teamsError) {
-        console.error('❌ Failed to fetch running teams:', teamsError.message);
+        console.error('❌ Failed to fetch teams:', teamsError.message);
         process.exit(1);
     }
 
@@ -74,8 +74,8 @@ async function main() {
     let newTeamName: string | null = null;
 
     if (existingTeams && existingTeams.length > 0) {
-        console.log('\nSelect a Running Team for this Admin:');
-        console.log('0. Create a new Running Team');
+        console.log('\nSelect a team for this Admin:');
+        console.log('0. Create a new team');
         existingTeams.forEach((team, index) => {
             console.log(`${index + 1}. ${team.name} (${team.id})`);
         });
@@ -84,10 +84,10 @@ async function main() {
         while (!validSelection) {
             const selection = await question('\nEnter the number of your choice: ');
             const num = parseInt(selection, 10);
-            
+
             if (num === 0) {
                 validSelection = true;
-                newTeamName = await question('Enter the name for the NEW Running Team: ');
+                newTeamName = await question('Enter the name for the NEW team: ');
             } else if (!isNaN(num) && num > 0 && num <= existingTeams.length) {
                 validSelection = true;
                 selectedTeamId = existingTeams[num - 1].id;
@@ -96,8 +96,8 @@ async function main() {
             }
         }
     } else {
-        console.log('\nNo existing Running Teams found. A new one will be created.');
-        newTeamName = await question('Enter the name for the NEW Running Team: ');
+        console.log('\nNo existing teams found. A new one will be created.');
+        newTeamName = await question('Enter the name for the NEW team: ');
     }
 
     rl.close();
@@ -121,20 +121,19 @@ async function main() {
         // Create new team if requested
         if (newTeamName) {
             const { data: newTeam, error: newTeamError } = await supabase
-                .from('running_teams')
+                .from('teams')
                 .insert({
                     name: newTeamName,
-                    owner_id: authData.user.id
                 })
                 .select()
                 .single();
-            
+
             if (newTeamError) {
                 throw new Error(`Failed to create new team: ${newTeamError.message}`);
             }
-            
+
             selectedTeamId = newTeam.id;
-            console.log(`✅ Created new Running Team: ${newTeam.name}`);
+            console.log(`✅ Created new team: ${newTeam.name}`);
         }
 
         // Update profile to ADMIN role and assign team_id

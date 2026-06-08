@@ -28,6 +28,37 @@ export function trackInvitationCreated(params: { role: 'ATHLETE' | 'COACH' }) {
   });
 }
 
+export function trackTeamInviteLinkCreated(params: {
+  teamId: string;
+  hasExpiry: boolean;
+  hasMaxUses: boolean;
+}) {
+  trackEvent('team_invite_link_created', {
+    team_id: params.teamId,
+    has_expiry: params.hasExpiry,
+    has_max_uses: params.hasMaxUses,
+  });
+}
+
+export function trackTeamInviteLinkRevoked(params: { linkId: string }) {
+  trackEvent('team_invite_link_revoked', {
+    link_id: params.linkId,
+  });
+}
+
+export function trackTeamInviteLinkRotated(params: { linkId: string }) {
+  trackEvent('team_invite_link_rotated', {
+    link_id: params.linkId,
+  });
+}
+
+export function trackTeamInviteLinkUsed(params: { linkId: string; method: 'team_link' }) {
+  trackEvent('team_invite_link_used', {
+    link_id: params.linkId,
+    method: params.method,
+  });
+}
+
 export function trackOnboardingStarted(params: { role: string; flow: string }) {
   trackEvent('onboarding_started', {
     role: params.role,

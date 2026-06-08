@@ -1,10 +1,12 @@
-# Endurix - Screens List
+# Endurix — Screens List
 
 This list reflects currently implemented screens from the App Router.
 
 ## Public
 
-- `src/app/page.tsx` - Landing
+- `src/app/page.tsx` — Landing
+- `src/app/privacy/**` — Privacy / legal pages
+- `src/app/endurix-test/page.tsx` — High-fidelity prototype dashboard (not connected to real data)
 
 ## Auth and account
 
@@ -15,29 +17,51 @@ This list reflects currently implemented screens from the App Router.
 - `src/app/(auth)/accept-invitation/[token]/page.tsx`
 - `src/app/accept-invitation/page.tsx`
 - `src/app/(auth)/auth/auth-code-error/page.tsx`
+- `src/app/onboarding/**` — Coach / athlete onboarding flows
+
+## Onboarding
+
+- `src/app/onboarding/coach/page.tsx` — Coach onboarding with completion tracker
+- `src/app/onboarding/athlete/page.tsx` — Athlete onboarding (thresholds, VAM, UAN, FC, etc.)
 
 ## Main product (dashboard)
 
-- `src/app/(dashboard)/dashboard/page.tsx`
-- `src/app/(dashboard)/dashboard/calendar/page.tsx`
-- `src/app/(dashboard)/athletes/page.tsx`
-- `src/app/(dashboard)/athletes/[id]/page.tsx`
-- `src/app/(dashboard)/groups/page.tsx`
-- `src/app/(dashboard)/groups/[id]/page.tsx`
-- `src/app/(dashboard)/groups/new/page.tsx`
-- `src/app/(dashboard)/trainings/page.tsx`
-- `src/app/(dashboard)/workouts/builder/page.tsx`
-- `src/app/(dashboard)/workouts/assign/page.tsx`
-- `src/app/(dashboard)/workouts/[assignmentId]/page.tsx`
-- `src/app/(dashboard)/activities/[id]/page.tsx`
-- `src/app/(dashboard)/races/page.tsx`
-- `src/app/(dashboard)/coaches/page.tsx`
-- `src/app/(dashboard)/profile/page.tsx`
+- `src/app/(dashboard)/dashboard/page.tsx` — **Role-aware dashboard** (admin / coach / athlete)
+- `src/app/(dashboard)/dashboard/calendar/page.tsx` — Calendar overview
+- `src/app/(dashboard)/athletes/page.tsx` — Coach's athlete list
+- `src/app/(dashboard)/athletes/[id]/page.tsx` — Athlete detail (5 tabs: Resumen, Entrenamiento, Salud y Carga, Carreras y Notas, Tendencia)
+- `src/app/(dashboard)/groups/page.tsx` — Group list
+- `src/app/(dashboard)/groups/[id]/page.tsx` — Group detail
+- `src/app/(dashboard)/groups/new/page.tsx` — Create group
+- `src/app/(dashboard)/trainings/page.tsx` — Training library
+- `src/app/(dashboard)/workouts/builder/page.tsx` — Workout builder (drag-and-drop)
+- `src/app/(dashboard)/workouts/assign/page.tsx` — Assign a workout
+- `src/app/(dashboard)/workouts/[assignmentId]/page.tsx` — Assignment detail
+- `src/app/(dashboard)/activities/[id]/page.tsx` — Activity detail (HR / pace / power zones, splits, laps, compliance)
+- `src/app/(dashboard)/races/page.tsx` — Race list
+- `src/app/(dashboard)/coaches/page.tsx` — Coach list (admin)
+- `src/app/(dashboard)/profile/page.tsx` — Personal profile / thresholds / zones
+
+## Settings
+
+- `src/app/(dashboard)/settings/coach/page.tsx` — Coach settings (thresholds, default models)
+- `src/app/(dashboard)/settings/team/page.tsx` — Team settings (admin only, branding, defaults)
+- `src/app/(dashboard)/settings/audit-logs/page.tsx` — Admin audit log viewer
 
 ## Integration callbacks
 
-- `src/app/strava/callback/page.tsx`
+- `src/app/strava/callback/page.tsx` — Strava OAuth callback
 
-## Internal/testing
+## Internal / testing
 
-- `src/app/(dashboard)/dashboard/builder-test/page.tsx`
+- `src/app/(dashboard)/dashboard/builder-test/page.tsx` — Builder test harness
+
+## Highlights of the athlete home dashboard
+
+- 4 weekly stat cards (volume / time / elevation / compliance)
+- **4 fitness status cards** (CTL / ATL / TSB / ACWR) with chip color coding
+- Week navigator + "Add race" CTA
+- Weekly calendar with assignments + Strava activities
+- Coach Notes (read-only) + Next Races
+- **Estado de Forma** card with 7 / 30 / 90-day range selector and CTL/ATL/TSB trend chart
+- **Rendimiento y Zonas** card with the compliance trend and personalized HR + VAM pace zones

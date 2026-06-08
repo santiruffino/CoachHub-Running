@@ -1,6 +1,6 @@
 # Feature Tracking
 
-Use this file as a lightweight product/engineering backlog.
+Use this file as a lightweight product / engineering backlog.
 
 ## Status legend
 
@@ -13,18 +13,29 @@ Use this file as a lightweight product/engineering backlog.
 
 | Item | Status | Priority | Notes |
 |---|---|---|---|
-| SAN-96 Security hardening (webhook/authz/OAuth state) | done | P0 | Webhook validation + OAuth state signing/expiry + standardized failures |
+| SAN-96 Security hardening (webhook / authz / OAuth state) | done | P0 | Webhook validation + OAuth state signing / expiry + standardized failures |
 | SAN-99 API hardening (rate limiting + v2 error contract) | done | P0 | Middleware v2 throttling + standardized API error payload shape |
 | SAN-91 Settings (Coach + Team settings with persisted config) | done | P0 | Added settings pages + APIs + DB tables (`coach_settings`, `team_settings`) |
-| SAN-102 Audit logs (append-only admin action log, first cut) | done | P0 | Added `admin_action_logs`, append-only trigger, admin read API/UI, critical write instrumentation |
+| SAN-102 Audit logs (append-only admin action log, first cut) | done | P0 | Added `admin_action_logs`, append-only trigger, admin read API / UI, critical write instrumentation |
 | SAN-94 Onboarding (Coach flow + completion tracker + starter templates) | done | P0 | Added `/onboarding/coach`, tracker UI, completion endpoint, and starter template bootstrap |
-| SAN-93 Analytics (GA4 signup/onboarding/retention funnels) | done | P0 | Added GA4 integration + event taxonomy for signup, onboarding, auth, dashboard retention |
-| SAN-97 Accessibility/UI refinement (critical primitives + tests) | done | P1 | Added WCAG-focused dialog behavior and component tests (`button`, `input`, `alert-dialog`) |
-| i18n normalization for API/user-visible errors | done | P0 | Standardized code registry implemented |
-| Remove stale legacy docs/prompts | done | P1 | Archived to docs/legacy |
-| Running-first assumptions for cycling readiness | done | P1 | Added Power/FTP support + Sport Guards |
-| Dead/orphaned component cleanup pass | done | P2 | Legacy API aliases removed |
+| SAN-93 Analytics (GA4 signup / onboarding / retention funnels) | done | P0 | Added GA4 integration + event taxonomy for signup, onboarding, auth, dashboard retention |
+| SAN-97 Accessibility / UI refinement (critical primitives + tests) | done | P1 | Added WCAG-focused dialog behavior and component tests (`button`, `input`, `alert-dialog`) |
+| i18n normalization for API / user-visible errors | done | P0 | Standardized code registry implemented |
+| Remove stale legacy docs / prompts | done | P1 | Archived to `docs/legacy` |
+| Running-first assumptions for cycling readiness | done | P1 | Added Power / FTP support + Sport Guards |
+| Dead / orphaned component cleanup pass | done | P2 | Legacy API aliases removed |
+| Training load columns + backfill | done | P1 | `load_score`, `suffer_score` columns, 90-day backfill job, scheduled purge |
+| Smart alert scoring for `training_load` | done | P1 | `lib/alerts/scoring.ts` factors ACWR + TSB + load risk |
+| **Athlete fitness visibility on dashboard** | done | P1 | 4 fitness status cards (CTL / ATL / TSB / ACWR) + Estado de Forma chart with 7 / 30 / 90-day range selector + personalized pace zones (VAM) on athlete dashboard |
+| Personalized pace zones (VAM) component | done | P1 | New `features/profiles/components/PaceZones.tsx` mirroring `HeartRateZones` pattern; falls back to `/profile` link when VAM absent |
+| **Team invite links (shareable sign-up URL)** | done | P1 | Reusable per-team link; coach/admin creates once, shares via WhatsApp/QR; athlete signs up and joins team; atomic RPC + audit log |
+| **Team athlete limit (pricing-tier cap)** | done | P1 | `max_athletes` in `team_settings`; enforced on both per-email and team-link sign-ups; admin-only UI in `/settings/team` |
+| Marketing features doc refresh | done | P2 | `docs/MARKETING_FEATURES.md` aligned to current product pillars and the new athlete cockpit |
+| English copy bank for marketing / landing | done | P2 | Added to `docs/MARKETING_FEATURES.md` §6 |
+| Instagram promotion strategy | done | P2 | `docs/INSTAGRAM_STRATEGY.md` with content pillars, posting cadence, hashtag set, KPI loop |
 
 ## Notes
 
 - Full evidence and references: `documentation/platform-analysis-report.md`
+- Marketing copy and social hooks: `docs/MARKETING_FEATURES.md`
+- Promotion plan: `docs/INSTAGRAM_STRATEGY.md`

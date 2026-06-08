@@ -117,6 +117,26 @@ erDiagram
         jsonb metadata
     }
 
+    TEAMS {
+        uuid id PK
+        string name
+        string sport
+    }
+
+    TEAM_INVITE_LINKS {
+        uuid id PK
+        uuid team_id
+        uuid created_by
+        string role
+        string token
+        string label
+        bool is_active
+        timestamp expires_at
+        int max_uses
+        int uses
+        timestamp last_used_at
+    }
+
     PROFILES ||--o{ GROUPS : creates
     PROFILES ||--o{ TRAININGS : creates
     PROFILES ||--o{ ACTIVITIES : performs
@@ -130,6 +150,9 @@ erDiagram
     PROFILES ||--o{ ADMIN_ACTION_LOGS : emits
     TEAM_SETTINGS ||--|| PROFILES : updated_by
     COACH_SETTINGS ||--|| PROFILES : updated_by
+    TEAMS ||--o{ TEAM_INVITE_LINKS : owns
+    TEAM_INVITE_LINKS }o--|| PROFILES : created_by
+    TEAM_INVITE_LINKS }o--|| ADMIN_ACTION_LOGS : logged_as
 ```
 
 ## Key behavior notes
@@ -139,6 +162,8 @@ erDiagram
 - `created_by` tracks ownership metadata for trainings/groups/races.
 - Assignment snapshots (`workout_snapshot`) preserve planned context at assignment time.
 - Team/coaches can persist configurable thresholds/branding/default models.
+- **`team_settings.max_athletes`** (integer, nullable) enforces athlete cap for pricing tiers; checked on per-email invites and team-link sign-ups.
+- **`team_invite_links`** provides shareable sign-up URLs per team; atomic consumption via `consume_team_invite_link(token)` RPC; every use logs `team_invite_link.used` to `admin_action_logs`.
 - Admin critical writes are captured in append-only `admin_action_logs`.
 
 ## Activity IDs

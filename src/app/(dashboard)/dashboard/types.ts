@@ -10,6 +10,7 @@ export interface DashboardStats {
   totalGroups: number;
   athletesWithoutNextWeek: number;
   groupsWithoutNextWeek: number;
+  actionNeeded: number;
 }
 
 export interface RecentSession {
@@ -79,4 +80,6 @@ export interface SmartAlert {
   priority: 'P1' | 'P2' | 'P3' | 'P4';
   recommendedActionKey: 'contactNowAdjustLoad' | 'reviewAndAdjustWeek' | 'monitorAndCheckIn' | 'logAndMonitor';
   reasonCodes: string[];
+  fitness?: { ctl: number; tsb: number };
+  scope?: 'athlete' | 'group';
 }

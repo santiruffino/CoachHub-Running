@@ -407,6 +407,21 @@ export async function GET(request: NextRequest) {
                 completionRate: Math.round((s.completed / s.total) * 100),
             }));
 
+        const loadSeriesByAthleteId = new Map<string, ActivityLoadRow[]>();
+        for (const row of loadActivities) {
+            const bucket = loadSeriesByAthleteId.get(row.user_id) || [];
+            bucket.push(row);
+            loadSeriesByAthleteId.set(row.user_id, bucket);
+        }
+        const fitnessByAthleteId = new Map<string, { ctl: number; tsb: number }>();
+        for (const [athleteId, athleteRows] of loadSeriesByAthleteId.entries()) {
+            const loadData = buildDailyLoadSeries(athleteRows, { rangeDays: 30, now });
+            fitnessByAthleteId.set(athleteId, {
+                ctl: loadData.current.ctl,
+                tsb: loadData.current.tsb,
+            });
+        }
+
         const feedbackByAssignment = new Map<string, ActivityFeedbackRow>();
         feedbackRows.forEach((row) => {
             if (row.training_assignment_id && !feedbackByAssignment.has(row.training_assignment_id)) {
@@ -474,16 +489,10 @@ export async function GET(request: NextRequest) {
                     priority: alert.priority,
                     recommendedActionKey: alert.recommendedActionKey,
                     reasonCodes: alert.reasonCodes,
+                    fitness: fitnessByAthleteId.get(alert.id),
                 };
             }),
-            ...Array.from(
-                loadActivities.reduce((acc, row) => {
-                    const bucket = acc.get(row.user_id) || [];
-                    bucket.push(row);
-                    acc.set(row.user_id, bucket);
-                    return acc;
-                }, new Map<string, ActivityLoadRow[]>()).entries()
-            )
+            ...Array.from(loadSeriesByAthleteId.entries())
                 .map(([athleteId, athleteRows]) => {
                     const loadData = buildDailyLoadSeries(athleteRows, {
                         rangeDays: 30,
@@ -525,6 +534,7 @@ export async function GET(request: NextRequest) {
                         priority: scoring.priority,
                         recommendedActionKey: scoring.recommendedActionKey,
                         reasonCodes: scoring.reasonCodes,
+                        fitness: fitnessByAthleteId.get(athleteId),
                     };
                 })
                 .filter((item): item is NonNullable<typeof item> => Boolean(item)),
@@ -550,6 +560,7 @@ export async function GET(request: NextRequest) {
                     priority: scoring.priority,
                     recommendedActionKey: scoring.recommendedActionKey,
                     reasonCodes: scoring.reasonCodes,
+                    fitness: fitnessByAthleteId.get(mismatch.athleteId),
                 };
             }),
             ...lowCompliance.map((item) => {
@@ -574,15 +585,17 @@ export async function GET(request: NextRequest) {
                     priority: scoring.priority,
                     recommendedActionKey: scoring.recommendedActionKey,
                     reasonCodes: scoring.reasonCodes,
+                    fitness: fitnessByAthleteId.get(item.athleteId),
                 };
             }),
             ...missingWorkouts.map((item) => {
-                const athleteId = item.type === 'athlete' ? item.id : `group:${item.id}`;
+                const isGroup = item.type === 'group';
+                const athleteId = isGroup ? `group:${item.id}` : item.id;
                 const recurrence = recurrenceByKey.get(`${athleteId}:missing_workout`) || 0;
                 const scoring = computeAlertScore({
                     type: 'missing_workout',
                     recurrence7d: recurrence,
-                    missingSessionCount: item.type === 'group' ? item.memberCount : 1,
+                    missingSessionCount: isGroup ? item.memberCount : 1,
                 });
 
                 return {
@@ -591,11 +604,13 @@ export async function GET(request: NextRequest) {
                     athleteName: item.name,
                     type: 'missing_workout' as const,
                     time: now.toISOString(),
-                    details: item.type === 'group' ? `Grupo (${item.memberCount})` : 'Sin sesiones planificadas',
+                    details: isGroup ? `Grupo (${item.memberCount})` : 'Sin sesiones planificadas',
                     score: scoring.score,
                     priority: scoring.priority,
                     recommendedActionKey: scoring.recommendedActionKey,
                     reasonCodes: scoring.reasonCodes,
+                    fitness: isGroup ? undefined : fitnessByAthleteId.get(athleteId),
+                    scope: isGroup ? ('group' as const) : ('athlete' as const),
                 };
             }),
             ...recentFeedback.map((feedback) => {
@@ -621,6 +636,7 @@ export async function GET(request: NextRequest) {
                     priority: scoring.priority,
                     recommendedActionKey: scoring.recommendedActionKey,
                     reasonCodes: scoring.reasonCodes,
+                    fitness: fitnessByAthleteId.get(feedback.athleteId),
                 };
             }),
         ]

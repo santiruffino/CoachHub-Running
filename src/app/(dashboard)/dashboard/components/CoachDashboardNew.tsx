@@ -1,13 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useFormatter, useTranslations } from 'next-intl';
 import api from '@/lib/axios';
 import { appLogger } from '@/lib/app-logger';
-import { Skeleton } from '@/components/ui/skeleton';
-import { CriticalAlertItem } from '@/components/dashboard/CriticalAlertItem';
 import { GroupStatusCard } from '@/components/dashboard/GroupStatusCard';
-import { StatCard, SectionHeader, TimelineItem } from '@/components/dashboard';
+import { StatCard, SectionHeader, TimelineItem, CoachDashboardSkeleton } from '@/components/dashboard';
 import { User } from '@/interfaces/auth';
 import { DashboardStats, LowCompliance, MissingWorkout, RPEMismatch, SmartAlert, TimelineEvent } from '../types';
 import { NextRaces } from './NextRaces';
@@ -23,6 +22,8 @@ interface DashboardAlertItem {
     priority?: 'P1' | 'P2' | 'P3' | 'P4';
     score?: number;
     recommendedAction?: string;
+    fitness?: { ctl: number; tsb: number };
+    scope?: 'athlete' | 'group';
 }
 
 interface ZoneViolation {
@@ -97,14 +98,30 @@ export default function CoachDashboardNew({ user }: CoachDashboardNewProps) {
 
     const activeAthletes = data?.stats?.activeAthletes ?? 0;
     const completedToday = data?.stats?.completedToday ?? 0;
-    const rpeCount = data?.alerts?.rpeMismatches?.length ?? 0;
-    const missingCount = data?.alerts?.missingWorkouts?.length ?? 0;
-    const lowComplianceCount = data?.alerts?.lowCompliance?.length ?? 0;
     const zoneViolationCount = data?.alerts?.zoneViolations?.length ?? 0;
-    const pendingActionCount =
-        data?.alerts?.smartAlerts?.filter((alert) => alert.priority === 'P1' || alert.priority === 'P2').length ??
-        (rpeCount + missingCount + lowComplianceCount + zoneViolationCount);
     const groupCount = data?.stats?.totalGroups ?? 0;
+
+    const smartAlertsList = data?.alerts?.smartAlerts ?? [];
+
+    // Primary: backend's canonical count of P1/P2 alerts (covers both athlete and group scope).
+    // Fallback: client-side P1/P2 filter (used when the backend does not return actionNeeded).
+    const backendActionCount = data?.stats?.actionNeeded ?? 0;
+    const fallbackHighPriorityCount = smartAlertsList.filter(
+        (alert) => alert.priority === 'P1' || alert.priority === 'P2'
+    ).length;
+    const highPriorityCount = backendActionCount > 0 ? backendActionCount : fallbackHighPriorityCount;
+
+    // Group-level actions the P1/P2 filter misses:
+    //   - Group-scope P3 alerts (typically missing_workout for groups — scored P3 by design,
+    //     but still actionable for the coach because a group = multiple athletes).
+    //   - Groups with no next-week assignment (clear, separate action item).
+    const groupScopeP3Count = smartAlertsList.filter(
+        (alert) => alert.scope === 'group' && alert.priority === 'P3'
+    ).length;
+    const groupsWithoutWeekCount = data?.stats?.groupsWithoutNextWeek ?? 0;
+
+    const pendingActionCount =
+        highPriorityCount + groupScopeP3Count + groupsWithoutWeekCount;
 
     const allAlerts: DashboardAlertItem[] = (data?.alerts?.smartAlerts || []).map((alert) => ({
         alertId: alert.alertId,
@@ -117,6 +134,8 @@ export default function CoachDashboardNew({ user }: CoachDashboardNewProps) {
         priority: alert.priority,
         score: alert.score,
         recommendedAction: t(`dashboard.alertActions.recommended.${alert.recommendedActionKey}`),
+        fitness: alert.fitness,
+        scope: alert.scope ?? 'athlete',
     }));
 
     const groupComplianceData = data?.groupCompliance ?? [];
@@ -145,78 +164,8 @@ export default function CoachDashboardNew({ user }: CoachDashboardNewProps) {
         }
     };
 
-    const handleMarkSingleAlertAsRead = async (alert?: DashboardAlertItem) => {
-        if (!alert || alert.type !== 'zone_violation' || !alert.alertId) return;
-        try {
-            await api.post('/v2/dashboard/coach/alerts/read', {
-                scope,
-                alertIds: [alert.alertId],
-            });
-            setData((prev) => {
-                if (!prev) return prev;
-                return {
-                    ...prev,
-                    alerts: {
-                        ...prev.alerts,
-                        zoneViolations: prev.alerts.zoneViolations.filter((z) => z.alertId !== alert.alertId),
-                    },
-                };
-            });
-        } catch (error) {
-            appLogger.error('Failed to mark alert as read', error);
-        }
-    };
-
-    const handleResolveAlert = async (alert?: DashboardAlertItem) => {
-        if (!alert?.alertId) return;
-        try {
-            await api.post('/v2/dashboard/coach/alerts/read', {
-                scope,
-                action: 'resolve',
-                alertIds: [alert.alertId],
-            });
-            await fetchDashboard();
-        } catch (error) {
-            appLogger.error('Failed to resolve alert', error);
-        }
-    };
-
-    const handleSnoozeAlert = async (alert?: DashboardAlertItem) => {
-        if (!alert?.alertId) return;
-        try {
-            await api.post('/v2/dashboard/coach/alerts/read', {
-                scope,
-                action: 'snooze',
-                snoozeHours: 24,
-                alertIds: [alert.alertId],
-            });
-            await fetchDashboard();
-        } catch (error) {
-            appLogger.error('Failed to snooze alert', error);
-        }
-    };
-
     if (loading) {
-        return (
-            <div className="min-h-screen bg-endurix-paper dark:bg-background">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-6 space-y-4">
-                    <div>
-                        <Skeleton className="h-8 w-64 mb-2" />
-                        <Skeleton className="h-3 w-36" />
-                    </div>
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                        {[1, 2, 3, 4].map((i) => (
-                            <Skeleton key={i} className="h-24" />
-                        ))}
-                    </div>
-                    <Skeleton className="h-36" />
-                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                        <Skeleton className="h-56" />
-                        <Skeleton className="h-56" />
-                    </div>
-                </div>
-            </div>
-        );
+        return <CoachDashboardSkeleton />;
     }
 
     return (
@@ -271,68 +220,21 @@ export default function CoachDashboardNew({ user }: CoachDashboardNewProps) {
                     <StatCard
                         label={t('dashboard.metrics.activeAthletes')}
                         value={activeAthletes}
-                        chip="+12.4%"
                         chipColor="green"
                     />
                     <StatCard
                         label={t('dashboard.metrics.completedToday')}
                         value={completedToday}
-                        chip="+8.1%"
                         chipColor="green"
                     />
                     <StatCard
                         label={t('dashboard.metrics.totalGroups')}
                         value={groupCount}
-                        chip={`${data?.stats?.completionRate ?? 0}%`}
                     />
                     <StatCard
                         label={t('dashboard.metrics.actionNeeded')}
                         value={pendingActionCount}
-                        chip={`${pendingActionCount > 0 ? '-' : '+'}${Math.min(8, pendingActionCount || 1)}.2%`}
-                        chipColor={pendingActionCount > 0 ? 'red' : 'green'}
                     />
-                </section>
-
-                {/* Program Control — Dark Hero */}
-                <section className="mb-5">
-                    <article className="border border-endurix-black dark:border-border bg-endurix-black dark:bg-card p-4 text-white dark:text-foreground">
-                        <span
-                            className="text-[9px] text-white/50 dark:text-muted-foreground tracking-widest uppercase"
-                            style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
-                        >
-                            Program Control
-                        </span>
-                        <h3
-                            className="mt-1 text-2xl lg:text-3xl font-bold uppercase leading-[0.95] tracking-tight"
-                            style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
-                        >
-                            Active Blocks
-                        </h3>
-                        <div className="mt-3 space-y-1.5">
-                            {groupComplianceData.slice(0, 4).map((group) => (
-                                <div
-                                    key={group.groupId}
-                                    className="border border-white/10 dark:border-border bg-white/5 dark:bg-muted p-2.5 flex items-center justify-between"
-                                >
-                                    <div>
-                                        <p className="text-xs font-semibold">{group.groupName}</p>
-                                        <p className="text-[10px] text-white/50 dark:text-muted-foreground">
-                                            {group.athleteCount} athletes
-                                        </p>
-                                    </div>
-                                    <span
-                                        className="text-endurix-orange text-base font-bold"
-                                        style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
-                                    >
-                                        {group.completionRate}%
-                                    </span>
-                                </div>
-                            ))}
-                            {!loading && groupComplianceData.length === 0 && (
-                                <p className="text-xs text-white/60 dark:text-muted-foreground">No active blocks</p>
-                            )}
-                        </div>
-                    </article>
                 </section>
 
                 {/* Athlete Intelligence — Priority Roster */}
@@ -340,7 +242,10 @@ export default function CoachDashboardNew({ user }: CoachDashboardNewProps) {
                     <article className="border border-endurix-black/12 dark:border-border bg-white dark:bg-card">
                         {/* Card Header */}
                         <div className="flex items-center justify-between px-4 py-2 bg-endurix-paper dark:bg-muted border-b border-endurix-black/8 dark:border-border">
-                            <SectionHeader eyebrow="Athlete Intelligence" title="Priority Roster" />
+                            <SectionHeader
+                                eyebrow={t('dashboard.priorityRoster.eyebrow')}
+                                title={t('dashboard.priorityRoster.title')}
+                            />
                             <button
                                 type="button"
                                 onClick={handleMarkAsRead}
@@ -360,44 +265,66 @@ export default function CoachDashboardNew({ user }: CoachDashboardNewProps) {
                                     style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
                                 >
                                     <tr>
-                                        <th className="px-4 py-2">Athlete</th>
-                                        <th className="px-4 py-2">Program</th>
-                                        <th className="px-4 py-2">Load</th>
-                                        <th className="px-4 py-2">Score</th>
-                                        <th className="px-4 py-2">Status</th>
+                                        <th className="px-4 py-2">{t('dashboard.priorityRoster.columns.athlete')}</th>
+                                        <th className="px-4 py-2">{t('dashboard.priorityRoster.columns.program')}</th>
+                                        <th className="px-4 py-2">{t('dashboard.priorityRoster.columns.load')}</th>
+                                        <th className="px-4 py-2">{t('dashboard.priorityRoster.columns.fitness')}</th>
+                                        <th className="px-4 py-2">{t('dashboard.priorityRoster.columns.risk')}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {allAlerts.slice(0, 6).map((alert, idx) => {
-                                        const status = alert.priority === 'P1' ? 'Flagged' : alert.priority === 'P2' ? 'Monitor' : 'Ready';
-                                        const statusColor =
-                                            alert.priority === 'P1'
-                                                ? 'text-red-600 dark:text-red-500'
-                                                : alert.priority === 'P2'
-                                                    ? 'text-endurix-orange'
-                                                    : 'text-green-600 dark:text-green-500';
+                                        const score = Math.max(0, Math.min(100, alert.score ?? 0));
+                                        const band = getRiskBand(alert.priority);
+                                        const ctl = alert.fitness ? Math.round(alert.fitness.ctl) : null;
+                                        const tsb = alert.fitness ? Math.round(alert.fitness.tsb) : null;
                                         return (
                                             <tr
                                                 key={`${alert.id}-${idx}`}
                                                 className="border-b border-endurix-black/8 dark:border-border text-xs"
                                             >
                                                 <td className="px-4 py-2 font-semibold text-endurix-black dark:text-foreground">
-                                                    {alert.name}
+                                                    <Link
+                                                        href={getEntityHref(alert)}
+                                                        className="hover:text-endurix-orange hover:underline transition-colors"
+                                                    >
+                                                        {alert.name}
+                                                    </Link>
                                                 </td>
                                                 <td className="px-4 py-2 text-endurix-black/70 dark:text-muted-foreground">
                                                     {alert.message}
                                                 </td>
                                                 <td className="px-4 py-2 text-endurix-black/70 dark:text-muted-foreground">
-                                                    {alert.recommendedAction || 'Operational'}
+                                                    {alert.recommendedAction || t('dashboard.priorityRoster.operational')}
                                                 </td>
-                                                <td
-                                                    className="px-4 py-2 font-bold text-endurix-black dark:text-foreground"
-                                                    style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
-                                                >
-                                                    {alert.score ?? 0}
+                                                <td className="px-4 py-2 text-endurix-black dark:text-foreground">
+                                                    {ctl !== null && tsb !== null ? (
+                                                        <div className="flex items-center gap-2 leading-tight">
+                                                            <span
+                                                                className="font-bold"
+                                                                style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                                                            >
+                                                                {ctl}
+                                                            </span>
+                                                            <span className="text-[9px] uppercase tracking-widest text-endurix-black/40 dark:text-muted-foreground">
+                                                                {t('dashboard.priorityRoster.ctl')}
+                                                            </span>
+                                                            <span
+                                                                className={`font-bold ${tsb > 0 ? 'text-green-600 dark:text-green-500' : tsb < 0 ? 'text-endurix-orange' : 'text-endurix-black/40 dark:text-muted-foreground'}`}
+                                                                style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                                                            >
+                                                                {tsb > 0 ? `+${tsb}` : tsb}
+                                                            </span>
+                                                            <span className="text-[9px] uppercase tracking-widest text-endurix-black/40 dark:text-muted-foreground">
+                                                                {t('dashboard.priorityRoster.tsb')}
+                                                            </span>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-endurix-black/30 dark:text-muted-foreground">—</span>
+                                                    )}
                                                 </td>
-                                                <td className={`px-4 py-2 font-semibold ${statusColor}`}>
-                                                    {status}
+                                                <td className="px-4 py-2">
+                                                    <RiskBar score={score} band={band} label={t(band.labelKey)} />
                                                 </td>
                                             </tr>
                                         );
@@ -418,43 +345,10 @@ export default function CoachDashboardNew({ user }: CoachDashboardNewProps) {
                     </article>
                 </section>
 
-                {/* Compliance Alerts + Recent Activity */}
-                <section className="grid grid-cols-1 gap-4 xl:grid-cols-12 mb-5">
-                    {/* Athletes Compliance */}
-                    <article className="xl:col-span-7 border border-endurix-black/12 dark:border-border bg-white dark:bg-card p-4">
-                        <SectionHeader eyebrow="Compliance" title={t('dashboard.alerts.athletesCompliance')} />
-                        <div className="space-y-1.5">
-                            {allAlerts.slice(0, 6).map((alert, idx) => (
-                                <CriticalAlertItem
-                                    key={`alert-card-${idx}`}
-                                    athleteId={alert.id}
-                                    athleteName={alert.name}
-                                    alertType={alert.type}
-                                    timestamp={alert.time}
-                                    message={alert.message}
-                                    details={alert.details}
-                                    priority={alert.priority}
-                                    score={alert.score}
-                                    recommendedAction={alert.recommendedAction}
-                                    onMarkAsRead={() => void handleMarkSingleAlertAsRead(alert)}
-                                    canMarkAsRead={alert.type === 'zone_violation' && Boolean(alert.alertId)}
-                                    canResolve={Boolean(alert.alertId)}
-                                    onResolve={() => void handleResolveAlert(alert)}
-                                    canSnooze={Boolean(alert.alertId)}
-                                    onSnooze={() => void handleSnoozeAlert(alert)}
-                                />
-                            ))}
-                            {allAlerts.length === 0 && (
-                                <p className="text-xs text-endurix-black/40 dark:text-muted-foreground">
-                                    {t('dashboard.alerts.noCurrentAlerts')}
-                                </p>
-                            )}
-                        </div>
-                    </article>
-
-                    {/* Recent Activity */}
-                    <article className="xl:col-span-5 border border-endurix-black/12 dark:border-border bg-white dark:bg-card p-4">
-                        <SectionHeader eyebrow="Timeline" title={t('dashboard.alerts.recentActivity')} />
+                {/* Recent Activity */}
+                <section className="mb-5">
+                    <article className="border border-endurix-black/12 dark:border-border bg-white dark:bg-card p-4">
+                        <SectionHeader eyebrow={t('dashboard.recentActivity.eyebrow')} title={t('dashboard.alerts.recentActivity')} />
                         <div className="space-y-2">
                             {filteredTimeline.slice(0, 6).map((item) => {
                                 const hasFeedback = item.content && item.content.trim().length > 0;
@@ -473,7 +367,7 @@ export default function CoachDashboardNew({ user }: CoachDashboardNewProps) {
                 <section className="grid grid-cols-1 gap-4 xl:grid-cols-12">
                     {/* Group Status */}
                     <article className="xl:col-span-7 border border-endurix-black/12 dark:border-border bg-white dark:bg-card p-4">
-                        <SectionHeader eyebrow="Groups" title={t('dashboard.alerts.groupStatus')} />
+                        <SectionHeader eyebrow={t('dashboard.groupStatus.eyebrow')} title={t('dashboard.alerts.groupStatus')} />
                         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                             {groupComplianceData.map((group) => (
                                 <GroupStatusCard
@@ -486,7 +380,7 @@ export default function CoachDashboardNew({ user }: CoachDashboardNewProps) {
                             ))}
                             {groupComplianceData.length === 0 && (
                                 <p className="text-xs text-endurix-black/40 dark:text-muted-foreground">
-                                    No group data available
+                                    {t('dashboard.groupStatus.noData')}
                                 </p>
                             )}
                         </div>
@@ -497,6 +391,59 @@ export default function CoachDashboardNew({ user }: CoachDashboardNewProps) {
                         <NextRaces />
                     </div>
                 </section>
+            </div>
+        </div>
+    );
+}
+
+type RiskBand = {
+    labelKey: 'dashboard.risk.stable' | 'dashboard.risk.monitor' | 'dashboard.risk.atRisk' | 'dashboard.risk.critical';
+    barClass: string;
+    textClass: string;
+};
+
+function getEntityHref(alert: DashboardAlertItem): string {
+    if (alert.scope === 'group') {
+        const groupId = alert.id.startsWith('group:') ? alert.id.slice('group:'.length) : alert.id;
+        return `/groups/${groupId}`;
+    }
+    return `/athletes/${alert.id}`;
+}
+
+function getRiskBand(priority?: 'P1' | 'P2' | 'P3' | 'P4'): RiskBand {
+    switch (priority) {
+        case 'P1':
+            return { labelKey: 'dashboard.risk.critical', barClass: 'bg-red-500', textClass: 'text-red-600 dark:text-red-500' };
+        case 'P2':
+            return { labelKey: 'dashboard.risk.atRisk', barClass: 'bg-endurix-orange', textClass: 'text-endurix-orange' };
+        case 'P3':
+            return { labelKey: 'dashboard.risk.monitor', barClass: 'bg-yellow-500', textClass: 'text-yellow-600 dark:text-yellow-500' };
+        case 'P4':
+        default:
+            return { labelKey: 'dashboard.risk.stable', barClass: 'bg-green-500', textClass: 'text-green-600 dark:text-green-500' };
+    }
+}
+
+function RiskBar({ score, band, label }: { score: number; band: RiskBand; label: string }) {
+    return (
+        <div className="flex flex-col gap-1 min-w-[120px]">
+            <span
+                className={`text-[10px] font-bold uppercase tracking-widest ${band.textClass}`}
+                style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+            >
+                {label}
+            </span>
+            <div
+                className="h-1 w-full bg-endurix-black/8 dark:bg-white/10 overflow-hidden"
+                role="progressbar"
+                aria-valuenow={score}
+                aria-valuemin={0}
+                aria-valuemax={100}
+            >
+                <div
+                    className={`h-full ${band.barClass} transition-all`}
+                    style={{ width: `${score}%` }}
+                />
             </div>
         </div>
     );

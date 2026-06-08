@@ -20,7 +20,7 @@ interface InviteResult {
 export async function POST(request: NextRequest) {
   try {
     // Only coaches can create invitations
-    const { user, supabase, profile, response } = await requireRole('COACH');
+    const { user, profile, response } = await requireRole('COACH');
 
     if (response) {
       return response;
@@ -49,6 +49,39 @@ export async function POST(request: NextRequest) {
         { error: 'You must belong to a running team to invite users.' },
         { status: 400 }
       );
+    }
+
+    // Check team athlete limit (if set) for ATHLETE role
+    if (role === 'ATHLETE') {
+      const { data: teamSettings } = await adminClient
+        .from('team_settings')
+        .select('max_athletes')
+        .eq('team_id', profile.team_id)
+        .maybeSingle();
+
+      if (teamSettings && teamSettings.max_athletes !== null && teamSettings.max_athletes > 0) {
+        const { count: currentAthletes } = await adminClient
+          .from('profiles')
+          .select('*', { count: 'exact', head: true })
+          .eq('team_id', profile.team_id)
+          .eq('role', 'ATHLETE');
+
+        const remaining = teamSettings.max_athletes - (currentAthletes ?? 0);
+        if (remaining <= 0) {
+          return NextResponse.json(
+            { error: `El equipo ha alcanzado el límite de ${teamSettings.max_athletes} atletas. Actualiza el plan para añadir más.` },
+            { status: 403 }
+          );
+        }
+
+        // Limit the emails to remaining slots
+        if (emails.length > remaining) {
+          return NextResponse.json(
+            { error: `Solo quedan ${remaining} plazas para atletas. Reduce la lista o actualiza el plan.` },
+            { status: 403 }
+          );
+        }
+      }
     }
 
     if (role === 'COACH' && profile.role !== 'ADMIN') {

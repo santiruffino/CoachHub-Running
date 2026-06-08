@@ -4,6 +4,8 @@ import { WorkoutBlock, AthleteProfile } from './types';
 import { StepEditor } from './StepEditor';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { Repeat, Plus, ChevronDown, ChevronUp } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
@@ -15,6 +17,7 @@ interface RepeatBlockEditorProps {
     onUpdateReps?: (groupId: string, reps: number) => void;
     onRemove: (blockId: string) => void;
     athleteProfile?: AthleteProfile | null;
+    athleteId?: string | null;
     onAddStep: () => void;
 }
 
@@ -25,12 +28,14 @@ export function RepeatBlockEditor({
     onUpdateReps,
     onRemove,
     athleteProfile,
+    athleteId,
     onAddStep
 }: RepeatBlockEditorProps) {
     const t = useTranslations('builder');
     const [isCollapsed, setIsCollapsed] = useState(false);
 
     const reps = blocks[0]?.group?.reps || 1;
+    const skipLastRest = blocks[0]?.group?.skipLastRest || false;
 
     const updateReps = (newReps: number) => {
         if (onUpdateReps) {
@@ -44,6 +49,19 @@ export function RepeatBlockEditor({
                     group: {
                         ...block.group,
                         reps: newReps
+                    }
+                });
+            }
+        });
+    };
+
+    const updateSkipLastRest = (value: boolean) => {
+        blocks.forEach(block => {
+            if (block.group?.id === groupId) {
+                onUpdate(block.id, {
+                    group: {
+                        ...block.group,
+                        skipLastRest: value
                     }
                 });
             }
@@ -82,6 +100,22 @@ export function RepeatBlockEditor({
                         {t('totalForBlock')} <span className="text-[#FFCC00] font-semibold">{getTotalDistance()} {t('units.km')}</span>
                     </span>
                 </div>
+
+                {/* Skip Last Rest/Recovery Option */}
+                {blocks.length > 0 && (blocks[blocks.length - 1].type === 'rest' || blocks[blocks.length - 1].type === 'recovery') && (
+                    <div className="flex items-center gap-2 ml-4">
+                        <Switch
+                            checked={skipLastRest}
+                            onCheckedChange={updateSkipLastRest}
+                            id={`skip-last-rest-${groupId}`}
+                            className="data-[state=checked]:bg-endurix-orange data-[state=checked]:border-endurix-orange data-[state=unchecked]:bg-gray-300 dark:data-[state=unchecked]:bg-slate-600 peer-focus:ring-endurix-orange/30"
+                        />
+                        <Label htmlFor={`skip-last-rest-${groupId}`} className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                            {t('skipLastRestRecovery')}
+                        </Label>
+                    </div>
+                )}
+
                 <div className="flex items-center gap-2">
                     <Button
                         type="button"
@@ -129,6 +163,7 @@ export function RepeatBlockEditor({
                             onRemove={() => onRemove(block.id)}
                             isInRepeat={true}
                             athleteProfile={athleteProfile}
+                            athleteId={athleteId}
                         />
                     ))}
 

@@ -28,6 +28,7 @@ export interface WorkoutBlock {
     group?: {
         id: string;
         reps: number;
+        skipLastRest?: boolean; // Skip the last rest/recovery step in the repeat
     };
     // New fields for redesign
     endOnLapButton?: boolean; // End step when lap button is pressed

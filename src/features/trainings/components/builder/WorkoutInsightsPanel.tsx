@@ -276,12 +276,13 @@ export function WorkoutInsightsPanel({
                 </div>
             </section>
 
-            <section className="bg-endurix-paper dark:bg-[#131b23] border border-endurix-black/10 dark:border-white/10 p-6 overflow-x-auto">
+            <section className="bg-endurix-paper dark:bg-[#131b23] border border-endurix-black/10 dark:border-white/10 p-6">
                 <h3 className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground uppercase tracking-widest mb-4" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
                     {t('stepSummaryTitle')}
                 </h3>
 
-                <table className="w-full min-w-[720px] text-sm">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
                     <thead>
                         <tr className="text-left text-endurix-black/40 dark:text-muted-foreground uppercase tracking-widest text-[10px] border-b border-endurix-black/10 dark:border-white/10" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
                             <th className="pb-3 font-bold">{t('stage')}</th>
@@ -303,6 +304,7 @@ export function WorkoutInsightsPanel({
                         ))}
                     </tbody>
                 </table>
+                </div>
             </section>
         </div>
     );

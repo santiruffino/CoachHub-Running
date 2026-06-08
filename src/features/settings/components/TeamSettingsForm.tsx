@@ -2,13 +2,14 @@
 import { appLogger } from '@/lib/app-logger';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { settingsService } from '@/features/settings/services/settings.service';
 import { TeamSettings } from '@/features/settings/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Loader2, Palette, ShieldAlert, Cpu } from 'lucide-react';
+import { Loader2, Palette, ShieldAlert, Cpu, Users } from 'lucide-react';
 import { SectionHeader, DashboardCardHeaderDots } from '@/components/dashboard';
 
 interface TeamSettingsFormProps {
@@ -19,6 +20,7 @@ const FIELD_LABEL = 'text-[10px] uppercase tracking-widest text-endurix-black/50
 const PAPER_BG = 'bg-endurix-paper dark:bg-card';
 
 export function TeamSettingsForm({ initialSettings }: TeamSettingsFormProps) {
+    const t = useTranslations('teamSettings');
   const [settings, setSettings] = useState<TeamSettings>(initialSettings);
   const [saving, setSaving] = useState(false);
 
@@ -172,7 +174,7 @@ export function TeamSettingsForm({ initialSettings }: TeamSettingsFormProps) {
           </Card>
         </div>
 
-        <div className="space-y-6">
+            <div className="space-y-6">
             <Card className={`${PAPER_BG} border border-endurix-black/10 dark:border-border`}>
                 <CardHeader className="border-b border-endurix-black/10 dark:border-border flex flex-row items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -220,6 +222,44 @@ export function TeamSettingsForm({ initialSettings }: TeamSettingsFormProps) {
                         }
                         disabled={saving}
                     />
+                </div>
+                </CardContent>
+            </Card>
+
+            <Card className={`${PAPER_BG} border border-endurix-black/10 dark:border-border`}>
+                <CardHeader className="border-b border-endurix-black/10 dark:border-border flex flex-row items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-endurix-black/8 dark:bg-white/8">
+                        <Users className="h-4 w-4 text-endurix-orange" />
+                    </div>
+                    <CardTitle className="text-base uppercase tracking-widest" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{t('limits.title')}</CardTitle>
+                </div>
+                <DashboardCardHeaderDots />
+                </CardHeader>
+                <CardContent className="p-6 space-y-5">
+                <div className="space-y-2">
+                    <Label htmlFor="maxAthletes" className={FIELD_LABEL} style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{t('limits.maxAthletes')}</Label>
+                    <Input
+                        id="maxAthletes"
+                        variant="boxed"
+                        type="number"
+                        min={1}
+                        max={1000}
+                        placeholder={t('limits.maxAthletesPlaceholder')}
+                        value={settings.limits?.maxAthletes ?? ''}
+                        onChange={(e) =>
+                            setSettings((current) => ({
+                            ...current,
+                            limits: {
+                                ...current.limits,
+                                maxAthletes: e.target.value === '' ? null : Number(e.target.value),
+                            },
+                            }))
+                        }
+                        className="font-mono"
+                        disabled={saving}
+                    />
+                    <p className="text-[10px] text-muted-foreground px-1 italic">{t('limits.maxAthletesHelp')}</p>
                 </div>
                 </CardContent>
             </Card>

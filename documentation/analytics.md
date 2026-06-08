@@ -56,6 +56,19 @@ Flows:
 - `invitation_created`
   - params: `role` (`ATHLETE`|`COACH`)
 
+## Team invite links (shareable sign-up URL)
+
+- `team_invite_link_created`
+  - params: `team_id`, `has_expiry` (bool), `has_max_uses` (bool)
+- `team_invite_link_revoked`
+  - params: `link_id`
+- `team_invite_link_rotated`
+  - params: `link_id`
+- `team_invite_link_used`
+  - params: `link_id`, `method` (`team_link`)
+
+The `sign_up_completed` event now also includes `method: 'team_link'` for sign-ups via team invite links.
+
 ## Notes
 
 - Pageviews are tracked on route/query changes using `pageview()` in `GoogleAnalytics`.

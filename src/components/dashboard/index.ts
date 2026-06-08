@@ -17,3 +17,15 @@ export { GroupStatusCard } from './GroupStatusCard';
 export { AthleteWeeklyCalendar } from './AthleteWeeklyCalendar';
 export { PerformanceTrendChart } from './PerformanceTrendChart';
 export { LoadMetricsTrendChart } from './LoadMetricsTrendChart';
+export {
+    StatCardSkeleton,
+    SectionHeaderSkeleton,
+    TimelineItemSkeleton,
+    GroupStatusCardSkeleton,
+    PriorityRosterRowSkeleton,
+    PriorityRosterSkeleton,
+    RecentActivitySkeleton,
+    GroupStatusGridSkeleton,
+    NextRacesSkeleton,
+    CoachDashboardSkeleton,
+} from './skeletons';

@@ -18,8 +18,14 @@ interface WorkoutSequenceProps {
     onUpdateGroupReps?: (groupId: string, reps: number) => void;
     onRemoveBlock: (id: string) => void;
     athleteProfile?: AthleteProfile | null;
+    athleteId?: string | null;
     trainingType?: TrainingType;
     onAddStep: (type: 'warmup' | 'interval' | 'recovery' | 'rest' | 'cooldown' | 'repeat') => void;
+    onDragStart?: (e: React.DragEvent, blockId: string) => void;
+    onDragOver?: (e: React.DragEvent) => void;
+    onDrop?: (e: React.DragEvent, targetBlockId: string) => void;
+    onDragEnd?: () => void;
+    draggedBlockId?: string | null;
 }
 
 export function WorkoutSequence({
@@ -30,8 +36,14 @@ export function WorkoutSequence({
     onUpdateGroupReps,
     onRemoveBlock,
     athleteProfile,
+    athleteId,
     trainingType = TrainingType.RUNNING,
-    onAddStep
+    onAddStep,
+    onDragStart,
+    onDragOver,
+    onDrop,
+    onDragEnd,
+    draggedBlockId
 }: WorkoutSequenceProps) {
     const t = useTranslations('builder');
 
@@ -202,6 +214,7 @@ export function WorkoutSequence({
                                             onUpdateReps={onUpdateGroupReps}
                                             onRemove={onRemoveBlock}
                                             athleteProfile={athleteProfile}
+                                            athleteId={athleteId}
                                             onAddStep={() => {
                                                 // Handle inline add to repeat block
                                             }}
@@ -237,20 +250,32 @@ export function WorkoutSequence({
                                                             onRemove={() => onRemoveBlock(block.id)}
                                                             isInRepeat={true}
                                                             athleteProfile={athleteProfile}
+                                                            athleteId={athleteId}
                                                             trainingType={trainingType}
                                                         />
                                                     </div>
                                                 );
                                             }
 
-                                            return (
+                                            const isDragging = draggedBlockId === block.id;
+                                             const dragHandlers = {
+                                               draggable: true,
+                                               onDragStart: (e: React.DragEvent) => onDragStart?.(e, block.id),
+                                               onDragOver: (e: React.DragEvent) => onDragOver?.(e),
+                                               onDrop: (e: React.DragEvent) => onDrop?.(e, block.id),
+                                               onDragEnd: () => onDragEnd?.(),
+                                             };
+
+                                             return (
                                                 <button
                                                     key={block.id}
                                                     type="button"
                                                     onClick={() => onSelectBlock(block.id)}
                                                     className={cn(
                                                         "w-full flex items-center py-4 bg-white dark:bg-[#1a232c] shadow-[0_2px_8px_rgba(43,52,55,0.02)] hover:shadow-[0_8px_24px_rgba(43,52,55,0.06)] rounded-lg transition-all group relative overflow-hidden",
+                                                        isDragging && 'opacity-50'
                                                     )}
+                                                    {...dragHandlers}
                                                 >
                                                     <div className="absolute left-0 top-0 bottom-0 w-1" style={{ backgroundColor: getBlockColorClass(block.type) }} />
                                                     <div className="flex items-center w-full px-4 text-left">
@@ -305,6 +330,7 @@ export function WorkoutSequence({
                                         onUpdate={(updates) => onUpdateBlock(block.id, updates)}
                                         onRemove={() => onRemoveBlock(block.id)}
                                         athleteProfile={athleteProfile}
+                                        athleteId={athleteId}
                                         trainingType={trainingType}
                                     />
                                 </div>
@@ -312,7 +338,16 @@ export function WorkoutSequence({
                         );
                     }
 
-                    return (
+                    const isDragging = draggedBlockId === block.id;
+                            const dragHandlers = {
+                              draggable: true,
+                              onDragStart: (e: React.DragEvent) => onDragStart?.(e, block.id),
+                              onDragOver: (e: React.DragEvent) => onDragOver?.(e),
+                              onDrop: (e: React.DragEvent) => onDrop?.(e, block.id),
+                              onDragEnd: () => onDragEnd?.(),
+                            };
+
+                            return (
                         <div key={block.id} className="flex gap-6 items-center relative ml-12 group">
                             <div className="w-12 text-xs font-semibold text-[#8b9bb4] absolute -left-[72px] text-right">
                                 {currentStartTimeStr}
@@ -323,7 +358,9 @@ export function WorkoutSequence({
                                 onClick={() => onSelectBlock(block.id)}
                                 className={cn(
                                     "w-full flex items-center py-4 bg-white dark:bg-[#1a232c] shadow-[0_2px_8px_rgba(43,52,55,0.02)] hover:shadow-[0_8px_24px_rgba(43,52,55,0.06)] rounded-lg transition-all relative overflow-hidden border border-[#f1f4f6] dark:border-white/5",
+                                    isDragging && 'opacity-50'
                                 )}
+                                {...dragHandlers}
                             >
                                 <div className="absolute left-0 top-0 bottom-0 w-1" style={{ backgroundColor: getBlockColorClass(block.type) }} />
                                 <div className="flex items-center w-full px-4 text-left">

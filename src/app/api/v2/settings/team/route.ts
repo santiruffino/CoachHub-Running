@@ -22,7 +22,7 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from('team_settings')
-    .select('thresholds, branding, default_models')
+    .select('thresholds, branding, default_models, max_athletes')
     .eq('team_id', profile.team_id)
     .maybeSingle();
 
@@ -35,6 +35,7 @@ export async function GET() {
       thresholds: data?.thresholds,
       branding: data?.branding,
       default_models: data?.default_models,
+      limits: { maxAthletes: data?.max_athletes ?? null },
     })
   );
 }
@@ -59,12 +60,14 @@ export async function PATCH(request: Request) {
     thresholds?: Record<string, unknown> | null;
     branding?: Record<string, unknown> | null;
     defaultModels?: Record<string, unknown> | null;
+    limits?: Record<string, unknown> | null;
   };
 
   const normalized = normalizeTeamSettings({
     thresholds: body?.thresholds,
     branding: body?.branding,
     defaultModels: body?.defaultModels,
+    limits: body?.limits,
   });
 
   const { error } = await supabase
@@ -75,6 +78,7 @@ export async function PATCH(request: Request) {
         thresholds: normalized.thresholds,
         branding: normalized.branding,
         default_models: normalized.defaultModels,
+        max_athletes: normalized.limits.maxAthletes,
         updated_by: user!.id,
         updated_at: new Date().toISOString(),
       },
@@ -96,6 +100,7 @@ export async function PATCH(request: Request) {
       thresholdsUpdated: !!body?.thresholds,
       brandingUpdated: !!body?.branding,
       defaultModelsUpdated: !!body?.defaultModels,
+      limitsUpdated: !!body?.limits,
     },
   });
 

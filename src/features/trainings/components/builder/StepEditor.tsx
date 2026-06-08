@@ -22,6 +22,7 @@ interface StepEditorProps {
     onRemove: () => void;
     isInRepeat?: boolean;
     athleteProfile?: AthleteProfile | null;
+    athleteId?: string | null;
     trainingType?: TrainingType;
 }
 
@@ -32,6 +33,7 @@ export function StepEditor({
     onRemove,
     isInRepeat = false,
     athleteProfile = null,
+    athleteId = null,
     trainingType = TrainingType.RUNNING
 }: StepEditorProps) {
     void isInRepeat;
@@ -118,7 +120,10 @@ export function StepEditor({
             case 'lthr': {
                 // LTHR: percentage of lactate threshold heart rate
                 if (!athleteProfile?.lthr) {
-                    return t('noAthleteSelectedLthr');
+                    if (!athleteId) {
+                        return t('noAthleteSelectedLthr');
+                    }
+                    return t('noAthleteLthrData');
                 }
                 if (!min || !max) return null;
 
@@ -129,6 +134,9 @@ export function StepEditor({
             case 'hr_reserve': {
                 // Karvonen: FCobj = FCreposo + % × (FCmax - FCreposo)
                 if (!athleteProfile?.restHR || !athleteProfile?.maxHR) {
+                    if (!athleteId) {
+                        return t('noAthleteSelectedHrReserve');
+                    }
                     return t('noAthleteHrReserveData');
                 }
                 if (!min || !max) return null;
@@ -145,6 +153,9 @@ export function StepEditor({
                 if (!zone) return null;
 
                 if (!athleteProfile?.vam) {
+                    if (!athleteId) {
+                        return `${t('zone')} ${min} - ${t('noAthleteSelectedVam')}`;
+                    }
                     return `${t('zone')} ${min} - ${t('noAthleteVamData')}`;
                 }
 
@@ -217,7 +228,7 @@ export function StepEditor({
                         value={step.type}
                         onValueChange={(value) => onUpdate({ type: value as WorkoutBlock['type'] })}
                     >
-                        <SelectTrigger className="w-[140px] bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-2 rounded-t-md focus:ring-0 text-[#2b3437] dark:text-[#f8f9fa] text-sm font-semibold transition-colors">
+                        <SelectTrigger className="w-35 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-2 rounded-t-md focus:ring-0 text-[#2b3437] dark:text-[#f8f9fa] text-sm font-semibold transition-colors">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -243,7 +254,7 @@ export function StepEditor({
                         }
                         }
                     >
-                        <SelectTrigger className="w-[120px] bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-2 rounded-t-md focus:ring-0 text-[#2b3437] dark:text-[#f8f9fa] text-sm font-semibold transition-colors">
+                        <SelectTrigger className="w-30 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-2 rounded-t-md focus:ring-0 text-[#2b3437] dark:text-[#f8f9fa] text-sm font-semibold transition-colors">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -257,7 +268,7 @@ export function StepEditor({
             <div className="grid grid-cols-2 gap-8">
                 {/* Duration */}
                 <div className="min-w-0">
-                    <Label className="text-[10px] font-semibold text-[#8b9bb4] tracking-[0.05em] uppercase mb-3 block">
+                    <Label className="text-[10px] font-semibold text-[#8b9bb4] tracking-wider uppercase mb-3 block">
                         {t('stepDuration')}
                     </Label>
                     <div className="flex items-baseline gap-2">
@@ -521,7 +532,7 @@ export function StepEditor({
 
                         {/* Target Type Selector */}
                         <Select
-                            value={step.target.type}
+                            value={step.target.type || 'vam_zone'}
                             onValueChange={(value: TargetType) => {
                                 const defaults = getDefaultAndMax(value);
                                 onUpdate({ target: { type: value, min: defaults.min, max: defaults.max } });

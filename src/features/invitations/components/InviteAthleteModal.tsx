@@ -21,6 +21,7 @@ import { Check, Copy, MessageCircle, Upload, AlertCircle, Loader2 } from 'lucide
 import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
 import { trackInvitationCreated } from '@/lib/analytics/events';
 import { useApiError } from '@/hooks/useApiError';
+import { TeamInviteLinkManager } from '@/features/invitations/components/TeamInviteLinkManager';
 
 interface InviteAthleteModalProps {
     open: boolean;
@@ -159,9 +160,10 @@ export function InviteAthleteModal({ open, onClose }: InviteAthleteModalProps) {
 
                 {!invitationLink && !bulkSummary && (
                     <Tabs defaultValue="single" className="w-full mt-4">
-                        <TabsList className="grid w-full grid-cols-2 bg-endurix-black/8 dark:bg-white/8">
+                        <TabsList className="grid w-full grid-cols-3 bg-endurix-black/8 dark:bg-white/8">
                             <TabsTrigger value="single" className="uppercase tracking-widest text-[10px] data-[state=active]:bg-endurix-orange data-[state=active]:text-white" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{tAthlete('tabs.single')}</TabsTrigger>
                             <TabsTrigger value="bulk" className="uppercase tracking-widest text-[10px] data-[state=active]:bg-endurix-orange data-[state=active]:text-white" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{tAthlete('tabs.bulk')}</TabsTrigger>
+                            <TabsTrigger value="teamLink" className="uppercase tracking-widest text-[10px] data-[state=active]:bg-endurix-orange data-[state=active]:text-white" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{tAthlete('tabs.teamLink')}</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="single" className="pt-4 space-y-4">
@@ -228,17 +230,21 @@ export function InviteAthleteModal({ open, onClose }: InviteAthleteModalProps) {
                                 <Button type="button" variant="outline-brand" className="uppercase tracking-widest text-[10px]" onClick={handleClose}>
                                     {tCommon('cancel')}
                                 </Button>
-                                <Button
-                                    variant="orange"
-                                    className="uppercase tracking-widest text-[10px]"
-                                    onClick={onSubmitBulk}
-                                    disabled={isProcessingBulk || bulkEmails.length === 0}
-                                >
-                                    {isProcessingBulk ? (
-                                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {tAthlete('bulk.processing', { count: bulkEmails.length })}</>
-                                    ) : tAthlete('create')}
-                                </Button>
-                            </div>
+                            <Button
+                                variant="orange"
+                                className="uppercase tracking-widest text-[10px]"
+                                onClick={onSubmitBulk}
+                                disabled={isProcessingBulk || bulkEmails.length === 0}
+                            >
+                                {isProcessingBulk ? (
+                                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {tAthlete('bulk.processing', { count: bulkEmails.length })}</>
+                                ) : tAthlete('create')}
+                            </Button>
+                        </div>
+                    </TabsContent>
+
+                        <TabsContent value="teamLink" className="pt-4 space-y-4">
+                            <TeamInviteLinkManager onClose={handleClose} />
                         </TabsContent>
                     </Tabs>
                 )}

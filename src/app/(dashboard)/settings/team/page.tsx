@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { TeamSettingsForm } from '@/features/settings/components/TeamSettingsForm';
 import { TeamSettings } from '@/features/settings/types';
+import { TeamInviteLinksCard } from '@/features/settings/components/TeamInviteLinksCard';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,15 +50,21 @@ export default async function TeamSettingsPage() {
             workoutMatcherModel: settingsData.workout_matcher_model,
             complianceModel: settingsData.compliance_model,
         },
+        limits: {
+            maxAthletes: settingsData.max_athletes ?? null,
+        },
     } : {
         thresholds: { rpeMismatchThreshold: 2, lowComplianceThreshold: 50 },
         branding: { teamName: 'Endurix Team', logoUrl: '', primaryColor: '#1f2937' },
         defaultModels: { workoutMatcherModel: 'baseline-v1', complianceModel: 'baseline-v1' },
+        limits: { maxAthletes: null },
     };
 
     return (
-        <div className="p-4 sm:p-6 lg:p-8">
+        <div className="p-4 sm:p-6 lg:p-8 space-y-6">
             <TeamSettingsForm initialSettings={initialSettings} />
+            <TeamInviteLinksCard />
         </div>
     );
 }
+

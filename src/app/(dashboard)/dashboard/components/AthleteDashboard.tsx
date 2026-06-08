@@ -3,7 +3,7 @@ import { appLogger } from '@/lib/app-logger';
 
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { format, startOfWeek, endOfWeek, subWeeks, addWeeks } from 'date-fns';
+import { format, startOfWeek, endOfWeek, subWeeks, addWeeks, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import api from '@/lib/axios';
 import { useTranslations } from 'next-intl';
@@ -12,14 +12,17 @@ import { Zap, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { AthleteWeeklyCalendar } from '@/components/dashboard/AthleteWeeklyCalendar';
 import { StatCard, DashboardCard, DashboardCardHeaderDots, MonospaceLabel } from '@/components/dashboard';
 import { PerformanceTrendChart } from '@/components/dashboard/PerformanceTrendChart';
+import { LoadMetricsTrendChart } from '@/components/dashboard/LoadMetricsTrendChart';
 import { CoachNotes } from '@/components/dashboard/CoachNotes';
 import { HeartRateZones } from '@/features/profiles/components/HeartRateZones';
+import { PaceZones } from '@/features/profiles/components/PaceZones';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 
 import { stravaService } from '@/features/strava/services/strava.service';
 import { racesService } from '@/features/races/services/races.service';
 import { AssignRaceModal } from '@/features/races/components/AssignRaceModal';
+import { athletesService, LoadMetricsRange, LoadMetricsResponse } from '@/features/users/services/athletes.service';
 import { normalizeActivityType } from '@/utils/activity-utils';
 import { NextRaces } from './NextRaces';
 import { NewActivityFeedbackModal } from './NewActivityFeedbackModal';
@@ -33,6 +36,7 @@ interface AthleteDetails {
     athleteProfile?: {
         coachNotes?: string;
         hrZones?: HeartRateZonesType;
+        vam?: string;
     } | null;
 }
 
@@ -64,6 +68,10 @@ export default function AthleteDashboard({ user, initialData = null }: AthleteDa
     const [isAssignRaceModalOpen, setIsAssignRaceModalOpen] = useState(false);
     const [pendingFeedbackActivity, setPendingFeedbackActivity] = useState<Activity | null>(null);
     const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+    const [loadMetricsData, setLoadMetricsData] = useState<LoadMetricsResponse | null>(null);
+    const [loadRange, setLoadRange] = useState<LoadMetricsRange>(30);
+    const [loadMetricsLoading, setLoadMetricsLoading] = useState(true);
+    const [isSwitchingLoadRange, setIsSwitchingLoadRange] = useState(false);
 
     const calculatePerformanceTrend = useCallback((assignmentsData: TrainingAssignment[], activitiesData: Activity[]) => {
         const trend = [];
@@ -156,6 +164,29 @@ export default function AthleteDashboard({ user, initialData = null }: AthleteDa
     }, [fetchData, initialData]);
 
     useEffect(() => {
+        if (!user) return;
+        let cancelled = false;
+        const load = async () => {
+            try {
+                setLoadMetricsLoading(true);
+                const res = await athletesService.getLoadMetrics(user.id, loadRange);
+                if (!cancelled) setLoadMetricsData(res.data);
+            } catch (error) {
+                appLogger.error('Failed to fetch load metrics:', error);
+            } finally {
+                if (!cancelled) {
+                    setLoadMetricsLoading(false);
+                    setIsSwitchingLoadRange(false);
+                }
+            }
+        };
+        void load();
+        return () => {
+            cancelled = true;
+        };
+    }, [user, loadRange]);
+
+    useEffect(() => {
         if (!activities.length) {
             setPendingFeedbackActivity(null);
             setIsFeedbackModalOpen(false);
@@ -240,6 +271,50 @@ export default function AthleteDashboard({ user, initialData = null }: AthleteDa
         };
     }, [activities, assignments, currentWeekStart]);
 
+    const loadMetrics = useMemo(() => {
+        const riskKey = loadMetricsData?.current.risk || 'insufficientData';
+        const riskClassName =
+            riskKey === 'high'
+                ? 'bg-red-500/10 text-red-600 dark:text-red-300'
+                : riskKey === 'moderate'
+                    ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300'
+                    : riskKey === 'lowStimulus'
+                        ? 'bg-sky-500/10 text-sky-700 dark:text-sky-300'
+                        : riskKey === 'balanced'
+                            ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+                            : 'bg-muted text-muted-foreground';
+
+        return {
+            ctl: loadMetricsData?.current.ctl ?? 0,
+            atl: loadMetricsData?.current.atl ?? 0,
+            tsb: loadMetricsData?.current.tsb ?? 0,
+            acwr: loadMetricsData?.current.acwr ?? 0,
+            riskKey,
+            riskClassName,
+            partial: loadMetricsData?.meta.partial ?? false,
+            backfillStatus: loadMetricsData?.meta.backfillStatus ?? 'idle',
+            historyDaysAvailable: loadMetricsData?.meta.historyDaysAvailable ?? 0,
+        };
+    }, [loadMetricsData]);
+
+    const loadTrendData = useMemo(
+        () => (loadMetricsData?.series || []).map((point) => ({
+            ...point,
+            date: format(parseISO(point.date), 'd MMM', { locale: es }),
+        })),
+        [loadMetricsData]
+    );
+
+    const handleLoadRangeChange = (nextRange: LoadMetricsRange) => {
+        if (nextRange === loadRange) return;
+        setIsSwitchingLoadRange(true);
+        setLoadRange(nextRange);
+    };
+
+    const showLoadSkeleton = loadMetricsLoading && !loadMetricsData;
+
+    const formatTsb = (tsb: number) => (tsb > 0 ? `+${tsb.toFixed(1)}` : tsb.toFixed(1));
+
     if (loading) {
         return (
             <div className="min-h-screen bg-endurix-paper dark:bg-background">
@@ -276,11 +351,59 @@ export default function AthleteDashboard({ user, initialData = null }: AthleteDa
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 w-full xl:w-auto">
-                        <StatCard label={t('athletes.detail.weeklyVolume')} value={weeklyStats.distance} />
-                        <StatCard label={t('athletes.detail.weeklyTime')} value={weeklyStats.time} />
-                        <StatCard label={t('activities.detail.metrics.elevationGain')} value={weeklyStats.elevation} />
-                        <StatCard label={t('athletes.detail.complianceRate')} value={weeklyStats.compliance} />
+                    <div className="space-y-4 w-full xl:w-auto">
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                            <StatCard label={t('athletes.detail.weeklyVolume')} value={weeklyStats.distance} />
+                            <StatCard label={t('athletes.detail.weeklyTime')} value={weeklyStats.time} />
+                            <StatCard label={t('activities.detail.metrics.elevationGain')} value={weeklyStats.elevation} />
+                            <StatCard label={t('athletes.detail.complianceRate')} value={weeklyStats.compliance} />
+                        </div>
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                            {showLoadSkeleton ? (
+                                Array.from({ length: 4 }).map((_, idx) => (
+                                    <Skeleton
+                                        key={`fitness-skeleton-${idx}`}
+                                        className="h-[112px] border border-endurix-black/20 dark:border-white/20 bg-white dark:bg-white/5"
+                                    />
+                                ))
+                            ) : (
+                                <>
+                                    <StatCard
+                                        label={t('dashboard.fitness.fitnessCard')}
+                                        value={loadMetrics.ctl.toFixed(1)}
+                                    />
+                                    <StatCard
+                                        label={t('dashboard.fitness.fatigueCard')}
+                                        value={loadMetrics.atl.toFixed(1)}
+                                    />
+                                    <StatCard
+                                        label={t('dashboard.fitness.formCard')}
+                                        value={formatTsb(loadMetrics.tsb)}
+                                        chipColor={
+                                            loadMetrics.tsb > 5
+                                                ? 'green'
+                                                : loadMetrics.tsb < -5
+                                                    ? 'red'
+                                                    : 'orange'
+                                        }
+                                    />
+                                    <StatCard
+                                        label={t('dashboard.fitness.riskCard')}
+                                        value={loadMetrics.acwr.toFixed(2)}
+                                        chip={t(`dashboard.fitness.loadRisk.${loadMetrics.riskKey}`)}
+                                        chipColor={
+                                            loadMetrics.riskKey === 'high'
+                                                ? 'red'
+                                                : loadMetrics.riskKey === 'moderate'
+                                                    ? 'orange'
+                                                    : loadMetrics.riskKey === 'balanced'
+                                                        ? 'green'
+                                                        : 'neutral'
+                                        }
+                                    />
+                                </>
+                            )}
+                        </div>
                     </div>
                 </div>
 
@@ -337,6 +460,68 @@ export default function AthleteDashboard({ user, initialData = null }: AthleteDa
                 </div>
 
                 <DashboardCard
+                    headerLabel="Fitness"
+                    headerAccessory={<DashboardCardHeaderDots />}
+                    bodyClassName="p-0"
+                >
+                    <div className="px-6 pt-4 flex flex-wrap items-end justify-between gap-3">
+                        <div>
+                            <MonospaceLabel color="muted" size="sm" className="block mb-1">
+                                {t('dashboard.fitness.loadChartSubtitle')}
+                            </MonospaceLabel>
+                            <h3
+                                className="text-xl lg:text-2xl font-bold text-endurix-black dark:text-foreground uppercase tracking-tight"
+                                style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                            >
+                                {t('dashboard.fitness.loadChartTitle')}
+                            </h3>
+                        </div>
+                        <span
+                            className={`text-[10px] font-bold tracking-widest uppercase border px-2 py-0.5 ${loadMetrics.riskClassName}`}
+                            style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                        >
+                            {t(`dashboard.fitness.loadRisk.${loadMetrics.riskKey}`)}
+                        </span>
+                    </div>
+                    <div className="px-6 py-3 flex items-center justify-between gap-3 flex-wrap">
+                        <div className="flex items-center gap-2">
+                            {([7, 30, 90] as const).map((range) => (
+                                <Button
+                                    key={range}
+                                    type="button"
+                                    variant={loadRange === range ? 'orange' : 'outline-brand'}
+                                    size="xs"
+                                    className="uppercase tracking-widest"
+                                    onClick={() => handleLoadRangeChange(range)}
+                                    disabled={isSwitchingLoadRange}
+                                >
+                                    {range}D
+                                </Button>
+                            ))}
+                        </div>
+                        <span
+                            className="text-[10px] text-muted-foreground tracking-widest uppercase"
+                            style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                        >
+                            {showLoadSkeleton
+                                ? t('dashboard.fitness.loadStatus.loading')
+                                : loadMetrics.backfillStatus === 'queued' || loadMetrics.backfillStatus === 'running'
+                                    ? t('dashboard.fitness.loadStatus.syncing')
+                                    : loadMetrics.partial
+                                        ? t('dashboard.fitness.loadStatus.partial', { days: loadMetrics.historyDaysAvailable })
+                                        : t('dashboard.fitness.loadStatus.ready')}
+                        </span>
+                    </div>
+                    <div className="px-2 pb-4">
+                        {showLoadSkeleton ? (
+                            <Skeleton className="h-72 w-full" />
+                        ) : (
+                            <LoadMetricsTrendChart data={loadTrendData} />
+                        )}
+                    </div>
+                </DashboardCard>
+
+                <DashboardCard
                     headerLabel="Performance"
                     headerAccessory={<DashboardCardHeaderDots />}
                     bodyClassName="p-0"
@@ -353,20 +538,31 @@ export default function AthleteDashboard({ user, initialData = null }: AthleteDa
                         <div className="p-6">
                             <PerformanceTrendChart data={performanceData} />
                         </div>
-                        <div className="p-6">
-                            <h4
-                                className="mb-6 text-lg font-bold uppercase tracking-tight text-endurix-black dark:text-foreground"
-                                style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
-                            >
-                                {t('activities.detail.zones.hrTitle')}
-                            </h4>
-                            {athleteDetails?.athleteProfile?.hrZones ? (
-                                <HeartRateZones zones={athleteDetails.athleteProfile.hrZones} />
-                            ) : (
-                                <p className="text-sm text-endurix-black/50 dark:text-muted-foreground">
-                                    {t('activities.detail.zones.noHrData')}
-                                </p>
-                            )}
+                        <div className="p-6 space-y-8 divide-y divide-endurix-black/8 dark:divide-border">
+                            <div>
+                                <h4
+                                    className="mb-6 text-lg font-bold uppercase tracking-tight text-endurix-black dark:text-foreground"
+                                    style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                                >
+                                    {t('dashboard.fitness.hrZonesTitle')}
+                                </h4>
+                                {athleteDetails?.athleteProfile?.hrZones ? (
+                                    <HeartRateZones zones={athleteDetails.athleteProfile.hrZones} />
+                                ) : (
+                                    <p className="text-sm text-endurix-black/50 dark:text-muted-foreground">
+                                        {t('activities.detail.zones.noHrData')}
+                                    </p>
+                                )}
+                            </div>
+                            <div className="pt-6">
+                                <h4
+                                    className="mb-6 text-lg font-bold uppercase tracking-tight text-endurix-black dark:text-foreground"
+                                    style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                                >
+                                    {t('dashboard.fitness.paceZonesTitle')}
+                                </h4>
+                                <PaceZones vam={athleteDetails?.athleteProfile?.vam} />
+                            </div>
                         </div>
                     </div>
                 </DashboardCard>

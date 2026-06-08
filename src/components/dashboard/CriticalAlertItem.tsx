@@ -2,6 +2,7 @@
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 interface CriticalAlertItemProps {
@@ -23,6 +24,7 @@ interface CriticalAlertItemProps {
 }
 
 export function CriticalAlertItem({
+    athleteId,
     athleteName,
     alertType,
     timestamp,
@@ -78,7 +80,14 @@ export function CriticalAlertItem({
                 <h4
                     className="text-sm font-bold uppercase tracking-widest text-endurix-black dark:text-foreground"
                     style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
-                >{athleteName}</h4>
+                >
+                    <Link
+                        href={`/athletes/${athleteId}`}
+                        className="hover:text-endurix-orange hover:underline transition-colors"
+                    >
+                        {athleteName}
+                    </Link>
+                </h4>
                 {details && (
                     <p
                         className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground mt-1"
