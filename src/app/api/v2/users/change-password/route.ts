@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/api-helpers';
 import { appLogger } from '@/lib/app-logger';
 import { apiError } from '@/lib/api/error-response';
+import { changePasswordSchema, validateBody } from '@/lib/validation/schemas';
 
 /**
  * Change Password Endpoint
@@ -18,20 +19,26 @@ export async function PATCH(request: NextRequest) {
         }
 
         const { user, supabase } = authResult;
-        const { currentPassword, newPassword } = await request.json();
-
-        // Validation
-        if (!currentPassword || !newPassword) {
-            return NextResponse.json(apiError('VALIDATION_CURRENT_PASSWORD_AND_NEW_PASSWORD_ARE_REQUIRED'),
+        
+        let body: { currentPassword: string; newPassword: string };
+        try {
+            const rawBody = await request.json();
+            const { data, error } = validateBody(changePasswordSchema, rawBody);
+            if (error) {
+                return NextResponse.json(
+                    apiError('VALIDATION_ERROR', error.issues.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')),
+                    { status: 400 }
+                );
+            }
+            body = data!;
+        } catch {
+            return NextResponse.json(
+                apiError('INVALID_JSON', 'Invalid JSON body'),
                 { status: 400 }
             );
         }
 
-        if (newPassword.length < 6) {
-            return NextResponse.json(apiError('VALIDATION_NEW_PASSWORD_MUST_BE_AT_LEAST_6_CHARACTERS'),
-                { status: 400 }
-            );
-        }
+        const { currentPassword, newPassword } = body;
 
         // Note: We don't verify the current password here because:
         // 1. The user is already authenticated (verified by requireAuth)

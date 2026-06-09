@@ -3,45 +3,62 @@ import { createServiceRoleClient } from '@/lib/supabase/server';
 import { appLogger } from '@/lib/app-logger';
 import { apiError } from '@/lib/api/error-response';
 import { trackSignupStarted, trackSignupCompleted, trackSignupFailed } from '@/lib/analytics/events';
+import { buildRateLimitKey, consumeRateLimit, getClientIpFromHeaders } from '@/lib/api/rate-limit';
+import { z } from 'zod';
+import { acceptInviteSchema, validateBody } from '@/lib/validation/schemas';
 
-interface AcceptBody {
-    email: string;
-    name: string;
-    password: string;
-}
-
-const EMAIL_REGEX = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+const ACCEPT_INVITE_RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
+const ACCEPT_INVITE_RATE_LIMIT_MAX_REQUESTS = 10;
 
 export async function POST(
     request: NextRequest,
     { params }: { params: Promise<{ token: string }> }
 ) {
+    const clientIp = getClientIpFromHeaders(request.headers);
+    const rateLimitKey = buildRateLimitKey('/api/join/[token]/accept', clientIp, null);
+    const rateLimit = consumeRateLimit({
+        key: rateLimitKey,
+        limit: ACCEPT_INVITE_RATE_LIMIT_MAX_REQUESTS,
+        windowMs: ACCEPT_INVITE_RATE_LIMIT_WINDOW_MS,
+    });
+
+    const headers = new Headers();
+    headers.set('x-ratelimit-limit', String(rateLimit.limit));
+    headers.set('x-ratelimit-remaining', String(rateLimit.remaining));
+    headers.set('x-ratelimit-reset', String(Math.floor(rateLimit.resetAt / 1000)));
+    headers.set('retry-after', String(rateLimit.retryAfterSeconds));
+
     try {
         const { token } = await params;
         if (!token || typeof token !== 'string' || token.length < 16) {
-            return NextResponse.json(apiError('INVALID_LINK', 'Invalid invite link.'), { status: 400 });
+            return NextResponse.json(apiError('INVALID_LINK', 'Invalid invite link.'), { status: 400, headers });
         }
 
-        let body: AcceptBody;
+        if (!rateLimit.allowed) {
+            return NextResponse.json(apiError('RATE_LIMIT_EXCEEDED'), {
+                status: 429,
+                headers,
+            });
+        }
+
+        let body: z.infer<typeof acceptInviteSchema>;
         try {
-            body = (await request.json()) as AcceptBody;
+            const rawBody = await request.json();
+            const { data, error } = validateBody(acceptInviteSchema, rawBody);
+            if (error) {
+                return NextResponse.json(
+                    apiError('VALIDATION_ERROR', error.issues.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')),
+                    { status: 400, headers }
+                );
+            }
+            body = data!;
         } catch {
-            return NextResponse.json(apiError('INVALID_BODY', 'Invalid request body.'), { status: 400 });
+            return NextResponse.json(apiError('INVALID_BODY', 'Invalid request body.'), { status: 400, headers });
         }
 
-        const email = String(body.email ?? '').trim().toLowerCase();
-        const name = String(body.name ?? '').trim();
-        const password = String(body.password ?? '');
-
-        if (!EMAIL_REGEX.test(email)) {
-            return NextResponse.json(apiError('INVALID_EMAIL', 'A valid email is required.'), { status: 400 });
-        }
-        if (name.length < 2) {
-            return NextResponse.json(apiError('INVALID_NAME', 'Name must be at least 2 characters.'), { status: 400 });
-        }
-        if (password.length < 6) {
-            return NextResponse.json(apiError('INVALID_PASSWORD', 'Password must be at least 6 characters.'), { status: 400 });
-        }
+        const email = body.email.trim().toLowerCase();
+        const name = body.name.trim();
+        const password = body.password;
 
         const adminClient = createServiceRoleClient();
 
@@ -52,7 +69,7 @@ export async function POST(
             .maybeSingle();
 
         if (existingProfile) {
-            return NextResponse.json(apiError('EMAIL_TAKEN', 'An account with this email already exists.'), { status: 409 });
+            return NextResponse.json(apiError('EMAIL_TAKEN', 'An account with this email already exists.'), { status: 409, headers });
         }
 
         const { data: consumed, error: consumeError } = await adminClient.rpc('consume_team_invite_link', {
@@ -64,18 +81,18 @@ export async function POST(
             appLogger.warn('join.consume_failed', { tokenPrefix: token.slice(0, 8), message });
 
             if (message.includes('link_not_found')) {
-                return NextResponse.json(apiError('LINK_NOT_FOUND', 'This invite link is invalid.'), { status: 404 });
+                return NextResponse.json(apiError('LINK_NOT_FOUND', 'This invite link is invalid.'), { status: 404, headers });
             }
             if (message.includes('link_revoked')) {
-                return NextResponse.json(apiError('LINK_REVOKED', 'This invite link has been disabled.'), { status: 410 });
+                return NextResponse.json(apiError('LINK_REVOKED', 'This invite link has been disabled.'), { status: 410, headers });
             }
             if (message.includes('link_expired')) {
-                return NextResponse.json(apiError('LINK_EXPIRED', 'This invite link has expired.'), { status: 410 });
+                return NextResponse.json(apiError('LINK_EXPIRED', 'This invite link has expired.'), { status: 410, headers });
             }
             if (message.includes('link_max_uses')) {
-                return NextResponse.json(apiError('LINK_MAX_USES', 'This invite link has reached its usage limit.'), { status: 410 });
+                return NextResponse.json(apiError('LINK_MAX_USES', 'This invite link has reached its usage limit.'), { status: 410, headers });
             }
-            return NextResponse.json(apiError('INVALID_LINK', 'This invite link cannot be used.'), { status: 400 });
+            return NextResponse.json(apiError('INVALID_LINK', 'This invite link cannot be used.'), { status: 400, headers });
         }
 
         const linkRow = consumed as { id: string; team_id: string; role: string };
@@ -98,7 +115,7 @@ export async function POST(
                 if (currentAthletes !== null && currentAthletes >= teamSettings.max_athletes) {
                     return NextResponse.json(
                         apiError('TEAM_FULL', `El equipo ha alcanzado el límite de ${teamSettings.max_athletes} atletas. Contacta al administrador.`),
-                        { status: 403 }
+                        { status: 403, headers }
                     );
                 }
             }
@@ -115,7 +132,7 @@ export async function POST(
         if (authError || !authData.user) {
             appLogger.error('join.create_user_failed', { authError });
             trackSignupFailed({ role: linkRow.role, method: 'team_link', reason: authError?.message ?? 'create_user_failed' });
-            return NextResponse.json(apiError('FAILED_TO_CREATE_USER', 'Could not create the user account.'), { status: 500 });
+            return NextResponse.json(apiError('FAILED_TO_CREATE_USER', 'Could not create the user account.'), { status: 500, headers });
         }
 
         const newUserId = authData.user.id;
@@ -170,9 +187,9 @@ export async function POST(
 
         trackSignupCompleted({ role: linkRow.role, method: 'team_link' });
 
-        return NextResponse.json({ success: true, email });
+        return NextResponse.json({ success: true, email }, { headers });
     } catch (error: unknown) {
         appLogger.error('join.accept_unexpected', { error });
-        return NextResponse.json(apiError('INTERNAL_ERROR'), { status: 500 });
+        return NextResponse.json(apiError('INTERNAL_ERROR'), { status: 500, headers });
     }
 }

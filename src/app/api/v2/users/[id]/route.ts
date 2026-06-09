@@ -3,6 +3,8 @@ import { requireRole } from '@/lib/supabase/api-helpers';
 import { appLogger } from '@/lib/app-logger';
 import { apiError } from '@/lib/api/error-response';
 import { appendAdminActionLog } from '@/lib/audit/admin-action-log';
+import { z } from 'zod';
+import { updateUserSchema, validateBody } from '@/lib/validation/schemas';
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { user, supabase, profile, response } = await requireRole(['ADMIN', 'COACH']);
@@ -13,7 +15,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   try {
     const { data: targetUser } = await supabase
       .from('profiles')
-      .select('team_id')
+      .select('team_id, coach_id')
       .eq('id', userId)
       .single();
         
@@ -26,14 +28,34 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return NextResponse.json(apiError('AUTH_FORBIDDEN'), { status: 403 });
     }
 
-    const body = (await request.json()) as {
-      name?: string;
-      coach_id?: string | null;
-    };
+    // Coach permission check: coaches can only manage their own athletes
+    if (profile!.role === 'COACH') {
+      const targetCoachId = targetUser.coach_id;
+      // Allow if athlete has no coach assigned (coach_id is null) or coach_id matches the coach's user ID
+      if (targetCoachId !== null && targetCoachId !== user!.id) {
+        return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Coaches can only manage their own athletes'), { status: 403 });
+      }
+    }
+
+    let body: z.infer<typeof updateUserSchema>;
+    try {
+      const rawBody = await request.json();
+      const { data, error } = validateBody(updateUserSchema, rawBody);
+      if (error) {
+        return NextResponse.json(
+          apiError('VALIDATION_ERROR', error.issues.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')),
+          { status: 400 }
+        );
+      }
+      body = data!;
+    } catch {
+      return NextResponse.json(apiError('INVALID_JSON', 'Invalid JSON body'), { status: 400 });
+    }
+
     const updateData: Partial<{ name: string; coach_id: string | null }> = {};
     if (body.name !== undefined) updateData.name = body.name;
-    // coach_id changes remain allowed only where direct coach responsibility is needed
-    if (body.coach_id !== undefined && (profile!.role === 'ADMIN' || profile!.role === 'COACH')) {
+    // Only admins can change coach_id assignment
+    if (body.coach_id !== undefined && profile!.role === 'ADMIN') {
         updateData.coach_id = body.coach_id === 'none' ? null : body.coach_id;
     }
 
@@ -78,7 +100,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   try {
     const { data: targetUser } = await supabase
       .from('profiles')
-      .select('team_id')
+      .select('team_id, coach_id')
       .eq('id', userId)
       .single();
         
@@ -89,6 +111,15 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     // Both Admins and Coaches can delete athletes within their team
     if (targetUser.team_id !== profile!.team_id) {
       return NextResponse.json(apiError('AUTH_FORBIDDEN'), { status: 403 });
+    }
+
+    // Coach permission check: coaches can only delete their own athletes
+    if (profile!.role === 'COACH') {
+      const targetCoachId = targetUser.coach_id;
+      // Allow if athlete has no coach assigned (coach_id is null) or coach_id matches the coach's user ID
+      if (targetCoachId !== null && targetCoachId !== user!.id) {
+        return NextResponse.json(apiError('AUTH_FORBIDDEN', 'Coaches can only delete their own athletes'), { status: 403 });
+      }
     }
 
     // Supabase auth.users can only be deleted by the service role.
