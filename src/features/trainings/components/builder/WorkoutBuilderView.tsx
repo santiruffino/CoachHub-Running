@@ -14,7 +14,8 @@ import { Slider } from '@/components/ui/slider';
 import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
 import { useTranslations } from 'next-intl';
 import { useApiError } from '@/hooks/useApiError';
-import { ArrowLeft, ArrowRight, Check, Calendar } from 'lucide-react';
+import { ArrowRight, Calendar } from 'lucide-react';
+import { BackButton } from '@/components/ui/BackButton';
 import api from '@/lib/axios';
 
 interface WorkoutBuilderViewProps {
@@ -131,14 +132,7 @@ export function WorkoutBuilderView({ initialWorkout, athleteId }: WorkoutBuilder
                     <div className="h-full overflow-y-auto bg-[#f8f9fa] dark:bg-[#0a0f14]">
                         <div className="max-w-7xl mx-auto px-6 py-8">
                             <div className="flex items-center justify-between mb-8">
-                                <Button
-                                    variant="outline"
-                                    onClick={() => setCurrentStep(1)}
-                                    className="flex items-center gap-2"
-                                >
-                                    <ArrowLeft className="w-4 h-4" />
-                                    {t('backToBuilder')}
-                                </Button>
+                                <BackButton onClick={() => setCurrentStep(1)} label={t('backToBuilder')} showLabel />
                             </div>
 
                             <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-6">

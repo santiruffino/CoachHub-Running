@@ -19,8 +19,8 @@ interface InviteResult {
 
 export async function POST(request: NextRequest) {
   try {
-    // Only coaches can create invitations
-    const { user, profile, response } = await requireRole('COACH');
+    // Only administrators can create bulk invitations
+    const { user, profile, response } = await requireRole('ADMIN');
 
     if (response) {
       return response;

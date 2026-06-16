@@ -12,7 +12,8 @@ import { Switch } from '@/components/ui/switch';
 import { groupsService } from '@/features/groups/services/groups.service';
 import { racesService } from '@/features/races/services/races.service';
 import { Race } from '@/interfaces/race';
-import { Loader2, ArrowLeft, Trophy } from 'lucide-react';
+import { Loader2, Trophy } from 'lucide-react';
+import { BackButton } from '@/components/ui/BackButton';
 import { useTranslations } from 'next-intl';
 
 export default function CreateGroupPage() {
@@ -90,9 +91,7 @@ export default function CreateGroupPage() {
     return (
         <div className="max-w-2xl mx-auto p-4 sm:p-6 lg:p-8 lg:pt-0">
             <div className="flex items-center gap-4 mb-8">
-                <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full">
-                    <ArrowLeft className="h-5 w-5" />
-                </Button>
+                <BackButton href="/groups" />
                 <div>
                     <h1
                         className="text-2xl sm:text-3xl font-bold uppercase tracking-tight text-endurix-black dark:text-foreground"
@@ -263,9 +262,7 @@ export default function CreateGroupPage() {
                 </div>
 
                 <div className="flex justify-end gap-4">
-                    <Button variant="ghost" type="button" onClick={() => router.back()} disabled={loading} className="font-bold uppercase tracking-widest text-xs">
-                        {tCommon('cancel')}
-                    </Button>
+                    <BackButton label={tCommon('cancel')} showLabel variant="outline" />
                     <Button type="submit" disabled={loading} variant="orange" className="px-8 font-bold uppercase tracking-widest text-xs">
                         {loading ? (
                             <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> {tForm('creating')} </>

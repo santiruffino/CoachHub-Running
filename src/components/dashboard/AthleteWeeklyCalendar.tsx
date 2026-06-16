@@ -1,22 +1,25 @@
 'use client';
 
-import { format, addDays, isSameDay } from 'date-fns';
+import { format, isSameDay, isSameMonth } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { TrainingAssignment } from '@/interfaces/training';
 import { AthleteRace } from '@/interfaces/race';
 import { Activity } from '@/interfaces/activity';
-import { Moon, Trophy } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CalendarDays, CircleCheckBig, ActivitySquare, Medal } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { normalizeActivityType } from '@/utils/activity-utils';
 import { MonospaceLabel } from '@/components/dashboard';
+import { CalendarDayColumn } from '@/components/calendar/CalendarDayColumn';
+import { CalendarRestDayPlaceholder } from '@/components/calendar/CalendarRestDayPlaceholder';
+import { useCalendarView, type CalendarView } from '@/components/calendar/useCalendarView';
+import type { ReactNode } from 'react';
 
 const FONT_MONO = { fontFamily: 'var(--font-ibm-plex-mono, monospace)' } as const;
 const FONT_DISPLAY = { fontFamily: 'var(--font-exo-2, sans-serif)' } as const;
-
 interface AthleteWeeklyCalendarProps {
-    weekStart: Date;
+    weekStart?: Date;
     assignments: TrainingAssignment[];
     activities: Activity[];
     races?: AthleteRace[];
@@ -29,292 +32,300 @@ const formatDuration = (seconds: number) => {
     return `${m}m`;
 };
 
-const activityTypeLabel: Record<string, string> = {
-    Run: 'RUNNING',
-    WeightTraining: 'STRENGTH',
-    Workout: 'STRENGTH',
-    Ride: 'CYCLING',
-    VirtualRide: 'CYCLING',
-    Swim: 'SWIMMING',
-};
-
-function CompletedCard({ assignment, activity }: { assignment: TrainingAssignment; activity: Activity }) {
-    const t = useTranslations();
-    const typeText = assignment.training.type;
-    const nameText = assignment.workout_name || assignment.training.title;
-
-    return (
-        <Link href={`/activities/${activity.id}`} className="block group">
-            <div className="bg-white dark:bg-card border border-endurix-black/12 dark:border-border border-l-2 border-l-endurix-orange p-4 flex flex-col gap-2 transition-colors hover:border-endurix-orange/50">
-                <div className="flex items-center justify-between">
-                    <span
-                        className="text-[8px] font-bold tracking-widest uppercase px-1.5 py-0.5 bg-endurix-orange/10 text-endurix-orange"
-                        style={FONT_MONO}
-                    >
-                        {typeText}
-                    </span>
-                    <span
-                        className="text-[8px] font-bold tracking-widest uppercase text-endurix-orange"
-                        style={FONT_MONO}
-                    >
-                        {t('calendar.done')}
-                    </span>
-                </div>
-
-                <h4
-                    className="text-sm font-bold text-endurix-black dark:text-foreground leading-tight line-clamp-2"
-                    style={FONT_DISPLAY}
-                >
-                    {nameText}
-                </h4>
-
-                <p className="text-[11px] text-endurix-black/50 dark:text-muted-foreground line-clamp-2 leading-relaxed">
-                    {assignment.training.description || t('calendar.customWorkout')}
-                </p>
-
-                <div className="h-px bg-endurix-black/8 dark:border-border" />
-
-                <div className="flex items-center gap-3 text-[10px] text-endurix-black/70 dark:text-muted-foreground">
-                    {activity.distance > 0 && <span>{t('common.distance_km', { distance: (activity.distance / 1000).toFixed(2) })}</span>}
-                    {activity.duration > 0 && <span>{formatDuration(activity.duration)}</span>}
-                </div>
-            </div>
-        </Link>
-    );
-}
-
-function PlannedCard({ assignment }: { assignment: TrainingAssignment }) {
-    const t = useTranslations();
-    const typeText = assignment.training.type;
-    const nameText = assignment.workout_name || assignment.training.title;
-
-    return (
-        <Link href={`/workouts/${assignment.id}`} className="block group">
-            <div className="bg-endurix-paper/50 dark:bg-muted/50 border border-endurix-black/8 dark:border-border border-l-2 border-l-endurix-black/30 p-4 flex flex-col gap-2 transition-colors hover:border-endurix-orange/50">
-                <div className="flex items-center justify-between">
-                    <span
-                        className="text-[8px] font-bold tracking-widest uppercase px-1.5 py-0.5 bg-endurix-black/8 dark:bg-white/8 text-endurix-black/70 dark:text-muted-foreground"
-                        style={FONT_MONO}
-                    >
-                        {typeText}
-                    </span>
-                </div>
-
-                <h4
-                    className="text-sm font-bold text-endurix-black dark:text-foreground leading-tight line-clamp-2"
-                    style={FONT_DISPLAY}
-                >
-                    {nameText}
-                </h4>
-
-                <p className="text-[11px] text-endurix-black/50 dark:text-muted-foreground line-clamp-2 leading-relaxed">
-                    {assignment.training.description || t('calendar.customWorkout')}
-                </p>
-            </div>
-        </Link>
-    );
-}
-
-function StandaloneActivityCard({ activity }: { activity: Activity }) {
-    const t = useTranslations();
-    const label = activityTypeLabel[activity.type] || activity.type.toUpperCase();
-
-    return (
-        <Link href={`/activities/${activity.id}`} className="block group">
-            <div className="bg-endurix-paper/50 dark:bg-muted/50 border border-endurix-black/8 dark:border-border border-l-2 border-l-endurix-orange p-4 flex flex-col gap-2 transition-colors hover:border-endurix-orange">
-                <div className="flex items-center justify-between">
-                    <span
-                        className="text-[8px] font-bold tracking-widest uppercase px-1.5 py-0.5 bg-endurix-orange/10 text-endurix-orange"
-                        style={FONT_MONO}
-                    >
-                        {label}
-                    </span>
-                    <span
-                        className="text-[8px] font-bold tracking-widest uppercase text-endurix-orange"
-                        style={FONT_MONO}
-                    >
-                        {t('calendar.strava')}
-                    </span>
-                </div>
-
-                <h4
-                    className="text-sm font-bold text-endurix-black dark:text-foreground leading-tight line-clamp-2"
-                    style={FONT_DISPLAY}
-                >
-                    {activity.title}
-                </h4>
-
-                <div className="flex items-center gap-3 text-[10px] text-endurix-black/70 dark:text-muted-foreground">
-                    {activity.distance > 0 && <span>{t('common.distance_km', { distance: (activity.distance / 1000).toFixed(2) })}</span>}
-                    {activity.duration > 0 && <span>{formatDuration(activity.duration)}</span>}
-                </div>
-            </div>
-        </Link>
-    );
-}
-
-function RaceCard({ race }: { race: AthleteRace }) {
-    const t = useTranslations();
-    const name = race.name_override || race.race?.name || t('races.athlete.defaultRaceName');
-
-    return (
-        <div className="bg-endurix-paper/50 dark:bg-muted/50 border border-endurix-black/8 dark:border-border border-l-2 border-l-endurix-orange p-4 flex flex-col gap-2 transition-colors hover:border-endurix-orange">
-            <div className="flex items-center justify-between">
-                <span
-                    className="text-[8px] font-bold tracking-widest uppercase px-1.5 py-0.5 bg-endurix-orange/10 text-endurix-orange flex items-center gap-1"
-                    style={FONT_MONO}
-                >
-                    <Trophy className="h-2 w-2" />
-                    {t('groups.targetRace')}
-                </span>
-                <span
-                    className={cn(
-                        'text-[8px] font-bold px-1.5 py-0.5 border tracking-widest uppercase',
-                        race.priority === 'A'
-                            ? 'text-endurix-orange border-endurix-orange/30'
-                            : race.priority === 'B'
-                                ? 'text-endurix-black/70 dark:text-muted-foreground border-endurix-black/20 dark:border-border'
-                                : 'text-endurix-black/50 dark:text-muted-foreground border-endurix-black/15 dark:border-border',
-                    )}
-                    style={FONT_MONO}
-                >
-                    PRIO {race.priority}
-                </span>
-            </div>
-
-            <h4
-                className="text-sm font-bold text-endurix-black dark:text-foreground leading-tight line-clamp-2"
-                style={FONT_DISPLAY}
-            >
-                {name}
-            </h4>
-
-            {race.target_time && (
-                <p className="text-[10px] text-endurix-orange font-medium">
-                    {t('races.athlete.target', { time: race.target_time })}
-                </p>
+function CompactMonthCard({
+    href,
+    label,
+    title,
+    meta,
+    tone,
+    icon,
+}: {
+    href?: string;
+    label: string;
+    title: string;
+    meta?: string;
+    tone: 'planned' | 'completed' | 'activity' | 'race';
+    icon: ReactNode;
+}) {
+    const content = (
+        <div
+            className={cn(
+                'rounded-none border p-2 text-left flex flex-col gap-1 transition-colors min-h-[76px]',
+                tone === 'completed' && 'bg-white dark:bg-card border-endurix-orange/30 border-l-2 border-l-endurix-orange',
+                tone === 'planned' && 'bg-endurix-paper/60 dark:bg-muted/50 border-endurix-black/10 dark:border-border',
+                tone === 'activity' && 'bg-endurix-paper/60 dark:bg-muted/50 border-endurix-orange/30 border-l-2 border-l-endurix-orange',
+                tone === 'race' && 'bg-endurix-orange/10 border-endurix-orange/30 border-l-2 border-l-endurix-orange',
             )}
-
-            {race.status === 'COMPLETED' && race.result_time && (
-                <div className="mt-1 py-1 px-2 bg-endurix-orange/10 text-[10px] font-bold text-endurix-orange">
-                    {t('races.athlete.resultTime')}: {race.result_time}
-                </div>
-            )}
+        >
+            <div className="flex items-center justify-between gap-2">
+                <span className="text-[8px] font-bold uppercase tracking-widest" style={FONT_MONO}>
+                    {label}
+                </span>
+                <span className="text-endurix-orange shrink-0">{icon}</span>
+            </div>
+            <div className="text-[11px] font-semibold text-endurix-black dark:text-foreground leading-tight line-clamp-2 uppercase" style={FONT_DISPLAY}>
+                {title}
+            </div>
+            {meta && <div className="text-[9px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider line-clamp-1" style={FONT_MONO}>{meta}</div>}
         </div>
     );
+
+    return href ? (
+        <Link href={href} className="block group">
+            {content}
+        </Link>
+    ) : content;
 }
 
 export function AthleteWeeklyCalendar({ weekStart, assignments, activities, races = [] }: AthleteWeeklyCalendarProps) {
     const t = useTranslations();
-    const weekDays = Array.from({ length: 7 }).map((_, i) => addDays(weekStart, i));
+    const { view, anchorDate, visibleDays, monthLabel, weekLabel, updateCalendar, navigate, goToday } = useCalendarView({
+        fallbackDate: weekStart,
+    });
 
     return (
-        <div className="w-full overflow-x-auto pb-4">
-            <div className="min-w-[1024px] grid grid-cols-7 gap-4">
-                {weekDays.map((day) => {
-                    const isToday = isSameDay(day, new Date());
-                    const dayStr = format(day, 'yyyy-MM-dd');
+        <div className="space-y-4">
+            <div className="flex items-center justify-between gap-3 bg-endurix-black/5 dark:bg-white/5 p-2 border border-endurix-black/10 dark:border-border flex-wrap">
+                <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                        <button type="button" onClick={() => navigate(-1)} className="h-8 w-8 border border-endurix-black/10 dark:border-border flex items-center justify-center hover:border-endurix-orange/40 transition-colors" aria-label="Previous period">
+                            <ChevronLeft className="h-4 w-4" />
+                        </button>
+                        <button type="button" onClick={() => navigate(1)} className="h-8 w-8 border border-endurix-black/10 dark:border-border flex items-center justify-center hover:border-endurix-orange/40 transition-colors" aria-label="Next period">
+                            <ChevronRight className="h-4 w-4" />
+                        </button>
+                    </div>
+                    <span className="text-xs font-bold tracking-widest uppercase text-endurix-black dark:text-foreground min-w-[220px] text-center" style={FONT_DISPLAY}>
+                        {view === 'month' ? monthLabel : weekLabel}
+                    </span>
+                </div>
 
-                    const dayTrainings = assignments.filter((a) => {
-                        const dateValue = a.scheduled_date || a.scheduledDate;
-                        return dateValue.split('T')[0] === dayStr;
-                    });
-
-                    const dayRaces = races.filter((r) => {
-                        const dateValue = r.date;
-                        return dateValue.split('T')[0] === dayStr;
-                    });
-
-                    const dayActivities = activities.filter(
-                        (act) => format(new Date(act.start_date), 'yyyy-MM-dd') === dayStr,
-                    );
-
-                    let totalDistance = 0;
-                    dayActivities.forEach((act) => { totalDistance += act.distance / 1000; });
-
-                    const matchedActivityIds = new Set<string>();
-                    const enrichedTrainings = dayTrainings.map((assignment) => {
-                        const matchingActivity = dayActivities.find(
-                            (act) =>
-                                !matchedActivityIds.has(String(act.id)) &&
-                                normalizeActivityType(act.type) === assignment.training.type,
-                        );
-                        if (matchingActivity) matchedActivityIds.add(String(matchingActivity.id));
-                        const isCompleted = assignment.completed || !!matchingActivity;
-                        return { assignment, matchingActivity: matchingActivity ?? null, isCompleted };
-                    });
-
-                    const standaloneActivities = dayActivities.filter((act) => !matchedActivityIds.has(String(act.id)));
-
-                    const isEmpty = dayTrainings.length === 0 && standaloneActivities.length === 0 && dayRaces.length === 0;
-
-                    return (
-                        <div
-                            key={day.toISOString()}
-                            className={cn(
-                                'flex flex-col gap-3 p-3 border transition-colors min-h-[400px]',
-                                isToday
-                                    ? 'bg-endurix-paper dark:bg-muted border-endurix-black/15 dark:border-border'
-                                    : 'bg-transparent border-endurix-black/8 dark:border-border',
-                            )}
+                <div className="flex items-center gap-2 flex-wrap justify-end">
+                    <div className="inline-flex border border-endurix-black/10 dark:border-border overflow-hidden">
+                        <button
+                            type="button"
+                            onClick={() => updateCalendar('week', anchorDate)}
+                            className={cn('h-8 px-3 text-[10px] font-bold uppercase tracking-widest', view === 'week' ? 'bg-endurix-orange text-white' : 'bg-transparent text-muted-foreground')}
+                            style={FONT_MONO}
                         >
-                            <div className="flex justify-between items-baseline mb-2">
-                                <div>
-                                    <MonospaceLabel color="muted" size="sm" className="block leading-none mb-1">
-                                        {format(day, 'EEE', { locale: es }).slice(0, 3)}
-                                    </MonospaceLabel>
-                                    <span
-                                        className={cn(
-                                            'text-xl sm:text-2xl leading-none',
-                                            isToday
-                                                ? 'text-endurix-orange'
-                                                : 'text-endurix-black dark:text-foreground',
-                                        )}
-                                        style={FONT_DISPLAY}
-                                    >
-                                        {format(day, 'd')}
-                                    </span>
+                            Week
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => updateCalendar('month', anchorDate)}
+                            className={cn('h-8 px-3 text-[10px] font-bold uppercase tracking-widest border-l border-endurix-black/10 dark:border-border', view === 'month' ? 'bg-endurix-orange text-white' : 'bg-transparent text-muted-foreground')}
+                            style={FONT_MONO}
+                        >
+                            Month
+                        </button>
+                    </div>
+                    <button type="button" onClick={goToday} className="h-8 px-3 border border-endurix-black/10 dark:border-border text-[10px] font-bold uppercase tracking-widest hover:border-endurix-orange/40 transition-colors" style={FONT_MONO}>
+                        {t('common.today')}
+                    </button>
+                </div>
+            </div>
+
+            <div className="w-full overflow-x-auto pb-4">
+                <div className="min-w-[1024px]">
+                    {view === 'month' && (
+                        <div className="grid grid-cols-7 gap-px bg-endurix-black/10 dark:bg-border">
+                            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((label) => (
+                                <div key={label} className="bg-endurix-paper dark:bg-card px-2 py-1 text-[9px] font-bold uppercase tracking-widest text-muted-foreground text-center" style={FONT_MONO}>
+                                    {label}
                                 </div>
-                                <MonospaceLabel color="muted" size="xs">
-                                    {totalDistance > 0
-                                        ? t('common.distance_km', { distance: totalDistance.toFixed(1) })
-                                        : t('common.distance_km', { distance: '0.0' })}
-                                </MonospaceLabel>
-                            </div>
+                            ))}
+                        </div>
+                    )}
 
-                            <div className="space-y-3 flex-1">
-                                {dayRaces.map((race) => (
-                                    <RaceCard key={race.id} race={race} />
-                                ))}
+                    <div className={view === 'month' ? 'grid grid-cols-7 gap-px bg-endurix-black/10 dark:bg-border' : 'grid grid-cols-7 gap-4'}>
+                        {visibleDays.map((day) => {
+                            const isToday = isSameDay(day, new Date());
+                            const isCurrentMonth = view === 'month' ? isSameMonth(day, anchorDate) : true;
+                            const dayStr = format(day, 'yyyy-MM-dd');
 
-                                {isEmpty && (
-                                    <div className="h-32 mt-6 border border-dashed border-endurix-black/15 dark:border-border flex flex-col gap-2 items-center justify-center bg-transparent">
-                                        <Moon className="w-5 h-5 text-endurix-black/30 dark:text-muted-foreground/50" />
-                                        <MonospaceLabel color="muted" size="xs">
-                                            {t('calendar.restDay')}
-                                        </MonospaceLabel>
-                                    </div>
-                                )}
+                            const dayTrainings = assignments.filter((a) => {
+                                const dateValue = a.scheduled_date || a.scheduledDate;
+                                return dateValue.split('T')[0] === dayStr;
+                            });
 
-                                {enrichedTrainings.map(({ assignment, matchingActivity, isCompleted }) =>
-                                    isCompleted && matchingActivity ? (
-                                        <CompletedCard
-                                            key={assignment.id}
-                                            assignment={assignment}
-                                            activity={matchingActivity}
+                            const dayRaces = races.filter((r) => r.date.split('T')[0] === dayStr);
+
+                            const dayActivities = Array.from(
+                                new Map(
+                                    activities
+                                        .filter((act) => format(new Date(act.start_date), 'yyyy-MM-dd') === dayStr)
+                                        .map((act) => [String(act.id), act]),
+                                ).values(),
+                            );
+
+                            const totalDistance = dayActivities.reduce((acc, act) => acc + (act.distance / 1000), 0);
+
+                            const matchedActivityIds = new Set<string>();
+                            const enrichedTrainings = dayTrainings.map((assignment) => {
+                                const matchingActivity = dayActivities.find(
+                                    (act) => !matchedActivityIds.has(String(act.id)) && normalizeActivityType(act.type) === assignment.training.type,
+                                );
+
+                                if (matchingActivity) matchedActivityIds.add(String(matchingActivity.id));
+
+                                return {
+                                    assignment,
+                                    matchingActivity: matchingActivity ?? null,
+                                    isCompleted: assignment.completed || !!matchingActivity,
+                                };
+                            });
+
+                            const standaloneActivities = dayActivities.filter((act) => !matchedActivityIds.has(String(act.id)));
+                            const monthItems = [
+                                ...dayRaces.map((race) => ({ type: 'race' as const, race, id: `race-${race.id}` })),
+                                ...enrichedTrainings.map((item) => ({ type: 'training' as const, ...item, id: `assignment-${item.assignment.id}` })),
+                                ...standaloneActivities.map((activity) => ({ type: 'activity' as const, activity, id: `activity-${activity.id}` })),
+                            ];
+
+                            const isEmpty = monthItems.length === 0;
+
+                            const renderCompactItem = (item: (typeof monthItems)[number]) => {
+                                if (item.type === 'race') {
+                                    const raceName = item.race.name_override || item.race.race?.name || t('races.athlete.defaultRaceName');
+                                    return (
+                                        <CompactMonthCard
+                                            key={item.id}
+                                            tone="race"
+                                            label="RACE"
+                                            title={raceName}
+                                            meta={item.race.target_time ? t('races.athlete.target', { time: item.race.target_time }) : undefined}
+                                            icon={<Medal className="h-3 w-3" />}
+                                        />
+                                    );
+                                }
+
+                                if (item.type === 'training') {
+                                    const nameText = item.assignment.workout_name || item.assignment.training.title;
+                                    return item.isCompleted && item.matchingActivity ? (
+                                        <CompactMonthCard
+                                            key={item.id}
+                                            href={`/activities/${item.matchingActivity.id}`}
+                                            tone="completed"
+                                            label="DONE"
+                                            title={nameText}
+                                            meta={item.matchingActivity.duration > 0 ? formatDuration(item.matchingActivity.duration) : undefined}
+                                            icon={<CircleCheckBig className="h-3 w-3" />}
                                         />
                                     ) : (
-                                        <PlannedCard key={assignment.id} assignment={assignment} />
-                                    ),
-                                )}
+                                        <CompactMonthCard
+                                            key={item.id}
+                                            href={`/workouts/${item.assignment.id}`}
+                                            tone="planned"
+                                            label={item.assignment.training.type}
+                                            title={nameText}
+                                            icon={<CalendarDays className="h-3 w-3" />}
+                                        />
+                                    );
+                                }
 
-                                {standaloneActivities.map((act) => (
-                                    <StandaloneActivityCard key={act.id} activity={act} />
-                                ))}
-                            </div>
-                        </div>
-                    );
-                })}
+                                return (
+                                    <CompactMonthCard
+                                        key={item.id}
+                                        href={`/activities/${item.activity.id}`}
+                                        tone="activity"
+                                        label="STRAVA"
+                                        title={item.activity.title}
+                                        meta={item.activity.duration > 0 ? formatDuration(item.activity.duration) : undefined}
+                                        icon={<ActivitySquare className="h-3 w-3" />}
+                                    />
+                                );
+                            };
+
+                            const header = (
+                                <div className="flex justify-between items-baseline mb-2">
+                                    <div>
+                                        <MonospaceLabel color="muted" size="sm" className="block leading-none mb-1">
+                                            {format(day, 'EEE', { locale: es }).slice(0, 3)}
+                                        </MonospaceLabel>
+                                        <span
+                                            className={cn(
+                                                view === 'month' ? 'text-lg leading-none' : 'text-xl sm:text-2xl leading-none',
+                                                isToday ? 'text-endurix-orange' : 'text-endurix-black dark:text-foreground',
+                                            )}
+                                            style={FONT_DISPLAY}
+                                        >
+                                            {format(day, 'd')}
+                                        </span>
+                                    </div>
+                                    <MonospaceLabel color="muted" size="xs">
+                                        {totalDistance > 0
+                                            ? t('common.distance_km', { distance: totalDistance.toFixed(1) })
+                                            : t('common.distance_km', { distance: '0.0' })}
+                                    </MonospaceLabel>
+                                </div>
+                            );
+
+                            const monthContent = (
+                                <div className="space-y-2 flex-1">
+                                    {isEmpty ? (
+                                        <CalendarRestDayPlaceholder
+                                            className="min-h-[92px] border border-dashed border-endurix-black/15 dark:border-border flex flex-col gap-2 items-center justify-center bg-transparent"
+                                            iconClassName="w-4 h-4 text-endurix-black/30 dark:text-muted-foreground/50"
+                                            label={
+                                                <MonospaceLabel color="muted" size="xs">
+                                                    {t('calendar.restDay')}
+                                                </MonospaceLabel>
+                                            }
+                                        />
+                                    ) : (
+                                        <>
+                                            <div className="space-y-2">
+                                                {monthItems.slice(0, 3).map((item) => renderCompactItem(item))}
+                                            </div>
+                                            {monthItems.length > 3 && (
+                                                <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground" style={FONT_MONO}>
+                                                    +{monthItems.length - 3} more
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
+                            );
+
+                            const weekContent = (
+                                <div className="space-y-3 flex-1">
+                                    {monthItems.map((item) => renderCompactItem(item))}
+
+                                    {isEmpty && (
+                                        <CalendarRestDayPlaceholder
+                                            className="h-32 mt-6 border border-dashed border-endurix-black/15 dark:border-border flex flex-col gap-2 items-center justify-center bg-transparent"
+                                            iconClassName="w-5 h-5 text-endurix-black/30 dark:text-muted-foreground/50"
+                                            label={
+                                                <MonospaceLabel color="muted" size="xs">
+                                                    {t('calendar.restDay')}
+                                                </MonospaceLabel>
+                                            }
+                                        />
+                                    )}
+                                </div>
+                            );
+
+                            return (
+                                <CalendarDayColumn
+                                    key={day.toISOString()}
+                                    className={cn(
+                                        'flex flex-col gap-3 p-3 border transition-colors min-h-[400px]',
+                                        view === 'month'
+                                            ? 'bg-endurix-paper dark:bg-card min-h-[165px] border-0'
+                                            : isToday
+                                                ? 'bg-endurix-paper dark:bg-muted border-endurix-black/15 dark:border-border'
+                                                : 'bg-transparent border-endurix-black/8 dark:border-border',
+                                    )}
+                                    style={view === 'month' && !isCurrentMonth ? { opacity: 0.45 } : undefined}
+                                    view={view as CalendarView}
+                                    header={header}
+                                    monthContent={monthContent}
+                                    weekContent={weekContent}
+                                />
+                            );
+                        })}
+                    </div>
+                </div>
             </div>
         </div>
     );

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { auditLogsService, AdminAuditLogItem } from '@/features/settings/services/audit-logs.service';
 import { SectionHeader, DashboardCardHeaderDots } from '@/components/dashboard';
+import { BackButton } from '@/components/ui/BackButton';
 
 interface AuditLogsListProps {
     initialLogs: AdminAuditLogItem[];
@@ -57,6 +58,9 @@ export function AuditLogsList({ initialLogs, initialTotal }: AuditLogsListProps)
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-20">
+      <div className="mb-4">
+        <BackButton href="/settings" />
+      </div>
       <SectionHeader
         eyebrow="Auditoría"
         title="Admin Audit Logs"

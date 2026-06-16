@@ -62,6 +62,7 @@ export interface LowCompliance {
 
 export interface TimelineEvent {
   id: string;
+  activityId: string;
   time: string;
   athleteName: string;
   activityName: string;

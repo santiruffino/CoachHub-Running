@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Loader2, ShieldAlert, Cpu } from 'lucide-react';
 import { SectionHeader, DashboardCardHeaderDots } from '@/components/dashboard';
+import { BackButton } from '@/components/ui/BackButton';
 
 interface CoachSettingsFormProps {
     initialSettings: CoachSettings;
@@ -35,6 +36,9 @@ export function CoachSettingsForm({ initialSettings }: CoachSettingsFormProps) {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-20">
+      <div className="mb-4">
+        <BackButton href="/settings" />
+      </div>
       <SectionHeader
         eyebrow="Ajustes"
         title="Entrenador"

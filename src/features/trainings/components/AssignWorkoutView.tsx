@@ -10,7 +10,8 @@ import { Athlete } from '@/interfaces/athlete';
 import { Group } from '@/interfaces/group';
 import { Button } from '@/components/ui/button';
 import { trainingsService } from '@/features/trainings/services/trainings.service';
-import { ArrowLeft, ArrowRight, Search, Check, Sparkles, LayoutTemplate, Clock, X, CalendarDays, Users, Gauge } from 'lucide-react';
+import { ArrowRight, Search, Check, Sparkles, LayoutTemplate, Clock, X, CalendarDays, Users, Gauge } from 'lucide-react';
+import { BackButton } from '@/components/ui/BackButton';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
@@ -358,9 +359,7 @@ export function AssignWorkoutView({
         return (
              <div className="bg-endurix-paper dark:bg-background flex flex-col">
                 <div className="flex-none p-12">
-                    <Button variant="ghost" onClick={() => router.back()} className="text-endurix-black/60 dark:text-muted-foreground hover:text-endurix-orange hover:bg-transparent tracking-widest uppercase text-xs font-semibold p-0" style={PLEX}>
-                        <ArrowLeft className="w-4 h-4 mr-2" /> {tAssign('navigateBack')}
-                    </Button>
+                    <BackButton label={tAssign('navigateBack')} showLabel className="mb-8" />
                     <h1 className="text-4xl lg:text-5xl font-bold text-endurix-black dark:text-foreground mt-12 mb-4 uppercase tracking-tight" style={EXO}>
                         {tAssign('pageTitle')}
                     </h1>
@@ -420,9 +419,7 @@ export function AssignWorkoutView({
         return (
             <div className="bg-endurix-paper dark:bg-background flex flex-col h-[calc(100vh-64px)] overflow-hidden">
                 <div className="p-10 lg:p-12 border-b border-endurix-black/10 dark:border-white/10 shrink-0">
-                    <Button variant="ghost" onClick={() => setStep('select-source')} className="text-endurix-black/60 dark:text-muted-foreground hover:text-endurix-orange hover:bg-transparent tracking-widest uppercase text-xs font-semibold p-0 mb-8" style={PLEX}>
-                        <ArrowLeft className="w-4 h-4 mr-2" /> {tAssign('backToPhase1')}
-                    </Button>
+                    <BackButton onClick={() => setStep('select-source')} label={tAssign('backToPhase1')} showLabel className="mb-8" />
                     <h1 className="text-4xl font-bold text-endurix-black dark:text-foreground tracking-tight mb-2 uppercase" style={EXO}>
                         {tAssign('templateMatrix')}
                     </h1>
@@ -470,9 +467,7 @@ export function AssignWorkoutView({
         return (
             <div className="bg-endurix-paper dark:bg-background flex flex-col h-[calc(100vh-64px)] overflow-hidden">
                 <div className="p-5 px-10 border-b border-endurix-black/10 dark:border-white/10 flex items-center shrink-0">
-                    <Button variant="ghost" onClick={() => setStep('select-source')} className="text-endurix-black/60 dark:text-muted-foreground hover:text-endurix-orange hover:bg-transparent tracking-widest uppercase text-xs font-semibold p-0" style={PLEX}>
-                        <ArrowLeft className="w-4 h-4 mr-2" /> {tAssign('restart')}
-                    </Button>
+                    <BackButton onClick={() => setStep('select-source')} label={tAssign('restart')} showLabel />
                     <div className="ml-auto text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase" style={PLEX}>
                         {tAssign('editorPhase')}
                     </div>
@@ -505,14 +500,7 @@ export function AssignWorkoutView({
     return (
         <div className="bg-endurix-paper dark:bg-background flex flex-col h-[calc(100vh-64px)] overflow-hidden">
             <div className="p-5 px-10 border-b border-endurix-black/10 dark:border-white/10 flex items-center shrink-0">
-                <Button
-                    variant="ghost"
-                    onClick={handleBack}
-                    className="text-endurix-black/60 dark:text-muted-foreground hover:text-endurix-orange hover:bg-transparent tracking-widest uppercase text-xs font-semibold p-0"
-                    style={PLEX}
-                >
-                    <ArrowLeft className="w-4 h-4 mr-2" /> {tAssign('modifyBlueprint')}
-                </Button>
+                <BackButton onClick={handleBack} label={tAssign('modifyBlueprint')} showLabel />
                 <div className="ml-auto text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase" style={PLEX}>
                     {tAssign('editorPhase')}
                 </div>
@@ -779,13 +767,7 @@ export function AssignWorkoutView({
                         >
                             {loading ? tAssign('transmittingData') : tAssign('commitAssignment')}
                         </Button>
-                        <Button
-                            variant="outline-brand"
-                            className="w-full uppercase tracking-widest text-xs font-bold"
-                            onClick={() => router.back()}
-                        >
-                            {tAssign('cancelExit') || 'Cancelar'}
-                        </Button>
+                        <BackButton label={tAssign('cancelExit') || 'Cancelar'} showLabel className="w-full justify-center" variant="outline-brand" />
                     </div>
                 </div>
             </div>

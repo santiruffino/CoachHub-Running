@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Loader2, Palette, ShieldAlert, Cpu, Users } from 'lucide-react';
 import { SectionHeader, DashboardCardHeaderDots } from '@/components/dashboard';
+import { BackButton } from '@/components/ui/BackButton';
 
 interface TeamSettingsFormProps {
     initialSettings: TeamSettings;
@@ -37,6 +38,9 @@ export function TeamSettingsForm({ initialSettings }: TeamSettingsFormProps) {
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-20">
+      <div className="mb-4">
+        <BackButton href="/settings" />
+      </div>
       <SectionHeader
         eyebrow="Ajustes"
         title="Configuración del Equipo"

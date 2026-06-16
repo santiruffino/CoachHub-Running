@@ -23,6 +23,7 @@ import {
 import { useTranslations } from 'next-intl';
 import { trackOnboardingCompleted, trackOnboardingFailed, trackOnboardingStarted } from '@/lib/analytics/events';
 import { useApiError } from '@/hooks/useApiError';
+import { BackButton } from '@/components/ui/BackButton';
 
 interface OnboardingFormValues {
     firstName: string;
@@ -131,6 +132,10 @@ export default function OnboardingForm() {
         <div className="min-h-screen flex flex-col">
             <div className="flex-1 overflow-y-auto pb-28">
                 <div className="max-w-4xl mx-auto px-6 md:px-10 pt-12">
+                    {/* Back button */}
+                    <div className="mb-6">
+                        <BackButton href="/dashboard" />
+                    </div>
                     {/* Page header */}
                     <div className="mb-6">
                         <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-endurix-orange mb-3" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>

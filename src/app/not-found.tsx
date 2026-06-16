@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
-import { ArrowLeft, ArrowRight, Compass } from 'lucide-react';
+import { ArrowRight, Compass } from 'lucide-react';
+import { BackButton } from '@/components/ui/BackButton';
 
 function AnimatedTicker() {
     const [progress, setProgress] = useState(0);
@@ -153,14 +154,7 @@ export default function NotFound() {
                         </Link>
                     </motion.div>
                     <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }}>
-                        <Link
-                            href="/"
-                            className="inline-flex items-center justify-center gap-2 border border-endurix-black dark:border-white text-endurix-black dark:text-white text-xs font-bold tracking-widest px-8 py-4 transition-all hover:bg-endurix-black dark:hover:bg-white hover:text-white dark:hover:text-endurix-black w-full sm:w-auto"
-                            style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
-                        >
-                            <ArrowLeft className="w-4 h-4" />
-                            {t('secondary')}
-                        </Link>
+                        <BackButton href="/" label={t('secondary')} showLabel variant="outline" className="w-full sm:w-auto" />
                     </motion.div>
                 </motion.div>
 

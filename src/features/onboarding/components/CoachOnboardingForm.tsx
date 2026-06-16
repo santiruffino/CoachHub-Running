@@ -11,6 +11,7 @@ import { Progress } from '@/components/ui/progress';
 import api from '@/lib/axios';
 import { appLogger } from '@/lib/app-logger';
 import { trackOnboardingCompleted, trackOnboardingFailed, trackOnboardingStarted } from '@/lib/analytics/events';
+import { BackButton } from '@/components/ui/BackButton';
 
 export default function CoachOnboardingForm() {
   const { user, loading: authLoading } = useAuth();
@@ -68,6 +69,9 @@ export default function CoachOnboardingForm() {
   return (
     <div className="min-h-screen bg-endurix-paper dark:bg-background px-4 py-10">
       <div className="max-w-3xl mx-auto space-y-6">
+        <div className="mb-4">
+          <BackButton href="/dashboard" />
+        </div>
         <Card className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border">
           <CardHeader className="border-b border-endurix-black/10 dark:border-border">
             <CardTitle className="text-xl uppercase tracking-tight" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>Coach Onboarding</CardTitle>

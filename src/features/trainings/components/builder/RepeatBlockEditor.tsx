@@ -108,7 +108,11 @@ export function RepeatBlockEditor({
                             checked={skipLastRest}
                             onCheckedChange={updateSkipLastRest}
                             id={`skip-last-rest-${groupId}`}
-                            className="data-[state=checked]:bg-endurix-orange data-[state=checked]:border-endurix-orange data-[state=unchecked]:bg-gray-300 dark:data-[state=unchecked]:bg-slate-600 peer-focus:ring-endurix-orange/30"
+                            style={{
+                                backgroundColor: skipLastRest ? 'var(--color-endurix-orange)' : 'hsl(var(--input))'
+                            }}
+                            thumbClassName="bg-white dark:bg-white"
+                            className="focus-visible:ring-endurix-orange/30"
                         />
                         <Label htmlFor={`skip-last-rest-${groupId}`} className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
                             {t('skipLastRestRecovery')}

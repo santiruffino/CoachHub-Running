@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useFormatter, useTranslations } from 'next-intl';
+import { ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import api from '@/lib/axios';
 import { appLogger } from '@/lib/app-logger';
 import { GroupStatusCard } from '@/components/dashboard/GroupStatusCard';
@@ -24,6 +25,44 @@ interface DashboardAlertItem {
     recommendedAction?: string;
     fitness?: { ctl: number; tsb: number };
     scope?: 'athlete' | 'group';
+}
+
+interface PriorityRosterGroup {
+    key: string;
+    id: string;
+    name: string;
+    scope: 'athlete' | 'group';
+    alerts: DashboardAlertItem[];
+    primaryAlert: DashboardAlertItem;
+    score: number;
+}
+
+const DISMISSED_ROSTER_ALERTS_STORAGE_KEY = 'endurix.dashboard.coach.dismissedRosterAlerts';
+
+function getDismissedRosterAlertsStorageKey(scope: 'mine' | 'team') {
+    return `${DISMISSED_ROSTER_ALERTS_STORAGE_KEY}:${scope}`;
+}
+
+function readDismissedRosterAlertIds(scope: 'mine' | 'team') {
+    if (typeof window === 'undefined') {
+        return new Set<string>();
+    }
+
+    try {
+        const raw = window.localStorage.getItem(getDismissedRosterAlertsStorageKey(scope));
+        const parsed = raw ? JSON.parse(raw) : [];
+        return new Set(Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === 'string') : []);
+    } catch {
+        return new Set<string>();
+    }
+}
+
+function writeDismissedRosterAlertIds(scope: 'mine' | 'team', ids: Set<string>) {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    window.localStorage.setItem(getDismissedRosterAlertsStorageKey(scope), JSON.stringify(Array.from(ids)));
 }
 
 interface ZoneViolation {
@@ -59,26 +98,53 @@ interface CoachDashboardNewProps {
     user: User;
 }
 
-function LocalTimelineItem({ item, warning }: { item: TimelineEvent; warning: boolean }) {
-    return (
-        <TimelineItem
-            time={new Date(item.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            athleteName={item.athleteName}
-            activityName={item.activityName}
-            content={item.content}
-            warning={warning}
-        />
-    );
-}
-
 export default function CoachDashboardNew({ user }: CoachDashboardNewProps) {
     const [data, setData] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState(true);
-    const [markingRead, setMarkingRead] = useState(false);
     const [scope, setScope] = useState<'mine' | 'team'>('mine');
+    const [expandedRosterKeys, setExpandedRosterKeys] = useState<Set<string>>(new Set());
+    const [dismissedRosterAlertIds, setDismissedRosterAlertIds] = useState<Set<string>>(new Set());
+    const [pendingRosterAlertIds, setPendingRosterAlertIds] = useState<Set<string>>(new Set());
+    const [readTimelineIds, setReadTimelineIds] = useState<Set<string>>(new Set());
+    const rosterDismissalsHydratedRef = useRef(false);
     const t = useTranslations();
     const format = useFormatter();
     const userDisplayName = user.firstName || user.name?.split(' ')[0] || user.email.split('@')[0];
+
+    useEffect(() => {
+        rosterDismissalsHydratedRef.current = false;
+        setExpandedRosterKeys(new Set());
+        setDismissedRosterAlertIds(readDismissedRosterAlertIds(scope));
+        setPendingRosterAlertIds(new Set());
+    }, [scope]);
+
+    useEffect(() => {
+        if (!rosterDismissalsHydratedRef.current) {
+            rosterDismissalsHydratedRef.current = true;
+            return;
+        }
+
+        writeDismissedRosterAlertIds(scope, dismissedRosterAlertIds);
+    }, [scope, dismissedRosterAlertIds]);
+
+    const handleMarkTimelineRead = (itemId: string) => {
+        setReadTimelineIds((prev) => new Set(prev).add(itemId));
+    };
+
+    function LocalTimelineItem({ item, warning }: { item: TimelineEvent; warning: boolean }) {
+        return (
+            <TimelineItem
+                time={new Date(item.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                athleteName={item.athleteName}
+                activityName={item.activityName}
+                activityId={item.activityId}
+                content={item.content}
+                warning={warning}
+                onMarkRead={() => handleMarkTimelineRead(item.id)}
+                isRead={readTimelineIds.has(item.id)}
+            />
+        );
+    }
 
     const fetchDashboard = useCallback(async () => {
         try {
@@ -92,13 +158,21 @@ export default function CoachDashboardNew({ user }: CoachDashboardNewProps) {
         }
     }, [scope]);
 
+    const fetchDashboardSilently = useCallback(async () => {
+        try {
+            const res = await api.get('/v2/dashboard/coach', { params: { scope } });
+            setData(res.data as DashboardData);
+        } catch (error) {
+            appLogger.error('Failed to fetch new dashboard data', error);
+        }
+    }, [scope]);
+
     useEffect(() => {
         void fetchDashboard();
     }, [fetchDashboard]);
 
     const activeAthletes = data?.stats?.activeAthletes ?? 0;
     const completedToday = data?.stats?.completedToday ?? 0;
-    const zoneViolationCount = data?.alerts?.zoneViolations?.length ?? 0;
     const groupCount = data?.stats?.totalGroups ?? 0;
 
     const smartAlertsList = data?.alerts?.smartAlerts ?? [];
@@ -138,31 +212,144 @@ export default function CoachDashboardNew({ user }: CoachDashboardNewProps) {
         scope: alert.scope ?? 'athlete',
     }));
 
+    const visibleAlerts = useMemo(
+        () => allAlerts.filter((alert) => !dismissedRosterAlertIds.has(alert.id)),
+        [allAlerts, dismissedRosterAlertIds]
+    );
+
+    const priorityRosterItems = useMemo<PriorityRosterGroup[]>(() => {
+        const rankPriority = (priority?: 'P1' | 'P2' | 'P3' | 'P4') => {
+            switch (priority) {
+                case 'P1':
+                    return 0;
+                case 'P2':
+                    return 1;
+                case 'P3':
+                    return 2;
+                case 'P4':
+                default:
+                    return 3;
+            }
+        };
+
+        const grouped = new Map<string, PriorityRosterGroup>();
+
+        visibleAlerts.forEach((alert) => {
+            const scope = alert.scope ?? 'athlete';
+            const key = `${scope}:${alert.id}`;
+            const existing = grouped.get(key);
+
+            if (existing) {
+                existing.alerts.push(alert);
+                return;
+            }
+
+            grouped.set(key, {
+                key,
+                id: alert.id,
+                name: alert.name,
+                scope,
+                alerts: [alert],
+                primaryAlert: alert,
+                score: alert.score ?? 0,
+            });
+        });
+
+        return Array.from(grouped.values())
+            .map((group) => {
+                const alerts = [...group.alerts].sort((a, b) => {
+                    const priorityDelta = rankPriority(a.priority) - rankPriority(b.priority);
+                    if (priorityDelta !== 0) return priorityDelta;
+
+                    const scoreDelta = (b.score ?? 0) - (a.score ?? 0);
+                    if (scoreDelta !== 0) return scoreDelta;
+
+                    return new Date(b.time).getTime() - new Date(a.time).getTime();
+                });
+
+                return {
+                    ...group,
+                    alerts,
+                    primaryAlert: alerts[0],
+                    score: Math.max(...alerts.map((alert) => alert.score ?? 0)),
+                };
+            })
+            .sort((a, b) => {
+                const priorityDelta = rankPriority(a.primaryAlert.priority) - rankPriority(b.primaryAlert.priority);
+                if (priorityDelta !== 0) return priorityDelta;
+
+                return new Date(b.primaryAlert.time).getTime() - new Date(a.primaryAlert.time).getTime();
+            });
+    }, [visibleAlerts]);
+
+    const toggleRosterGroup = useCallback((key: string) => {
+        setExpandedRosterKeys((prev) => {
+            const next = new Set(prev);
+            if (next.has(key)) {
+                next.delete(key);
+            } else {
+                next.add(key);
+            }
+            return next;
+        });
+    }, []);
+
+    const dismissRosterAlerts = useCallback(
+        async (alerts: DashboardAlertItem[]) => {
+            const alertKeys = Array.from(new Set(alerts.map((alert) => alert.id)));
+            const backendAlertIds = Array.from(new Set(alerts.map((alert) => alert.alertId).filter((id): id is string => Boolean(id))));
+
+            if (alertKeys.length === 0) {
+                return;
+            }
+
+            setPendingRosterAlertIds((prev) => {
+                const next = new Set(prev);
+                alertKeys.forEach((id) => next.add(id));
+                return next;
+            });
+
+            try {
+                if (backendAlertIds.length > 0) {
+                    await api.post('/v2/dashboard/coach/alerts/read', { scope, alertIds: backendAlertIds });
+                }
+
+                setDismissedRosterAlertIds((prev) => {
+                    const next = new Set(prev);
+                    alertKeys.forEach((id) => next.add(id));
+                    return next;
+                });
+
+                await fetchDashboardSilently();
+            } catch (error) {
+                appLogger.error('Failed to dismiss roster alert', error);
+            } finally {
+                setPendingRosterAlertIds((prev) => {
+                    const next = new Set(prev);
+                    alertKeys.forEach((id) => next.delete(id));
+                    return next;
+                });
+            }
+        },
+        [fetchDashboardSilently, scope]
+    );
+
+    const markAllRosterAlertsRead = useCallback(async () => {
+        await dismissRosterAlerts(visibleAlerts);
+    }, [dismissRosterAlerts, visibleAlerts]);
+
     const groupComplianceData = data?.groupCompliance ?? [];
 
     const filteredTimeline = useMemo(() => {
-        return (
-            data?.activityTimeline?.filter((item) => {
-                const hasFeedback = item.content && item.content.trim().length > 0;
-                const isRPEMismatch = data?.alerts?.rpeMismatches?.some(
-                    (mismatch) => mismatch.athleteName === item.athleteName && mismatch.workoutType === item.activityName
-                );
-                return hasFeedback || isRPEMismatch;
-            }) || []
-        );
-    }, [data]);
-
-    const handleMarkAsRead = async () => {
-        try {
-            setMarkingRead(true);
-            await api.post('/v2/dashboard/coach/alerts/read', { scope });
-            await fetchDashboard();
-        } catch (error) {
-            appLogger.error('Failed to mark dashboard alerts as read', error);
-        } finally {
-            setMarkingRead(false);
-        }
-    };
+        const items = data?.activityTimeline?.filter((item) => {
+            const hasFeedback = item.content && item.content.trim().length > 0;
+            const isRPEMismatch = data?.alerts?.rpeMismatches?.some(
+                (mismatch) => mismatch.athleteName === item.athleteName && mismatch.workoutType === item.activityName
+            );
+            return hasFeedback || isRPEMismatch;
+        }) || [];
+        return items.filter((item) => !readTimelineIds.has(item.id));
+    }, [data, readTimelineIds]);
 
     if (loading) {
         return <CoachDashboardSkeleton />;
@@ -248,12 +435,12 @@ export default function CoachDashboardNew({ user }: CoachDashboardNewProps) {
                             />
                             <button
                                 type="button"
-                                onClick={handleMarkAsRead}
-                                disabled={markingRead || zoneViolationCount === 0}
+                                onClick={markAllRosterAlertsRead}
+                                disabled={pendingRosterAlertIds.size > 0 || visibleAlerts.length === 0}
                                 className="inline-flex items-center justify-center gap-1.5 bg-endurix-orange text-white text-[10px] font-bold tracking-widest px-4 py-2 transition-all hover:bg-endurix-orange/90 disabled:opacity-50 disabled:cursor-not-allowed"
                                 style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
                             >
-                                {markingRead ? t('common.loading') : t('dashboard.alerts.markAsRead')}
+                                {pendingRosterAlertIds.size > 0 ? t('common.loading') : t('dashboard.alerts.markAsRead')}
                             </button>
                         </div>
 
@@ -273,63 +460,148 @@ export default function CoachDashboardNew({ user }: CoachDashboardNewProps) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {allAlerts.slice(0, 6).map((alert, idx) => {
-                                        const score = Math.max(0, Math.min(100, alert.score ?? 0));
-                                        const band = getRiskBand(alert.priority);
-                                        const ctl = alert.fitness ? Math.round(alert.fitness.ctl) : null;
-                                        const tsb = alert.fitness ? Math.round(alert.fitness.tsb) : null;
+                                    {priorityRosterItems.slice(0, 6).map((item) => {
+                                        const score = Math.max(0, Math.min(100, item.score));
+                                        const band = getRiskBand(item.primaryAlert.priority);
+                                        const ctl = item.primaryAlert.fitness ? Math.round(item.primaryAlert.fitness.ctl) : null;
+                                        const tsb = item.primaryAlert.fitness ? Math.round(item.primaryAlert.fitness.tsb) : null;
+                                        const isExpanded = expandedRosterKeys.has(item.key);
+
                                         return (
-                                            <tr
-                                                key={`${alert.id}-${idx}`}
-                                                className="border-b border-endurix-black/8 dark:border-border text-xs"
-                                            >
-                                                <td className="px-4 py-2 font-semibold text-endurix-black dark:text-foreground">
-                                                    <Link
-                                                        href={getEntityHref(alert)}
-                                                        className="hover:text-endurix-orange hover:underline transition-colors"
-                                                    >
-                                                        {alert.name}
-                                                    </Link>
-                                                </td>
-                                                <td className="px-4 py-2 text-endurix-black/70 dark:text-muted-foreground">
-                                                    {alert.message}
-                                                </td>
-                                                <td className="px-4 py-2 text-endurix-black/70 dark:text-muted-foreground">
-                                                    {alert.recommendedAction || t('dashboard.priorityRoster.operational')}
-                                                </td>
-                                                <td className="px-4 py-2 text-endurix-black dark:text-foreground">
-                                                    {ctl !== null && tsb !== null ? (
-                                                        <div className="flex items-center gap-2 leading-tight">
-                                                            <span
-                                                                className="font-bold"
-                                                                style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                                            <Fragment key={item.key}>
+                                                <tr
+                                                    className="border-b border-endurix-black/8 dark:border-border text-xs"
+                                                >
+                                                    <td className="px-4 py-2 font-semibold text-endurix-black dark:text-foreground align-top">
+                                                        <div className="flex items-center gap-2">
+                                                            {item.alerts.length > 1 ? (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => toggleRosterGroup(item.key)}
+                                                                    className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-endurix-black/10 dark:border-border bg-endurix-paper dark:bg-muted text-endurix-black/70 dark:text-muted-foreground hover:text-endurix-black dark:hover:text-foreground hover:bg-endurix-black/5 dark:hover:bg-white/10 transition-colors"
+                                                                    aria-expanded={isExpanded}
+                                                                    aria-label={isExpanded ? t('builder.collapse') : t('builder.expand')}
+                                                                >
+                                                                    {isExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                                                                </button>
+                                                            ) : (
+                                                                <span className="inline-flex h-6 w-6 items-center justify-center" />
+                                                            )}
+                                                            <Link
+                                                                href={getEntityHref(item.primaryAlert)}
+                                                                className="hover:text-endurix-orange hover:underline transition-colors"
                                                             >
-                                                                {ctl}
-                                                            </span>
-                                                            <span className="text-[9px] uppercase tracking-widest text-endurix-black/40 dark:text-muted-foreground">
-                                                                {t('dashboard.priorityRoster.ctl')}
-                                                            </span>
-                                                            <span
-                                                                className={`font-bold ${tsb > 0 ? 'text-green-600 dark:text-green-500' : tsb < 0 ? 'text-endurix-orange' : 'text-endurix-black/40 dark:text-muted-foreground'}`}
-                                                                style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
-                                                            >
-                                                                {tsb > 0 ? `+${tsb}` : tsb}
-                                                            </span>
-                                                            <span className="text-[9px] uppercase tracking-widest text-endurix-black/40 dark:text-muted-foreground">
-                                                                {t('dashboard.priorityRoster.tsb')}
-                                                            </span>
+                                                                {item.name}
+                                                            </Link>
+                                                            {item.alerts.length > 1 && (
+                                                                <span className="inline-flex items-center rounded-full border border-endurix-black/10 dark:border-border bg-endurix-paper dark:bg-muted px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-endurix-black/60 dark:text-muted-foreground align-middle">
+                                                                    {item.alerts.length}
+                                                                </span>
+                                                            )}
                                                         </div>
-                                                    ) : (
-                                                        <span className="text-endurix-black/30 dark:text-muted-foreground">—</span>
-                                                    )}
-                                                </td>
-                                                <td className="px-4 py-2">
-                                                    <RiskBar score={score} band={band} label={t(band.labelKey)} />
-                                                </td>
-                                            </tr>
+                                                    </td>
+                                                    <td className="px-4 py-2 text-endurix-black/70 dark:text-muted-foreground align-top">
+                                                        <div className="flex items-start justify-between gap-3">
+                                                            <div className="flex min-w-0 flex-col gap-1">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span
+                                                                        className="inline-flex shrink-0 items-center rounded-full bg-endurix-black/5 dark:bg-white/5 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest"
+                                                                        title={t(`dashboard.alertTypes.${item.primaryAlert.type}`)}
+                                                                    >
+                                                                        {t(`dashboard.alertTypes.${item.primaryAlert.type}`)}
+                                                                    </span>
+                                                                    <span className="leading-snug text-[11px] text-endurix-black/75 dark:text-muted-foreground">
+                                                                        {item.primaryAlert.details}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => dismissRosterAlerts([item.primaryAlert])}
+                                                                disabled={pendingRosterAlertIds.has(item.primaryAlert.id)}
+                                                                className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-endurix-black/10 dark:border-border bg-endurix-paper dark:bg-muted text-endurix-black/50 dark:text-muted-foreground hover:text-red-600 dark:hover:text-red-400 hover:bg-endurix-black/5 dark:hover:bg-white/10 transition-colors disabled:opacity-40"
+                                                                title={t('dashboard.alerts.markAsRead')}
+                                                                aria-label={t('dashboard.alerts.markAsRead')}
+                                                            >
+                                                                <Trash2 className="h-3.5 w-3.5" />
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-2 text-endurix-black/70 dark:text-muted-foreground align-top">
+                                                        {item.primaryAlert.recommendedAction || t('dashboard.priorityRoster.operational')}
+                                                    </td>
+                                                    <td className="px-4 py-2 text-endurix-black dark:text-foreground align-top">
+                                                        {ctl !== null && tsb !== null ? (
+                                                            <div className="flex items-center gap-2 leading-tight">
+                                                                <span
+                                                                    className="font-bold"
+                                                                    style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                                                                >
+                                                                    {ctl}
+                                                                </span>
+                                                                <span className="text-[9px] uppercase tracking-widest text-endurix-black/40 dark:text-muted-foreground">
+                                                                    {t('dashboard.priorityRoster.ctl')}
+                                                                </span>
+                                                                <span
+                                                                    className={`font-bold ${tsb > 0 ? 'text-green-600 dark:text-green-500' : tsb < 0 ? 'text-endurix-orange' : 'text-endurix-black/40 dark:text-muted-foreground'}`}
+                                                                    style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                                                                >
+                                                                    {tsb > 0 ? `+${tsb}` : tsb}
+                                                                </span>
+                                                                <span className="text-[9px] uppercase tracking-widest text-endurix-black/40 dark:text-muted-foreground">
+                                                                    {t('dashboard.priorityRoster.tsb')}
+                                                                </span>
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-endurix-black/30 dark:text-muted-foreground">—</span>
+                                                        )}
+                                                    </td>
+                                                    <td className="px-4 py-2 align-top">
+                                                        <RiskBar score={score} band={band} label={t(band.labelKey)} />
+                                                    </td>
+                                                </tr>
+                                                {isExpanded && item.alerts.length > 1 && (
+                                                    <tr key={`${item.key}-details`} className="border-b border-endurix-black/8 dark:border-border bg-endurix-paper/50 dark:bg-muted/30">
+                                                        <td colSpan={5} className="px-4 py-3">
+                                                            <div className="space-y-2">
+                                                                {item.alerts.map((alert, index) => (
+                                                                    <div
+                                                                        key={`${item.key}-${alert.alertId ?? alert.id}-${index}`}
+                                                                        className="flex items-start justify-between gap-3 rounded-md border border-endurix-black/10 dark:border-border bg-white dark:bg-card px-3 py-2"
+                                                                    >
+                                                                        <div className="min-w-0 flex-1">
+                                                                            <div className="flex flex-wrap items-center gap-2">
+                                                                                <span className="inline-flex items-center rounded-full bg-endurix-black/5 dark:bg-white/5 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest">
+                                                                                    {t(`dashboard.alertTypes.${alert.type}`)}
+                                                                                </span>
+                                                                                <span className="text-[10px] uppercase tracking-widest text-endurix-black/40 dark:text-muted-foreground">
+                                                                                    {alert.priority}
+                                                                                </span>
+                                                                            </div>
+                                                                            <p className="mt-1 text-xs text-endurix-black/80 dark:text-muted-foreground">
+                                                                                {alert.details}
+                                                                            </p>
+                                                                        </div>
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => dismissRosterAlerts([alert])}
+                                                                            disabled={pendingRosterAlertIds.has(alert.id)}
+                                                                            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-endurix-black/10 dark:border-border bg-endurix-paper dark:bg-muted text-endurix-black/50 dark:text-muted-foreground hover:text-red-600 dark:hover:text-red-400 hover:bg-endurix-black/5 dark:hover:bg-white/10 transition-colors disabled:opacity-40"
+                                                                            title={t('dashboard.alerts.markAsRead')}
+                                                                            aria-label={t('dashboard.alerts.markAsRead')}
+                                                                        >
+                                                                            <Trash2 className="h-4 w-4" />
+                                                                        </button>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </Fragment>
                                         );
                                     })}
-                                    {allAlerts.length === 0 && (
+                                    {priorityRosterItems.length === 0 && (
                                         <tr>
                                             <td
                                                 className="px-4 py-3 text-xs text-endurix-black/40 dark:text-muted-foreground"
@@ -348,7 +620,9 @@ export default function CoachDashboardNew({ user }: CoachDashboardNewProps) {
                 {/* Recent Activity */}
                 <section className="mb-5">
                     <article className="border border-endurix-black/12 dark:border-border bg-white dark:bg-card p-4">
-                        <SectionHeader eyebrow={t('dashboard.recentActivity.eyebrow')} title={t('dashboard.alerts.recentActivity')} />
+                        <div className="flex items-center justify-between px-4 py-2 bg-endurix-paper dark:bg-muted border-b border-endurix-black/8 dark:border-border">
+                            <SectionHeader eyebrow={t('dashboard.recentActivity.eyebrow')} title={t('dashboard.alerts.recentActivity')} />
+                        </div>
                         <div className="space-y-2">
                             {filteredTimeline.slice(0, 6).map((item) => {
                                 const hasFeedback = item.content && item.content.trim().length > 0;

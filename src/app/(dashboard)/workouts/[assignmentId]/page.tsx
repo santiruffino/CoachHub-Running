@@ -8,7 +8,8 @@ import { format } from 'date-fns';
 import { WorkoutBuilder } from '@/features/trainings/components/builder/WorkoutBuilder';
 import { WorkoutBlock } from '@/features/trainings/components/builder/types';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, User, Calendar, CheckCircle2, Trash2, Users } from 'lucide-react';
+import { User, Calendar, CheckCircle2, Trash2, Users } from 'lucide-react';
+import { BackButton } from '@/components/ui/BackButton';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import api from '@/lib/axios';
 import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
@@ -193,14 +194,7 @@ export default function WorkoutDetailsPage() {
              <div className="flex items-center justify-center h-[calc(100vh-theme(spacing.16))] w-[calc(100%+2rem)] md:w-[calc(100%+4rem)] -mx-4 md:-mx-8 -my-4 md:-my-8 bg-endurix-paper dark:bg-background">
                 <div className="max-w-md text-center">
                     <p className="text-red-600 dark:text-red-400 font-semibold mb-6">{error}</p>
-                    <Button
-                        variant="ghost"
-                        onClick={() => router.back()}
-                        className="text-endurix-black/60 dark:text-muted-foreground hover:text-endurix-orange uppercase tracking-widest text-xs font-bold"
-                        style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
-                    >
-                        <ArrowLeft className="w-4 h-4 mr-2" /> {t('navigateBack')}
-                    </Button>
+<BackButton label={t('navigateBack')} showLabel />
                 </div>
             </div>
         );
@@ -213,9 +207,7 @@ export default function WorkoutDetailsPage() {
 
     const leftSidebarContent = (
         <div className="p-12 pb-4 flex flex-col h-full overflow-y-auto">
-            <Button variant="ghost" onClick={() => router.back()} className="w-min text-endurix-black/60 dark:text-muted-foreground hover:text-endurix-orange transition-colors p-0 hover:bg-transparent tracking-widest uppercase text-xs font-semibold mb-12" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
-                 <ArrowLeft className="w-4 h-4 mr-2" /> {t('backToDashboard')}
-            </Button>
+            <BackButton label={t('backToDashboard')} showLabel className="mb-12" />
 
             <div className="mb-4 flex flex-wrap gap-2">
                 {assignment.completed ? (

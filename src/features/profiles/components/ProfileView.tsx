@@ -10,7 +10,7 @@ import { useStravaAuth } from '@/features/strava/hooks/useStravaAuth';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { SectionLayout, FieldGroup } from '@/components/layout/EditorialLayout';
-import { ArrowLeft } from 'lucide-react';
+import { BackButton } from '@/components/ui/BackButton';
 import { useTranslations } from 'next-intl';
 import { User } from '@/interfaces/auth';
 
@@ -48,14 +48,7 @@ export function ProfileView({ initialProfile, user }: ProfileViewProps) {
                 <div className="max-w-6xl mx-auto px-6 md:px-10 pt-8">
 
                     <div className="flex items-center gap-2 mb-2">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => router.back()}
-                            className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                        >
-                            <ArrowLeft className="h-4 w-4" />
-                        </Button>
+                        <BackButton />
                     </div>
                     <div className="flex items-center gap-5 mb-8">
                         <Avatar className="h-14 w-14 shrink-0">

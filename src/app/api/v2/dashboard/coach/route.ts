@@ -657,6 +657,7 @@ export async function GET(request: NextRequest) {
             const activityName = act.title || act.type || 'Activity';
             return {
                 id: act.id,
+                activityId: act.id,
                 time: act.start_date,
                 athleteName: athleteMap.get(act.user_id) || 'Unknown',
                 activityName,

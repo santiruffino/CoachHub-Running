@@ -125,6 +125,10 @@ export function HrZonesPieChart({ laps, splits, zones, zoneNames }: HrZonesPieCh
   };
 
   const calculateZoneDistribution = () => {
+    if (!zones || zones.length === 0) {
+      return { data: [], totalTime: 0 };
+    }
+
     const zoneDistribution = new Array(zones.length).fill(0);
     let totalTime = 0;
 
@@ -156,13 +160,17 @@ export function HrZonesPieChart({ laps, splits, zones, zoneNames }: HrZonesPieCh
 
     return {
       data: zoneDistribution
-        .map((time, index) => ({
-          zone: index + 1,
-          name: actualZoneNames[index],
-          time,
-          percentage: totalTime > 0 ? (time / totalTime) * 100 : 0,
-          bpmRange: `${zones[index].min}-${zones[index].max} bpm`,
-        }))
+        .map((time, index) => {
+          const zone = zones[index];
+          if (!zone) return { zone: index + 1, name: actualZoneNames[index], time, percentage: 0, bpmRange: '' };
+          return {
+            zone: index + 1,
+            name: actualZoneNames[index],
+            time,
+            percentage: totalTime > 0 ? (time / totalTime) * 100 : 0,
+            bpmRange: `${zone.min}-${zone.max} bpm`,
+          };
+        })
         .filter((d) => d.time > 0),
       totalTime,
     };

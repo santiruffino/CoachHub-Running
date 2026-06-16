@@ -3,11 +3,11 @@ import { appLogger } from '@/lib/app-logger';
 
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { format, startOfWeek, endOfWeek, subWeeks, addWeeks, parseISO } from 'date-fns';
+import { format, startOfWeek, endOfWeek, subWeeks, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import api from '@/lib/axios';
 import { useTranslations } from 'next-intl';
-import { Zap, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { Zap } from 'lucide-react';
 
 import { AthleteWeeklyCalendar } from '@/components/dashboard/AthleteWeeklyCalendar';
 import { StatCard, DashboardCard, DashboardCardHeaderDots, MonospaceLabel } from '@/components/dashboard';
@@ -63,7 +63,6 @@ export default function AthleteDashboard({ user, initialData = null }: AthleteDa
     const [assignments, setAssignments] = useState<TrainingAssignment[]>(initialData?.assignments || []);
     const [races, setRaces] = useState<AthleteRace[]>(initialData?.races || []);
     const [athleteDetails, setAthleteDetails] = useState<AthleteDetails | null>(initialData?.details || null);
-    const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
     const [performanceData, setPerformanceData] = useState<PerformancePoint[]>([]);
     const [isAssignRaceModalOpen, setIsAssignRaceModalOpen] = useState(false);
     const [pendingFeedbackActivity, setPendingFeedbackActivity] = useState<Activity | null>(null);
@@ -224,8 +223,9 @@ export default function AthleteDashboard({ user, initialData = null }: AthleteDa
     };
 
     const weeklyStats = useMemo(() => {
-        const wEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
-        const weekStartStr = format(currentWeekStart, 'yyyy-MM-dd');
+        const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+        const wEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
+        const weekStartStr = format(weekStart, 'yyyy-MM-dd');
         const weekEndStr = format(wEnd, 'yyyy-MM-dd');
 
         const weekActs = activities.filter(act => {
@@ -269,7 +269,7 @@ export default function AthleteDashboard({ user, initialData = null }: AthleteDa
             elevation: `${Math.round(elevation)} m`,
             compliance: `${compliance}%`
         };
-    }, [activities, assignments, currentWeekStart]);
+    }, [activities, assignments]);
 
     const loadMetrics = useMemo(() => {
         const riskKey = loadMetricsData?.current.risk || 'insufficientData';
@@ -407,32 +407,8 @@ export default function AthleteDashboard({ user, initialData = null }: AthleteDa
                     </div>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex items-center gap-1 border border-endurix-black/15 dark:border-border bg-endurix-paper dark:bg-muted p-1">
-                        <Button variant="ghost" size="icon" onClick={() => setCurrentWeekStart(addWeeks(currentWeekStart, -1))} className="h-8 w-8">
-                            <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        <span className="px-4 text-xs font-bold tracking-widest uppercase text-endurix-black dark:text-foreground w-40 text-center" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>
-                            {format(currentWeekStart, 'MMMM yyyy', { locale: es })}
-                        </span>
-                        <Button variant="ghost" size="icon" onClick={() => setCurrentWeekStart(addWeeks(currentWeekStart, 1))} className="h-8 w-8">
-                            <ChevronRight className="h-4 w-4" />
-                        </Button>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Button variant="outline-brand" size="xs" onClick={() => setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }))} className="uppercase tracking-widest">
-                            {t('common.today')}
-                        </Button>
-                        <Button variant="orange" size="xs" onClick={() => setIsAssignRaceModalOpen(true)} className="gap-2 uppercase tracking-widest">
-                            <Plus className="h-4 w-4" />
-                            {t('races.athlete.addRace')}
-                        </Button>
-                    </div>
-                </div>
-
                 <div className="w-full">
                     <AthleteWeeklyCalendar
-                        weekStart={currentWeekStart}
                         assignments={assignments}
                         activities={activities}
                         races={races}

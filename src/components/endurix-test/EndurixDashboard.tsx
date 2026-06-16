@@ -592,7 +592,7 @@ export function EndurixDashboard() {
                   <div className="divide-y divide-endurix-black/5">
                     {alerts.map((alert, i) => (
                       <motion.div
-                        key={alert.id}
+                        key={`${alert.id}-${i}`}
                         initial={{ opacity: 0, x: 12 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.4, delay: 0.5 + i * 0.08 }}

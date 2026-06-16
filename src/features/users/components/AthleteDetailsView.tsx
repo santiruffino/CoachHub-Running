@@ -9,7 +9,8 @@ import { TrainingAssignment } from '@/interfaces/training';
 import { Activity } from '@/interfaces/activity';
 import { AthleteDetails } from '@/interfaces/athlete';
 import { AthleteRace } from '@/interfaces/race';
-import { Plus, Zap, ChevronLeft, ChevronRight, MessageSquare, Trophy, ArrowLeft, Info } from 'lucide-react';
+import { Plus, Zap, ChevronLeft, ChevronRight, MessageSquare, Trophy, Info } from 'lucide-react';
+import { BackButton } from '@/components/ui/BackButton';
 import { trainingsService } from '@/features/trainings/services/trainings.service';
 import { athletesService, LoadMetricsRange, LoadMetricsResponse } from '@/features/users/services/athletes.service';
 import { racesService } from '@/features/races/services/races.service';
@@ -303,9 +304,7 @@ export function AthleteDetailsView({
     return (
         <div className="space-y-6 pb-20">
             <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" onClick={() => router.back()} className="h-8 w-8 text-muted-foreground hover:text-foreground">
-                    <ArrowLeft className="h-4 w-4" />
-                </Button>
+                <BackButton />
             </div>
 
             <div className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border p-5 md:p-6">

@@ -20,6 +20,7 @@ import { HrZonesPieChart } from '@/app/(dashboard)/activities/components/HrZones
 import { flattenWorkout, matchLapsToWorkout, MatchedLap, RawBlock } from '@/features/trainings/utils/workoutMatcher';
 import { LinkWorkoutModal } from '@/features/trainings/components/LinkWorkoutModal';
 import { ActivityDetail } from '@/interfaces/activity';
+import { BackButton } from '@/components/ui/BackButton';
 
 interface ComplianceData {
     compliance_score: number;
@@ -251,6 +252,7 @@ export function ActivityDetailView({
                 <div className="flex items-start justify-between">
                     <div className="space-y-4">
                         <div className="flex items-center gap-3">
+                            <BackButton label={t('actions.goBack')} showLabel />
                             <div className="w-10 h-10 bg-endurix-orange flex items-center justify-center">
                                 <ActivityIcon className="h-5 w-5 text-white" />
                             </div>

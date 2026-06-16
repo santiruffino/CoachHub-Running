@@ -16,6 +16,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { createClient } from '@/lib/supabase/client';
 import { isAxiosError } from 'axios';
 import { useTranslations } from 'next-intl';
+import { BackButton } from '@/components/ui/BackButton';
 
 type FormData = {
     newPassword: string;
@@ -121,6 +122,9 @@ export default function ResetPasswordForm() {
         return (
             <Card className="w-full max-w-md bg-endurix-paper dark:bg-card border border-red-500/30">
                 <CardHeader className="border-b border-red-500/30">
+                    <div className="mb-4">
+                        <BackButton href="/login" />
+                    </div>
                     <CardTitle className="text-xl text-red-600 dark:text-red-400 uppercase tracking-tight" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{t('invalidTitle')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 p-6">
@@ -129,9 +133,7 @@ export default function ResetPasswordForm() {
                             {t('invalidDescription')}
                         </AlertDescription>
                     </Alert>
-                    <Button asChild variant="outline-brand" className="w-full uppercase tracking-widest text-xs">
-                        <a href="/login">{t('backToLogin')}</a>
-                    </Button>
+                    <BackButton href="/login" label={t('backToLogin')} showLabel variant="outline" className="w-full justify-center" />
                 </CardContent>
             </Card>
         );
@@ -140,6 +142,9 @@ export default function ResetPasswordForm() {
     return (
         <Card className="w-full max-w-md bg-endurix-paper dark:bg-card border border-endurix-black/15 dark:border-border">
             <CardHeader className="border-b border-endurix-black/10 dark:border-border">
+                <div className="mb-4">
+                    <BackButton href="/login" />
+                </div>
                 <CardTitle className="text-2xl uppercase tracking-tight" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{t('title')}</CardTitle>
                 <CardDescription>
                     {t('description')}

@@ -23,7 +23,6 @@ import { Badge } from '@/components/ui/badge';
 import {
   UserPlus,
   Plus,
-  ArrowLeft,
   Mail,
   MoreHorizontal,
   Trash2,
@@ -32,6 +31,7 @@ import {
   Calendar,
   Trophy,
 } from 'lucide-react';
+import { BackButton } from '@/components/ui/BackButton';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -150,11 +150,7 @@ export function GroupDetailsView({ id, initialGroup, initialAthletes, initialAss
       {/* Header with Back Button and Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/groups">
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-          </Button>
+          <BackButton href="/groups" />
           <div>
             <h1
               className="text-2xl sm:text-3xl font-bold text-endurix-black dark:text-foreground tracking-tight uppercase"

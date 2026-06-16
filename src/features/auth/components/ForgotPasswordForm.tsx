@@ -15,6 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import { BackButton } from '@/components/ui/BackButton';
 
 export default function ForgotPasswordForm() {
     const [error, setError] = useState('');
@@ -47,6 +48,9 @@ export default function ForgotPasswordForm() {
     return (
         <Card className="w-full max-w-md bg-endurix-paper dark:bg-card border border-endurix-black/15 dark:border-border">
             <CardHeader className="border-b border-endurix-black/10 dark:border-border">
+                <div className="mb-4">
+                    <BackButton href="/login" />
+                </div>
                 <CardTitle className="text-2xl uppercase tracking-tight" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{t('title')}</CardTitle>
                 <CardDescription>
                     {t('description')}
