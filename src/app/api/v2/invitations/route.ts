@@ -100,8 +100,8 @@ export async function POST(request: NextRequest) {
                 adminClient.from('profiles').select('name, email').eq('id', user!.id).single(),
             ]);
 
-            // Resend invitation email (non-blocking)
-            sendInvitationEmail({
+            // Resend invitation email before returning
+            await sendInvitationEmail({
                 to: email,
                 inviterName: inviterProfile?.name || inviterProfile?.email || 'your coach',
                 teamName: team?.name || 'your team',
@@ -163,8 +163,8 @@ export async function POST(request: NextRequest) {
             adminClient.from('profiles').select('name, email').eq('id', user!.id).single(),
         ]);
 
-        // Send invitation email (non-blocking)
-        sendInvitationEmail({
+        // Send invitation email before returning
+        await sendInvitationEmail({
             to: email,
             inviterName: inviterProfile?.name || inviterProfile?.email || 'your coach',
             teamName: team?.name || 'your team',

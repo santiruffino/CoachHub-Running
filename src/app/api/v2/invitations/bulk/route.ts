@@ -137,8 +137,8 @@ export async function POST(request: NextRequest) {
             token: existingInvitation.token 
           });
 
-          // Resend invitation email (non-blocking)
-          sendInvitationEmail({
+          // Resend invitation email before continuing
+          await sendInvitationEmail({
             to: normalizedEmail,
             inviterName,
             teamName,
@@ -180,8 +180,8 @@ export async function POST(request: NextRequest) {
             token: invitation.token 
           });
 
-          // Send invitation email (non-blocking)
-          sendInvitationEmail({
+          // Send invitation email before continuing
+          await sendInvitationEmail({
             to: normalizedEmail,
             inviterName,
             teamName,

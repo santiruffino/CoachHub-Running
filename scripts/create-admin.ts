@@ -71,13 +71,14 @@ async function main() {
     const name = await question('Full name: ');
 
     let selectedTeamId: string | null = null;
+    let selectedTeamName: string | null = null;
     let newTeamName: string | null = null;
 
     if (existingTeams && existingTeams.length > 0) {
         console.log('\nSelect a team for this Admin:');
         console.log('0. Create a new team');
         existingTeams.forEach((team, index) => {
-            console.log(`${index + 1}. ${team.name} (${team.id})`);
+            console.log(`${index + 1}. ${team.name}`);
         });
 
         let validSelection = false;
@@ -91,6 +92,7 @@ async function main() {
             } else if (!isNaN(num) && num > 0 && num <= existingTeams.length) {
                 validSelection = true;
                 selectedTeamId = existingTeams[num - 1].id;
+                selectedTeamName = existingTeams[num - 1].name;
             } else {
                 console.log('Invalid selection. Please try again.');
             }
@@ -133,6 +135,7 @@ async function main() {
             }
 
             selectedTeamId = newTeam.id;
+            selectedTeamName = newTeam.name;
             console.log(`✅ Created new team: ${newTeam.name}`);
         }
 
@@ -156,13 +159,15 @@ async function main() {
             throw new Error(`Failed to update profile: ${profileError.message}`);
         }
 
-        console.log(`✅ Profile updated to ADMIN role${selectedTeamId ? ` and assigned to team: ${selectedTeamId}` : ''}`);
+        console.log(`✅ Profile updated to ADMIN role${selectedTeamName ? ` and assigned to team: ${selectedTeamName}` : ''}`);
 
         // Create coach profile (Admins act as super coaches)
         const { error: coachError } = await supabase
             .from('coach_profiles')
-            .insert({
-                id: authData.user.id,
+            .upsert({
+                user_id: authData.user.id,
+            }, {
+                onConflict: 'user_id',
             });
 
         if (coachError) {
@@ -178,7 +183,7 @@ async function main() {
         console.log(`   Email: ${email}`);
         console.log(`   Name: ${name}`);
         console.log(`   Role: ADMIN`);
-        if (selectedTeamId) console.log(`   Team ID: ${selectedTeamId}`);
+        if (selectedTeamName) console.log(`   Team: ${selectedTeamName}`);
         console.log(`\n   You can now login at http://localhost:3000/login\n`);
 
     } catch (error: unknown) {
