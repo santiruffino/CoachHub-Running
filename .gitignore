@@ -46,3 +46,23 @@ opencode.json
 # Sentry Config File
 .env.sentry-build-plugin
 .env.local
+
+# local tooling / editor state
+.agents/
+.antigravitycli/
+.claude/
+.codegraph/
+.gemini/
+.idea/
+.kombai/
+.vscode/
+
+# local artifacts
+service-role-audit.json
+ChatGPT Image *.png
+test-races*.js
+u00261
+tsc_errors.log
+
+# temp / generated
+supabase/.temp/
