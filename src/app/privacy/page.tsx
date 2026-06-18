@@ -195,10 +195,10 @@ export default async function PrivacyPage() {
                         <PrivacyCallout>
                             <strong className="font-bold text-endurix-black dark:text-foreground">{t('sections.contact.emailLabel')}:</strong>{' '}
                             <a
-                                href="mailto:privacy@endurix.app"
+                                href="mailto:info@endurix.app"
                                 className="text-endurix-orange hover:underline"
                             >
-                                privacy@endurix.app
+                                info@endurix.app
                             </a>
                         </PrivacyCallout>
                     </PrivacySection>

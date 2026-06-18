@@ -8,8 +8,8 @@ import {
 import { AppRole } from '@/lib/supabase/api-helpers';
 import { appLogger } from '@/lib/app-logger';
 
-const FROM_ADDRESS = 'Endurix <info@endurix.app>';
-const WISHLIST_FROM_ADDRESS = 'Endurix Wishlist <wishlist@endurix.app>';
+const FROM_ADDRESS = 'Endurix <invitations@info.endurix.app>';
+const WISHLIST_FROM_ADDRESS = 'Endurix Wishlist <wishlist@info.endurix.app>';
 
 interface SendInvitationEmailParams {
   to: string;
