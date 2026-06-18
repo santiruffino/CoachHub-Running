@@ -62,8 +62,11 @@ export function LapsTable({
     const visibleLaps = laps.map((lap, idx) => ({ lap, idx }))
         .filter(({ idx }) => {
             if (lapFilter === 'all') return true;
+            const lap = laps[idx];
             const matchedLap = matchedLaps.find(m => m.lapIndex === idx);
-            return matchedLap?.stepType === lapFilter;
+            const overrideType = lap ? lapOverrides[lap.lap_index] : undefined;
+            const effectiveType = overrideType || matchedLap?.stepType || 'other';
+            return effectiveType === lapFilter;
         });
 
     const visibleLapIndices = visibleLaps.map(({ lap }) => lap.lap_index);
