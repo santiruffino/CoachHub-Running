@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { appLogger } from '@/lib/app-logger';
 import { apiError } from '@/lib/api/error-response';
+import { normalizeOptionalNumber } from '@/features/profiles/utils/normalizeOptionalNumber';
 
 interface ProfileRequestBody {
   name?: string;
@@ -151,15 +152,17 @@ export async function GET() {
         // Only allow athlete-specific fields
         // Accept both camelCase (from frontend) and snake_case, convert to snake_case for DB
         const { height, weight, injuries, rest_hr, max_hr, vam, uan, dob, restHR, maxHR, lthr, hrZones, ftp } = profileData;
-        if (height !== undefined) filteredData.height = height;
-        if (weight !== undefined) filteredData.weight = weight;
+        if (height !== undefined) filteredData.height = normalizeOptionalNumber(height);
+        if (weight !== undefined) filteredData.weight = normalizeOptionalNumber(weight);
         if (injuries !== undefined) filteredData.injuries = injuries;
         // Accept both camelCase and snake_case
-        if (rest_hr !== undefined) filteredData.rest_hr = rest_hr;
-        if (restHR !== undefined) filteredData.rest_hr = restHR;
-        if (max_hr !== undefined) filteredData.max_hr = max_hr;
-        if (maxHR !== undefined) filteredData.max_hr = maxHR;
-        if (lthr !== undefined) filteredData.lthr = lthr;
+        if (rest_hr !== undefined) filteredData.rest_hr = normalizeOptionalNumber(rest_hr);
+        if (restHR !== undefined) filteredData.rest_hr = normalizeOptionalNumber(restHR);
+        if (max_hr !== undefined) filteredData.max_hr = normalizeOptionalNumber(max_hr);
+        if (maxHR !== undefined) filteredData.max_hr = normalizeOptionalNumber(maxHR);
+        if (lthr !== undefined) {
+          filteredData.lthr = normalizeOptionalNumber(lthr);
+        }
         if (vam !== undefined) filteredData.vam = vam;
         if (uan !== undefined) filteredData.uan = uan;
         if (ftp !== undefined) filteredData.ftp = ftp;

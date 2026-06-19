@@ -767,7 +767,7 @@ export function AssignWorkoutView({
                         >
                             {loading ? tAssign('transmittingData') : tAssign('commitAssignment')}
                         </Button>
-                        <BackButton label={tAssign('cancelExit') || 'Cancelar'} showLabel className="w-full justify-center" variant="outline-brand" />
+                        <BackButton label={tAssign('cancel') || 'Cancelar'} showLabel className="w-full justify-center" variant="outline-brand" />
                     </div>
                 </div>
             </div>

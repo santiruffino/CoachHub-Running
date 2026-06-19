@@ -29,6 +29,7 @@ import {
 } from '@/components/layout/EditorialLayout';
 import { useTranslations } from 'next-intl';
 import { useApiError } from '@/hooks/useApiError';
+import { normalizeOptionalNumber } from '@/features/profiles/utils/normalizeOptionalNumber';
 
 type LegacyAthleteProfile = NonNullable<ProfileDetails['athleteProfile']> & {
     rest_hr?: number;
@@ -226,11 +227,11 @@ export function ProfileForm({ profile }: { profile: ProfileDetails }) {
         try {
             setMessage('');
             setErrorMessage('');
-            if (data.height) data.height = Number(data.height) || undefined;
-            if (data.weight) data.weight = Number(data.weight) || undefined;
-            if (data.restHR) data.restHR = Number(data.restHR) || undefined;
-            if (data.maxHR) data.maxHR = Number(data.maxHR) || undefined;
-            if (data.lthr) data.lthr = Number(data.lthr) || undefined;
+            data.height = normalizeOptionalNumber(data.height);
+            data.weight = normalizeOptionalNumber(data.weight);
+            data.restHR = normalizeOptionalNumber(data.restHR);
+            data.maxHR = normalizeOptionalNumber(data.maxHR);
+            data.lthr = normalizeOptionalNumber(data.lthr);
 
             await profileService.updateProfile(data);
             setMessage('success');

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
-import { requireAuth } from '@/lib/supabase/api-helpers';
 import { appLogger } from '@/lib/app-logger';
 import { apiError } from '@/lib/api/error-response';
 import { appendAdminActionLog } from '@/lib/audit/admin-action-log';
@@ -101,8 +100,11 @@ export async function GET(
             );
         }
 
-        // Coaches can view any assignment, but can only edit if they own the training or are on the same team
-        const canEdit = (userRole === 'COACH' || userRole === 'ADMIN') && !!profile?.team_id && training.team_id === profile.team_id;
+        // Pending assignments can be edited by the owning coach or any admin
+        const canEdit = !assignment.completed && (
+            userRole === 'ADMIN' ||
+            (userRole === 'COACH' && !!profile?.team_id && training.team_id === profile.team_id)
+        );
         const groupRelation = (assignment as unknown as { group?: AssignmentGroup | AssignmentGroup[] | null }).group;
         const groupName = Array.isArray(groupRelation) ? groupRelation[0]?.name : groupRelation?.name;
 
@@ -111,6 +113,7 @@ export async function GET(
             scheduledDate: assignment.scheduled_date,
             completed: assignment.completed,
             expectedRpe: assignment.expected_rpe,
+            workoutName: (assignment as { workout_name?: string | null }).workout_name ?? null,
             sourceGroupId: assignment.source_group_id,
             groupName,
             training: {
@@ -155,7 +158,7 @@ export async function PATCH(
             return response;
         }
 
-        if (!profile?.team_id) {
+        if (profile!.role !== 'ADMIN' && !profile?.team_id) {
             return NextResponse.json(apiError('AUTH_COACH_TEAM_REQUIRED'),
                 { status: 403 }
             );
@@ -163,7 +166,7 @@ export async function PATCH(
             
         const assignmentId = id;
         const body = await request.json();
-        const { blocks, expectedRpe, scheduledDate, applyToGroup } = body;
+        const { blocks, expectedRpe, scheduledDate, workoutName, applyToGroup } = body;
 
         // Fetch assignment with training to verify ownership and get group info
         const { data: assignment, error: fetchError } = await supabase
@@ -191,10 +194,17 @@ export async function PATCH(
             );
         }
 
-        const training = assignment.training as unknown as TrainingForResponse;
+        if (assignment.completed) {
+            return NextResponse.json(apiError('AUTH_UPDATE_ASSIGNMENT_FORBIDDEN'),
+                { status: 403 }
+            );
+        }
 
-        // Verify training belongs to coach team
-        if (training.team_id !== profile.team_id) {
+        const training = assignment.training as unknown as TrainingForResponse;
+        const actorTeamId = profile?.team_id ?? training.team_id;
+
+        // Verify training belongs to coach team unless this is a global admin
+        if (profile!.role === 'COACH' && training.team_id !== profile.team_id) {
             return NextResponse.json(apiError('AUTH_UPDATE_ASSIGNMENT_FORBIDDEN'),
                 { status: 403 }
             );
@@ -218,7 +228,7 @@ export async function PATCH(
                     is_template: false,
                     coach_id: user!.id,
                     created_by: user!.id,
-                    team_id: profile.team_id,
+                    team_id: actorTeamId,
                 })
                 .select()
                 .single();
@@ -247,6 +257,12 @@ export async function PATCH(
         // 2. Handle Rescheduling
         if (scheduledDate) {
             updatePayload.scheduled_date = scheduledDate;
+        }
+
+        if (workoutName !== undefined) {
+            updatePayload.workout_name = typeof workoutName === 'string' && workoutName.trim()
+                ? workoutName.trim()
+                : null;
         }
 
         // 3. Handle RPE Update
@@ -293,7 +309,7 @@ export async function PATCH(
                 await appendAdminActionLog({
                     actorId: user!.id,
                     actorRole: 'ADMIN',
-                    teamId: profile!.team_id!,
+                    teamId: actorTeamId,
                     action: 'training_assignment.updated',
                     targetType: 'training_assignment',
                     targetId: assignmentId,

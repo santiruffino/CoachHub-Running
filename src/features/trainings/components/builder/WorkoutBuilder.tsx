@@ -21,6 +21,7 @@ interface WorkoutBuilderProps {
   readOnly?: boolean;
   trainingType?: TrainingType;
   footerContent?: ReactNode;
+  compactLayout?: boolean;
 }
 
 export function WorkoutBuilder({
@@ -29,7 +30,8 @@ export function WorkoutBuilder({
                                   athleteId,
                                   readOnly = false,
                                   trainingType = TrainingType.RUNNING,
-                                  footerContent
+                                  footerContent,
+                                  compactLayout = false
                                 }: WorkoutBuilderProps) {
   const [localBlocks, setLocalBlocks] = useState<WorkoutBlock[] | null>(null);
   const blocks = localBlocks ?? initialBlocks;
@@ -220,7 +222,7 @@ export function WorkoutBuilder({
 
   if (readOnly) {
     return (
-      <div className="h-full bg-[#f8f9fa] dark:bg-[#0a0f14] text-[#2b3437] dark:text-[#f8f9fa] p-4">
+        <div className={`h-full bg-[#f8f9fa] dark:bg-[#0a0f14] text-[#2b3437] dark:text-[#f8f9fa] ${compactLayout ? 'p-3' : 'p-4'}`}>
         <div className="text-sm text-[#4e6073] mb-4 font-inter">{t('readOnlyMode')}</div>
         <EstimatedTotals blocks={blocks}/>
         <div className="mt-8">
@@ -234,8 +236,8 @@ export function WorkoutBuilder({
     <div className="h-full w-full bg-[#f8f9fa] dark:bg-[#0a0f14] flex font-inter overflow-hidden relative">
       {/* Left Sidebar - Always Visible */}
       <div
-        className="w-64 shrink-0 bg-white dark:bg-[#0d1117] border-r border-[#e2e8f0] dark:border-white/5 overflow-hidden z-10 flex flex-col">
-        <div className="flex-1 overflow-y-auto p-6">
+        className={`shrink-0 bg-white dark:bg-[#0d1117] border-r border-[#e2e8f0] dark:border-white/5 overflow-hidden z-10 flex flex-col ${compactLayout ? 'w-56' : 'w-64'}`}>
+        <div className={`flex-1 overflow-y-auto ${compactLayout ? 'p-4' : 'p-6'}`}>
           {/* Add Step Buttons */}
           <div className="mb-6">
             <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#8b9bb4] mb-4">
@@ -297,7 +299,7 @@ export function WorkoutBuilder({
           </div>
 
           {/* Session Summary */}
-          <div className="border-t border-[#e2e8f0] dark:border-white/10 pt-6">
+          <div className={`border-t border-[#e2e8f0] dark:border-white/10 ${compactLayout ? 'pt-4' : 'pt-6'}`}>
             <SessionSummary blocks={blocks} athleteProfile={athleteProfile} trainingType={trainingType} compact />
           </div>
         </div>

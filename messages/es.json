@@ -852,6 +852,8 @@
             "executed": "Ejecutado",
             "pendingExecution": "Ejecución Pendiente",
             "scheduled": "Programado",
+            "scheduledDate": "Fecha programada",
+            "workoutName": "Nombre del entrenamiento",
             "targetAthlete": "Atleta Objetivo",
             "targetRpeConstraint": "Restricción de RPE Objetivo",
             "enduranceLoad": "Carga de Resistencia",
@@ -1345,6 +1347,7 @@
     "common": {
         "loading": "Cargando...",
         "upcoming": "Próximamente",
+        "addWorkout": "Añadir entrenamiento",
         "save": "Guardar",
         "cancel": "Cancelar",
         "confirm": "Confirmar",
@@ -2122,10 +2125,11 @@
             "FAILED_TO_UPDATE_GROUP": "Error al actualizar el grupo.",
             "FAILED_TO_DELETE_GROUP": "Error al eliminar el grupo.",
             "FAILED_TO_UPDATE_PROFILE": "Error al actualizar tu perfil.",
+            "FAILED_TO_UPDATE_ROLE_PROFILE": "Error al actualizar el perfil del entrenador.",
             "RACES_FETCH_FAILED": "Error al obtener el listado de carreras.",
             "RACE_ASSIGN_FAILED": "Error al asignar la carrera al atleta.",
             "RACE_UPDATE_FAILED": "Error al actualizar la carrera.",
-             "RACE_DELETE_FAILED": "Error al eliminar la carrera."
+            "RACE_DELETE_FAILED": "Error al eliminar la carrera."
         }
     },
     "notFound": {

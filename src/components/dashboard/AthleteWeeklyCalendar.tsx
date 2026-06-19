@@ -9,6 +9,7 @@ import { Activity } from '@/interfaces/activity';
 import { ChevronLeft, ChevronRight, CalendarDays, CircleCheckBig, ActivitySquare, Medal } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import { Button } from '@/components/ui/button';
 import { normalizeActivityType } from '@/utils/activity-utils';
 import { MonospaceLabel } from '@/components/dashboard';
 import { CalendarDayColumn } from '@/components/calendar/CalendarDayColumn';
@@ -82,6 +83,8 @@ export function AthleteWeeklyCalendar({ weekStart, assignments, activities, race
     const { view, anchorDate, visibleDays, monthLabel, weekLabel, updateCalendar, navigate, goToday } = useCalendarView({
         fallbackDate: weekStart,
     });
+    const targetAthleteId = assignments[0]?.athlete?.id || assignments[0]?.user?.id || null;
+    const addWorkoutHref = targetAthleteId ? `/workouts/assign?athleteId=${encodeURIComponent(targetAthleteId)}` : '/workouts/assign';
 
     return (
         <div className="space-y-4">
@@ -206,7 +209,7 @@ export function AthleteWeeklyCalendar({ weekStart, assignments, activities, race
                                             key={item.id}
                                             href={`/activities/${item.matchingActivity.id}`}
                                             tone="completed"
-                                            label="DONE"
+                                            label={t('calendar.done')}
                                             title={nameText}
                                             meta={item.matchingActivity.duration > 0 ? formatDuration(item.matchingActivity.duration) : undefined}
                                             icon={<CircleCheckBig className="h-3 w-3" />}
@@ -266,10 +269,17 @@ export function AthleteWeeklyCalendar({ weekStart, assignments, activities, race
                                         <CalendarRestDayPlaceholder
                                             className="min-h-[92px] border border-dashed border-endurix-black/15 dark:border-border flex flex-col gap-2 items-center justify-center bg-transparent"
                                             iconClassName="w-4 h-4 text-endurix-black/30 dark:text-muted-foreground/50"
-                                            label={
-                                                <MonospaceLabel color="muted" size="xs">
-                                                    {t('calendar.restDay')}
-                                                </MonospaceLabel>
+                                        label={
+                                                <div className="flex flex-col items-center gap-2">
+                                                    <MonospaceLabel color="muted" size="xs">
+                                                        {t('calendar.restDay')}
+                                                    </MonospaceLabel>
+                                                    <Button asChild size="sm" variant="outline" className="h-6 w-6 p-0 rounded-full border-endurix-orange/30 text-endurix-orange hover:bg-endurix-orange/10">
+                                                        <Link href={addWorkoutHref} aria-label={t('common.addWorkout')} title={t('common.addWorkout')}>
+                                                            +
+                                                        </Link>
+                                                    </Button>
+                                                </div>
                                             }
                                         />
                                     ) : (
@@ -296,9 +306,16 @@ export function AthleteWeeklyCalendar({ weekStart, assignments, activities, race
                                             className="h-32 mt-6 border border-dashed border-endurix-black/15 dark:border-border flex flex-col gap-2 items-center justify-center bg-transparent"
                                             iconClassName="w-5 h-5 text-endurix-black/30 dark:text-muted-foreground/50"
                                             label={
-                                                <MonospaceLabel color="muted" size="xs">
-                                                    {t('calendar.restDay')}
-                                                </MonospaceLabel>
+                                                <div className="flex flex-col items-center gap-2">
+                                                    <MonospaceLabel color="muted" size="xs">
+                                                        {t('calendar.restDay')}
+                                                    </MonospaceLabel>
+                                                    <Button asChild size="sm" variant="outline" className="h-6 w-6 p-0 rounded-full border-endurix-orange/30 text-endurix-orange hover:bg-endurix-orange/10">
+                                                        <Link href={addWorkoutHref} aria-label={t('common.addWorkout')} title={t('common.addWorkout')}>
+                                                            +
+                                                        </Link>
+                                                    </Button>
+                                                </div>
                                             }
                                         />
                                     )}

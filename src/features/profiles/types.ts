@@ -9,12 +9,12 @@ export interface UpdateProfileDto {
     bio?: string;
     specialty?: string;
     experience?: string;
-    height?: number | string;
-    weight?: number | string;
+    height?: number | string | null;
+    weight?: number | string | null;
     injuries?: string;
-    restHR?: number | string;
-    maxHR?: number | string;
-    lthr?: number | string;
+    restHR?: number | string | null;
+    maxHR?: number | string | null;
+    lthr?: number | string | null;
     vam?: string;
     uan?: string;
     dob?: string;

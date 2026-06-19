@@ -1,17 +1,7 @@
 'use client';
 
 import React from 'react';
-import {
-  ComposedChart,
-  Line,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-} from 'recharts';
+import { Bar, CartesianGrid, Cell, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis, } from 'recharts';
 import { Lap } from '@/interfaces/activity';
 import { useTranslations } from 'next-intl';
 import { MatchedLap } from '@/features/trainings/utils/workoutMatcher';
@@ -78,13 +68,13 @@ const toFiniteNumber = (value: unknown): number | null => {
 };
 
 function IntervalsTooltip({
-  active,
-  payload,
-  label,
-  isRunning,
-  labels,
-  formatPace,
-}: IntervalsTooltipProps) {
+                            active,
+                            payload,
+                            label,
+                            isRunning,
+                            labels,
+                            formatPace,
+                          }: IntervalsTooltipProps) {
   if (!active || !payload || payload.length === 0) {
     return null;
   }
@@ -99,7 +89,8 @@ function IntervalsTooltip({
   return (
     <div className="bg-card border border-border p-3">
       <div className="flex items-center justify-between gap-4 mb-2">
-        <p className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground uppercase tracking-widest" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>{label}</p>
+        <p className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground uppercase tracking-widest"
+           style={{fontFamily: 'var(--font-ibm-plex-mono, monospace)'}}>{label}</p>
         <Badge
           variant="outline"
           className="text-[10px] h-5 px-1.5 font-bold uppercase tracking-tight"
@@ -148,7 +139,8 @@ function IntervalsTooltip({
               >
                 {entryLabel}
               </span>
-              <span className="text-xs font-bold text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
+              <span className="text-xs font-bold text-endurix-black dark:text-foreground"
+                    style={{fontFamily: 'var(--font-ibm-plex-mono, monospace)'}}>
                 {renderedValue}
                 {unit}
               </span>
@@ -160,14 +152,16 @@ function IntervalsTooltip({
   );
 }
 
-export function IntervalsAnalysisChart({ 
-  laps, 
-  isRunning, 
-  lapOverrides = {}, 
-  matchedLaps = []
-}: IntervalsAnalysisChartProps) {
+export function IntervalsAnalysisChart({
+                                         laps,
+                                         isRunning,
+                                         lapOverrides = {},
+                                         matchedLaps = []
+                                       }: IntervalsAnalysisChartProps) {
   const t = useTranslations('activities.detail');
   const [activeLapIndex, setActiveLapIndex] = React.useState<number | null>(null);
+  const [showHr, setShowHr] = React.useState(true);
+  const [showCadence, setShowCadence] = React.useState(false);
 
   if (!laps || laps.length === 0) return null;
 
@@ -208,11 +202,11 @@ export function IntervalsAnalysisChart({
   const chartData: ChartDataPoint[] = laps.map((lap, index) => {
     // If lap_index starts at 0, we display as 1-based
     const displayIndex = lap.lap_index === 0 || (laps[0]?.lap_index === 0) ? lap.lap_index + 1 : lap.lap_index;
-    
+
     const overrideType = lapOverrides[lap.lap_index.toString()];
     const matchedLap = matchedLaps.find(m => m.lapIndex === index);
     const effectiveType = (overrideType || matchedLap?.stepType || 'other') as keyof typeof BLOCK_COLORS;
-    
+
     const fallbackLabel = `${t('table.lap') || 'Lap'} ${displayIndex}`;
     const label = overrideType ? overrideLabels[overrideType] : (matchedLap ? matchedLap.stepLabel : fallbackLabel);
 
@@ -229,30 +223,50 @@ export function IntervalsAnalysisChart({
 
   return (
     <div className="w-full space-y-6">
-      <div className="flex items-center justify-between px-2">
+      <div className="flex items-center justify-between px-2 gap-4 flex-wrap">
         <h3
           className="text-base uppercase tracking-widest font-bold text-endurix-black dark:text-foreground"
-          style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+          style={{fontFamily: 'var(--font-exo-2, sans-serif)'}}
         >
-          {t('charts.intervalsAnalysis') || 'Análisis de Intervalos'}
+          {t('charts.intervalsAnalysis')}
         </h3>
-        <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
-           <div className="flex items-center gap-1.5">
-             <div className="w-2 h-2 bg-slate-400" />
-              <span>{t('table.avgHr') || 'HR'}</span>
-           </div>
-           <div className="flex items-center gap-1.5">
-               <div className="w-2 h-2 bg-red-500" />
-               <span>{t('table.avgPace') || 'Pace'}</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-               <div className="w-2 h-2 bg-cyan-400" />
-               <span>{t('table.cadence') || 'Cadence'}</span>
-            </div>
-         </div>
+        <div
+          className="flex items-center gap-2 flex-wrap text-[10px] font-bold uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground"
+          style={{fontFamily: 'var(--font-ibm-plex-mono, monospace)'}}>
+          <span
+            className="inline-flex items-center gap-1.5 rounded-full border border-orange-500/30 bg-orange-500/15 px-3 py-1.5 text-orange-700 dark:text-orange-300">
+              <span className="w-2 h-2 rounded-full bg-orange-500"/>
+              {t('table.avgPace')}
+          </span>
+          <button
+            type="button"
+            onClick={() => setShowHr((current) => !current)}
+            aria-pressed={showHr}
+            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 transition-all ${showHr
+              ? 'border-red-500/30 bg-red-500/15 text-red-700 dark:text-red-300'
+              : 'border-dashed border-red-500/25 bg-transparent text-red-600/60 hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-700 dark:text-red-400/60 dark:hover:text-red-300'
+            }`}
+          >
+            <span className="w-2 h-2 rounded-full bg-red-500"/>
+            {t('table.avgHr')}{!showHr ? ' +' : ' ×'}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setShowCadence((current) => !current)}
+            aria-pressed={showCadence}
+            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 transition-all ${showCadence
+              ? 'border-cyan-500/30 bg-cyan-500/15 text-cyan-700 dark:text-cyan-300'
+              : 'border-dashed border-cyan-500/25 bg-transparent text-cyan-600/70 hover:border-cyan-500/40 hover:bg-cyan-500/10 hover:text-cyan-700 dark:text-cyan-400/70 dark:hover:text-cyan-300'
+            }`}
+          >
+            <span className={`w-2 h-2 rounded-full ${showCadence ? 'bg-cyan-400' : 'bg-cyan-400/50'}`}/>
+            {t('table.cadence')}{!showCadence ? ' +' : ' ×'}
+          </button>
+        </div>
       </div>
-      
-      <div className="h-[400px] w-full">
+
+      <div className="h-100 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart
             data={chartData}
@@ -269,28 +283,28 @@ export function IntervalsAnalysisChart({
               left: 0,
             }}
           >
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border) / 0.1)" />
-            <XAxis 
-              dataKey="name" 
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border) / 0.1)"/>
+            <XAxis
+              dataKey="name"
               axisLine={false}
               tickLine={false}
-              tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12, fontWeight: '500' }}
+              tick={{fill: 'hsl(var(--muted-foreground))', fontSize: 12, fontWeight: '500'}}
               dy={10}
             />
             {/* Heart rate axis */}
-            <YAxis 
+            <YAxis
               yAxisId="left"
               axisLine={false}
               tickLine={false}
-              tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: '10px' }}
+              tick={{fill: 'hsl(var(--muted-foreground))', fontSize: '10px'}}
               domain={[0, 'auto']}
               width={35}
-              label={{ 
-                value: 'bpm', 
-                angle: -90, 
-                position: 'insideLeft', 
+              label={{
+                value: 'bpm',
+                angle: -90,
+                position: 'insideLeft',
                 fill: 'hsl(var(--muted-foreground))',
-                style: { textAnchor: 'middle', fontSize: 10, fontWeight: 600 }
+                style: {textAnchor: 'middle', fontSize: 10, fontWeight: 600}
               }}
             />
 
@@ -305,24 +319,24 @@ export function IntervalsAnalysisChart({
             />
 
             {/* Pace axis */}
-            <YAxis 
+            <YAxis
               yAxisId="right"
               orientation="right"
               axisLine={false}
               tickLine={false}
-              tick={{ fill: 'rgb(239 68 68)', fontSize: '10px' }}
+              tick={{fill: 'gray', fontSize: '10px'}}
               domain={['auto', 'auto']}
               width={45}
               tickFormatter={(val) => isRunning ? formatPace(val) : `${val}`}
-              label={{ 
-                value: isRunning ? 'min/km' : 'km/h', 
-                angle: 90, 
+              label={{
+                value: isRunning ? 'min/km' : 'km/h',
+                angle: 90,
                 position: 'insideRight',
-                fill: 'rgb(239 68 68)',
-                style: { textAnchor: 'middle', fontSize: 10, fontWeight: 600 }
+                fill: 'gray',
+                style: {textAnchor: 'middle', fontSize: 10, fontWeight: 600}
               }}
             />
-            
+
             <Tooltip
               content={
                 <IntervalsTooltip
@@ -333,17 +347,16 @@ export function IntervalsAnalysisChart({
               }
             />
 
-            {/* Main bar: heart rate */}
-            <Bar 
-              yAxisId="left" 
-              dataKey="hr" 
-              name={t('table.avgHr') || 'Pulso'} 
-              barSize={34} 
+            <Bar
+              yAxisId="right"
+              dataKey="pace"
+              name={t('table.avgPace') || 'Ritmo'}
+              barSize={34}
               radius={[6, 6, 0, 0]}
               fillOpacity={0.55}
               fill={BLOCK_COLORS.other}
               label={(props) => {
-                const { x, y, width, index, value } = props;
+                const {x, y, width, index, value} = props;
                 const numericValue = toFiniteNumber(value);
                 if (
                   index !== activeLapIndex ||
@@ -365,97 +378,99 @@ export function IntervalsAnalysisChart({
                     fontSize={10}
                     fontWeight={700}
                   >
-                    {Math.round(numericValue)} bpm
+                    {isRunning ? `${formatPace(numericValue)} /km` : `${numericValue.toFixed(1)} km/h`}
                   </text>
                 );
               }}
             >
-                {chartData.map((entry, index) => (
-                    <Cell 
-                        key={`cell-${index}`} 
-                        fill={BLOCK_COLORS[entry.type as keyof typeof BLOCK_COLORS] || BLOCK_COLORS.other}
-                        className="transition-all duration-300 hover:opacity-100"
-                    />
-                ))}
+              {chartData.map((entry, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={BLOCK_COLORS[entry.type as keyof typeof BLOCK_COLORS] || BLOCK_COLORS.other}
+                  className="transition-all duration-300 hover:opacity-100"
+                />
+              ))}
             </Bar>
 
-            {/* Overlay bar: cadence (same lap, separate axis) */}
-            <Bar
-              yAxisId="cadence"
-              dataKey="cadence"
-              name={t('table.cadence') || 'Cadencia'}
-              barSize={10}
-              radius={[4, 4, 0, 0]}
-              fill="#22d3ee"
-              fillOpacity={0.95}
-              label={(props) => {
-                const { x, y, width, index, value } = props;
-                const numericValue = toFiniteNumber(value);
-                if (
-                  index !== activeLapIndex ||
-                  numericValue === null ||
-                  numericValue === 0 ||
-                  typeof x !== 'number' ||
-                  typeof y !== 'number' ||
-                  typeof width !== 'number'
-                ) {
-                  return null;
-                }
+            {showCadence && (
+              <Bar
+                yAxisId="cadence"
+                dataKey="cadence"
+                name={t('table.cadence') || 'Cadencia'}
+                barSize={10}
+                radius={[4, 4, 0, 0]}
+                fill="#22d3ee"
+                fillOpacity={0.95}
+                label={(props) => {
+                  const {x, y, width, index, value} = props;
+                  const numericValue = toFiniteNumber(value);
+                  if (
+                    index !== activeLapIndex ||
+                    numericValue === null ||
+                    numericValue === 0 ||
+                    typeof x !== 'number' ||
+                    typeof y !== 'number' ||
+                    typeof width !== 'number'
+                  ) {
+                    return null;
+                  }
 
-                return (
-                  <text
-                    x={x + width / 2}
-                    y={y - 6}
-                    fill="#22d3ee"
-                    textAnchor="middle"
-                    fontSize={10}
-                    fontWeight={700}
-                  >
-                    {Math.round(numericValue)} spm
-                  </text>
-                );
-              }}
-            />
+                  return (
+                    <text
+                      x={x + width / 2}
+                      y={y - 6}
+                      fill="#22d3ee"
+                      textAnchor="middle"
+                      fontSize={10}
+                      fontWeight={700}
+                    >
+                      {Math.round(numericValue)} spm
+                    </text>
+                  );
+                }}
+              />
+            )}
 
-            {/* Pace line */}
-            <Line
-              yAxisId="right"
-              type="monotone"
-              dataKey="pace"
-              name={t('table.avgPace') || 'Ritmo'}
-              stroke="rgb(239 68 68)" // orange-500
-              strokeWidth={4}
-              dot={{ r: 5, fill: 'rgb(239 68 68)', strokeWidth: 2, stroke: '#fff' }}
-              activeDot={{ r: 7, strokeWidth: 0 }}
-              connectNulls
-              label={(props) => {
-                const { x, y, index, value } = props;
-                const numericValue = toFiniteNumber(value);
-                if (
-                  index !== activeLapIndex ||
-                  numericValue === null ||
-                  numericValue === 0 ||
-                  typeof x !== 'number' ||
-                  typeof y !== 'number'
-                ) {
-                  return null;
-                }
+            {/* Heart rate line */}
+            {showHr && (
+              <Line
+                yAxisId="left"
+                type="monotone"
+                dataKey="hr"
+                name={t('table.avgHr') || 'Pulso'}
+                stroke="#EF4444FF"
+                strokeWidth={4}
+                dot={{r: 5, fill: '#EF4444FF', strokeWidth: 2, stroke: '#EF4444FF'}}
+                activeDot={{r: 7, strokeWidth: 0}}
+                connectNulls
+                label={(props) => {
+                  const {x, y, index, value} = props;
+                  const numericValue = toFiniteNumber(value);
+                  if (
+                    index !== activeLapIndex ||
+                    numericValue === null ||
+                    numericValue === 0 ||
+                    typeof x !== 'number' ||
+                    typeof y !== 'number'
+                  ) {
+                    return null;
+                  }
 
-                const paceLabel = isRunning ? `${formatPace(numericValue)} /km` : `${numericValue.toFixed(1)} km/h`;
-                return (
-                  <text
-                    x={x}
-                    y={y - 12}
-                    fill="rgb(239 68 68)"
-                    textAnchor="middle"
-                    fontSize={10}
-                    fontWeight={700}
-                  >
-                    {paceLabel}
-                  </text>
-                );
-              }}
-            />
+                  return (
+                    <text
+                      x={x}
+                      y={y - 12}
+                      fill="#94a3b8"
+                      textAnchor="middle"
+                      fontSize={10}
+                      fontWeight={700}
+                    >
+                      {Math.round(numericValue)} bpm
+                    </text>
+                  );
+                }}
+              />
+            )}
           </ComposedChart>
         </ResponsiveContainer>
       </div>

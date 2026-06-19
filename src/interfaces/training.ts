@@ -27,6 +27,7 @@ export interface TrainingAssignment {
     scheduled_date?: string; // SnakeCase version used in others
     completed: boolean;
     expectedRpe?: number;
+    workoutName?: string | null;
     training: Training;
     athlete?: {
         id: string;
