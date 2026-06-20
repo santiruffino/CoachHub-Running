@@ -175,6 +175,7 @@ export async function PATCH(
                 id,
                 training_id,
                 scheduled_date,
+                completed,
                 source_group_id,
                 training:trainings!inner(
                     id,

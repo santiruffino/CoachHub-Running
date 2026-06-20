@@ -91,6 +91,7 @@ export function ActivityChartsTabs({
   const tabs: Array<{ key: TabType; label: string; hidden?: boolean }> = [
     { key: 'streams', label: t('charts.liveTracking'), hidden: isWeight },
     { key: 'intervals', label: t('charts.intervalsAnalysis'), hidden: isWeight || (!hasLaps && !hasSplits) },
+    { key: 'analysis', label: t('tabs.analysis'), hidden: isWeight },
   ];
 
   const visibleTabs = tabs.filter((tab) => !tab.hidden);

@@ -3,8 +3,62 @@ import { redirect } from 'next/navigation';
 import { ActivityDetailView } from './components/ActivityDetailView';
 
 import { SupabaseClient } from '@supabase/supabase-js';
+import type { HeartRateZones } from '@/interfaces/athlete';
+import type { ActivityDetail } from '@/interfaces/activity';
 
 export const dynamic = 'force-dynamic';
+
+type ActivityRow = {
+    id: string | number;
+    user_id: string;
+    metadata?: Record<string, unknown> | null;
+    title?: string | null;
+    distance?: number | null;
+    duration?: number | null;
+    elapsed_time?: number | null;
+    elevation_gain?: number | null;
+    sport_type?: string | null;
+    type?: string | null;
+    start_date?: string | null;
+    start_date_local?: string | null;
+    average_speed?: number | null;
+    max_speed?: number | null;
+    avg_hr?: number | null;
+    max_hr?: number | null;
+    average_cadence?: number | null;
+    laps?: ActivityDetail['laps'] | null;
+    lap_overrides?: Record<string, string> | null;
+};
+
+type AthleteProfileRow = {
+    athlete_profile?: {
+        hr_zones?: HeartRateZones | Array<{ min: number; max: number }> | null;
+    } | null;
+};
+
+type ActivityMetadata = Partial<Pick<
+    ActivityDetail,
+    | 'name'
+    | 'distance'
+    | 'moving_time'
+    | 'elapsed_time'
+    | 'total_elevation_gain'
+    | 'type'
+    | 'sport_type'
+    | 'start_date'
+    | 'start_date_local'
+    | 'timezone'
+    | 'achievement_count'
+    | 'kudos_count'
+    | 'average_speed'
+    | 'max_speed'
+    | 'average_heartrate'
+    | 'max_heartrate'
+    | 'average_cadence'
+    | 'laps'
+    | 'splits_metric'
+    | 'splits_standard'
+>>;
 
 export default async function ActivityDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = await params;
@@ -41,13 +95,13 @@ export default async function ActivityDetailPage({ params }: { params: Promise<{
         }
         
         // Re-assign to use the found record
-        return renderActivityDetail(supabase, user, stravaActivity);
+        return renderActivityDetail(supabase, user, stravaActivity as ActivityRow);
     }
 
-    return renderActivityDetail(supabase, user, activity);
+    return renderActivityDetail(supabase, user, activity as ActivityRow);
 }
 
-async function renderActivityDetail(supabase: SupabaseClient, user: { id: string }, activity: Record<string, any>) {
+async function renderActivityDetail(supabase: SupabaseClient, user: { id: string }, activity: ActivityRow) {
     const ownerId = activity.user_id;
     const internalId = activity.id;
 
@@ -58,9 +112,9 @@ async function renderActivityDetail(supabase: SupabaseClient, user: { id: string
         supabase.from('activity_feedback').select('*').eq('activity_id', internalId).single()
     ]);
 
-    const compliance = complianceRes.status === 'fulfilled' ? complianceRes.value.data as Record<string, any> : null;
-    const userProfile = userDetailsRes.status === 'fulfilled' ? userDetailsRes.value.data as Record<string, any> : null;
-    const feedback = feedbackRes.status === 'fulfilled' ? feedbackRes.value.data as Record<string, any> : null;
+    const compliance = complianceRes.status === 'fulfilled' ? complianceRes.value.data as Record<string, unknown> : null;
+    const userProfile = userDetailsRes.status === 'fulfilled' ? userDetailsRes.value.data as AthleteProfileRow : null;
+    const feedback = feedbackRes.status === 'fulfilled' ? feedbackRes.value.data as Record<string, unknown> : null;
 
     // 3. Fetch assignments in parallel
     const { data: assignments } = await supabase
@@ -72,13 +126,13 @@ async function renderActivityDetail(supabase: SupabaseClient, user: { id: string
     // Merge metadata first so rich fields (laps, splits, start_date_local…) are
     // available, then overlay the authoritative DB columns with the names the
     // component expects (Strava-style field names).
-    const metadata: Record<string, unknown> = (activity.metadata as Record<string, unknown>) ?? {};
-    const initialActivity = {
+    const metadata: ActivityMetadata = (activity.metadata as ActivityMetadata) ?? {};
+    const initialActivity: ActivityDetail = {
         // 1. Rich Strava payload (laps, splits_metric, start_date_local, etc.)
         ...metadata,
         // 2. Authoritative DB columns, mapped to Strava-style names
         id: activity.id,
-        name: activity.title ?? metadata.name,
+        name: activity.title ?? metadata.name ?? '',
         distance: activity.distance ?? metadata.distance ?? 0,
         moving_time: activity.duration ?? metadata.moving_time ?? 0,
         elapsed_time: activity.elapsed_time ?? metadata.elapsed_time ?? 0,
@@ -87,31 +141,37 @@ async function renderActivityDetail(supabase: SupabaseClient, user: { id: string
         type: activity.type ?? metadata.type ?? '',
         start_date: activity.start_date ?? metadata.start_date ?? '',
         start_date_local: activity.start_date_local ?? metadata.start_date_local ?? activity.start_date ?? metadata.start_date ?? '',
+        timezone: metadata.timezone ?? '',
+        achievement_count: metadata.achievement_count ?? 0,
+        kudos_count: metadata.kudos_count ?? 0,
         average_speed: activity.average_speed ?? metadata.average_speed ?? 0,
         max_speed: activity.max_speed ?? metadata.max_speed ?? 0,
-        average_heartrate: activity.avg_hr ?? metadata.average_heartrate ?? null,
-        max_heartrate: activity.max_hr ?? metadata.max_heartrate ?? null,
-        average_cadence: activity.average_cadence ?? metadata.average_cadence ?? null,
-        laps: metadata.laps ?? activity.laps ?? null,
-        splits_metric: metadata.splits_metric ?? null,
-        splits_standard: metadata.splits_standard ?? null,
-        lap_overrides: activity.lap_overrides ?? null,
+        average_heartrate: activity.avg_hr ?? metadata.average_heartrate,
+        max_heartrate: activity.max_hr ?? metadata.max_heartrate,
+        average_cadence: activity.average_cadence ?? metadata.average_cadence,
+        laps: metadata.laps ?? activity.laps ?? undefined,
+        splits_metric: metadata.splits_metric,
+        splits_standard: metadata.splits_standard,
+        lap_overrides: activity.lap_overrides ?? undefined,
         // 3. Internal fields
-        _internalId: internalId,
+        _internalId: String(internalId),
         _ownerId: ownerId,
         _viewerIsOwner: ownerId === user.id,
     };
 
-    const initialHRZones = userProfile?.athlete_profile?.hr_zones || null;
+    const rawHrZones = userProfile?.athlete_profile?.hr_zones;
+    const initialHRZones: HeartRateZones | null = Array.isArray(rawHrZones)
+        ? { zones: rawHrZones }
+        : (rawHrZones || null);
 
     return (
         <ActivityDetailView
-            id={activity.id}
-            initialActivity={initialActivity as any}
-            initialCompliance={compliance as any}
-            initialHRZones={initialHRZones ? { zones: initialHRZones } : null}
-            initialAssignments={(assignments || []) as any}
-            initialFeedback={(feedback ? { ...feedback, comments: feedback.comments || '' } : null) as any}
+            id={String(activity.id)}
+            initialActivity={initialActivity}
+            initialCompliance={compliance as never}
+            initialHRZones={initialHRZones}
+            initialAssignments={(assignments || []) as never}
+            initialFeedback={(feedback ? { ...feedback, comments: (feedback.comments as string | null) || '' } : null) as never}
         />
     );
 }

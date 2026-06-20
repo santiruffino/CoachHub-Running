@@ -26,6 +26,8 @@ interface HrZonesPieChartProps {
   splits?: Split[];
   zones: HeartRateZone[];
   zoneNames?: string[];
+  averageHr?: number | null;
+  totalTimeSeconds?: number | null;
 }
 
 const ZONE_COLORS = ['#94a3b8', '#22c55e', '#eab308', '#f97316', '#ef4444'];
@@ -104,7 +106,36 @@ function CenterLabel({ viewBox, totalTime, formatTime }: CenterLabelProps) {
   );
 }
 
-export function HrZonesPieChart({ laps, splits, zones, zoneNames }: HrZonesPieChartProps) {
+function getZoneIndexForHr(hr: number, zones: HeartRateZone[]): number {
+  if (zones.length === 0) return -1;
+
+  for (let i = 0; i < zones.length; i++) {
+    const zone = zones[i];
+    if (i === zones.length - 1) {
+      if (hr >= zone.min) return i;
+    } else if (hr >= zone.min && hr < zone.max) {
+      return i;
+    }
+  }
+
+  if (hr < zones[0].min) return 0;
+
+  let bestIndex = 0;
+  let bestDistance = Number.POSITIVE_INFINITY;
+
+  zones.forEach((zone, index) => {
+    const midpoint = (zone.min + zone.max) / 2;
+    const distance = Math.abs(hr - midpoint);
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      bestIndex = index;
+    }
+  });
+
+  return bestIndex;
+}
+
+export function HrZonesPieChart({ laps, splits, zones, zoneNames, averageHr, totalTimeSeconds }: HrZonesPieChartProps) {
   const t = useTranslations('activities.detail.zones');
 
   const defaultZoneNames = [
@@ -129,10 +160,28 @@ export function HrZonesPieChart({ laps, splits, zones, zoneNames }: HrZonesPieCh
       return { data: [], totalTime: 0 };
     }
 
-    const zoneDistribution = new Array(zones.length).fill(0);
+    const sortedZones = zones
+      .map((zone, index) => ({
+        zone,
+        name: actualZoneNames[index] || `Z${index + 1}`,
+      }))
+      .sort((a, b) => a.zone.min - b.zone.min);
+
+    const zoneDistribution = new Array(sortedZones.length).fill(0);
     let totalTime = 0;
 
-    const dataSource = laps ?? splits ?? [];
+    const lapSamples = laps ?? [];
+    const splitSamples = splits ?? [];
+    const hasHrSamples = (items: Array<{ average_heartrate?: number; moving_time: number; elapsed_time: number }>) =>
+      items.some((item) => Boolean(item.average_heartrate) && (item.moving_time || item.elapsed_time));
+
+    const dataSource = hasHrSamples(lapSamples)
+      ? lapSamples
+      : hasHrSamples(splitSamples)
+        ? splitSamples
+        : lapSamples.length > 0
+          ? lapSamples
+          : splitSamples;
 
     dataSource.forEach((item) => {
       const hr = item.average_heartrate;
@@ -142,30 +191,59 @@ export function HrZonesPieChart({ laps, splits, zones, zoneNames }: HrZonesPieCh
 
       totalTime += time;
 
-      for (let i = 0; i < zones.length; i++) {
-        const zone = zones[i];
-        if (i === zones.length - 1) {
-          if (hr >= zone.min) {
-            zoneDistribution[i] += time;
-            break;
-          }
-        } else {
-          if (hr >= zone.min && hr < zone.max) {
-            zoneDistribution[i] += time;
-            break;
-          }
-        }
+      const zoneIndex = getZoneIndexForHr(hr, sortedZones.map((entry) => entry.zone));
+      if (zoneIndex !== -1) {
+        zoneDistribution[zoneIndex] += time;
       }
     });
+
+    const data = zoneDistribution
+      .map((time, index) => {
+        const zoneEntry = sortedZones[index];
+        if (!zoneEntry) {
+          return { zone: index + 1, name: actualZoneNames[index], time, percentage: 0, bpmRange: '' };
+        }
+        const zone = zoneEntry.zone;
+        return {
+          zone: index + 1,
+          name: zoneEntry.name,
+          time,
+          percentage: totalTime > 0 ? (time / totalTime) * 100 : 0,
+          bpmRange: `${zone.min}-${zone.max} bpm`,
+        };
+      })
+      .filter((d) => d.time > 0);
+
+    if (data.length > 0) {
+      return { data, totalTime };
+    }
+
+    if (averageHr && totalTimeSeconds && totalTimeSeconds > 0) {
+      const fallbackZoneIndex = getZoneIndexForHr(averageHr, sortedZones.map((entry) => entry.zone));
+      if (fallbackZoneIndex !== -1) {
+        const fallbackData = sortedZones.map((entry, index) => ({
+          zone: index + 1,
+          name: entry.name,
+          time: index === fallbackZoneIndex ? totalTimeSeconds : 0,
+          percentage: index === fallbackZoneIndex ? 100 : 0,
+          bpmRange: `${entry.zone.min}-${entry.zone.max} bpm`,
+        })).filter((d) => d.time > 0);
+
+        return { data: fallbackData, totalTime: totalTimeSeconds };
+      }
+    }
 
     return {
       data: zoneDistribution
         .map((time, index) => {
-          const zone = zones[index];
-          if (!zone) return { zone: index + 1, name: actualZoneNames[index], time, percentage: 0, bpmRange: '' };
+          const zoneEntry = sortedZones[index];
+          if (!zoneEntry) {
+            return { zone: index + 1, name: actualZoneNames[index], time, percentage: 0, bpmRange: '' };
+          }
+          const zone = zoneEntry.zone;
           return {
             zone: index + 1,
-            name: actualZoneNames[index],
+            name: zoneEntry.name,
             time,
             percentage: totalTime > 0 ? (time / totalTime) * 100 : 0,
             bpmRange: `${zone.min}-${zone.max} bpm`,
@@ -180,9 +258,14 @@ export function HrZonesPieChart({ laps, splits, zones, zoneNames }: HrZonesPieCh
 
   if (totalTime === 0) {
     return (
-      <p className="text-sm text-endurix-black/50 dark:text-muted-foreground text-center py-8">
-        {t('noHrData')}
-      </p>
+      <div className="text-center py-8 space-y-2">
+        <p className="text-sm text-endurix-black/50 dark:text-muted-foreground">
+          {t('noHrData')}
+        </p>
+        <p className="text-[10px] uppercase tracking-widest text-endurix-black/35 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
+          No lap or split heart-rate samples were available.
+        </p>
+      </div>
     );
   }
 
@@ -222,6 +305,9 @@ export function HrZonesPieChart({ laps, splits, zones, zoneNames }: HrZonesPieCh
                 dataKey="time"
                 nameKey="name"
                 strokeWidth={0}
+                startAngle={90}
+                endAngle={-270}
+                minAngle={4}
               >
                 {data.map((entry) => (
                   <Cell

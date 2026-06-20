@@ -20,6 +20,7 @@ import { HrZonesPieChart } from '@/app/(dashboard)/activities/components/HrZones
 import { flattenWorkout, matchLapsToWorkout, MatchedLap, RawBlock } from '@/features/trainings/utils/workoutMatcher';
 import { LinkWorkoutModal } from '@/features/trainings/components/LinkWorkoutModal';
 import { ActivityDetail } from '@/interfaces/activity';
+import type { HeartRateZones } from '@/interfaces/athlete';
 import { BackButton } from '@/components/ui/BackButton';
 
 interface ComplianceData {
@@ -51,7 +52,7 @@ interface ActivityDetailViewProps {
     id: string;
     initialActivity: ActivityDetail;
     initialCompliance: ComplianceData | null;
-    initialHRZones: { zones: Array<{ min: number; max: number }> } | null;
+    initialHRZones: HeartRateZones | null;
     initialAssignments: WorkoutAssignment[];
     initialFeedback: { id?: string; rpe: number | null; comments: string | null } | null;
 }
@@ -632,8 +633,13 @@ export function ActivityDetailView({
                         <div className="p-6">
                             <HrZonesPieChart
                                 laps={activity.laps}
-                                splits={activity.splits_metric}
+                                splits={(activity.splits_metric && activity.splits_metric.length > 0)
+                                    ? activity.splits_metric
+                                    : (activity.splits_standard || [])
+                                }
                                 zones={heartrateZones.zones}
+                                averageHr={activity.average_heartrate ?? null}
+                                totalTimeSeconds={activity.moving_time}
                             />
                         </div>
                     </article>
