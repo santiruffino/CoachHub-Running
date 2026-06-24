@@ -504,7 +504,7 @@ export function AthleteDetailsView({
                         <Button variant="ghost" onClick={() => setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }))} className="px-3 h-8 text-[11px] font-bold tracking-wider uppercase text-endurix-orange">{t("common.today")}</Button>
                     </div>
 
-                    <AthleteWeeklyCalendar weekStart={currentWeekStart} assignments={assignments} activities={activities} />
+                    <AthleteWeeklyCalendar weekStart={currentWeekStart} athleteId={id} assignments={assignments} activities={activities} />
                 </div>
             )}
 

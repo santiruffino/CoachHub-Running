@@ -60,6 +60,13 @@ interface RawLap {
     moving_time?: number;
 }
 
+interface ContinuousEffortSegment {
+    startLapIndex: number;
+    endLapIndex: number;
+    distance: number;
+    duration: number;
+}
+
 /**
  * Flatten a workout structure into a sequential list of steps
  */
@@ -146,6 +153,221 @@ function getLapValueByTargetType(lap: RawLap, targetType: 'distance' | 'duration
     }
 
     return lap.elapsed_time || lap.moving_time || 0;
+}
+
+function getContinuousEffortDuration(lap: RawLap): number {
+    return lap.moving_time || lap.elapsed_time || 0;
+}
+
+function isContinuousEffortBreak(currentLap: RawLap): boolean {
+    const currentDistance = currentLap.distance || 0;
+    const elapsedTime = currentLap.elapsed_time || 0;
+    const movingTime = currentLap.moving_time || 0;
+    const currentDuration = movingTime || elapsedTime;
+    const stationaryTime = Math.max(0, elapsedTime - movingTime);
+    const stationaryRatio = elapsedTime > 0 ? stationaryTime / elapsedTime : 0;
+
+    return (
+        currentDistance <= 0 ||
+        currentDuration <= 0 ||
+        stationaryTime >= 60 ||
+        (stationaryTime >= 20 && stationaryRatio >= 0.2)
+    );
+}
+
+function buildContinuousEffortSegments(laps: RawLap[]): ContinuousEffortSegment[] {
+    if (laps.length === 0) return [];
+
+    const segments: ContinuousEffortSegment[] = [];
+    let segmentStart = 0;
+
+    for (let i = 1; i < laps.length; i++) {
+        if (isContinuousEffortBreak(laps[i])) {
+            const segmentLaps = laps.slice(segmentStart, i);
+            segments.push({
+                startLapIndex: segmentStart,
+                endLapIndex: i - 1,
+                distance: segmentLaps.reduce((sum, lap) => sum + (lap.distance || 0), 0),
+                duration: segmentLaps.reduce((sum, lap) => sum + getContinuousEffortDuration(lap), 0),
+            });
+            segmentStart = i;
+        }
+    }
+
+    const finalSegment = laps.slice(segmentStart);
+    if (finalSegment.length > 0) {
+        segments.push({
+            startLapIndex: segmentStart,
+            endLapIndex: laps.length - 1,
+            distance: finalSegment.reduce((sum, lap) => sum + (lap.distance || 0), 0),
+            duration: finalSegment.reduce((sum, lap) => sum + getContinuousEffortDuration(lap), 0),
+        });
+    }
+
+    return segments;
+}
+
+function matchContinuousEffortSegments(segments: ContinuousEffortSegment[], flatSteps: FlatStep[]): MatchedLap[] {
+    const matchedLaps: MatchedLap[] = [];
+    let currentStepIndex = 0;
+
+    let segmentIndex = 0;
+    while (segmentIndex < segments.length) {
+        const segment = segments[segmentIndex];
+
+        if (currentStepIndex >= flatSteps.length) {
+            for (let lapIndex = segment.startLapIndex; lapIndex <= segment.endLapIndex; lapIndex++) {
+                matchedLaps.push({
+                    lapIndex,
+                    stepIndex: null,
+                    stepLabel: 'Extra',
+                    stepType: 'other',
+                    confidence: 0,
+                    variance: 0,
+                    matched: false,
+                });
+            }
+            segmentIndex++;
+            continue;
+        }
+
+        const step = flatSteps[currentStepIndex];
+        let segmentValue: number;
+        let stepValue: number;
+        let targetType: 'distance' | 'duration';
+
+        if (step.target_type === 'distance') {
+            segmentValue = segment.distance;
+            stepValue = step.target_value;
+            targetType = 'distance';
+        } else if (step.target_type === 'duration') {
+            segmentValue = segment.duration;
+            stepValue = step.target_value;
+            targetType = 'duration';
+        } else {
+            for (let lapIndex = segment.startLapIndex; lapIndex <= segment.endLapIndex; lapIndex++) {
+                matchedLaps.push({
+                    lapIndex,
+                    stepIndex: null,
+                    stepLabel: 'Unmatched',
+                    stepType: 'other',
+                    confidence: 0,
+                    variance: 0,
+                    matched: false,
+                });
+            }
+            segmentIndex++;
+            continue;
+        }
+
+        const { matches, variance, confidence } = isMatch(segmentValue, stepValue, targetType, step.stepType, thresholdPercentage);
+
+        if (matches) {
+            for (let lapIndex = segment.startLapIndex; lapIndex <= segment.endLapIndex; lapIndex++) {
+                matchedLaps.push({
+                    lapIndex,
+                    stepIndex: currentStepIndex,
+                    stepLabel: generateStepLabel(step),
+                    stepType: step.stepType,
+                    confidence: Math.round(confidence),
+                    variance: Math.round(variance * 10) / 10,
+                    matched: true,
+                });
+            }
+            currentStepIndex++;
+            segmentIndex++;
+            continue;
+        }
+
+        const tolerance = getStepTolerance(step.stepType, thresholdPercentage);
+        const maxAllowedValue = stepValue * (1 + tolerance);
+        let cumulativeValue = 0;
+        let cumulativeEndIndex = -1;
+        let cumulativeVariance = 0;
+        let cumulativeConfidence = 0;
+
+        for (let j = segmentIndex; j < segments.length; j++) {
+            cumulativeValue += targetType === 'distance' ? segments[j].distance : segments[j].duration;
+
+            const cumulativeMatch = isMatch(cumulativeValue, stepValue, targetType, step.stepType, thresholdPercentage);
+
+            if (cumulativeMatch.matches) {
+                cumulativeEndIndex = j;
+                cumulativeVariance = cumulativeMatch.variance;
+                cumulativeConfidence = cumulativeMatch.confidence;
+                break;
+            }
+
+            if (cumulativeValue > maxAllowedValue) {
+                break;
+            }
+        }
+
+        if (cumulativeEndIndex >= segmentIndex) {
+            for (let j = segmentIndex; j <= cumulativeEndIndex; j++) {
+                for (let lapIndex = segments[j].startLapIndex; lapIndex <= segments[j].endLapIndex; lapIndex++) {
+                    matchedLaps.push({
+                        lapIndex,
+                        stepIndex: currentStepIndex,
+                        stepLabel: generateStepLabel(step),
+                        stepType: step.stepType,
+                        confidence: Math.round(cumulativeConfidence),
+                        variance: Math.round(cumulativeVariance * 10) / 10,
+                        matched: true,
+                    });
+                }
+            }
+
+            currentStepIndex++;
+            segmentIndex = cumulativeEndIndex + 1;
+            continue;
+        }
+
+        let foundMatch = false;
+        const maxLookAhead = 3;
+
+        for (let lookAhead = 1; lookAhead <= maxLookAhead && currentStepIndex + lookAhead < flatSteps.length; lookAhead++) {
+            const nextStep = flatSteps[currentStepIndex + lookAhead];
+            const nextSegmentValue = nextStep.target_type === 'distance' ? segment.distance : segment.duration;
+            const nextTargetType = nextStep.target_type === 'distance' ? 'distance' : 'duration';
+            const lookAheadResult = isMatch(nextSegmentValue, nextStep.target_value, nextTargetType, nextStep.stepType, thresholdPercentage);
+
+            if (lookAheadResult.matches) {
+                for (let lapIndex = segment.startLapIndex; lapIndex <= segment.endLapIndex; lapIndex++) {
+                    matchedLaps.push({
+                        lapIndex,
+                        stepIndex: currentStepIndex + lookAhead,
+                        stepLabel: generateStepLabel(nextStep),
+                        stepType: nextStep.stepType,
+                        confidence: Math.round(lookAheadResult.confidence),
+                        variance: Math.round(lookAheadResult.variance * 10) / 10,
+                        matched: true,
+                    });
+                }
+                currentStepIndex += lookAhead + 1;
+                foundMatch = true;
+                break;
+            }
+        }
+
+        if (!foundMatch) {
+            for (let lapIndex = segment.startLapIndex; lapIndex <= segment.endLapIndex; lapIndex++) {
+                matchedLaps.push({
+                    lapIndex,
+                    stepIndex: null,
+                    stepLabel: 'Unmatched',
+                    stepType: 'other',
+                    confidence: 0,
+                    variance: Math.round(variance * 10) / 10,
+                    matched: false,
+                });
+            }
+        }
+
+        segmentIndex++;
+    }
+
+    return matchedLaps;
 }
 
 function isMatch(
@@ -341,5 +563,14 @@ export function matchLapsToWorkout(
             i++;
         }
     }
-    return matchedLaps;
+    if (matchedLaps.some(ml => ml.matched) || laps.length === 0 || flatSteps.length === 0) {
+        return matchedLaps;
+    }
+
+    const segments = buildContinuousEffortSegments(laps);
+    if (segments.length === 0 || segments.length === laps.length) {
+        return matchedLaps;
+    }
+
+    return matchContinuousEffortSegments(segments, flatSteps);
 }

@@ -8,9 +8,10 @@ interface WorkoutSummaryProps {
     blocks: WorkoutBlock[];
     workoutRPE?: number;
     onClose: () => void;
+    title?: string;
 }
 
-export function WorkoutSummary({ blocks, workoutRPE, onClose }: WorkoutSummaryProps) {
+export function WorkoutSummary({ blocks, workoutRPE, onClose, title }: WorkoutSummaryProps) {
     const t = useTranslations('builder');
 
     const generateDescription = () => {
@@ -105,9 +106,16 @@ export function WorkoutSummary({ blocks, workoutRPE, onClose }: WorkoutSummaryPr
             <div className="bg-white dark:bg-card border border-endurix-black/15 dark:border-border max-w-2xl w-full max-h-[80vh] overflow-hidden">
                 {/* Header */}
                 <div className="flex items-center justify-between p-5 border-b border-endurix-black/10 dark:border-border bg-endurix-paper dark:bg-muted">
-                    <h2 className="text-xl font-bold uppercase tracking-widest text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>
-                        {t('workoutSummary')}
-                    </h2>
+                    <div>
+                        <h2 className="text-xl font-bold uppercase tracking-widest text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>
+                            {t('workoutSummary')}
+                        </h2>
+                        {title && (
+                            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-endurix-black/50 dark:text-muted-foreground mt-1" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
+                                {title}
+                            </p>
+                        )}
+                    </div>
                     <button
                         onClick={onClose}
                         className="text-endurix-black/50 dark:text-muted-foreground hover:text-endurix-black dark:hover:text-foreground transition-colors p-1 hover:bg-endurix-black/10 dark:hover:bg-white/10"

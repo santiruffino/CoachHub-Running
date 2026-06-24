@@ -409,6 +409,7 @@ export default function AthleteDashboard({ user, initialData = null }: AthleteDa
 
                 <div className="w-full">
                     <AthleteWeeklyCalendar
+                        athleteId={user.id}
                         assignments={assignments}
                         activities={activities}
                         races={races}

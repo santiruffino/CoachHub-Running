@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { TrainingAssignment } from '@/interfaces/training';
 import { AthleteRace } from '@/interfaces/race';
 import { Activity } from '@/interfaces/activity';
-import { ChevronLeft, ChevronRight, CalendarDays, CircleCheckBig, ActivitySquare, Medal } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CalendarDays, CircleCheckBig, ActivitySquare, Medal, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,7 @@ const FONT_MONO = { fontFamily: 'var(--font-ibm-plex-mono, monospace)' } as cons
 const FONT_DISPLAY = { fontFamily: 'var(--font-exo-2, sans-serif)' } as const;
 interface AthleteWeeklyCalendarProps {
     weekStart?: Date;
+    athleteId?: string;
     assignments: TrainingAssignment[];
     activities: Activity[];
     races?: AthleteRace[];
@@ -78,12 +79,12 @@ function CompactMonthCard({
     ) : content;
 }
 
-export function AthleteWeeklyCalendar({ weekStart, assignments, activities, races = [] }: AthleteWeeklyCalendarProps) {
+export function AthleteWeeklyCalendar({ weekStart, athleteId, assignments, activities, races = [] }: AthleteWeeklyCalendarProps) {
     const t = useTranslations();
     const { view, anchorDate, visibleDays, monthLabel, weekLabel, updateCalendar, navigate, goToday } = useCalendarView({
         fallbackDate: weekStart,
     });
-    const targetAthleteId = assignments[0]?.athlete?.id || assignments[0]?.user?.id || null;
+    const targetAthleteId = athleteId || assignments[0]?.athlete?.id || assignments[0]?.user?.id || null;
     const addWorkoutHref = targetAthleteId ? `/workouts/assign?athleteId=${encodeURIComponent(targetAthleteId)}` : '/workouts/assign';
 
     return (
@@ -274,9 +275,9 @@ export function AthleteWeeklyCalendar({ weekStart, assignments, activities, race
                                                     <MonospaceLabel color="muted" size="xs">
                                                         {t('calendar.restDay')}
                                                     </MonospaceLabel>
-                                                    <Button asChild size="sm" variant="outline" className="h-6 w-6 p-0 rounded-full border-endurix-orange/30 text-endurix-orange hover:bg-endurix-orange/10">
+                                                    <Button asChild size="sm" variant="outline" className="h-6 min-w-16 px-3 rounded-sm border-endurix-orange/30 text-endurix-orange hover:bg-endurix-orange/10">
                                                         <Link href={addWorkoutHref} aria-label={t('common.addWorkout')} title={t('common.addWorkout')}>
-                                                            +
+                                                            <Plus className="h-3.5 w-3.5" />
                                                         </Link>
                                                     </Button>
                                                 </div>
@@ -310,9 +311,9 @@ export function AthleteWeeklyCalendar({ weekStart, assignments, activities, race
                                                     <MonospaceLabel color="muted" size="xs">
                                                         {t('calendar.restDay')}
                                                     </MonospaceLabel>
-                                                    <Button asChild size="sm" variant="outline" className="h-6 w-6 p-0 rounded-full border-endurix-orange/30 text-endurix-orange hover:bg-endurix-orange/10">
+                                                    <Button asChild size="sm" variant="outline" className="h-6 min-w-16 px-3 rounded-sm border-endurix-orange/30 text-endurix-orange hover:bg-endurix-orange/10">
                                                         <Link href={addWorkoutHref} aria-label={t('common.addWorkout')} title={t('common.addWorkout')}>
-                                                            +
+                                                            <Plus className="h-3.5 w-3.5" />
                                                         </Link>
                                                     </Button>
                                                 </div>

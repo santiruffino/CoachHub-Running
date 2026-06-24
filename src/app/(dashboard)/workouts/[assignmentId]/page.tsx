@@ -5,6 +5,7 @@ import { appLogger } from '@/lib/app-logger';
 import { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 import { WorkoutBuilder } from '@/features/trainings/components/builder/WorkoutBuilder';
 import { WorkoutBlock } from '@/features/trainings/components/builder/types';
 import { Button } from '@/components/ui/button';
@@ -61,6 +62,9 @@ export default function WorkoutDetailsPage() {
     const [hasChanges, setHasChanges] = useState(false);
     const [error, setError] = useState('');
     const { alertState, showAlert, closeAlert } = useAlertDialog();
+    const assignmentDateLabel = assignment?.scheduledDate
+        ? format(new Date(assignment.scheduledDate), 'EEEE dd/MM/yyyy', { locale: es })
+        : t('scheduled');
 
     const loadAssignment = useCallback(async () => {
         try {
@@ -232,41 +236,35 @@ export default function WorkoutDetailsPage() {
     const displayTitle = assignment.workoutName || assignment.training.title;
 
     const leftSidebarContent = (
-        <div className="p-6 lg:p-8 pb-32 space-y-5">
-            <div className="rounded-3xl border border-endurix-black/10 dark:border-white/10 bg-white/70 dark:bg-white/5 p-5 space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="rounded-2xl border border-endurix-black/10 dark:border-white/10 bg-endurix-paper/70 dark:bg-black/10 p-4">
-                        <div className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase mb-2" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{t('scheduled')}</div>
-                        <div className="flex items-start gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-endurix-orange/10 flex items-center justify-center text-endurix-orange shrink-0">
-                                <Calendar className="w-5 h-5" />
-                            </div>
-                            <div>
-                                <div className="text-sm font-bold text-endurix-black dark:text-foreground">
-                                    {format(new Date(assignment.scheduledDate), 'EEEE dd/MM/yyyy')}
-                                </div>
-                            </div>
+        <div className="p-4 lg:p-5">
+            <div className="flex flex-wrap gap-3 items-stretch">
+                <div className="flex min-w-[240px] flex-1 items-center gap-3 rounded-2xl border border-endurix-black/10 dark:border-white/10 bg-white/70 dark:bg-white/5 p-4">
+                    <div className="w-10 h-10 rounded-xl bg-endurix-orange/10 flex items-center justify-center text-endurix-orange shrink-0">
+                        <Calendar className="w-5 h-5" />
+                    </div>
+                    <div className="min-w-0">
+                        <div className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{t('scheduled')}</div>
+                        <div className="text-sm font-bold text-endurix-black dark:text-foreground truncate">
+                            {format(new Date(assignment.scheduledDate), 'EEEE dd/MM/yyyy')}
                         </div>
                     </div>
+                </div>
 
-                    <div className="rounded-2xl border border-endurix-black/10 dark:border-white/10 bg-endurix-paper/70 dark:bg-black/10 p-4">
-                        <div className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase mb-2" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{t('targetAthlete')}</div>
-                        <div className="flex items-start gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-endurix-black/8 dark:bg-white/8 flex items-center justify-center text-endurix-orange shrink-0">
-                                <User className="w-5 h-5" />
-                            </div>
-                            <div>
-                                <div className="text-sm font-bold text-endurix-black dark:text-foreground">
-                                    {assignment.athlete?.name || assignment.athlete?.email || 'N/A'}
-                                </div>
-                            </div>
+                <div className="flex min-w-[240px] flex-1 items-center gap-3 rounded-2xl border border-endurix-black/10 dark:border-white/10 bg-white/70 dark:bg-white/5 p-4">
+                    <div className="w-10 h-10 rounded-xl bg-endurix-black/8 dark:bg-white/8 flex items-center justify-center text-endurix-orange shrink-0">
+                        <User className="w-5 h-5" />
+                    </div>
+                    <div className="min-w-0">
+                        <div className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{t('targetAthlete')}</div>
+                        <div className="text-sm font-bold text-endurix-black dark:text-foreground truncate">
+                            {assignment.athlete?.name || assignment.athlete?.email || 'N/A'}
                         </div>
                     </div>
                 </div>
 
                 {assignment.canEdit && !assignment.completed && (
-                    <div className="rounded-2xl border border-endurix-orange/20 bg-endurix-orange/5 p-4 space-y-4">
-                        <div>
+                    <div className="flex min-w-[360px] flex-[2] items-center gap-3 rounded-2xl border border-endurix-orange/20 bg-endurix-orange/5 p-4">
+                        <div className="min-w-[180px] flex-1">
                             <label className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase mb-2 block" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                                 {t('workoutName')}
                             </label>
@@ -274,11 +272,11 @@ export default function WorkoutDetailsPage() {
                                 value={editedWorkoutName}
                                 onChange={(e) => handleWorkoutNameChange(e.target.value)}
                                 disabled={readOnly}
-                                className="bg-white dark:bg-background"
+                                className="h-10 bg-white dark:bg-background"
                             />
                         </div>
 
-                        <div>
+                        <div className="min-w-[180px] flex-1">
                             <label className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase mb-2 block" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                                 {t('scheduledDate')}
                             </label>
@@ -289,59 +287,85 @@ export default function WorkoutDetailsPage() {
                                     value={editedScheduledDate}
                                     onChange={(e) => handleScheduledDateChange(e.target.value)}
                                     disabled={readOnly}
-                                    className="pl-10 bg-white dark:bg-background"
+                                    className="h-10 pl-10 bg-white dark:bg-background"
                                 />
                             </div>
                         </div>
                     </div>
                 )}
 
-                <div className="rounded-2xl border border-endurix-black/10 dark:border-white/10 bg-endurix-paper/70 dark:bg-black/10 p-4">
-                    <label className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase mb-3 flex items-center justify-between" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
-                        {t('targetRpeConstraint')}
-                        <span className="text-endurix-orange font-bold text-sm bg-endurix-orange/10 border border-endurix-orange/30 px-2 py-0.5 rounded-md">{editedExpectedRpe}/10</span>
-                    </label>
+                <div className="flex min-w-[280px] flex-1 items-center gap-3 rounded-2xl border border-endurix-black/10 dark:border-white/10 bg-white/70 dark:bg-white/5 p-4">
+                    <div className="min-w-0 flex-1">
+                        <label className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase mb-2 block flex items-center justify-between" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
+                            {t('targetRpeConstraint')}
+                            <span className="text-endurix-orange font-bold text-sm bg-endurix-orange/10 border border-endurix-orange/30 px-2 py-0.5 rounded-md">{editedExpectedRpe}/10</span>
+                        </label>
 
-                    {readOnly ? (
-                        <div className="h-1 bg-endurix-black/10 dark:bg-white/10 mt-6 mb-2 rounded-full">
-                            <div className="h-full bg-endurix-orange rounded-full" style={{ width: `${(editedExpectedRpe / 10) * 100}%` }} />
+                        {readOnly ? (
+                            <div className="h-1 bg-endurix-black/10 dark:bg-white/10 rounded-full">
+                                <div className="h-full bg-endurix-orange rounded-full" style={{ width: `${(editedExpectedRpe / 10) * 100}%` }} />
+                            </div>
+                        ) : (
+                            <Slider
+                                value={[editedExpectedRpe]}
+                                min={1}
+                                max={10}
+                                step={1}
+                                onValueChange={(val) => { setEditedExpectedRpe(val[0]); setHasChanges(true); }}
+                                className="my-0"
+                            />
+                        )}
+
+                        <div className="mt-2 flex justify-between text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground uppercase tracking-widest" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
+                            <span>{t('enduranceLoad')}</span>
+                            <span>{t('maxOutput')}</span>
                         </div>
-                    ) : (
-                        <Slider
-                            value={[editedExpectedRpe]}
-                            min={1}
-                            max={10}
-                            step={1}
-                            onValueChange={(val) => { setEditedExpectedRpe(val[0]); setHasChanges(true); }}
-                            className="my-6"
-                        />
-                    )}
-                    <div className="flex justify-between text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground uppercase tracking-widest" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
-                        <span>{t('enduranceLoad')}</span>
-                        <span>{t('maxOutput')}</span>
                     </div>
                 </div>
 
-                {readOnly ? (
-                    <div className="bg-endurix-black/5 dark:bg-white/5 border border-endurix-black/10 dark:border-white/10 p-5 rounded-2xl">
-                        <span className="font-bold text-sm text-endurix-black dark:text-foreground mb-1 block uppercase tracking-widest" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{t('readOnlyMode')}</span>
-                        <p className="text-xs text-muted-foreground leading-relaxed" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{t('readOnlyDesc')}</p>
+                {error && (
+                    <div className="flex min-w-full items-center gap-3 rounded-2xl border border-red-500/20 bg-red-500/10 dark:bg-red-500/15 text-red-700 dark:text-red-400 p-4 text-sm font-semibold">
+                        <div className="w-9 h-9 rounded-xl bg-red-500/15 flex items-center justify-center shrink-0">
+                            <Trash2 className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0">{error}</div>
                     </div>
-                ) : (
-                    <Button
-                        variant="ghost"
-                        onClick={confirmDelete}
-                        disabled={deleting}
-                        className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/15 uppercase tracking-widest text-[10px] font-bold p-0 h-10 px-4"
-                        style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
-                    >
-                        <Trash2 className="w-4 h-4 mr-2" /> {t('deleteAssignment')}
-                    </Button>
                 )}
 
-                {error && (
-                    <div className="bg-red-500/10 dark:bg-red-500/15 text-red-700 dark:text-red-400 p-4 text-sm font-semibold border-l-4 border-red-500 rounded-xl">
-                        {error}
+                {!readOnly && assignment.canEdit && (
+                    <div className="min-w-full rounded-2xl border border-endurix-orange/20 bg-endurix-orange/5 p-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
+                                {t('uncommittedAdjustments')}
+                            </div>
+                            <div className="text-xs text-endurix-black/70 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
+                                {t('pushUpdates')}
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 flex-wrap md:justify-end">
+                            <Button
+                                variant="ghost"
+                                onClick={confirmDelete}
+                                disabled={deleting}
+                                className="h-10 px-4 bg-white/10 text-red-600 hover:text-red-700 hover:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/15 uppercase tracking-widest text-xs font-bold"
+                                style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                            >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                {t('deleteAssignment')}
+                            </Button>
+
+                            {hasChanges && (
+                                <Button
+                                    onClick={confirmSave}
+                                    disabled={saving}
+                                    className="h-10 px-5 bg-endurix-orange text-white hover:bg-endurix-orange/90 uppercase tracking-widest text-xs font-bold"
+                                    style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                                >
+                                    {saving ? t('synchronizing') : t('commitSave')}
+                                </Button>
+                            )}
+                        </div>
                     </div>
                 )}
             </div>
@@ -349,24 +373,45 @@ export default function WorkoutDetailsPage() {
     );
 
     return (
-        <div className="h-[calc(100vh-theme(spacing.16))] w-[calc(100%+2rem)] md:w-[calc(100%+4rem)] overflow-hidden -mx-4 md:-mx-8 -my-4 md:-my-8 bg-endurix-paper dark:bg-background flex flex-col relative">
-            <div className="shrink-0 px-4 md:px-6 py-3 border-b border-endurix-black/10 dark:border-white/10 bg-endurix-paper/95 dark:bg-background/95 backdrop-blur-sm flex items-center justify-between gap-3">
-                <BackButton label={t('backToDashboard')} showLabel />
-                <div className="flex items-center gap-2 flex-wrap justify-end text-[10px] font-bold uppercase tracking-widest" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
-                    <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-endurix-black/15 dark:border-white/10 bg-endurix-black/5 dark:bg-white/5 text-endurix-black/60 dark:text-muted-foreground">
-                        {assignment.completed ? <CheckCircle2 className="w-3 h-3" /> : <div className="w-2 h-2 rounded-full bg-amber-500" />}
-                        {assignment.completed ? t('executed') : t('pendingExecution')}
-                    </span>
-                    <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-endurix-orange/20 bg-endurix-orange/10 text-endurix-orange">
-                        {displayTitle}
-                    </span>
+        <div className="min-h-[calc(100vh-theme(spacing.16))] w-full overflow-hidden bg-endurix-paper dark:bg-background flex flex-col relative">
+            <div className="shrink-0 px-4 md:px-6 py-3 border-b border-endurix-black/10 dark:border-white/10 bg-endurix-paper/95 dark:bg-background/95 backdrop-blur-md shadow-[0_8px_24px_rgba(0,0,0,0.03)] sticky top-0 z-20">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="flex items-start gap-3 min-w-0">
+                        <BackButton label={t('backToDashboard')} showLabel />
+                        <div className="min-w-0">
+                            <h1 className="text-base md:text-lg font-bold uppercase tracking-[0.18em] text-endurix-black dark:text-foreground truncate" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>
+                                {t('assignmentTitle')}
+                            </h1>
+                            <div className="flex items-center gap-2 flex-wrap mt-1 text-[10px] md:text-[11px] uppercase tracking-[0.22em] text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
+                                <span className="truncate">{assignment.athlete?.name || assignment.athlete?.email || 'N/A'}</span>
+                                <span className="hidden md:inline-flex h-1 w-1 rounded-full bg-endurix-black/25 dark:bg-muted-foreground/40" />
+                                <span>{assignmentDateLabel}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 flex-wrap justify-end text-[10px] font-bold uppercase tracking-widest" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
+                        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-endurix-black/15 dark:border-white/10 bg-endurix-black/5 dark:bg-white/5 text-endurix-black/60 dark:text-muted-foreground">
+                            {assignment.completed ? <CheckCircle2 className="w-3 h-3" /> : <div className="w-2 h-2 rounded-full bg-amber-500" />}
+                            {assignment.completed ? t('executed') : t('pendingExecution')}
+                        </span>
+                        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-endurix-orange/20 bg-endurix-orange/10 text-endurix-orange max-w-[240px] truncate">
+                            {displayTitle}
+                        </span>
+                    </div>
                 </div>
             </div>
 
-            <div className="flex-1 min-h-0 overflow-hidden flex relative">
-                <aside className="w-full lg:w-[340px] xl:w-[360px] flex-shrink-0 bg-endurix-paper dark:bg-card border-r border-endurix-black/10 dark:border-white/10 overflow-y-auto z-10">
-                    {leftSidebarContent}
-                </aside>
+            <div className="flex-1 min-h-0 overflow-hidden flex flex-col relative">
+                <div className="shrink-0 border-b border-endurix-black/10 dark:border-white/10 bg-white/60 dark:bg-card/50 backdrop-blur-sm">
+                    <div className="px-4 md:px-6 py-4">
+                        <div className="grid grid-cols-1 gap-4 items-start">
+                            <div className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-white/10 overflow-hidden rounded-3xl">
+                                {leftSidebarContent}
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <main className="flex-1 min-w-0 overflow-hidden relative">
                     <WorkoutBuilder
@@ -379,40 +424,6 @@ export default function WorkoutDetailsPage() {
                     />
                 </main>
             </div>
-
-            {hasChanges && !readOnly && (
-                <div className="absolute bottom-0 left-0 right-0 z-20 border-t border-endurix-orange/20 bg-endurix-orange/95 backdrop-blur-md shadow-[0_-12px_32px_rgba(0,0,0,0.08)]">
-                    <div className="mx-auto px-4 md:px-6 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                        <div>
-                            <div className="text-[10px] font-bold uppercase tracking-widest text-white/85" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
-                                {t('uncommittedAdjustments')}
-                            </div>
-                            <div className="text-xs text-white/75" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
-                                {t('pushUpdates')}
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Button
-                                variant="ghost"
-                                onClick={() => loadAssignment()}
-                                disabled={saving}
-                                className="h-10 px-4 bg-white/10 text-white hover:bg-white/20 uppercase tracking-widest text-xs font-bold"
-                                style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
-                            >
-                                {t('common.cancel')}
-                            </Button>
-                            <Button
-                                onClick={confirmSave}
-                                disabled={saving}
-                                className="h-10 px-5 bg-white text-endurix-orange hover:bg-endurix-paper uppercase tracking-widest text-xs font-bold"
-                                style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
-                            >
-                                {saving ? t('synchronizing') : t('commitSave')}
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             <AlertDialog
                 open={alertState.open}

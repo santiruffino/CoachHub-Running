@@ -6,6 +6,7 @@ import { Providers } from "./providers";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
+import { getServerUser } from "@/features/auth/services/auth.server";
 
 const manrope = Manrope({
   variable: "--font-manrope",
@@ -45,6 +46,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const messages = await getMessages();
+  const initialUser = await getServerUser();
 
   return (
     <html lang="es" suppressHydrationWarning>
@@ -52,7 +54,7 @@ export default async function RootLayout({
         className={`${inter.variable} ${manrope.variable} ${exo2.variable} ${ibmPlexMono.variable} font-sans antialiased`}
       >
         <NextIntlClientProvider messages={messages}>
-          <Providers>
+          <Providers initialUser={initialUser}>
             <Suspense fallback={null}>
               <GoogleAnalytics />
             </Suspense>

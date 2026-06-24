@@ -2,12 +2,13 @@
 import { appLogger } from '@/lib/app-logger';
 
 import { useState } from 'react';
-import { Plus, Search, Edit, Trash2 } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react';
 import { Training } from '@/interfaces/training';
 import { trainingsService } from '@/features/trainings/services/trainings.service';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AssignTrainingModal } from '@/features/trainings/components/AssignTrainingModal';
+import { WorkoutSummary } from '@/features/trainings/components/builder/WorkoutSummary';
 import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
@@ -25,6 +26,7 @@ export function TrainingsList({ initialTrainings }: TrainingsListProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedTrainingId, setSelectedTrainingId] = useState<string | null>(null);
     const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+    const [previewTraining, setPreviewTraining] = useState<Training | null>(null);
     const [pendingDelete, setPendingDelete] = useState<{ id: string; title: string } | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const { alertState, showAlert, closeAlert } = useAlertDialog();
@@ -37,6 +39,14 @@ export function TrainingsList({ initialTrainings }: TrainingsListProps) {
     const handleCloseModal = () => {
         setIsAssignModalOpen(false);
         setSelectedTrainingId(null);
+    };
+
+    const handlePreviewClick = (training: Training) => {
+        setPreviewTraining(training);
+    };
+
+    const handleClosePreview = () => {
+        setPreviewTraining(null);
     };
 
     const handleDelete = (trainingId: string, trainingTitle: string) => {
@@ -131,6 +141,15 @@ export function TrainingsList({ initialTrainings }: TrainingsListProps) {
                                         variant="ghost"
                                         size="icon"
                                         className="h-8 w-8 hover:text-endurix-orange hover:bg-endurix-orange/5"
+                                        onClick={() => handlePreviewClick(training)}
+                                        title={t('libraryPage.previewSummary')}
+                                    >
+                                        <Eye className="w-4 h-4" />
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 hover:text-endurix-orange hover:bg-endurix-orange/5"
                                         onClick={() => router.push(`/workouts/builder?id=${training.id}`)}
                                         title={tCommon('edit')}
                                     >
@@ -164,6 +183,15 @@ export function TrainingsList({ initialTrainings }: TrainingsListProps) {
                     trainingId={selectedTrainingId}
                     isOpen={isAssignModalOpen}
                     onClose={handleCloseModal}
+                />
+            )}
+
+            {previewTraining && (
+                <WorkoutSummary
+                    blocks={previewTraining.blocks || []}
+                    workoutRPE={previewTraining.expectedRpe}
+                    onClose={handleClosePreview}
+                    title={previewTraining.title}
                 />
             )}
 

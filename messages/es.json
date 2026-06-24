@@ -842,6 +842,7 @@
             "createFirstTemplate": "Crear tu Primera Plantilla",
             "createdBy": "Creado por {name}",
             "steps": "pasos",
+            "previewSummary": "Ver resumen",
             "assign": "Asignar",
             "deleteConfirm": "¿Estás seguro de que quieres eliminar esta plantilla?",
             "deleteError": "Error al eliminar la plantilla"
@@ -853,6 +854,7 @@
             "pendingExecution": "Ejecución Pendiente",
             "scheduled": "Programado",
             "scheduledDate": "Fecha programada",
+            "assignmentTitle": "Asignación de entrenamiento",
             "workoutName": "Nombre del entrenamiento",
             "targetAthlete": "Atleta Objetivo",
             "targetRpeConstraint": "Restricción de RPE Objetivo",
@@ -864,6 +866,7 @@
             "pushUpdates": "Enviar actualizaciones estructurales al destino.",
             "synchronizing": "Sincronizando...",
             "commitSave": "Confirmar Guardado",
+            "cancel": "Cancelar",
             "syncSuccess": "Modificaciones sincronizadas correctamente.",
             "syncFailed": "Sincronización fallida.",
             "loadingError": "Error al inicializar los parámetros del entrenamiento",

@@ -6,13 +6,13 @@ import { trainingsService } from '@/features/trainings/services/trainings.servic
 import api from '@/lib/axios';
 import { Training } from '@/interfaces/training';
 import { format } from 'date-fns';
-import { WorkoutBuilder } from './builder/WorkoutBuilder';
 import { WorkoutBlock } from './builder/types';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useTranslations } from 'next-intl';
 import { appLogger } from '@/lib/app-logger';
+import { WorkoutBuilder } from './builder/WorkoutBuilder';
 
 interface AssignTrainingModalProps {
     athleteId?: string;
@@ -59,8 +59,6 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
     const [selectedAthleteIds, setSelectedAthleteIds] = useState<string[]>([]);
     const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
 
-    // Edit workout state
-    const [isEditingWorkout, setIsEditingWorkout] = useState(false);
     const [editedBlocks, setEditedBlocks] = useState<WorkoutBlock[]>([]);
 
     // Athlete-specific flow state
@@ -79,24 +77,23 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
 
     useEffect(() => {
         if (isOpen) {
+            setSelectedTrainingId(trainingId || '');
+            setSelectedTraining(null);
+            setEditedBlocks([]);
+            setWorkoutSource(null);
+            setCurrentStep('date');
+            setAvailableTemplates([]);
+            setAssignmentType(athleteId ? 'athlete' : groupId ? 'group' : 'athlete');
+            setSelectedAthleteIds(athleteId ? [athleteId] : []);
+            setSelectedGroupIds(groupId ? [groupId] : []);
+            setScheduledDate(format(new Date(), 'yyyy-MM-dd'));
+            setExpectedRpe(5);
+            setWorkoutName('');
             loadData();
             if (trainingId) {
-                setSelectedTrainingId(trainingId);
                 loadTraining(trainingId);
             }
-            if (athleteId) {
-                setAssignmentType('athlete');
-                setSelectedAthleteIds([athleteId]);
-                setCurrentStep('date');
-                setWorkoutSource(null);
-            }
-            if (groupId) {
-                setAssignmentType('group');
-                setSelectedGroupIds([groupId]);
-            }
             setError('');
-            setIsEditingWorkout(false);
-            setWorkoutName('');
         }
     }, [isOpen, trainingId, athleteId, groupId]);
 
@@ -117,7 +114,6 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
         try {
             const res = await trainingsService.findOne(id);
             setSelectedTraining(res.data);
-            setEditedBlocks(JSON.parse(JSON.stringify(res.data.blocks || [])));
             if (res.data.expectedRpe) {
                 setExpectedRpe(res.data.expectedRpe);
             }
@@ -201,21 +197,8 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                 setLoading(true);
                 setError('');
 
-                let trainingIdToAssign = selectedTrainingId;
-
-                if (isEditingWorkout && selectedTraining) {
-                    const newTraining = await trainingsService.create({
-                        title: workoutName || selectedTraining.title,
-                        type: selectedTraining.type,
-                        description: 'Modified from template',
-                        blocks: editedBlocks,
-                        isTemplate: false
-                    });
-                    trainingIdToAssign = newTraining.data.id;
-                }
-
                 await trainingsService.assign({
-                    trainingId: trainingIdToAssign,
+                    trainingId: selectedTrainingId,
                     athleteIds: [athleteId],
                     scheduledDate: new Date(`${scheduledDate}T00:00:00`).toISOString(),
                     expectedRpe: expectedRpe,
@@ -249,21 +232,8 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
             setLoading(true);
             setError('');
 
-            let trainingIdToAssign = selectedTrainingId;
-
-            if (isEditingWorkout && selectedTraining) {
-                const newTraining = await trainingsService.create({
-                    title: selectedTraining.title,
-                    type: selectedTraining.type,
-                    description: 'Modified from template',
-                    blocks: editedBlocks,
-                    isTemplate: false
-                });
-                trainingIdToAssign = newTraining.data.id;
-            }
-
             await trainingsService.assign({
-                trainingId: trainingIdToAssign,
+                trainingId: selectedTrainingId,
                 athleteIds: selectedAthleteIds.length > 0 ? selectedAthleteIds : undefined,
                 groupIds: selectedGroupIds.length > 0 ? selectedGroupIds : undefined,
                 scheduledDate: new Date(`${scheduledDate}T00:00:00`).toISOString(),
@@ -436,27 +406,11 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                                 </div>
                             </div>
 
-                            {/* Edit Workout Section */}
                             {selectedTraining && (
                                 <div className="space-y-2">
-                                    <div className="flex items-center justify-between">
-                                        <Label className={FIELD_LABEL_CLS} style={FIELD_LABEL_STYLE}>
-                                            {t('workout', { title: selectedTraining.title })}
-                                        </Label>
-                                        <Button
-                                            variant="outline-brand"
-                                            size="sm"
-                                            onClick={() => setIsEditingWorkout(!isEditingWorkout)}
-                                            className="uppercase tracking-widest text-[10px]"
-                                        >
-                                            {isEditingWorkout ? t('viewOriginal') : t('editWorkout')}
-                                        </Button>
-                                    </div>
-                                    {isEditingWorkout && (
-                                        <div className="border border-endurix-black/15 dark:border-white/15 p-2 h-[300px] overflow-hidden bg-endurix-paper dark:bg-card">
-                                            <WorkoutBuilder initialBlocks={editedBlocks} onChange={setEditedBlocks} athleteId={athleteId} />
-                                        </div>
-                                    )}
+                                    <Label className={FIELD_LABEL_CLS} style={FIELD_LABEL_STYLE}>
+                                        {t('workout', { title: selectedTraining.title })}
+                                    </Label>
                                 </div>
                             )}
 
@@ -655,27 +609,11 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                                 </div>
                             )}
 
-                            {/* Workout Preview/Edit */}
                             {selectedTraining && (
                                 <div className="space-y-2">
-                                    <div className="flex items-center justify-between">
-                                        <Label className={FIELD_LABEL_CLS} style={FIELD_LABEL_STYLE}>
-                                            {t('workout', { title: selectedTraining.title })}
-                                        </Label>
-                                        <Button
-                                            variant="outline-brand"
-                                            size="sm"
-                                            onClick={() => setIsEditingWorkout(!isEditingWorkout)}
-                                            className="uppercase tracking-widest text-[10px]"
-                                        >
-                                            {isEditingWorkout ? t('viewOriginal') : t('editWorkout')}
-                                        </Button>
-                                    </div>
-                                    {isEditingWorkout && (
-                                        <div className="border border-endurix-black/15 dark:border-white/15 p-2 h-[300px] bg-endurix-paper dark:bg-card">
-                                            <WorkoutBuilder initialBlocks={editedBlocks} onChange={setEditedBlocks} athleteId={athleteId} />
-                                        </div>
-                                    )}
+                                    <Label className={FIELD_LABEL_CLS} style={FIELD_LABEL_STYLE}>
+                                        {t('workout', { title: selectedTraining.title })}
+                                    </Label>
                                 </div>
                             )}
 

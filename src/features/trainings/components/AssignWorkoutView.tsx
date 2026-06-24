@@ -169,8 +169,6 @@ export function AssignWorkoutView({
     const [selectedTemplate, setSelectedTemplate] = useState<Training | null>(initialTemplate);
     const [templates] = useState<Training[]>(initialTemplates);
     const [blocks, setBlocks] = useState<WorkoutBlock[]>(initialTemplate?.blocks || []);
-    const [editingTemplate, setEditingTemplate] = useState(false);
-
     const [selectedAthleteIds, setSelectedAthleteIds] = useState<string[]>(preselectedAthleteId ? [preselectedAthleteId] : []);
     const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
     const [scheduledDate, setScheduledDate] = useState(format(new Date(), 'yyyy-MM-dd'));
@@ -206,11 +204,11 @@ export function AssignWorkoutView({
             setLoading(true);
             let trainingIdToAssign: string;
 
-            if (workoutSource === 'new' || editingTemplate) {
+            if (workoutSource === 'new') {
                 const newTraining = await trainingsService.create({
                     title: saveAsTemplate ? (templateTitle || 'Protocolo sin título') : (workoutName || `Entrenamiento ${format(new Date(`${scheduledDate}T00:00:00`), 'dd/MM/yyyy')}`),
                     type: TrainingType.RUNNING,
-                    description: editingTemplate ? 'Modificado desde la plantilla base.' : 'Entrenamiento diario personalizado.',
+                    description: 'Entrenamiento diario personalizado.',
                     blocks,
                     isTemplate: saveAsTemplate,
                     expectedRpe
@@ -344,7 +342,6 @@ export function AssignWorkoutView({
     const isNew = workoutSource === 'new';
 
     const handleBack = () => {
-        if (editingTemplate) { setEditingTemplate(false); return; }
         if (step === 'select-template') { setStep('select-source'); return; }
         if (step === 'build') { setStep('select-source'); return; }
         if (step === 'assign-details') {
@@ -500,7 +497,7 @@ export function AssignWorkoutView({
     return (
         <div className="bg-endurix-paper dark:bg-background flex flex-col h-[calc(100vh-64px)] overflow-hidden">
             <div className="p-5 px-10 border-b border-endurix-black/10 dark:border-white/10 flex items-center shrink-0">
-                <BackButton onClick={handleBack} label={tAssign('modifyBlueprint')} showLabel />
+                <BackButton onClick={handleBack} label={tAssign('back')} showLabel />
                 <div className="ml-auto text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase" style={PLEX}>
                     {tAssign('editorPhase')}
                 </div>
@@ -595,18 +592,6 @@ export function AssignWorkoutView({
                             </div>
                         )}
                     </div>
-
-                    {workoutSource === 'template' && (
-                        <div className="pt-1">
-                            <Button
-                                variant="outline-brand"
-                                onClick={() => setEditingTemplate(true)}
-                                className="uppercase tracking-widest text-xs font-bold"
-                            >
-                                {tAssign('overruleBlockStructure')}
-                            </Button>
-                        </div>
-                    )}
 
                     {/* Assignment Form */}
                     <div className={`${CARD_CLS} p-6 lg:p-8`}>
