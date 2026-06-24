@@ -356,7 +356,9 @@
                 "selectAll": "Seleccionar todo",
                 "clear": "Limpiar",
                 "edit": "Editar",
-                "cancel": "Cancelar"
+                "cancel": "Cancelar",
+                "close": "Cerrar",
+                "selected": "{count} seleccionados"
             },
             "loadingChart": "Cargando gráfico...",
             "errorLoad": "Error al cargar la actividad",

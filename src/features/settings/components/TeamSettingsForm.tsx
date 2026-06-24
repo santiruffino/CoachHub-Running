@@ -39,7 +39,7 @@ export function TeamSettingsForm({ initialSettings }: TeamSettingsFormProps) {
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-20">
       <div className="mb-4">
-        <BackButton href="/settings" />
+        <BackButton href="/dashboard" />
       </div>
       <SectionHeader
         eyebrow="Ajustes"

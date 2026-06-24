@@ -1,32 +1,28 @@
-# Settings
+# Settings domain
 
 ## Description
+Team and coach configuration plus admin audit logs.
 
-Coach and team configuration for thresholds, branding, AI/default models, and capacity limits. Provides adjustable operational defaults used by other domains.
+## Entry points
+- `src/app/(dashboard)/settings/team/page.tsx`
+- `src/app/(dashboard)/settings/coach/page.tsx`
+- `src/app/(dashboard)/settings/audit-logs/page.tsx`
+- `src/app/api/v2/settings/*`
+- `src/app/api/v2/admin/audit-logs/route.ts`
 
-## Entrypoints
-
-* src/app/(dashboard)/settings/coach/page.tsx
-* src/app/(dashboard)/settings/team/page.tsx
-* src/app/api/v2/settings/coach/route.ts
-* src/app/api/v2/settings/team/route.ts
-
-## Services
-
-* src/features/settings/services/settings.service.ts
-
-## Models
-
-* CoachSettings
-* TeamSettings
+## Key files
+- `src/features/settings/components/TeamSettingsForm.tsx`
+- `src/features/settings/components/CoachSettingsForm.tsx`
+- `src/features/settings/components/AuditLogsList.tsx`
+- `src/features/settings/components/TeamInviteLinksCard.tsx`
+- `src/features/settings/services/settings.service.ts`
+- `src/features/settings/services/audit-logs.service.ts`
 
 ## Dependencies
-
-* internal: src/features/settings/types.ts, src/lib/settings/defaults.ts, src/lib/axios
-* external: Axios
+- Admin/team profile role checks
+- `BackButton`, dashboard layout, and UI forms/tables
+- Audit log and settings API routes
 
 ## Notes
-
-* Coach settings are personal; team settings are organization-wide.
-* Team settings include branding and athlete-cap limits in addition to thresholds/models.
-* Thresholds likely influence alerting and compliance behavior in dashboard/trainings domains.
+- Settings pages are role-gated and mostly admin-facing.
+- Audit logs are read-only, paginated, and filtered by action.

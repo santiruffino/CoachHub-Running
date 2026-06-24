@@ -98,6 +98,17 @@ export function LapsTable({
         setSelectedLapIndices([]);
     };
 
+    const handleRowClick = (lapIndex: number, event: React.MouseEvent) => {
+        if (!isBulkEditMode || !onBulkOverrideStepType) return;
+
+        const target = event.target as HTMLElement;
+        if (target.closest('button, input, [role="button"], a, [aria-haspopup="menu"], [data-radix-popper-content-wrapper]')) {
+            return;
+        }
+
+        toggleSelectedLap(lapIndex);
+    };
+
     const toggleBulkEditMode = () => {
         setIsBulkEditMode(prev => {
             const next = !prev;
@@ -137,7 +148,7 @@ export function LapsTable({
                                 >
                                     {allVisibleSelected ? (t('common.clear') || 'Clear') : (t('common.selectAll') || 'Select all')}
                                 </Button>
-                                <span className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>{selectedLapIndices.length} selected</span>
+                                <span className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>{t('common.selected', { count: selectedLapIndices.length })}</span>
                                 {Object.entries(overrideLabels).map(([key, label]) => (
                                     <Button
                                         key={`bulk-override-${key}`}
@@ -161,7 +172,7 @@ export function LapsTable({
                                     style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
                                 >
                                     <X className="w-3.5 h-3.5 mr-1" />
-                                    {t('common.cancel')}
+                                    {t('common.close')}
                                 </Button>
                             </div>
                         </div>
@@ -240,12 +251,17 @@ export function LapsTable({
                             );
 
                             return (
-                                <TableRow key={lap.id}>
+                                <TableRow
+                                    key={lap.id}
+                                    onClick={(event) => handleRowClick(lap.lap_index, event)}
+                                    className={(!isAthlete && onBulkOverrideStepType && isBulkEditMode) ? 'cursor-pointer' : ''}
+                                >
                                     {!isAthlete && onBulkOverrideStepType && isBulkEditMode && (
                                         <TableCell className="pl-0">
                                             <input
                                                 type="checkbox"
                                                 checked={selectedLapIndices.includes(lap.lap_index)}
+                                                onClick={(e) => e.stopPropagation()}
                                                 onChange={() => toggleSelectedLap(lap.lap_index)}
                                                 aria-label={`Select lap ${lap.lap_index}`}
                                             />

@@ -1,40 +1,29 @@
-# Activities
+# Activities domain
 
 ## Description
+Activity detail views, charts, lap analysis, feedback, compliance, and bulk lap overrides.
 
-External activity ingestion and sync pipeline for athlete accounts. Covers OAuth connection, sync status, webhook ingestion, activity detail retrieval, and stream processing.
+## Entry points
+- `src/app/(dashboard)/activities/page.tsx`
+- `src/app/(dashboard)/activities/[id]/page.tsx`
+- `src/app/api/v2/activities/*`
+- `src/app/api/v2/users/[id]/activities/route.ts`
 
-## Entrypoints
-
-* src/app/api/v2/strava/auth/url/route.ts
-* src/app/api/v2/strava/auth/exchange/route.ts
-* src/app/api/v2/strava/auth/status/route.ts
-* src/app/api/v2/strava/auth/sync/route.ts
-* src/app/api/v2/strava/webhook/route.ts
-* src/app/(dashboard)/activities/[id]/page.tsx
-
-## Services
-
-* src/features/strava/services/strava.service.ts
-* src/lib/strava/sync-activities.ts
-* supabase/functions/fetch-strava-streams
-* supabase/functions/process-strava-activity
-
-## Models
-
-* StravaConnectionStatus
-* StravaExchangeResponse
-* StravaSyncResponse
-* Activity
-* StravaActivity
+## Key files
+- `src/app/(dashboard)/activities/components/ActivityDetailView.tsx`
+- `src/app/(dashboard)/activities/components/ActivityChart.tsx`
+- `src/app/(dashboard)/activities/components/ActivityChartsTabs.tsx`
+- `src/app/(dashboard)/activities/components/IntervalsAnalysisChart.tsx`
+- `src/app/(dashboard)/activities/components/LapsTable.tsx`
+- `src/app/(dashboard)/activities/components/PaceHrScatterChart.tsx`
+- `src/app/(dashboard)/activities/components/ZoneComplianceCard.tsx`
 
 ## Dependencies
-
-* internal: src/interfaces/activity.ts, src/lib/supabase/*, profile Strava UI via useStravaAuth
-* external: Strava API, Supabase Edge Functions, @supabase/supabase-js
+- Activity API routes + Supabase data
+- `src/features/trainings/utils/workoutMatcher.ts`
+- `src/interfaces/activity.ts`
+- `next-intl`, Recharts, UI table/menu primitives
 
 ## Notes
-
-* Initial OAuth exchange may trigger immediate sync but sync failure does not fail connection.
-* Sync upserts activities with derived load metrics and privacy metadata.
-* Profile page is the main user-facing connection control surface.
+- `LapsTable` supports bulk override mode.
+- `IntervalsAnalysisChart` visualizes matched laps and supports row selection UX in bulk mode.
