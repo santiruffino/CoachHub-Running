@@ -4,7 +4,6 @@ import * as Sentry from '@sentry/nextjs';
 import { createRequestLogger, withRequestId } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
 import { buildRateLimitKey, consumeRateLimit, getClientIpFromHeaders } from '@/lib/api/rate-limit';
-import { createHmac, timingSafeEqual } from 'crypto';
 
 interface StravaWebhookPayload {
   subscription_id?: number | string;
@@ -28,24 +27,6 @@ function isValidWebhookPayload(payload: StravaWebhookPayload): boolean {
   const aspectTypeValid = payload.aspect_type === 'create' || payload.aspect_type === 'update' || payload.aspect_type === 'delete';
 
   return objectTypeValid && aspectTypeValid && typeof payload.object_id === 'number' && typeof payload.owner_id === 'number';
-}
-
-function verifyStravaSignature(rawBody: string, signature: string | null, secret: string): boolean {
-  if (!signature) {
-    return false;
-  }
-
-  const expectedSignature = createHmac('sha256', secret).update(rawBody).digest('hex');
-  
-  // Use timing-safe comparison to prevent timing attacks
-  const signatureBuffer = Buffer.from(signature, 'hex');
-  const expectedBuffer = Buffer.from(expectedSignature, 'hex');
-  
-  if (signatureBuffer.length !== expectedBuffer.length) {
-    return false;
-  }
-  
-  return timingSafeEqual(signatureBuffer, expectedBuffer);
 }
 
 /**
@@ -116,17 +97,10 @@ export async function POST(req: NextRequest) {
       logger.warn('strava_webhook.payload_too_large', { size: rawBody.length });
       return respond(apiError('VALIDATION_INVALID_WEBHOOK_PAYLOAD'), { status: 400 });
     }
-
-    // Verify HMAC signature from Strava
-    const stravaSignature = req.headers.get('x-strava-signature');
     const sharedSecret = process.env.STRAVA_WEBHOOK_SHARED_SECRET;
     if (!sharedSecret) {
       logger.error('strava_webhook.shared_secret_missing');
       return respond(apiError('WEBHOOK_CONFIGURATION_ERROR'), { status: 500 });
-    }
-    if (!verifyStravaSignature(rawBody, stravaSignature, sharedSecret)) {
-      logger.warn('strava_webhook.invalid_signature');
-      return respond(apiError('INVALID_SIGNATURE'), { status: 401 });
     }
 
     let payload: StravaWebhookPayload;
