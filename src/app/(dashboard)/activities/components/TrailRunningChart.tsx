@@ -105,7 +105,7 @@ const movingAverage = (data: (number | null)[], windowSize: number): (number | n
 export function TrailRunningChart({ activityId, laps, hrZones }: TrailRunningChartProps) {
     const t = useTranslations('activities.detail.dynamics');
     const paceMetricName = t('metrics.pace');
-    const elevationMetricName = t('metrics.elevationGain') || 'Elevation';
+    const elevationMetricName = t('metrics.elevationGain') || 'Desnivel';
     const [streams, setStreams] = useState<StreamData | null>(null);
     const [loading, setLoading] = useState(true);
     const [resolution, setResolution] = useState<Resolution>('high');
@@ -184,7 +184,7 @@ export function TrailRunningChart({ activityId, laps, hrZones }: TrailRunningCha
             const fallbackData: ChartDataResult = {
                 xAxisData: laps.map(l => {
                     const displayIndex = l.lap_index === 0 || (laps[0]?.lap_index === 0) ? l.lap_index + 1 : l.lap_index;
-                    return `Lap ${displayIndex}`;
+                    return `${t('lap')} ${displayIndex}`;
                 }),
                 series: {
                     pace: laps.map(l => metersPerSecondToPace(l.average_speed)),

@@ -151,7 +151,7 @@ export function LapsTable({
                                 onClick={toggleSelectAllVisible}
                                 style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
                             >
-                                {allVisibleSelected ? (t('common.clear') || 'Clear') : (t('common.selectAll') || 'Select all')}
+                                {allVisibleSelected ? (t('common.clear') || 'Limpiar') : (t('common.selectAll') || 'Seleccionar todo')}
                             </Button>
                             <span className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>{t('common.selected', { count: selectedLapIndices.length })}</span>
                             {Object.entries(overrideLabels).map(([key, label]) => (
@@ -193,7 +193,7 @@ export function LapsTable({
                                     type="checkbox"
                                     checked={allVisibleSelected}
                                     onChange={toggleSelectAllVisible}
-                                    aria-label="Select visible laps"
+                                    aria-label={t('common.selectVisibleLaps')}
                                 />
                             </TableHead>
                         )}

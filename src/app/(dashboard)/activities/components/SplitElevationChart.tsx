@@ -49,11 +49,11 @@ function getGradeCategory(grade: number): GradeCategory {
 }
 
 const GRADE_COLORS: Record<GradeCategory, { stroke: string; fill: string; label: string }> = {
-  steepDownhill: { stroke: '#dc2626', fill: '#fecaca', label: 'Steep Downhill (≤-6%)' },
-  downhill: { stroke: '#ef4444', fill: '#fca5a5', label: 'Downhill (-6% to -2%)' },
-  flat: { stroke: '#6b7280', fill: '#d1d5db', label: 'Flat (-2% to 2%)' },
-  uphill: { stroke: '#22c55e', fill: '#86efac', label: 'Uphill (2% to 6%)' },
-  steepUphill: { stroke: '#15803d', fill: '#4ade80', label: 'Steep Uphill (>6%)' },
+  steepDownhill: { stroke: '#dc2626', fill: '#fecaca', label: 'Bajada pronunciada (≤-6%)' },
+  downhill: { stroke: '#ef4444', fill: '#fca5a5', label: 'Bajada (-6% a -2%)' },
+  flat: { stroke: '#6b7280', fill: '#d1d5db', label: 'Llano (-2% a 2%)' },
+  uphill: { stroke: '#22c55e', fill: '#86efac', label: 'Subida (2% a 6%)' },
+  steepUphill: { stroke: '#15803d', fill: '#4ade80', label: 'Subida pronunciada (>6%)' },
 };
 
 const GRADE_CATEGORIES: GradeCategory[] = ['steepDownhill', 'downhill', 'flat', 'uphill', 'steepUphill'];
@@ -113,44 +113,44 @@ function ElevationTooltip({ active, payload, t }: TooltipContentProps) {
         className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground uppercase tracking-widest mb-2"
         style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
       >
-        KM {point.km}
+        {t('charts.km')} {point.km}
       </p>
       <div className="space-y-1">
         <div className="flex items-center justify-between gap-6">
-          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>Grade</span>
+          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>{t('charts.grade')}</span>
           <span className="text-xs font-bold" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)', color: gradeColor }}>
             {gradeLabel}
           </span>
         </div>
         <div className="flex items-center justify-between gap-6">
-          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>Slope</span>
+          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>{t('charts.slope')}</span>
           <span className="text-xs font-bold text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
             {point.grade.toFixed(1)}%
           </span>
         </div>
         <div className="flex items-center justify-between gap-6">
-          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>Elevation</span>
+          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>{t('charts.elevation')}</span>
           <span className={`text-xs font-bold ${elevationColor}`} style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
-            {point.elevation >= 0 ? '+' : ''}{point.elevation.toFixed(1)} m
+            {point.elevation >= 0 ? '+' : ''}{point.elevation.toFixed(1)} {t('metrics.units.m')}
           </span>
         </div>
         <div className="flex items-center justify-between gap-6">
-          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>Cumulative</span>
+          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>{t('charts.cumulative')}</span>
           <span className="text-xs font-bold text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
-            {point.cumulative?.toFixed(0) ?? '—'} m
+            {point.cumulative?.toFixed(0) ?? '—'} {t('metrics.units.m')}
           </span>
         </div>
         <div className="flex items-center justify-between gap-6">
-          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>Pace</span>
+          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>{t('charts.pace')}</span>
           <span className="text-xs font-bold text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
-            {point.pace} /km
+            {point.pace} {t('metrics.units.perKm')}
           </span>
         </div>
         {point.hr !== null && (
           <div className="flex items-center justify-between gap-6">
-            <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>HR</span>
+            <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>{t('charts.heartRate')}</span>
             <span className="text-xs font-bold text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
-              {roundedHr} bpm
+            {roundedHr} {t('metrics.units.bpm')}
             </span>
           </div>
         )}
@@ -224,7 +224,7 @@ export function SplitElevationChart({ splits, totalElevationGain }: SplitElevati
           className="text-endurix-black/50 dark:text-muted-foreground"
           style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
         >
-          Total: +{totalElevationGain.toFixed(0)} m
+          {t('charts.totalElevationGain', { value: totalElevationGain.toFixed(0) })}
         </span>
       </div>
 

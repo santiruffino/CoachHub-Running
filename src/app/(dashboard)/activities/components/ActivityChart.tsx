@@ -193,7 +193,7 @@ const [showLaps, setShowLaps] = useState(false);
             const fallbackData: ChartDataResult = {
                 xAxisData: laps.map(l => {
                     const displayIndex = l.lap_index === 0 || (laps[0]?.lap_index === 0) ? l.lap_index + 1 : l.lap_index;
-                    return `Lap ${displayIndex}`;
+                    return `${t('lap')} ${displayIndex}`;
                 }),
                 series: {
                     pace: laps.map(l => metersPerSecondToPace(l.average_speed)),

@@ -358,7 +358,8 @@
                 "edit": "Editar",
                 "cancel": "Cancelar",
                 "close": "Cerrar",
-                "selected": "{count} seleccionados"
+                "selected": "{count} seleccionados",
+                "selectVisibleLaps": "Seleccionar vueltas visibles"
             },
             "loadingChart": "Cargando gráfico...",
             "errorLoad": "Error al cargar la actividad",
@@ -413,6 +414,29 @@
                 "liveTracking": "Datos en Tiempo Real",
                 "intensityDistribution": "Distribución de Intensidad",
                 "intervalsAnalysis": "Análisis de Intervalos",
+                "pace": "Ritmo",
+                "speed": "Velocidad",
+                "heartRate": "Frecuencia cardíaca",
+                "distance": "Distancia",
+                "efficiency": "Eficiencia",
+                "warmup": "Calentamiento",
+                "active": "Principal",
+                "recovery": "Recuperación",
+                "minPerKm": "min/km",
+                "kmh": "km/h",
+                "bpm": "ppm",
+                "lap": "Vuelta",
+                "time": "Tiempo",
+                "share": "Porcentaje",
+                "range": "Rango",
+                "totalTime": "Tiempo total",
+                "km": "km",
+                "grade": "Pendiente",
+                "slope": "Inclinación",
+                "elevation": "Elevación",
+                "cumulative": "Acumulado",
+                "totalElevationGain": "Total: +{value} m",
+                "noHrSamples": "No había muestras de frecuencia cardíaca en vueltas o splits.",
                 "gradeCategories": {
                     "steepDownhill": "Bajada Pronunciada",
                     "downhill": "Bajada",
@@ -472,6 +496,7 @@
                 "xAxis": "Eje X",
                 "detail": "Detalle",
                 "laps": "Vueltas",
+                "lap": "Vuelta",
                 "types": {
                     "time": "Tiempo",
                     "distance": "Distancia"
@@ -1310,6 +1335,10 @@
     "calendar": {
         "restDay": "Día de descanso",
         "done": "✓ Hecho",
+        "week": "Semana",
+        "month": "Mes",
+        "race": "Carrera",
+        "moreItems": "+{count} más",
         "customWorkout": "Entrenamiento diario personalizado.",
         "strava": "Strava",
         "page": {

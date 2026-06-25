@@ -191,11 +191,11 @@ export function IntervalsAnalysisChart({
   };
 
   const overrideLabels: Record<string, string> = {
-    warmup: t('workout.warmup') || 'Warm up',
-    active: t('workout.active') || 'Active',
-    rest: t('workout.rest') || 'Rest',
-    recovery: t('workout.recovery') || 'Recovery',
-    cooldown: t('workout.cooldown') || 'Cool Down',
+    warmup: t('workout.warmup') || 'Calentamiento',
+    active: t('workout.active') || 'Activo',
+    rest: t('workout.rest') || 'Descanso',
+    recovery: t('workout.recovery') || 'Recuperación',
+    cooldown: t('workout.cooldown') || 'Enfriamiento',
   };
 
 
@@ -207,7 +207,7 @@ export function IntervalsAnalysisChart({
     const matchedLap = matchedLaps.find(m => m.lapIndex === index);
     const effectiveType = (overrideType || matchedLap?.stepType || 'other') as keyof typeof BLOCK_COLORS;
 
-    const fallbackLabel = `${t('table.lap') || 'Lap'} ${displayIndex}`;
+    const fallbackLabel = `${t('table.lap') || 'Vuelta'} ${displayIndex}`;
     const label = overrideType ? overrideLabels[overrideType] : (matchedLap ? matchedLap.stepLabel : fallbackLabel);
 
     return {

@@ -39,9 +39,10 @@ const LAP_COLORS = {
 interface TooltipContentProps {
   active?: boolean;
   payload?: Array<{ payload: ScatterDataPoint }>;
+  t: ReturnType<typeof useTranslations>;
 }
 
-function ScatterTooltip({ active, payload }: TooltipContentProps) {
+function ScatterTooltip({ active, payload, t }: TooltipContentProps) {
   if (!active || !payload || payload.length === 0) return null;
 
   const point = payload[0].payload;
@@ -52,29 +53,29 @@ function ScatterTooltip({ active, payload }: TooltipContentProps) {
         className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground uppercase tracking-widest mb-2"
         style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
       >
-        Lap {point.lap}
+        {t('charts.lap')} {point.lap}
       </p>
       <div className="space-y-1">
         <div className="flex items-center justify-between gap-6">
-          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>Pace</span>
+          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>{t('charts.pace')}</span>
           <span className="text-xs font-bold text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
-            {point.paceLabel} /km
+            {point.paceLabel} {t('metrics.units.perKm')}
           </span>
         </div>
         <div className="flex items-center justify-between gap-6">
-          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>Heart Rate</span>
+          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>{t('charts.heartRate')}</span>
           <span className="text-xs font-bold text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
-            {point.hr} bpm
+            {point.hr} {t('metrics.units.bpm')}
           </span>
         </div>
         <div className="flex items-center justify-between gap-6">
-          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>Distance</span>
+          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>{t('charts.distance')}</span>
           <span className="text-xs font-bold text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
             {(point.distance / 1000).toFixed(2)} km
           </span>
         </div>
         <div className="flex items-center justify-between gap-6">
-          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>Efficiency</span>
+          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>{t('charts.efficiency')}</span>
           <span className="text-xs font-bold text-endurix-orange" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
             {(point.hr / point.pace).toFixed(2)}
           </span>
@@ -139,15 +140,15 @@ export function PaceHrScatterChart({ laps, isRunning }: PaceHrScatterChartProps)
         <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
           <div className="flex items-center gap-1.5">
             <div className="w-2 h-2 bg-blue-500" />
-            <span>Warmup</span>
+            <span>{t('charts.warmup')}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-2 h-2 bg-orange-500" />
-            <span>Active</span>
+            <span>{t('charts.active')}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-2 h-2 bg-green-500" />
-            <span>Recovery</span>
+            <span>{t('charts.recovery')}</span>
           </div>
         </div>
       </div>
@@ -159,14 +160,14 @@ export function PaceHrScatterChart({ laps, isRunning }: PaceHrScatterChartProps)
             <XAxis
               type="number"
               dataKey="pace"
-              name={isRunning ? 'Pace' : 'Speed'}
+              name={isRunning ? t('charts.pace') : t('charts.speed')}
               axisLine={false}
               tickLine={false}
               tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
               domain={['auto', 'auto']}
               tickFormatter={(val: number) => isRunning ? `${Math.floor(val)}:${Math.round((val % 1) * 60).toString().padStart(2, '0')}` : `${val.toFixed(0)}`}
               label={{
-                value: isRunning ? 'min/km' : 'km/h',
+                value: isRunning ? t('charts.minPerKm') : t('charts.kmh'),
                 position: 'insideBottom',
                 offset: -5,
                 fill: 'hsl(var(--muted-foreground))',
@@ -176,7 +177,7 @@ export function PaceHrScatterChart({ laps, isRunning }: PaceHrScatterChartProps)
             <YAxis
               type="number"
               dataKey="hr"
-              name="Heart Rate"
+              name={t('charts.heartRate')}
               axisLine={false}
               tickLine={false}
               tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
@@ -184,7 +185,7 @@ export function PaceHrScatterChart({ laps, isRunning }: PaceHrScatterChartProps)
               width={40}
               tickFormatter={(val: number) => `${Math.round(val)}`}
               label={{
-                value: 'bpm',
+                value: t('charts.bpm'),
                 angle: -90,
                 position: 'insideLeft',
                 fill: 'hsl(var(--muted-foreground))',
@@ -192,7 +193,7 @@ export function PaceHrScatterChart({ laps, isRunning }: PaceHrScatterChartProps)
               }}
             />
             <ZAxis type="number" dataKey="distance" range={[100, 600]} />
-            <Tooltip content={<ScatterTooltip />} />
+            <Tooltip content={<ScatterTooltip t={t} />} />
             <Scatter data={chartData}>
               {chartData.map((entry, index) => {
                 const lapType = getLapType(index, chartData.length);

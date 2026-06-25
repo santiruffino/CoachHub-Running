@@ -257,7 +257,7 @@ export default function WorkoutDetailsPage() {
                     <div className="min-w-0">
                         <div className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{t('targetAthlete')}</div>
                         <div className="text-sm font-bold text-endurix-black dark:text-foreground truncate">
-                            {assignment.athlete?.name || assignment.athlete?.email || 'N/A'}
+                            {assignment.athlete?.name || assignment.athlete?.email || 'No disponible'}
                         </div>
                     </div>
                 </div>
@@ -383,7 +383,7 @@ export default function WorkoutDetailsPage() {
                                 {t('assignmentTitle')}
                             </h1>
                             <div className="flex items-center gap-2 flex-wrap mt-1 text-[10px] md:text-[11px] uppercase tracking-[0.22em] text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
-                                <span className="truncate">{assignment.athlete?.name || assignment.athlete?.email || 'N/A'}</span>
+                                <span className="truncate">{assignment.athlete?.name || assignment.athlete?.email || 'No disponible'}</span>
                                 <span className="hidden md:inline-flex h-1 w-1 rounded-full bg-endurix-black/25 dark:bg-muted-foreground/40" />
                                 <span>{assignmentDateLabel}</span>
                             </div>

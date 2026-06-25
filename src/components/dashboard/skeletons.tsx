@@ -229,7 +229,7 @@ export function CoachDashboardSkeleton() {
             className="min-h-screen bg-endurix-paper dark:bg-background"
             role="status"
             aria-live="polite"
-            aria-label="Loading dashboard"
+            aria-label="Cargando panel"
         >
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-6 space-y-4">
                 {/* Header */}

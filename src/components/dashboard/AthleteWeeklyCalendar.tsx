@@ -92,10 +92,10 @@ export function AthleteWeeklyCalendar({ weekStart, athleteId, assignments, activ
             <div className="flex items-center justify-between gap-3 bg-endurix-black/5 dark:bg-white/5 p-2 border border-endurix-black/10 dark:border-border flex-wrap">
                 <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1">
-                        <button type="button" onClick={() => navigate(-1)} className="h-8 w-8 border border-endurix-black/10 dark:border-border flex items-center justify-center hover:border-endurix-orange/40 transition-colors" aria-label="Previous period">
+                        <button type="button" onClick={() => navigate(-1)} className="h-8 w-8 border border-endurix-black/10 dark:border-border flex items-center justify-center hover:border-endurix-orange/40 transition-colors" aria-label={t('common.previous')}>
                             <ChevronLeft className="h-4 w-4" />
                         </button>
-                        <button type="button" onClick={() => navigate(1)} className="h-8 w-8 border border-endurix-black/10 dark:border-border flex items-center justify-center hover:border-endurix-orange/40 transition-colors" aria-label="Next period">
+                        <button type="button" onClick={() => navigate(1)} className="h-8 w-8 border border-endurix-black/10 dark:border-border flex items-center justify-center hover:border-endurix-orange/40 transition-colors" aria-label={t('common.next')}>
                             <ChevronRight className="h-4 w-4" />
                         </button>
                     </div>
@@ -112,7 +112,7 @@ export function AthleteWeeklyCalendar({ weekStart, athleteId, assignments, activ
                             className={cn('h-8 px-3 text-[10px] font-bold uppercase tracking-widest', view === 'week' ? 'bg-endurix-orange text-white' : 'bg-transparent text-muted-foreground')}
                             style={FONT_MONO}
                         >
-                            Week
+                            {t('calendar.week')}
                         </button>
                         <button
                             type="button"
@@ -120,7 +120,7 @@ export function AthleteWeeklyCalendar({ weekStart, athleteId, assignments, activ
                             className={cn('h-8 px-3 text-[10px] font-bold uppercase tracking-widest border-l border-endurix-black/10 dark:border-border', view === 'month' ? 'bg-endurix-orange text-white' : 'bg-transparent text-muted-foreground')}
                             style={FONT_MONO}
                         >
-                            Month
+                            {t('calendar.month')}
                         </button>
                     </div>
                     <button type="button" onClick={goToday} className="h-8 px-3 border border-endurix-black/10 dark:border-border text-[10px] font-bold uppercase tracking-widest hover:border-endurix-orange/40 transition-colors" style={FONT_MONO}>
@@ -133,7 +133,7 @@ export function AthleteWeeklyCalendar({ weekStart, athleteId, assignments, activ
                 <div className="min-w-[1024px]">
                     {view === 'month' && (
                         <div className="grid grid-cols-7 gap-px bg-endurix-black/10 dark:bg-border">
-                            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((label) => (
+                            {Array.from({ length: 7 }, (_, index) => format(new Date(2024, 0, 1 + index), 'EEE', { locale: es })).map((label) => (
                                 <div key={label} className="bg-endurix-paper dark:bg-card px-2 py-1 text-[9px] font-bold uppercase tracking-widest text-muted-foreground text-center" style={FONT_MONO}>
                                     {label}
                                 </div>
@@ -195,7 +195,7 @@ export function AthleteWeeklyCalendar({ weekStart, athleteId, assignments, activ
                                         <CompactMonthCard
                                             key={item.id}
                                             tone="race"
-                                            label="RACE"
+                                            label={t('calendar.race')}
                                             title={raceName}
                                             meta={item.race.target_time ? t('races.athlete.target', { time: item.race.target_time }) : undefined}
                                             icon={<Medal className="h-3 w-3" />}
@@ -220,7 +220,7 @@ export function AthleteWeeklyCalendar({ weekStart, athleteId, assignments, activ
                                             key={item.id}
                                             href={`/workouts/${item.assignment.id}`}
                                             tone="planned"
-                                            label={item.assignment.training.type}
+                                            label={t(`dashboard.trainingTypes.${item.assignment.training.type}`)}
                                             title={nameText}
                                             icon={<CalendarDays className="h-3 w-3" />}
                                         />
@@ -232,7 +232,7 @@ export function AthleteWeeklyCalendar({ weekStart, athleteId, assignments, activ
                                         key={item.id}
                                         href={`/activities/${item.activity.id}`}
                                         tone="activity"
-                                        label="STRAVA"
+                                        label={t('calendar.strava')}
                                         title={item.activity.title}
                                         meta={item.activity.duration > 0 ? formatDuration(item.activity.duration) : undefined}
                                         icon={<ActivitySquare className="h-3 w-3" />}
@@ -289,8 +289,8 @@ export function AthleteWeeklyCalendar({ weekStart, athleteId, assignments, activ
                                                 {monthItems.slice(0, 3).map((item) => renderCompactItem(item))}
                                             </div>
                                             {monthItems.length > 3 && (
-                                                <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground" style={FONT_MONO}>
-                                                    +{monthItems.length - 3} more
+                                        <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground" style={FONT_MONO}>
+                                                    {t('calendar.moreItems', { count: monthItems.length - 3 })}
                                                 </div>
                                             )}
                                         </>

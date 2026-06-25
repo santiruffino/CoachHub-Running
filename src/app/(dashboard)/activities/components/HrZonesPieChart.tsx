@@ -45,9 +45,10 @@ interface TooltipContentProps {
       bpmRange: string;
     };
   }>;
+  t: ReturnType<typeof useTranslations>;
 }
 
-function ZoneTooltip({ active, payload }: TooltipContentProps) {
+function ZoneTooltip({ active, payload, t }: TooltipContentProps) {
   if (!active || !payload || payload.length === 0) return null;
 
   const data = payload[0].payload;
@@ -64,19 +65,19 @@ function ZoneTooltip({ active, payload }: TooltipContentProps) {
       </p>
       <div className="space-y-1">
         <div className="flex items-center justify-between gap-6">
-          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>Time</span>
+          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>{t('charts.time')}</span>
           <span className="text-xs font-bold text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
             {mins}:{secs.toString().padStart(2, '0')}
           </span>
         </div>
         <div className="flex items-center justify-between gap-6">
-          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>Share</span>
+          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>{t('charts.share')}</span>
           <span className="text-xs font-bold text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
             {data.percentage.toFixed(1)}%
           </span>
         </div>
         <div className="flex items-center justify-between gap-6">
-          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>Range</span>
+          <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>{t('charts.range')}</span>
           <span className="text-xs font-bold text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
             {data.bpmRange}
           </span>
@@ -90,9 +91,10 @@ interface CenterLabelProps {
   viewBox: { cx: number; cy: number };
   totalTime: number;
   formatTime: (seconds: number) => string;
+  t: ReturnType<typeof useTranslations>;
 }
 
-function CenterLabel({ viewBox, totalTime, formatTime }: CenterLabelProps) {
+function CenterLabel({ viewBox, totalTime, formatTime, t }: CenterLabelProps) {
   const { cx, cy } = viewBox;
   return (
     <g>
@@ -100,7 +102,7 @@ function CenterLabel({ viewBox, totalTime, formatTime }: CenterLabelProps) {
         {formatTime(totalTime)}
       </text>
       <text x={cx} y={cy + 14} textAnchor="middle" className="fill-muted-foreground text-[10px] uppercase tracking-widest" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
-        Total Time
+        {t('charts.totalTime')}
       </text>
     </g>
   );
@@ -209,7 +211,7 @@ export function HrZonesPieChart({ laps, splits, zones, zoneNames, averageHr, tot
           name: zoneEntry.name,
           time,
           percentage: totalTime > 0 ? (time / totalTime) * 100 : 0,
-          bpmRange: `${zone.min}-${zone.max} bpm`,
+          bpmRange: `${zone.min}-${zone.max} ${t('charts.bpm')}`,
         };
       })
       .filter((d) => d.time > 0);
@@ -226,7 +228,7 @@ export function HrZonesPieChart({ laps, splits, zones, zoneNames, averageHr, tot
           name: entry.name,
           time: index === fallbackZoneIndex ? totalTimeSeconds : 0,
           percentage: index === fallbackZoneIndex ? 100 : 0,
-          bpmRange: `${entry.zone.min}-${entry.zone.max} bpm`,
+          bpmRange: `${entry.zone.min}-${entry.zone.max} ${t('charts.bpm')}`,
         })).filter((d) => d.time > 0);
 
         return { data: fallbackData, totalTime: totalTimeSeconds };
@@ -246,7 +248,7 @@ export function HrZonesPieChart({ laps, splits, zones, zoneNames, averageHr, tot
             name: zoneEntry.name,
             time,
             percentage: totalTime > 0 ? (time / totalTime) * 100 : 0,
-            bpmRange: `${zone.min}-${zone.max} bpm`,
+            bpmRange: `${zone.min}-${zone.max} ${t('charts.bpm')}`,
           };
         })
         .filter((d) => d.time > 0),
@@ -263,7 +265,7 @@ export function HrZonesPieChart({ laps, splits, zones, zoneNames, averageHr, tot
           {t('noHrData')}
         </p>
         <p className="text-[10px] uppercase tracking-widest text-endurix-black/35 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
-          No lap or split heart-rate samples were available.
+          {t('charts.noHrSamples')}
         </p>
       </div>
     );
@@ -317,8 +319,8 @@ export function HrZonesPieChart({ laps, splits, zones, zoneNames, averageHr, tot
                   />
                 ))}
               </Pie>
-              <Tooltip content={<ZoneTooltip />} />
-              <CenterLabel viewBox={{ cx: 140, cy: 140 }} totalTime={totalTime} formatTime={formatTime} />
+              <Tooltip content={<ZoneTooltip t={t} />} />
+              <CenterLabel viewBox={{ cx: 140, cy: 140 }} totalTime={totalTime} formatTime={formatTime} t={t} />
             </PieChart>
           </ResponsiveContainer>
         </div>
