@@ -3,6 +3,7 @@ import { Navbar } from '@/components/landing/Navbar';
 import { HeroSection } from '@/components/landing/HeroSection';
 import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { ProductFeaturesSection } from '@/components/landing/ProductFeaturesSection';
+import { CoachOpsSection } from '@/components/landing/CoachOpsSection';
 import { RoadmapSection } from '@/components/landing/RoadmapSection';
 import { CTASection } from '@/components/landing/CTASection';
 import { WishlistSection } from '@/components/landing/WishlistSection';
@@ -23,6 +24,7 @@ export default async function LandingPage() {
         <HeroSection />
         <FeaturesSection />
         <ProductFeaturesSection />
+        <CoachOpsSection />
         <RoadmapSection />
         <CTASection />
         <WishlistSection />

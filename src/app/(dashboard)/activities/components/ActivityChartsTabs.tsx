@@ -7,7 +7,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { IntervalsAnalysisChart } from '@/app/(dashboard)/activities/components/IntervalsAnalysisChart';
 import { SplitElevationChart } from '@/app/(dashboard)/activities/components/SplitElevationChart';
 import { PaceHrScatterChart } from '@/app/(dashboard)/activities/components/PaceHrScatterChart';
-import { LapFilterBadges } from '@/app/(dashboard)/activities/components/LapFilterBadges';
 import { LapsTable } from '@/app/(dashboard)/activities/components/LapsTable';
 import { MatchedLap } from '@/features/trainings/utils/workoutMatcher';
 import { ActivityDetail } from '@/interfaces/activity';
@@ -156,11 +155,11 @@ export function ActivityChartsTabs({
 
             {hasLaps && (
               <div className="mt-6">
-                <LapFilterBadges value={lapFilter} onChange={setLapFilter} t={t} />
                 <LapsTable
                   laps={activity.laps!}
                   matchedLaps={matchedLaps}
                   lapFilter={lapFilter}
+                  onLapFilterChange={setLapFilter}
                   isAthlete={isAthlete}
                   lapOverrides={lapOverrides}
                   onOverrideStepType={onOverrideStepType}

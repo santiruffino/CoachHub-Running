@@ -83,3 +83,13 @@ export async function POST(request: NextRequest) {
   const t = await getTransport();
   return await t.handleRequest(request);
 }
+
+export async function DELETE(request: NextRequest) {
+  const check = await checkAuthAndRateLimit(request);
+  if (check.response) {
+    return check.response;
+  }
+
+  const t = await getTransport();
+  return await t.handleRequest(request);
+}

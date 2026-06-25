@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { useTranslations } from 'next-intl';
 import { ArrowRight, Compass } from 'lucide-react';
 import { BackButton } from '@/components/ui/BackButton';
+import messages from '../../messages/es.json';
 
 function AnimatedTicker() {
     const [progress, setProgress] = useState(0);
@@ -50,7 +50,7 @@ function AnimatedTicker() {
 const easeOut = [0.22, 1, 0.36, 1] as const;
 
 export default function NotFound() {
-    const t = useTranslations('notFound');
+    const t = messages.notFound;
 
     return (
         <div className="min-h-screen bg-endurix-paper dark:bg-background flex items-center justify-center px-4 sm:px-6 py-12 relative overflow-hidden">
@@ -87,7 +87,7 @@ export default function NotFound() {
                         style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
                     >
                         <Compass className="w-3 h-3 text-endurix-orange" />
-                        {t('eyebrow')}
+                        {t.eyebrow}
                     </span>
                 </motion.div>
 
@@ -112,8 +112,8 @@ export default function NotFound() {
                     className="font-bold text-endurix-black dark:text-foreground text-3xl sm:text-4xl lg:text-5xl uppercase leading-[1.05] tracking-tight"
                     style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
                 >
-                    <span className="block">{t('headline1')}</span>
-                    <span className="block text-endurix-orange">{t('headline2')}</span>
+                    <span className="block">{t.headline1}</span>
+                    <span className="block text-endurix-orange">{t.headline2}</span>
                 </motion.h2>
 
                 {/* Subtitle */}
@@ -123,7 +123,7 @@ export default function NotFound() {
                     transition={{ duration: 0.55, ease: easeOut, delay: 0.4 }}
                     className="text-endurix-black/60 dark:text-muted-foreground text-sm sm:text-base leading-relaxed max-w-md mx-auto"
                 >
-                    {t('subtitle')}
+                    {t.subtitle}
                 </motion.p>
 
                 {/* Ticker / progress bar */}
@@ -149,12 +149,12 @@ export default function NotFound() {
                             className="inline-flex items-center justify-center gap-2 bg-endurix-orange text-white text-xs font-bold tracking-widest px-8 py-4 transition-all hover:bg-endurix-orange/90 w-full sm:w-auto"
                             style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
                         >
-                            {t('primary')}
+                            {t.primary}
                             <ArrowRight className="w-4 h-4" />
                         </Link>
                     </motion.div>
                     <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }}>
-                        <BackButton href="/" label={t('secondary')} showLabel variant="outline" className="w-full sm:w-auto" />
+                        <BackButton href="/" label={t.secondary} showLabel variant="outline" className="w-full sm:w-auto" />
                     </motion.div>
                 </motion.div>
 
@@ -166,7 +166,7 @@ export default function NotFound() {
                     className="text-[10px] text-endurix-black/40 dark:text-muted-foreground tracking-widest uppercase pt-6 border-t border-endurix-black/10 dark:border-border max-w-md mx-auto"
                     style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
                 >
-                    {t('tip')}
+                    {t.tip}
                 </motion.p>
             </div>
         </div>

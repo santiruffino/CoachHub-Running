@@ -4,6 +4,7 @@ import React from 'react';
 import {
   AreaChart,
   Area,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -57,8 +58,6 @@ const GRADE_COLORS: Record<GradeCategory, { stroke: string; fill: string; label:
 
 const GRADE_CATEGORIES: GradeCategory[] = ['steepDownhill', 'downhill', 'flat', 'uphill', 'steepUphill'];
 
-// Create continuous segments for each grade category
-// Each segment is a continuous run of splits with the same grade category
 function createGradeSegments(chartData: ChartDataPoint[]) {
   const segmentsByCategory: Record<GradeCategory, ChartDataPoint[][]> = {
     steepDownhill: [],
@@ -71,24 +70,19 @@ function createGradeSegments(chartData: ChartDataPoint[]) {
   let currentSegment: ChartDataPoint[] = [];
   let currentCategory: GradeCategory | null = null;
 
-  for (let i = 0; i < chartData.length; i++) {
-    const point = chartData[i];
-    const category = point.gradeCategory;
-
-    if (category !== currentCategory) {
-      // Category changed - save previous segment and start new one
+  for (const point of chartData) {
+    if (point.gradeCategory !== currentCategory) {
       if (currentSegment.length > 0 && currentCategory) {
         segmentsByCategory[currentCategory].push([...currentSegment]);
       }
       currentSegment = [point];
-      currentCategory = category;
-    } else {
-      // Same category - continue segment
-      currentSegment.push(point);
+      currentCategory = point.gradeCategory;
+      continue;
     }
+
+    currentSegment.push(point);
   }
 
-  // Don't forget the last segment
   if (currentSegment.length > 0 && currentCategory) {
     segmentsByCategory[currentCategory].push([...currentSegment]);
   }
@@ -111,6 +105,7 @@ function ElevationTooltip({ active, payload, t }: TooltipContentProps) {
   const gradeCategory = point.gradeCategory;
   const gradeColor = gradeCategory ? GRADE_COLORS[gradeCategory]?.stroke : '#6b7280';
   const gradeLabel = gradeCategory ? t(`charts.gradeCategories.${gradeCategory}`) || GRADE_COLORS[gradeCategory]?.label : '—';
+  const roundedHr = point.hr !== null ? Math.round(point.hr) : null;
 
   return (
     <div className="bg-card border border-border p-3">
@@ -155,7 +150,7 @@ function ElevationTooltip({ active, payload, t }: TooltipContentProps) {
           <div className="flex items-center justify-between gap-6">
             <span className="text-[10px] text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>HR</span>
             <span className="text-xs font-bold text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
-              {point.hr} bpm
+              {roundedHr} bpm
             </span>
           </div>
         )}
@@ -198,6 +193,8 @@ export function SplitElevationChart({ splits, totalElevationGain }: SplitElevati
     { items: [], cumulative: 0 }
   ).items;
 
+  const gradeSegments = React.useMemo(() => createGradeSegments(chartData), [chartData]);
+
   if (chartData.length === 0) {
     return (
       <p className="text-sm text-endurix-black/50 dark:text-muted-foreground text-center py-8">
@@ -208,9 +205,13 @@ export function SplitElevationChart({ splits, totalElevationGain }: SplitElevati
 
   const maxCumulative = Math.max(...chartData.map((d) => d.cumulative));
   const minCumulative = Math.min(...chartData.map((d) => d.cumulative));
-  const domainPadding = Math.max(Math.abs(maxCumulative), Math.abs(minCumulative)) * 0.1;
+  const domainPadding = Math.max((maxCumulative - minCumulative) * 0.18, 1);
+  const yDomain: [number, number] = [
+    Math.min(minCumulative, 0) - domainPadding,
+    Math.max(maxCumulative, 0) + domainPadding,
+  ];
 
-return (
+  return (
     <div className="w-full space-y-6">
       <div className="flex items-center justify-between px-2">
         <h3
@@ -227,36 +228,13 @@ return (
         </span>
       </div>
 
-      {/* Grade Legend */}
-      <div className="flex flex-wrap gap-2 px-2">
-        {GRADE_CATEGORIES.map((category) => (
-          <div key={category} className="flex items-center gap-1.5">
-            <div
-              className="w-3 h-3 rounded"
-              style={{ backgroundColor: GRADE_COLORS[category].fill, border: `1px solid ${GRADE_COLORS[category].stroke}` }}
-            />
-            <span className="text-[9px] font-medium text-endurix-black/60 dark:text-muted-foreground uppercase tracking-wider">
-              {t(`charts.gradeCategories.${category}`) || GRADE_COLORS[category].label}
-            </span>
-          </div>
-        ))}
-      </div>
-
       <div className="h-[300px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={chartData}
             margin={{ top: 10, right: 10, bottom: 10, left: 0 }}
           >
-            <defs>
-              {GRADE_CATEGORIES.map((category) => (
-                <linearGradient key={category} id={`gradeGradient${category}`} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={GRADE_COLORS[category].stroke} stopOpacity={0.4} />
-                  <stop offset="100%" stopColor={GRADE_COLORS[category].stroke} stopOpacity={0.05} />
-                </linearGradient>
-              ))}
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border) / 0.1)" />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border) / 0.12)" />
             <XAxis
               dataKey="km"
               axisLine={false}
@@ -268,35 +246,39 @@ return (
               axisLine={false}
               tickLine={false}
               tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
-              domain={[
-                minCumulative - domainPadding,
-                maxCumulative + domainPadding,
-              ]}
+              domain={yDomain}
               width={40}
               tickFormatter={(val: number) => `${val.toFixed(0)}m`}
             />
-            <Tooltip content={<ElevationTooltip t={t} />} />
+            <Tooltip content={<ElevationTooltip t={t} />} cursor={{ stroke: 'hsl(var(--muted-foreground) / 0.35)', strokeDasharray: '4 4' }} />
             <ReferenceLine y={0} stroke="hsl(var(--border) / 0.3)" strokeDasharray="4 4" />
-            
-            {/* Render each grade category as continuous segments */}
-            {GRADE_CATEGORIES.map((category) => {
-              const segments = createGradeSegments(chartData)[category];
-              return segments.map((segment, segmentIndex) => (
+            {GRADE_CATEGORIES.map((category) =>
+              gradeSegments[category].map((segment, segmentIndex) => (
                 <Area
                   key={`${category}-${segmentIndex}`}
                   type="monotone"
                   data={segment}
                   dataKey="cumulative"
-                  stroke={GRADE_COLORS[category].stroke}
-                  strokeWidth={2}
-                  fill={`url(#gradeGradient${category})`}
+                  stroke="none"
+                  fill={GRADE_COLORS[category].fill}
+                  fillOpacity={0.82}
                   isAnimationActive={false}
                   dot={false}
-                  // Connect the area to the baseline (min elevation) for proper fill
                   connectNulls={false}
                 />
-              ));
-            })}
+              ))
+            )}
+            <Line
+              type="monotone"
+              dataKey="cumulative"
+              stroke="#64748b"
+              strokeWidth={2.5}
+              isAnimationActive={false}
+              dot={false}
+              activeDot={{ r: 4, strokeWidth: 2, stroke: '#64748b', fill: '#ffffff' }}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </AreaChart>
         </ResponsiveContainer>
       </div>

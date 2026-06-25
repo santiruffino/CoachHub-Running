@@ -4,17 +4,20 @@ import { Badge } from '@/components/ui/badge';
 
 type LapFilter = 'all' | 'warmup' | 'active' | 'recovery' | 'cooldown';
 
+export type { LapFilter };
+
 interface LapFilterBadgesProps {
     value: LapFilter;
     onChange: (value: LapFilter) => void;
     t: (key: string) => string;
+    className?: string;
 }
 
 const FILTER_BASE = 'cursor-pointer text-[10px] font-bold uppercase tracking-widest px-3 py-1 transition-colors';
 
-export function LapFilterBadges({ value, onChange, t }: LapFilterBadgesProps) {
+export function LapFilterBadges({ value, onChange, t, className = '' }: LapFilterBadgesProps) {
     return (
-        <div className="flex flex-wrap items-center gap-2 mb-6">
+        <div className={`flex flex-wrap items-center gap-2 ${className}`}>
             <Badge
                 variant={value === 'all' ? 'default' : 'outline'}
                 className={FILTER_BASE}

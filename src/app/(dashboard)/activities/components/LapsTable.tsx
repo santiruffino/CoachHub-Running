@@ -7,15 +7,17 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ChevronDown, Pencil, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Lap } from '@/interfaces/activity';
 import { MatchedLap } from '@/features/trainings/utils/workoutMatcher';
-
-type LapFilter = 'all' | 'warmup' | 'active' | 'recovery' | 'cooldown';
+import { LapFilterBadges } from '@/app/(dashboard)/activities/components/LapFilterBadges';
+import type { LapFilter } from '@/app/(dashboard)/activities/components/LapFilterBadges';
 
 interface LapsTableProps {
     laps: Lap[];
     matchedLaps: MatchedLap[];
     lapFilter: LapFilter;
+    onLapFilterChange: (value: LapFilter) => void;
     isAthlete: boolean;
     lapOverrides: Record<string, string>;
     onOverrideStepType: (lapIndex: number, newStepType: string) => void;
@@ -23,13 +25,14 @@ interface LapsTableProps {
     formatTime: (seconds: number) => string;
     formatPace: (metersPerSecond: number) => string;
     getHRZoneColor: (hr: number) => string;
-    t: (key: string) => string;
+    t: ReturnType<typeof useTranslations>;
 }
 
 export function LapsTable({
     laps,
     matchedLaps,
     lapFilter,
+    onLapFilterChange,
     isAthlete,
     lapOverrides,
     onOverrideStepType,
@@ -119,9 +122,10 @@ export function LapsTable({
 
     return (
         <div className="overflow-x-auto">
-            {!isAthlete && onBulkOverrideStepType && (
-                <div className="mb-4">
-                    <div className="flex justify-end">
+            <div className="mb-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                    <LapFilterBadges value={lapFilter} onChange={onLapFilterChange} t={t} className="mb-0" />
+                    {!isAthlete && onBulkOverrideStepType && (
                         <Button
                             type="button"
                             variant={isBulkEditMode ? 'default' : 'outline'}
@@ -133,52 +137,52 @@ export function LapsTable({
                             <Pencil className="w-3.5 h-3.5" />
                             {t('common.edit')}
                         </Button>
-                    </div>
-
-                    {isBulkEditMode && (
-                        <div className="sticky top-2 z-20 mt-3 border border-endurix-black/15 dark:border-border bg-endurix-paper dark:bg-muted p-3">
-                            <div className="flex flex-wrap items-center gap-2">
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-7 px-2 text-[10px] font-bold uppercase tracking-widest"
-                                    onClick={toggleSelectAllVisible}
-                                    style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
-                                >
-                                    {allVisibleSelected ? (t('common.clear') || 'Clear') : (t('common.selectAll') || 'Select all')}
-                                </Button>
-                                <span className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>{t('common.selected', { count: selectedLapIndices.length })}</span>
-                                {Object.entries(overrideLabels).map(([key, label]) => (
-                                    <Button
-                                        key={`bulk-override-${key}`}
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        className="h-7 px-2 text-[10px] font-bold uppercase tracking-widest"
-                                        onClick={() => applyBulkOverride(key)}
-                                        disabled={selectedLapIndices.length === 0}
-                                        style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
-                                    >
-                                        {label}
-                                    </Button>
-                                ))}
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-7 px-2 text-[10px] font-bold uppercase tracking-widest ml-auto"
-                                    onClick={toggleBulkEditMode}
-                                    style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
-                                >
-                                    <X className="w-3.5 h-3.5 mr-1" />
-                                    {t('common.close')}
-                                </Button>
-                            </div>
-                        </div>
                     )}
                 </div>
-            )}
+
+                {!isAthlete && onBulkOverrideStepType && isBulkEditMode && (
+                    <div className="sticky top-2 z-20 mt-3 border border-endurix-black/15 dark:border-border bg-endurix-paper dark:bg-muted p-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 px-2 text-[10px] font-bold uppercase tracking-widest"
+                                onClick={toggleSelectAllVisible}
+                                style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                            >
+                                {allVisibleSelected ? (t('common.clear') || 'Clear') : (t('common.selectAll') || 'Select all')}
+                            </Button>
+                            <span className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>{t('common.selected', { count: selectedLapIndices.length })}</span>
+                            {Object.entries(overrideLabels).map(([key, label]) => (
+                                <Button
+                                    key={`bulk-override-${key}`}
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-7 px-2 text-[10px] font-bold uppercase tracking-widest"
+                                    onClick={() => applyBulkOverride(key)}
+                                    disabled={selectedLapIndices.length === 0}
+                                    style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                                >
+                                    {label}
+                                </Button>
+                            ))}
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 px-2 text-[10px] font-bold uppercase tracking-widest ml-auto"
+                                onClick={toggleBulkEditMode}
+                                style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                            >
+                                <X className="w-3.5 h-3.5 mr-1" />
+                                {t('common.close')}
+                            </Button>
+                        </div>
+                    </div>
+                )}
+            </div>
 
             <Table className="w-full">
                 <TableHeader>
