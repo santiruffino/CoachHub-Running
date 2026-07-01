@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +15,7 @@ import { trackOnboardingCompleted, trackOnboardingFailed, trackOnboardingStarted
 import { BackButton } from '@/components/ui/BackButton';
 
 export default function CoachOnboardingForm() {
+  const t = useTranslations('onboarding.coach');
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -74,54 +76,50 @@ export default function CoachOnboardingForm() {
         </div>
         <Card className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border">
           <CardHeader className="border-b border-endurix-black/10 dark:border-border">
-            <CardTitle className="text-xl uppercase tracking-tight" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>Coach Onboarding</CardTitle>
-            <CardDescription>
-              Complete your coaching profile and we will bootstrap starter templates for your team.
-            </CardDescription>
+            <CardTitle className="text-xl uppercase tracking-tight" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{t('title')}</CardTitle>
+            <CardDescription>{t('description')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6 p-6">
             <div className="space-y-2">
               <div className="flex items-center justify-between text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
-                <span>Completion tracker</span>
+                <span>{t('completionTracker')}</span>
                 <span>{completionPercent}%</span>
               </div>
               <Progress value={completionPercent} />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="bio" className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>Coach bio</Label>
+              <Label htmlFor="bio" className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{t('fields.bio')}</Label>
               <Input
                 id="bio"
                 variant="boxed"
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                placeholder="Your coaching background"
+                placeholder={t('fields.bioPlaceholder')}
                 aria-describedby="bio-help"
               />
-              <p id="bio-help" className="text-xs text-muted-foreground">
-                Helps athletes understand your approach.
-              </p>
+              <p id="bio-help" className="text-xs text-muted-foreground">{t('fields.bioHelp')}</p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="specialty" className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>Specialty</Label>
+              <Label htmlFor="specialty" className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{t('fields.specialty')}</Label>
               <Input
                 id="specialty"
                 variant="boxed"
                 value={specialty}
                 onChange={(e) => setSpecialty(e.target.value)}
-                placeholder="e.g. Marathon, Trail, 10K progression"
+                placeholder={t('fields.specialtyPlaceholder')}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="experience" className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>Experience</Label>
+              <Label htmlFor="experience" className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{t('fields.experience')}</Label>
               <Input
                 id="experience"
                 variant="boxed"
                 value={experience}
                 onChange={(e) => setExperience(e.target.value)}
-                placeholder="e.g. 8 years, federation certified"
+                placeholder={t('fields.experiencePlaceholder')}
               />
             </div>
 
@@ -143,7 +141,7 @@ export default function CoachOnboardingForm() {
                     router.replace('/dashboard');
                   } catch (error) {
                     appLogger.error('coach_onboarding.submit_failed', { error });
-                    setError('Failed to complete onboarding. Please try again.');
+                    setError(t('errors.submitFailed'));
                     trackOnboardingFailed({ role: 'COACH', flow: 'coach_dedicated', reason: 'request_failed' });
                   } finally {
                     setSaving(false);
@@ -152,7 +150,7 @@ export default function CoachOnboardingForm() {
                 disabled={saving}
                 className="uppercase tracking-widest text-xs"
               >
-                {saving ? 'Saving...' : 'Complete Onboarding'}
+                {saving ? t('saving') : t('submit')}
               </Button>
             </div>
           </CardContent>

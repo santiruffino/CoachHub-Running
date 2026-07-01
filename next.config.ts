@@ -6,6 +6,11 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const nextConfig: NextConfig = {
   skipTrailingSlashRedirect: true,
+  env: {
+    // Vercel only injects VERCEL_GIT_COMMIT_SHA server-side; re-expose it so the
+    // client Sentry config can tag events with the same release as server/edge.
+    NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA: process.env.VERCEL_GIT_COMMIT_SHA,
+  },
   async headers() {
     return [
       {

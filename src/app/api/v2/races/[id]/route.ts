@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
-import { appLogger } from '@/lib/app-logger';
+import { createRequestLogger } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
 import { appendAdminActionLog } from '@/lib/audit/admin-action-log';
+import { reportApiError } from '@/lib/api/report-error';
 
 /**
  * PATCH /v2/races/[id]
@@ -13,6 +14,7 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { requestId, logger } = createRequestLogger('/api/v2/races/[id]', request);
   try {
     const { id } = await params;
     const authResult = await requireRole(['COACH', 'ADMIN']);
@@ -75,7 +77,7 @@ export async function PATCH(
       .single();
 
     if (error) {
-      appLogger.error('Update race error:', error);
+      logger.error('Update race error', { error: error });
       return NextResponse.json(apiError('FAILED_TO_UPDATE_RACE'),
         { status: 500 }
       );
@@ -94,7 +96,7 @@ export async function PATCH(
 
     return NextResponse.json(race);
   } catch (error: unknown) {
-    appLogger.error('PATCH /v2/races/[id] error:', error);
+    reportApiError(error, { route: '/api/v2/races/[id]', method: 'PATCH', requestId, logger });
     return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
       { status: 500 }
     );
@@ -110,6 +112,7 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { requestId, logger } = createRequestLogger('/api/v2/races/[id]', request);
   try {
     const { id } = await params;
     const authResult = await requireRole(['COACH', 'ADMIN']);
@@ -162,7 +165,7 @@ export async function DELETE(
       .eq('id', id);
 
     if (error) {
-      appLogger.error('Delete race error:', error);
+      logger.error('Delete race error', { error: error });
       return NextResponse.json(apiError('FAILED_TO_DELETE_RACE'),
         { status: 500 }
       );
@@ -181,7 +184,7 @@ export async function DELETE(
 
     return new Response(null, { status: 204 });
   } catch (error: unknown) {
-    appLogger.error('DELETE /v2/races/[id] error:', error);
+    reportApiError(error, { route: '/api/v2/races/[id]', method: 'DELETE', requestId, logger });
     return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
       { status: 500 }
     );

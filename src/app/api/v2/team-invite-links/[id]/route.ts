@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
 import { createServiceRoleClient } from '@/lib/supabase/server';
-import { appLogger } from '@/lib/app-logger';
+import { createRequestLogger } from '@/lib/logger';
 import { trackTeamInviteLinkRevoked } from '@/lib/analytics/events';
 import { apiError } from '@/lib/api/error-response';
+import { reportApiError } from '@/lib/api/report-error';
 
 interface PatchBody {
     isActive?: boolean;
@@ -44,6 +45,7 @@ export async function PATCH(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    const { requestId, logger } = createRequestLogger('/api/v2/team-invite-links/[id]', request);
     try {
         const { profile, response } = await requireRole(['COACH', 'ADMIN']);
         if (response) return response;
@@ -102,7 +104,7 @@ export async function PATCH(
             .single();
 
         if (error || !data) {
-            appLogger.error('team_invite_links.patch_failed', { id, error });
+            logger.error('team_invite_links.patch_failed', { error: { id, error } });
             return NextResponse.json(apiError('LINK_NOT_FOUND'), { status: 404 });
         }
 
@@ -112,7 +114,7 @@ export async function PATCH(
 
         return NextResponse.json(rowToDto(data, request));
     } catch (error: unknown) {
-        appLogger.error('team_invite_links.patch_unexpected', { error });
+        reportApiError(error, { route: '/api/v2/team-invite-links/[id]', method: 'PATCH', requestId, logger });
         return NextResponse.json(apiError('INTERNAL_ERROR'), { status: 500 });
     }
 }

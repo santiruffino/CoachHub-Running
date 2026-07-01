@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { computeAlertScore, extractRiskKeywords, SmartAlertType } from '@/lib/alerts/scoring';
 import { ActivityLoadRow, buildDailyLoadSeries, classifyLoadRisk } from '@/lib/training/load';
+import { normalizeCoachSettings } from '@/lib/settings/defaults';
 import * as Sentry from '@sentry/nextjs';
 import { createRequestLogger, withRequestId } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
@@ -123,6 +124,32 @@ export async function GET(request: NextRequest) {
             logger.warn('coach_dashboard.missing_team', { userId: user.id, role: profile.role });
             return respond(apiError('TEAM_REQUIRED'), { status: 403 });
         }
+
+        let settingsResult = profile.role === 'COACH'
+            ? await supabase
+                .from('coach_settings')
+                .select('thresholds, default_models')
+                .eq('coach_id', user.id)
+                .eq('team_id', profile.team_id)
+                .maybeSingle()
+            : await supabase
+                .from('team_settings')
+                .select('thresholds, default_models')
+                .eq('team_id', profile.team_id)
+                .maybeSingle();
+
+        if (!settingsResult.data && profile.role === 'COACH') {
+            settingsResult = await supabase
+                .from('team_settings')
+                .select('thresholds, default_models')
+                .eq('team_id', profile.team_id)
+                .maybeSingle();
+        }
+
+        const settings = normalizeCoachSettings({
+            thresholds: settingsResult.data?.thresholds,
+            default_models: settingsResult.data?.default_models,
+        });
 
         const scopeParam = new URL(request.url).searchParams.get('scope');
         const scope = scopeParam === 'team' ? 'team' : 'mine';
@@ -397,8 +424,9 @@ export async function GET(request: NextRequest) {
             complianceByAthlete.set(a.user_id, entry);
         });
 
+        const lowComplianceThreshold = settings.thresholds.lowComplianceThreshold / 100;
         const lowCompliance = Array.from(complianceByAthlete.entries())
-            .filter(([, s]) => s.total > 0 && s.completed / s.total < 0.5)
+            .filter(([, s]) => s.total > 0 && s.completed / s.total < lowComplianceThreshold)
             .map(([athleteId, s]) => ({
                 athleteId,
                 athleteName: athleteMap.get(athleteId) || 'Unknown',
@@ -441,7 +469,7 @@ export async function GET(request: NextRequest) {
                 }
 
                 const difference = Math.abs(Number(feedback.rpe) - Number(assignment.expected_rpe));
-                if (difference < 2) {
+                if (difference < settings.thresholds.rpeMismatchThreshold) {
                     return null;
                 }
 
@@ -498,7 +526,7 @@ export async function GET(request: NextRequest) {
                         rangeDays: 30,
                         now,
                     });
-                    const risk = classifyLoadRisk(loadData.current.acwr, loadData.current.tsb);
+                    const risk = classifyLoadRisk(loadData.current.acwr, loadData.current.tsb, settings.thresholds);
 
                     if (risk === 'insufficientData' || risk === 'balanced') {
                         return null;
@@ -514,6 +542,7 @@ export async function GET(request: NextRequest) {
                         loadRisk: risk,
                         acwr: loadData.current.acwr,
                         tsb: loadData.current.tsb,
+                        thresholds: settings.thresholds,
                     });
 
                     const riskLabel =
@@ -547,6 +576,7 @@ export async function GET(request: NextRequest) {
                     racePriority: raceContext?.racePriority,
                     raceProximityDays: raceContext?.raceProximityDays,
                     rpeDifference: mismatch.difference,
+                    thresholds: settings.thresholds,
                 });
 
                 return {
@@ -572,6 +602,7 @@ export async function GET(request: NextRequest) {
                     racePriority: raceContext?.racePriority,
                     raceProximityDays: raceContext?.raceProximityDays,
                     complianceRate: item.completionRate,
+                    thresholds: settings.thresholds,
                 });
 
                 return {
@@ -632,6 +663,7 @@ export async function GET(request: NextRequest) {
                     type: 'new_feedback' as const,
                     time: feedback.timestamp || now.toISOString(),
                     details: feedback.activityName,
+                    content: feedback.content,
                     score: scoring.score,
                     priority: scoring.priority,
                     recommendedActionKey: scoring.recommendedActionKey,

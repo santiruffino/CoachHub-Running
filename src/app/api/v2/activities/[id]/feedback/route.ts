@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/api-helpers';
 import { createServiceRoleClient } from '@/lib/supabase/server';
-import { appLogger } from '@/lib/app-logger';
+import { createRequestLogger } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
+import { reportApiError } from '@/lib/api/report-error';
 
 /**
  * Get Activity Feedback
@@ -14,6 +15,7 @@ export async function GET(
     _request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    const { requestId, logger } = createRequestLogger('/api/v2/activities/[id]/feedback', _request);
     try {
         const { id } = await params;
         const authResult = await requireAuth();
@@ -76,7 +78,7 @@ export async function GET(
             .maybeSingle();
 
         if (feedbackError) {
-            appLogger.error('Feedback fetch error:', feedbackError);
+            logger.error('Feedback fetch error', { error: feedbackError });
             return NextResponse.json(
                 apiError('FEEDBACK_FETCH_FAILED'),
                 { status: 500 }
@@ -85,7 +87,7 @@ export async function GET(
 
         return NextResponse.json(feedback || null);
     } catch (error: unknown) {
-        appLogger.error('Get activity feedback error:', error);
+        reportApiError(error, { route: '/api/v2/activities/[id]/feedback', method: 'GET', requestId, logger });
         return NextResponse.json(
             apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
@@ -102,6 +104,7 @@ export async function POST(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    const { requestId, logger } = createRequestLogger('/api/v2/activities/[id]/feedback', request);
     try {
         const { id } = await params;
         const authResult = await requireAuth();
@@ -180,7 +183,7 @@ export async function POST(
             .single();
 
         if (feedbackError) {
-            appLogger.error('Feedback upsert error:', feedbackError);
+            logger.error('Feedback upsert error', { error: feedbackError });
             return NextResponse.json(
                 apiError('FEEDBACK_SAVE_FAILED'),
                 { status: 500 }
@@ -190,7 +193,7 @@ export async function POST(
 
         return NextResponse.json(feedback);
     } catch (error: unknown) {
-        appLogger.error('Submit activity feedback error:', error);
+        reportApiError(error, { route: '/api/v2/activities/[id]/feedback', method: 'POST', requestId, logger });
         return NextResponse.json(
             apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }

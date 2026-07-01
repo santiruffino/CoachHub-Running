@@ -10,8 +10,49 @@ export interface UpdateAthleteProfileRequest {
     height?: number;
 }
 
+export interface ChatParticipant {
+    id: string;
+    name: string;
+    email?: string | null;
+}
+
+export interface ChatMessage {
+    id: string;
+    athleteId: string;
+    coachId: string;
+    senderId: string;
+    senderName: string;
+    body: string;
+    readAt: string | null;
+    createdAt: string;
+}
+
+export interface ChatThreadResponse {
+    currentUserId: string;
+    athlete: ChatParticipant;
+    coach: ChatParticipant;
+    messages: ChatMessage[];
+}
+
 export interface SuccessResponse {
     success: boolean;
+}
+
+export interface ConversationSummary {
+    athleteId: string;
+    athleteName: string;
+    coachId: string;
+    coachName: string;
+    lastMessage: {
+        body: string;
+        senderId: string;
+        createdAt: string;
+    } | null;
+    unreadCount: number;
+}
+
+export interface ConversationsResponse {
+    conversations: ConversationSummary[];
 }
 
 export type LoadMetricsRange = 7 | 30 | 90;
@@ -55,6 +96,37 @@ export interface LoadMetricsResponse {
     };
 }
 
+export interface WeeklyLoadPoint {
+    weekStart: string;
+    km: number;
+    minutes: number;
+    tss: number;
+    hasHrData: boolean;
+}
+
+export interface WeeklyLoadResponse {
+    series: WeeklyLoadPoint[];
+    meta: {
+        weeks: number;
+    };
+}
+
+export interface CareerStatsTotals {
+    count: number;
+    distance: number;
+    elevationGain: number;
+    movingTime: number;
+}
+
+export interface CareerStatsResponse {
+    careerStats: {
+        ytd: CareerStatsTotals;
+        allTime: CareerStatsTotals;
+    };
+    syncedAt: string | null;
+    stale?: boolean;
+}
+
 export const athletesService = {
     updateProfile: async (id: string, data: UpdateAthleteProfileRequest) => {
         return api.patch<SuccessResponse>(`/v2/users/${id}/details`, data);
@@ -63,5 +135,20 @@ export const athletesService = {
         return api.get<LoadMetricsResponse>(`/v2/users/${id}/load-metrics`, {
             params: { range },
         });
+    },
+    getWeeklyLoad: async (id: string) => {
+        return api.get<WeeklyLoadResponse>(`/v2/users/${id}/weekly-load`);
+    },
+    getCareerStats: async (id: string) => {
+        return api.get<CareerStatsResponse>(`/v2/users/${id}/career-stats`);
+    },
+    getChatThread: async (id: string) => {
+        return api.get<ChatThreadResponse>(`/v2/users/${id}/messages`);
+    },
+    getConversations: async () => {
+        return api.get<ConversationsResponse>('/v2/users/conversations');
+    },
+    sendChatMessage: async (id: string, body: string) => {
+        return api.post(`/v2/users/${id}/messages`, { body });
     }
 };

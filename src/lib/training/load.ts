@@ -15,6 +15,24 @@ export type LoadProfileInput = {
   maxHR?: number | null;
 };
 
+export type LoadRiskThresholds = {
+  loadRiskHighAcwr: number;
+  loadRiskModerateAcwr: number;
+  loadRiskLowStimulusAcwr: number;
+  loadRiskHighTsb: number;
+  loadRiskModerateTsb: number;
+  loadRiskLowStimulusTsb: number;
+};
+
+const DEFAULT_LOAD_RISK_THRESHOLDS: LoadRiskThresholds = {
+  loadRiskHighAcwr: 1.5,
+  loadRiskModerateAcwr: 1.3,
+  loadRiskLowStimulusAcwr: 0.8,
+  loadRiskHighTsb: -30,
+  loadRiskModerateTsb: -15,
+  loadRiskLowStimulusTsb: 25,
+};
+
 export type DailyLoadPoint = {
   date: string;
   load: number;
@@ -144,10 +162,14 @@ export function buildDailyLoadSeries(
   };
 }
 
-export function classifyLoadRisk(acwr: number, tsb: number): 'insufficientData' | 'high' | 'moderate' | 'balanced' | 'lowStimulus' {
+export function classifyLoadRisk(
+  acwr: number,
+  tsb: number,
+  thresholds: LoadRiskThresholds = DEFAULT_LOAD_RISK_THRESHOLDS
+): 'insufficientData' | 'high' | 'moderate' | 'balanced' | 'lowStimulus' {
   if (acwr === 0 && Math.abs(tsb) < 0.001) return 'insufficientData';
-  if (acwr > 1.5 || tsb < -30) return 'high';
-  if (acwr > 1.3 || tsb < -15) return 'moderate';
-  if (acwr < 0.8 || tsb > 25) return 'lowStimulus';
+  if (acwr > thresholds.loadRiskHighAcwr || tsb < thresholds.loadRiskHighTsb) return 'high';
+  if (acwr > thresholds.loadRiskModerateAcwr || tsb < thresholds.loadRiskModerateTsb) return 'moderate';
+  if (acwr < thresholds.loadRiskLowStimulusAcwr || tsb > thresholds.loadRiskLowStimulusTsb) return 'lowStimulus';
   return 'balanced';
 }

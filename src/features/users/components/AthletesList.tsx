@@ -216,7 +216,7 @@ export function AthletesList({ initialAthletes, initialCoaches, isAdmin }: Athle
 
       <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
         <div className="relative max-w-md w-full sm:w-auto flex-1">
-          <Search className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-4 text-endurix-black/40 dark:text-muted-foreground" />
+          <Search className="absolute left-0 top-1/2 ml-2 -translate-y-1/2 h-4 w-4 text-endurix-black/40 dark:text-muted-foreground" />
           <Input
             variant="boxed"
             placeholder={t('searchPlaceholder')}

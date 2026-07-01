@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
-import { appLogger } from '@/lib/app-logger';
 import { apiError } from '@/lib/api/error-response';
+import { reportApiError } from '@/lib/api/report-error';
+import { createRequestLogger } from '@/lib/logger';
 
 export async function GET(
     req: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    void req;
+    const { requestId, logger } = createRequestLogger('/api/v2/activities/[id]/compliance', req);
     const { id } = await params;
     
     // Use requireRole to ensure authorized access (Athletes or Coaches)
@@ -25,7 +26,7 @@ export async function GET(
 
         return NextResponse.json(data);
     } catch (error: unknown) {
-        appLogger.error('Get activity compliance error:', error);
+        reportApiError(error, { route: '/api/v2/activities/[id]/compliance', method: 'GET', requestId, logger });
         return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );

@@ -7,7 +7,8 @@ import { ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import api from '@/lib/axios';
 import { appLogger } from '@/lib/app-logger';
 import { GroupStatusCard } from '@/components/dashboard/GroupStatusCard';
-import { StatCard, SectionHeader, TimelineItem, CoachDashboardSkeleton } from '@/components/dashboard';
+import { StatCard, SectionHeader, TimelineItem, CoachDashboardSkeleton, ConversationList } from '@/components/dashboard';
+import { PendingMatchReview } from '@/features/trainings/components/PendingMatchReview';
 import { User } from '@/interfaces/auth';
 import { DashboardStats, LowCompliance, MissingWorkout, RPEMismatch, SmartAlert, TimelineEvent } from '../types';
 import { NextRaces } from './NextRaces';
@@ -25,6 +26,7 @@ interface DashboardAlertItem {
     recommendedAction?: string;
     fitness?: { ctl: number; tsb: number };
     scope?: 'athlete' | 'group';
+    content?: string;
 }
 
 interface PriorityRosterGroup {
@@ -65,6 +67,25 @@ function writeDismissedRosterAlertIds(scope: 'mine' | 'team', ids: Set<string>) 
     window.localStorage.setItem(getDismissedRosterAlertsStorageKey(scope), JSON.stringify(Array.from(ids)));
 }
 
+const DASHBOARD_SCOPE_STORAGE_KEY = 'endurix.dashboard.coach.scope';
+
+function readStoredScope(): 'mine' | 'team' {
+    if (typeof window === 'undefined') {
+        return 'mine';
+    }
+
+    const stored = window.localStorage.getItem(DASHBOARD_SCOPE_STORAGE_KEY);
+    return stored === 'team' ? 'team' : 'mine';
+}
+
+function writeStoredScope(scope: 'mine' | 'team') {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    window.localStorage.setItem(DASHBOARD_SCOPE_STORAGE_KEY, scope);
+}
+
 interface ZoneViolation {
     alertId?: string;
     id: string;
@@ -102,6 +123,7 @@ export default function CoachDashboardNew({ user }: CoachDashboardNewProps) {
     const [data, setData] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState(true);
     const [scope, setScope] = useState<'mine' | 'team'>('mine');
+    const scopeHydratedRef = useRef(false);
     const [expandedRosterKeys, setExpandedRosterKeys] = useState<Set<string>>(new Set());
     const [dismissedRosterAlertIds, setDismissedRosterAlertIds] = useState<Set<string>>(new Set());
     const [pendingRosterAlertIds, setPendingRosterAlertIds] = useState<Set<string>>(new Set());
@@ -110,6 +132,21 @@ export default function CoachDashboardNew({ user }: CoachDashboardNewProps) {
     const t = useTranslations();
     const format = useFormatter();
     const userDisplayName = user.firstName || user.name?.split(' ')[0] || user.email.split('@')[0];
+
+    useEffect(() => {
+        const storedScope = readStoredScope();
+        scopeHydratedRef.current = true;
+        if (storedScope !== scope) {
+            setScope(storedScope);
+        }
+        // Runs once on mount only — restores the coach's last chosen scope.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
+        if (!scopeHydratedRef.current) return;
+        writeStoredScope(scope);
+    }, [scope]);
 
     useEffect(() => {
         rosterDismissalsHydratedRef.current = false;
@@ -210,6 +247,7 @@ export default function CoachDashboardNew({ user }: CoachDashboardNewProps) {
         recommendedAction: t(`dashboard.alertActions.recommended.${alert.recommendedActionKey}`),
         fitness: alert.fitness,
         scope: alert.scope ?? 'athlete',
+        content: alert.content,
     }));
 
     const visibleAlerts = useMemo(
@@ -514,6 +552,11 @@ export default function CoachDashboardNew({ user }: CoachDashboardNewProps) {
                                                                         {item.primaryAlert.details}
                                                                     </span>
                                                                 </div>
+                                                                {item.primaryAlert.type === 'new_feedback' && item.primaryAlert.content && (
+                                                                    <p className="line-clamp-2 text-[11px] italic leading-snug text-endurix-black/60 dark:text-muted-foreground">
+                                                                        “{item.primaryAlert.content}”
+                                                                    </p>
+                                                                )}
                                                             </div>
                                                             <button
                                                                 type="button"
@@ -581,6 +624,11 @@ export default function CoachDashboardNew({ user }: CoachDashboardNewProps) {
                                                                             <p className="mt-1 text-xs text-endurix-black/80 dark:text-muted-foreground">
                                                                                 {alert.details}
                                                                             </p>
+                                                                            {alert.type === 'new_feedback' && alert.content && (
+                                                                                <p className="mt-1 text-xs italic text-endurix-black/60 dark:text-muted-foreground">
+                                                                                    “{alert.content}”
+                                                                                </p>
+                                                                            )}
                                                                         </div>
                                                                         <button
                                                                             type="button"
@@ -618,12 +666,12 @@ export default function CoachDashboardNew({ user }: CoachDashboardNewProps) {
                 </section>
 
                 {/* Recent Activity */}
-                <section className="mb-5">
-                    <article className="border border-endurix-black/12 dark:border-border bg-white dark:bg-card p-4">
+                <section className="mb-5 w-full">
+                    <article className="w-full border border-endurix-black/12 dark:border-border bg-white dark:bg-card">
                         <div className="flex items-center justify-between px-4 py-2 bg-endurix-paper dark:bg-muted border-b border-endurix-black/8 dark:border-border">
                             <SectionHeader eyebrow={t('dashboard.recentActivity.eyebrow')} title={t('dashboard.alerts.recentActivity')} />
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-2 p-4">
                             {filteredTimeline.slice(0, 6).map((item) => {
                                 const hasFeedback = item.content && item.content.trim().length > 0;
                                 return <LocalTimelineItem key={item.id} item={item} warning={!hasFeedback} />;
@@ -634,6 +682,26 @@ export default function CoachDashboardNew({ user }: CoachDashboardNewProps) {
                                 </p>
                             )}
                         </div>
+                    </article>
+                </section>
+
+                {/* Pending Match Review */}
+                <section className="mb-5 w-full">
+                    <article className="w-full border border-endurix-black/12 dark:border-border bg-white dark:bg-card">
+                        <div className="flex items-center justify-between px-4 py-2 bg-endurix-paper dark:bg-muted border-b border-endurix-black/8 dark:border-border">
+                            <SectionHeader eyebrow={t('dashboard.matching.eyebrow')} title={t('dashboard.matching.title')} />
+                        </div>
+                        <PendingMatchReview />
+                    </article>
+                </section>
+
+                {/* Conversations */}
+                <section className="mb-5 w-full">
+                    <article className="w-full border border-endurix-black/12 dark:border-border bg-white dark:bg-card">
+                        <div className="flex items-center justify-between px-4 py-2 bg-endurix-paper dark:bg-muted border-b border-endurix-black/8 dark:border-border">
+                            <SectionHeader eyebrow={t('dashboard.chat.eyebrow')} title={t('dashboard.chat.title')} />
+                        </div>
+                        <ConversationList />
                     </article>
                 </section>
 

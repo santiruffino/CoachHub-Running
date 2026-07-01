@@ -22,52 +22,87 @@ const ZONE_LABELS = [
     'Z5 — Máximo',
 ];
 
-const ZONE_PERCENTAGES = [5, 18, 40, 25, 12];
+function formatZoneRange(zone: { min: number; max: number }, isLastZone: boolean) {
+    const openEnded = isLastZone || zone.max <= 0 || zone.max < zone.min;
+
+    if (openEnded) {
+        return `${zone.min}+ bpm`;
+    }
+
+    return `${zone.min}–${zone.max} bpm`;
+}
+
+function formatZoneNote(zone: { min: number; max: number }, isLastZone: boolean) {
+    const openEnded = isLastZone || zone.max <= 0 || zone.max < zone.min;
+
+    if (openEnded) {
+        return 'Strava guarda esta zona sin tope superior';
+    }
+
+    return `${zone.max - zone.min + 1} bpm de ancho`;
+}
 
 export function HeartRateZones({ zones }: HeartRateZonesProps) {
     if (!zones || !zones.zones || zones.zones.length === 0) {
         return (
-            <p className="text-sm text-muted-foreground">
-                No hay zonas de FC configuradas. Añade tu FC máxima y de reposo para generarlas.
-            </p>
+            <div className="rounded-2xl border border-dashed border-endurix-black/10 dark:border-border bg-white/50 dark:bg-white/5 p-4">
+                <p className="text-sm font-medium text-endurix-black dark:text-foreground">
+                    No hay zonas de FC configuradas.
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                    Añade tu FC máxima y de reposo para generarlas desde Strava.
+                </p>
+            </div>
         );
     }
 
     return (
-        <div className="space-y-3">
-            {zones.zones
-                .slice()
-                .reverse()
-                .map((zone, index) => {
-                    const originalIndex = zones.zones.length - 1 - index;
-                    const color = ZONE_COLORS[originalIndex] ?? 'bg-muted-foreground';
-                    const label = ZONE_LABELS[originalIndex] ?? `Z${originalIndex + 1}`;
-                    const percentage = ZONE_PERCENTAGES[originalIndex] ?? 0;
+        <div className="space-y-4">
+            <div className="rounded-2xl border border-endurix-black/10 dark:border-border bg-endurix-black/5 dark:bg-white/5 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                            Zonas de frecuencia cardíaca
+                        </p>
+                        <p className="mt-1 text-sm text-endurix-black dark:text-foreground">
+                            {zones.custom_zones ? 'Usando zonas personalizadas de Strava.' : 'Usando las zonas estándar de Strava.'}
+                        </p>
+                    </div>
+                    <span className="rounded-full border border-endurix-black/10 dark:border-border bg-white/70 dark:bg-card px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                        {zones.zones.length} zonas
+                    </span>
+                </div>
+            </div>
+
+            <div className="space-y-2">
+                {zones.zones.map((zone, index) => {
+                    const color = ZONE_COLORS[index] ?? 'bg-muted-foreground';
+                    const label = ZONE_LABELS[index] ?? `Z${index + 1}`;
+                    const range = formatZoneRange(zone, index === zones.zones.length - 1);
+                    const note = formatZoneNote(zone, index === zones.zones.length - 1);
 
                     return (
-                        <div key={originalIndex} className="flex items-center gap-3">
-                            <div className={`w-2 h-2 shrink-0 ${color}`} />
-                            <span
-                                className="text-xs font-medium text-muted-foreground w-36 shrink-0 uppercase tracking-wider"
-                                style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
-                            >
-                                {label}
-                            </span>
-                            <span
-                                className="text-xs font-semibold text-endurix-black dark:text-foreground w-20 text-right tabular-nums"
-                                style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
-                            >
-                                {zone.min}–{zone.max}
-                            </span>
-                            <div className="flex-1 h-1.5 bg-endurix-black/10 dark:bg-border">
-                                <div
-                                    className={`h-full ${color} transition-all duration-500`}
-                                    style={{ width: `${percentage}%` }}
-                                />
+                        <div key={`${label}-${zone.min}-${zone.max}`} className="flex items-stretch gap-3 rounded-2xl border border-endurix-black/10 dark:border-border bg-white/80 dark:bg-card px-4 py-3">
+                            <div className={`mt-1.5 h-3 w-3 shrink-0 rounded-full ${color}`} />
+                            <div className="min-w-0 flex-1">
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <div>
+                                        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                                            {label}
+                                        </p>
+                                        <p className="mt-1 text-sm font-semibold text-endurix-black dark:text-foreground tabular-nums">
+                                            {range}
+                                        </p>
+                                    </div>
+                                    <span className="rounded-full bg-endurix-black/5 dark:bg-white/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                                        {note}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     );
                 })}
+            </div>
         </div>
     );
 }

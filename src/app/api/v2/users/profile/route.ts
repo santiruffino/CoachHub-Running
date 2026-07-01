@@ -1,24 +1,17 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
-import { appLogger } from '@/lib/app-logger';
+import { createRequestLogger } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
 import { normalizeOptionalNumber } from '@/features/profiles/utils/normalizeOptionalNumber';
-
-interface ProfileRequestBody {
-  name?: string;
-  firstName?: string;
-  lastName?: string;
-  phone?: string;
-  gender?: string;
-  isOnboardingCompleted?: boolean;
-  [key: string]: unknown;
-}
+import { updateProfileSchema, validateBody } from '@/lib/validation/schemas';
+import { reportApiError } from '@/lib/api/report-error';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { requestId, logger } = createRequestLogger('/api/v2/users/profile', request);
   try {
     const supabase = await createClient();
 
@@ -87,7 +80,8 @@ export async function GET() {
     });
 
     return NextResponse.json(transformProfile(profileWithoutSnake, coachProfileData, athleteProfileRecord));
-    } catch {
+    } catch (error: unknown) {
+    reportApiError(error, { route: '/api/v2/users/profile', method: 'GET', requestId, logger });
     return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
       { status: 500 }
     );
@@ -95,6 +89,7 @@ export async function GET() {
     }
 
     export async function PATCH(request: Request) {
+    const { requestId, logger } = createRequestLogger('/api/v2/users/profile', request);
     try {
     const supabase = await createClient();
 
@@ -109,7 +104,16 @@ export async function GET() {
       );
     }
 
-    const body = (await request.json()) as ProfileRequestBody;
+    const rawBody = await request.json();
+    const { data: body, error: validationError } = validateBody(updateProfileSchema, rawBody);
+
+    if (validationError || !body) {
+      logger.warn('Profile update validation failed', { error: validationError?.issues });
+      return NextResponse.json(apiError('VALIDATION_INVALID_REQUEST_BODY'),
+        { status: 400 }
+      );
+    }
+
     const { name, firstName, lastName, phone, gender, isOnboardingCompleted, ...profileData } = body;
 
     // Update profile
@@ -181,7 +185,7 @@ export async function GET() {
         });
 
       if (roleProfileError) {
-        appLogger.error('Supabase error updating profile:', roleProfileError);
+        logger.error('Supabase error updating profile', { error: roleProfileError });
         return NextResponse.json(apiError('FAILED_TO_UPDATE_ROLE_PROFILE'),
           { status: 500 }
         );
@@ -234,7 +238,9 @@ export async function GET() {
     });
 
     return NextResponse.json(transformProfile(p, coachProfileData, athleteProfileRecord));
-    } catch {    return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
+    } catch (error: unknown) {
+    reportApiError(error, { route: '/api/v2/users/profile', method: 'PATCH', requestId, logger });
+    return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
       { status: 500 }
     );
   }

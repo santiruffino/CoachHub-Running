@@ -74,13 +74,39 @@ Deno.serve(async (req) => {
 
       const { data: revokedConnection, error: revokedConnError } = await supabase
         .from('strava_connections')
-        .select('user_id')
+        .select('user_id, refresh_token')
         .eq('strava_athlete_id', owner_id.toString())
         .maybeSingle()
 
       if (revokedConnError) throw revokedConnError
 
       if (revokedConnection?.user_id) {
+        // The webhook payload itself isn't signed by Strava, so before destroying
+        // a user's data we confirm the revocation against Strava's own token
+        // endpoint: a truly deauthorized app gets invalid_grant on refresh.
+        // If the refresh still succeeds, the app is still authorized and this
+        // event is treated as unconfirmed (possibly forged) rather than acted on.
+        const confirmResponse = await fetch('https://www.strava.com/oauth/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            client_id: Deno.env.get('STRAVA_CLIENT_ID'),
+            client_secret: Deno.env.get('STRAVA_CLIENT_SECRET'),
+            refresh_token: revokedConnection.refresh_token,
+            grant_type: 'refresh_token',
+          }),
+        })
+
+        if (confirmResponse.ok) {
+          logger.warn('webhook.deauthorization_unconfirmed', { ownerId: owner_id })
+          return new Response(JSON.stringify({ success: true, message: 'Deauthorization not confirmed by Strava; ignored' }), {
+            headers: jsonHeaders,
+            status: 200,
+          })
+        }
+
+        logger.info('webhook.deauthorization_confirmed', { ownerId: owner_id, status: confirmResponse.status })
+
         const userId = revokedConnection.user_id
 
         const { error: deleteActivitiesError } = await supabase
@@ -252,12 +278,44 @@ Deno.serve(async (req) => {
 
       logger.info('webhook.activity_synced', { objectId: object_id, userId: user_id })
 
-      // 5. Trigger Matching Engine
-      try {
-        const matchingThreshold = parseFloat(Deno.env.get('MATCHING_THRESHOLD_PERCENTAGE') || '15');
-        const activityDateStr = activity.start_date_local.split('T')[0];
-        const activityLaps = activity.laps || [];
-        const activityDistance = activity.distance || 0;
+        // 5. Trigger Matching Engine
+        try {
+          const { data: athleteProfile } = await supabase
+            .from('profiles')
+            .select('coach_id, team_id')
+            .eq('id', user_id)
+            .single();
+
+          let matchingThreshold = 15;
+
+          if (athleteProfile?.coach_id && athleteProfile?.team_id) {
+            const { data: coachSettings } = await supabase
+              .from('coach_settings')
+              .select('thresholds')
+              .eq('coach_id', athleteProfile.coach_id)
+              .eq('team_id', athleteProfile.team_id)
+              .maybeSingle();
+
+            const coachThreshold = coachSettings?.thresholds as { matchingThresholdPercentage?: number } | null | undefined;
+            if (typeof coachThreshold?.matchingThresholdPercentage === 'number' && Number.isFinite(coachThreshold.matchingThresholdPercentage)) {
+              matchingThreshold = coachThreshold.matchingThresholdPercentage;
+            } else {
+              const { data: teamSettings } = await supabase
+                .from('team_settings')
+                .select('thresholds')
+                .eq('team_id', athleteProfile.team_id)
+                .maybeSingle();
+
+              const teamThreshold = teamSettings?.thresholds as { matchingThresholdPercentage?: number } | null | undefined;
+              if (typeof teamThreshold?.matchingThresholdPercentage === 'number' && Number.isFinite(teamThreshold.matchingThresholdPercentage)) {
+                matchingThreshold = teamThreshold.matchingThresholdPercentage;
+              }
+            }
+          }
+
+          const activityDateStr = activity.start_date_local.split('T')[0];
+          const activityLaps = activity.laps || [];
+          const activityDistance = activity.distance || 0;
         const activityDuration = activity.moving_time || activity.elapsed_time || 0;
 
         const { data: assignments } = await supabase
@@ -314,19 +372,64 @@ Deno.serve(async (req) => {
               }
             });
 
-            const status = bestMatch.confidence >= 0.85 || (bestMatch.simpleMatches && bestMatch.confidence > 0.6) ? 'completed' : 'partial';
-            
-            await supabase.from('training_assignments')
-              .update({ 
-                strava_activity_id: upsertData.id, 
-                compliance_status: status,
-                updated_at: new Date().toISOString()
-              })
-              .eq('id', bestMatch.assignment.id);
+            // Only auto-link when the matching engine is genuinely confident.
+            // Weaker candidates are surfaced to the coach for manual review instead
+            // of silently marking the assignment as completed/partial (SAN-89).
+            const isStrongMatch = bestMatch.confidence >= 0.85 || (bestMatch.simpleMatches && bestMatch.confidence > 0.6);
+
+            if (isStrongMatch) {
+              await supabase.from('training_assignments')
+                .update({
+                  strava_activity_id: upsertData.id,
+                  compliance_status: 'completed',
+                  link_status: 'auto_linked',
+                  updated_at: new Date().toISOString()
+                })
+                .eq('id', bestMatch.assignment.id);
+
+              logger.info('webhook.assignment_auto_linked', {
+                assignmentId: bestMatch.assignment.id,
+                activityId: upsertData.id,
+                confidence: bestMatch.confidence,
+              });
+            } else {
+              await supabase.from('training_assignments')
+                .update({
+                  link_status: 'pending_review',
+                  updated_at: new Date().toISOString()
+                })
+                .eq('id', bestMatch.assignment.id);
+
+              logger.info('webhook.assignment_pending_review', {
+                assignmentId: bestMatch.assignment.id,
+                activityId: upsertData.id,
+                confidence: bestMatch.confidence,
+              });
+            }
           }
         }
       } catch (matchError) {
         logger.error('webhook.matching_engine_error', { error: matchError, objectId: object_id, userId: user_id })
+      }
+
+      try {
+        const appBaseUrl = Deno.env.get('APP_BASE_URL')
+        const webhookSecret = Deno.env.get('STRAVA_WEBHOOK_SHARED_SECRET')
+
+        if (appBaseUrl && webhookSecret) {
+          await fetch(`${appBaseUrl}/api/v2/internal/strava/evaluate-alerts`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Webhook-Secret': webhookSecret,
+            },
+            body: JSON.stringify({ athleteUserId: user_id }),
+          })
+        } else {
+          logger.warn('webhook.evaluate_alerts_skipped_missing_config')
+        }
+      } catch (alertsError) {
+        logger.error('webhook.evaluate_alerts_error', { error: alertsError, objectId: object_id, userId: user_id })
       }
 
       return new Response(JSON.stringify({ success: true, activity_id: upsertData.id }), {

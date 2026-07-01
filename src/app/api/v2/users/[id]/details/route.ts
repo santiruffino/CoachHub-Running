@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/api-helpers';
 import { createServiceRoleClient } from '@/lib/supabase/server';
-import { appLogger } from '@/lib/app-logger';
+import { createRequestLogger } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
+import { reportApiError } from '@/lib/api/report-error';
 
 type AssignmentWithTraining = {
     id: string;
@@ -28,6 +29,7 @@ export async function GET(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    const { requestId, logger } = createRequestLogger('/api/v2/users/[id]/details', request);
     try {
         const { id } = await params;
         const authResult = await requireAuth();
@@ -91,14 +93,14 @@ export async function GET(
             .single();
 
         if (profileError) {
-            appLogger.error('Profile fetch error:', profileError);
+            logger.error('Profile fetch error', { error: profileError });
             return NextResponse.json(apiError('REQUEST_FAILED'),
                 { status: 404 }
             );
         }
 
         if (!profile) {
-            appLogger.error('Profile is null for athlete ID:', athleteId);
+            logger.error('Profile is null for athlete ID', { error: athleteId });
             return NextResponse.json(apiError('ATHLETE_NOT_FOUND'),
                 { status: 404 }
             );
@@ -218,7 +220,7 @@ export async function GET(
 
         return NextResponse.json(athleteDetails);
     } catch (error: unknown) {
-        appLogger.error('Get athlete details error:', error);
+        reportApiError(error, { route: '/api/v2/users/[id]/details', method: 'GET', requestId, logger });
         return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
@@ -237,6 +239,7 @@ export async function PATCH(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    const { requestId, logger } = createRequestLogger('/api/v2/users/[id]/details', request);
     try {
         const { id } = await params;
         const authResult = await requireAuth();
@@ -314,7 +317,7 @@ export async function PATCH(
             .eq('user_id', athleteId);
 
         if (updateError) {
-            appLogger.error('Update athlete profile error:', updateError);
+            logger.error('Update athlete profile error', { error: updateError });
             return NextResponse.json(apiError('FAILED_TO_UPDATE_ATHLETE_PROFILE'),
                 { status: 500 }
             );
@@ -322,7 +325,7 @@ export async function PATCH(
 
         return NextResponse.json({ success: true });
     } catch (error: unknown) {
-        appLogger.error('Update athlete details error:', error);
+        reportApiError(error, { route: '/api/v2/users/[id]/details', method: 'PATCH', requestId, logger });
         return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );

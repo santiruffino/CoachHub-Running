@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
 import { randomBytes } from 'crypto';
 import { createServiceRoleClient } from '@/lib/supabase/server';
-import { appLogger } from '@/lib/app-logger';
+import { createRequestLogger } from '@/lib/logger';
 import { sendInvitationEmail } from '@/lib/email/send';
+import { reportApiError } from '@/lib/api/report-error';
 
 export async function POST(request: NextRequest) {
+    const { requestId, logger } = createRequestLogger('/api/v2/invitations', request);
     try {
         // Only coaches can create invitations
         const { user, profile, response } = await requireRole('COACH');
@@ -84,14 +86,14 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Check if there's already a pending invitation
+        // Check if there's already a pending invite link for this email
         const { data: existingInvitation } = await adminClient
-            .from('invitations')
+            .from('team_invite_links')
             .select('*')
             .eq('email', email)
-            .eq('accepted', false)
+            .eq('is_active', true)
             .gte('expires_at', new Date().toISOString())
-            .single();
+            .maybeSingle();
 
         if (existingInvitation) {
             // Fetch team name and inviter profile for the email
@@ -109,7 +111,7 @@ export async function POST(request: NextRequest) {
                 token: existingInvitation.token,
                 expiresAt: new Date(existingInvitation.expires_at),
             }).catch((err) => {
-                appLogger.error('Failed to resend invitation email:', err);
+                reportApiError(err, { route: '/api/v2/invitations', method: 'POST', extra: { event: 'invitations.resend_email_failed' } });
             });
 
             // Return existing invitation
@@ -118,7 +120,7 @@ export async function POST(request: NextRequest) {
                 email: existingInvitation.email,
                 token: existingInvitation.token,
                 expiresAt: existingInvitation.expires_at,
-                accepted: existingInvitation.accepted,
+                accepted: existingInvitation.uses > 0,
                 role: existingInvitation.role,
             });
         }
@@ -134,23 +136,28 @@ export async function POST(request: NextRequest) {
         // If the invited user is a COACH, they don't get a coach.
         const coachIdToAssign = (profile.role === 'ADMIN' || role === 'COACH') ? null : user!.id;
 
-        // Create invitation
+        // Create a single-use, email-targeted team invite link (SAN-59: this
+        // is the same table generic "join team" links use, just scoped to one
+        // recipient via the `email` column).
         const { data: invitation, error } = await adminClient
-            .from('invitations')
+            .from('team_invite_links')
             .insert({
-                email,
-                token,
-                expires_at: expiresAt.toISOString(),
-                coach_id: coachIdToAssign,
                 team_id: profile.team_id,
-                accepted: false,
+                created_by: user!.id,
                 role,
+                token,
+                email,
+                coach_id: coachIdToAssign,
+                is_active: true,
+                expires_at: expiresAt.toISOString(),
+                max_uses: 1,
+                uses: 0,
             })
             .select()
             .single();
 
         if (error) {
-            appLogger.error('Error creating invitation:', error);
+            logger.error('Error creating invitation', { error: error });
             return NextResponse.json(
                 { error: 'Failed to create invitation' },
                 { status: 500 }
@@ -172,7 +179,7 @@ export async function POST(request: NextRequest) {
             token: invitation.token,
             expiresAt,
         }).catch((err) => {
-            appLogger.error('Failed to send invitation email:', err);
+            reportApiError(err, { route: '/api/v2/invitations', method: 'POST', extra: { event: 'invitations.send_email_failed' } });
         });
 
         return NextResponse.json({
@@ -180,10 +187,10 @@ export async function POST(request: NextRequest) {
             email: invitation.email,
             token: invitation.token,
             expiresAt: invitation.expires_at,
-            accepted: invitation.accepted,
+            accepted: invitation.uses > 0,
         });
     } catch (error: unknown) {
-        appLogger.error('Create invitation error:', error);
+        reportApiError(error, { route: '/api/v2/invitations', method: 'POST', requestId, logger });
         return NextResponse.json(
             { error: 'Internal server error' },
             { status: 500 }

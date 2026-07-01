@@ -2,6 +2,21 @@ import api from '@/lib/axios';
 import { MatchCandidateActivity, MatchCandidateAssignment, WorkoutMatch } from '../types';
 import { appLogger } from '@/lib/app-logger';
 
+export interface PendingMatch {
+    assignmentId: string;
+    athleteName: string;
+    workoutName: string;
+    scheduledDate: string;
+    confidence: number;
+    candidateActivity: {
+        id: string;
+        title: string;
+        distance: number;
+        duration: number;
+        startDate: string;
+    } | null;
+}
+
 /**
  * Matching Service
  * 
@@ -63,6 +78,25 @@ class MatchingService {
             await api.delete(`/v2/trainings/assignments/${assignmentId}/link`);
         } catch (error: unknown) {
             appLogger.error('Failed to unlink activity:', error);
+            throw error;
+        }
+    }
+
+    async getPendingReview(): Promise<PendingMatch[]> {
+        try {
+            const response = await api.get<{ pendingMatches: PendingMatch[] }>('/v2/trainings/pending-review');
+            return response.data.pendingMatches;
+        } catch (error: unknown) {
+            appLogger.error('Failed to fetch pending review matches:', error);
+            return [];
+        }
+    }
+
+    async resolveMatch(assignmentId: string, action: 'approve' | 'reject'): Promise<void> {
+        try {
+            await api.post(`/v2/trainings/assignments/${assignmentId}/resolve-match`, { action });
+        } catch (error: unknown) {
+            appLogger.error('Failed to resolve pending match:', error);
             throw error;
         }
     }

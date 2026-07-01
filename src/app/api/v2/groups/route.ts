@@ -2,8 +2,11 @@ import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { apiError } from '@/lib/api/error-response';
 import { appendAdminActionLog } from '@/lib/audit/admin-action-log';
+import { reportApiError } from '@/lib/api/report-error';
+import { createRequestLogger } from '@/lib/logger';
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { requestId, logger } = createRequestLogger('/api/v2/groups', request);
   try {
     const supabase = await createClient();
 
@@ -45,7 +48,9 @@ export async function GET() {
       groupsQuery = groupsQuery.eq('team_id', profile.team_id);
     }
 
-    const { data: groups, error } = await groupsQuery;
+    // Safety cap: a team realistically has well under this many groups; this
+    // just guards against an unbounded response if that assumption ever breaks.
+    const { data: groups, error } = await groupsQuery.limit(500);
 
     if (error) {
       return NextResponse.json(apiError('FAILED_TO_FETCH_GROUPS'),
@@ -54,7 +59,8 @@ export async function GET() {
     }
 
     return NextResponse.json(groups);
-  } catch {
+  } catch (error: unknown) {
+    reportApiError(error, { route: '/api/v2/groups', method: 'GET', requestId, logger });
     return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
       { status: 500 }
     );
@@ -62,6 +68,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const { requestId, logger } = createRequestLogger('/api/v2/groups', request);
   try {
     const supabase = await createClient();
 
@@ -149,7 +156,8 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(group, { status: 201 });
-  } catch {
+  } catch (error: unknown) {
+    reportApiError(error, { route: '/api/v2/groups', method: 'POST', requestId, logger });
     return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
       { status: 500 }
     );

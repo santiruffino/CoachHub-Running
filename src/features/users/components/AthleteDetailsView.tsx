@@ -28,9 +28,9 @@ import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
 import { useTranslations } from 'next-intl';
 import { AthleteWeeklyCalendar } from '@/components/dashboard/AthleteWeeklyCalendar';
 import { CoachNotes } from '@/components/dashboard/CoachNotes';
+import { CoachAthleteChat } from '@/components/dashboard/CoachAthleteChat';
 import { StatCard, SectionHeader, MonospaceLabel } from '@/components/dashboard';
 import { normalizeActivityType } from '@/utils/activity-utils';
-import { useRouter } from 'next/navigation';
 
 const FONT_MONO = { fontFamily: 'var(--font-ibm-plex-mono, monospace)' } as const;
 
@@ -48,6 +48,7 @@ const TAB_TRIGGER_CLASS = 'text-[10px] font-bold uppercase tracking-widest py-2 
 
 interface AthleteDetailsViewProps {
     id: string;
+    canAccessChat: boolean;
     initialAthlete: AthleteDetails;
     initialActivities: Activity[];
     initialAssignments: TrainingAssignment[];
@@ -56,6 +57,7 @@ interface AthleteDetailsViewProps {
 
 export function AthleteDetailsView({
     id,
+    canAccessChat,
     initialAthlete,
     initialActivities,
     initialAssignments,
@@ -65,7 +67,6 @@ export function AthleteDetailsView({
     const tAthlete = useTranslations('athletes.detail');
     const tRaces = useTranslations('races.athlete');
     const tUnits = useTranslations('common.units');
-    const router = useRouter();
 
     const [athlete, setAthlete] = useState<AthleteDetails>(initialAthlete);
     const [activities] = useState<Activity[]>(initialActivities);
@@ -300,6 +301,8 @@ export function AthleteDetailsView({
 
     const nextRace = upcomingRaces[0] || null;
     const nextRaceDays = nextRace ? Math.max(0, differenceInDays(parseISO(nextRace.date), startOfDay(new Date()))) : null;
+    const notesColumnClass = canAccessChat ? 'lg:col-span-4' : 'lg:col-span-6';
+    const racesColumnClass = canAccessChat ? 'lg:col-span-4' : 'lg:col-span-6';
 
     return (
         <div className="space-y-6 pb-20">
@@ -387,7 +390,7 @@ export function AthleteDetailsView({
                             </Button>
                             <Button variant="outline-brand" size="sm" className="gap-2 uppercase tracking-widest text-[10px]" onClick={() => setActiveSection('racesNotes')}>
                                 <MessageSquare className="h-4 w-4" />
-                                {t("athletes.detail.coachComments")}
+                                {t("athletes.detail.coachNotesTitle")}
                             </Button>
                         </div>
                     </div>
@@ -481,7 +484,7 @@ export function AthleteDetailsView({
 
                     <div className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border p-6">
                         <SectionHeader
-                            title={tAthlete('performanceAndZones')}
+                            title={tAthlete('performanceTrend')}
                             size="sm"
                         />
                         <PerformanceTrendChart data={performanceData} />
@@ -598,6 +601,9 @@ export function AthleteDetailsView({
                                     </div>
                                 ))}
                             </div>
+                            <div className="px-5 py-4 border-t border-endurix-black/10 dark:border-border">
+                                <p className="text-xs text-muted-foreground leading-relaxed">{tAthlete('loadRiskHint', { tsb: Math.round(loadMetrics.tsb), atl: Math.round(loadMetrics.atl), ctl: Math.round(loadMetrics.ctl), acwr: loadMetrics.acwr.toFixed(2) })}</p>
+                            </div>
 
                             <div className="px-5 py-4 border-t border-endurix-black/10 dark:border-border">
                                 <LoadMetricsTrendChart data={loadTrendData} />
@@ -613,9 +619,6 @@ export function AthleteDetailsView({
                             </div>
                         </>
                     )}
-                    <div className="px-5 py-4 border-t border-endurix-black/10 dark:border-border">
-                        <p className="text-xs text-muted-foreground leading-relaxed">{tAthlete('loadRiskHint', { tsb: Math.round(loadMetrics.tsb), atl: Math.round(loadMetrics.atl), ctl: Math.round(loadMetrics.ctl), acwr: loadMetrics.acwr.toFixed(2) })}</p>
-                    </div>
                 </div>
             )}
 
@@ -632,14 +635,14 @@ export function AthleteDetailsView({
 
             {activeSection === 'racesNotes' && (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 w-full items-stretch relative">
-                    <div className="lg:col-span-4 h-full">
+                    <div className={`${notesColumnClass} h-full`}>
                         <div className="bg-endurix-black/5 dark:bg-white/5 p-6 h-full flex flex-col pt-7 pb-6 relative group overflow-hidden border border-endurix-black/10 dark:border-border">
                             <div className="absolute top-0 left-0 w-full h-1 bg-endurix-orange/60" />
                             <h3
                                 className="text-xl font-medium tracking-tight mb-6 text-endurix-black dark:text-foreground px-2 flex items-center justify-between uppercase"
                                 style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
                             >
-                                {t("athletes.detail.coachComments")}
+                                {t("athletes.detail.coachNotesTitle")}
                                 <MessageSquare className="w-4 h-4 text-muted-foreground/60" />
                             </h3>
                             <div className="flex-1 w-full bg-transparent mb-6 overflow-hidden">
@@ -648,7 +651,25 @@ export function AthleteDetailsView({
                         </div>
                     </div>
 
-                    <div className="lg:col-span-8 h-full">
+                    {canAccessChat && (
+                        <div className={`${racesColumnClass} h-full`}>
+                            <div className="bg-endurix-paper dark:bg-card p-6 h-full flex flex-col pt-7 pb-6 relative group overflow-hidden border border-endurix-black/10 dark:border-border">
+                                <div className="absolute top-0 left-0 w-full h-1 bg-endurix-black/40 dark:bg-white/40" />
+                                <h3
+                                    className="text-xl font-medium tracking-tight mb-6 text-endurix-black dark:text-foreground px-2 flex items-center justify-between uppercase"
+                                    style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                                >
+                                    {t("athletes.detail.chatWithCoach")}
+                                    <MessageSquare className="w-4 h-4 text-muted-foreground/60" />
+                                </h3>
+                                <div className="flex-1 w-full bg-transparent mb-6 overflow-hidden">
+                                    <CoachAthleteChat athleteId={id} showHeader={false} />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className={`${racesColumnClass} h-full`}>
                         <div className="flex items-center justify-between mb-2">
                             <h3
                                 className="text-xl font-medium text-foreground px-2 uppercase"

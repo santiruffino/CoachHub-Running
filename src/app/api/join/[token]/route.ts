@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
-import { appLogger } from '@/lib/app-logger';
 import { apiError } from '@/lib/api/error-response';
+import { reportApiError } from '@/lib/api/report-error';
 
 type ResolveReason = 'not_found' | 'revoked' | 'expired' | 'max_uses_reached';
 
@@ -18,7 +18,7 @@ export async function GET(
         const adminClient = createServiceRoleClient();
         const { data: link, error } = await adminClient
             .from('team_invite_links')
-            .select('id, team_id, is_active, expires_at, max_uses, uses, role')
+            .select('id, team_id, is_active, expires_at, max_uses, uses, role, email')
             .eq('token', token)
             .single();
 
@@ -49,11 +49,12 @@ export async function GET(
             teamId: link.team_id,
             teamName: team?.name ?? null,
             role: link.role,
+            email: link.email ?? null,
             expiresAt: link.expires_at ?? null,
             maxUses: link.max_uses ?? null,
         });
     } catch (error: unknown) {
-        appLogger.error('join.resolve_unexpected', { error });
+        reportApiError(error, { route: '/api/join/[token]', method: 'GET', extra: { event: 'join.resolve_unexpected' } });
         return NextResponse.json(apiError('INTERNAL_ERROR'), { status: 500 });
     }
 }

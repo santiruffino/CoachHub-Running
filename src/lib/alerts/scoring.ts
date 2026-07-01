@@ -16,6 +16,10 @@ export interface AlertScoringInput {
     loadRisk?: 'insufficientData' | 'high' | 'moderate' | 'balanced' | 'lowStimulus';
     acwr?: number;
     tsb?: number;
+    thresholds?: {
+        rpeMismatchThreshold: number;
+        lowComplianceThreshold: number;
+    };
 }
 
 export interface AlertScoringResult {
@@ -92,20 +96,24 @@ export function computeAlertScore(input: AlertScoringInput): AlertScoringResult 
     }
 
     if (input.type === 'rpe_mismatch' && typeof input.rpeDifference === 'number') {
-        if (input.rpeDifference >= 4) {
+        const threshold = input.thresholds?.rpeMismatchThreshold ?? 2;
+        if (input.rpeDifference >= threshold * 2) {
             score += 15;
             reasonCodes.push('RPE_GAP_CRITICAL');
-        } else if (input.rpeDifference >= 2) {
+        } else if (input.rpeDifference >= threshold) {
             score += 8;
             reasonCodes.push('RPE_GAP_MODERATE');
         }
     }
 
     if (input.type === 'low_compliance' && typeof input.complianceRate === 'number') {
-        if (input.complianceRate < 35) {
+        const threshold = input.thresholds?.lowComplianceThreshold ?? 50;
+        const criticalThreshold = Math.max(0, Math.round(threshold * 0.7));
+
+        if (input.complianceRate < criticalThreshold) {
             score += 15;
             reasonCodes.push('COMPLIANCE_CRITICAL');
-        } else if (input.complianceRate < 50) {
+        } else if (input.complianceRate < threshold) {
             score += 8;
             reasonCodes.push('COMPLIANCE_LOW');
         }

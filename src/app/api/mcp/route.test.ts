@@ -7,7 +7,7 @@ const mockRequireAuth = vi.hoisted(() => vi.fn(async () => ({
   user: { id: 'user-123' },
 })));
 const mockBuildRateLimitKey = vi.hoisted(() => vi.fn(() => 'rate-limit-key'));
-const mockConsumeRateLimit = vi.hoisted(() => vi.fn(() => ({
+const mockConsumeRateLimit = vi.hoisted(() => vi.fn(async () => ({
   allowed: true,
   limit: 30,
   remaining: 29,

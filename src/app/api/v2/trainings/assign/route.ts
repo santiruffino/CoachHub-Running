@@ -4,6 +4,8 @@ import * as Sentry from '@sentry/nextjs';
 import { createRequestLogger, withRequestId } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
 import { appendAdminActionLog } from '@/lib/audit/admin-action-log';
+import { assignTrainingSchema, validateBody } from '@/lib/validation/schemas';
+import { createNotification } from '@/lib/notifications/create-notification';
 
 interface AssignmentToCreate {
     user_id: string;
@@ -53,34 +55,17 @@ export async function POST(request: NextRequest) {
         }
 
         const { supabase, user } = authResult;
-        const body = (await request.json()) as {
-            trainingId?: string;
-            scheduledDate?: string;
-            athleteIds?: string[];
-            groupIds?: string[];
-            expectedRpe?: number;
-            workoutName?: string;
-        };
+        const rawBody = await request.json();
+        const { data: body, error: validationError } = validateBody(assignTrainingSchema, rawBody);
+
+        if (validationError || !body) {
+            logger.warn('assign_training.validation_failed', { userId: user!.id, issues: validationError?.issues });
+            return respond(apiError('VALIDATION_INVALID_REQUEST_BODY'),
+                { status: 400 }
+            );
+        }
+
         const { trainingId, scheduledDate, athleteIds, groupIds, expectedRpe, workoutName } = body;
-
-        // Validation
-        if (!trainingId) {
-            return respond(apiError('VALIDATION_TRAININGID_IS_REQUIRED'),
-                { status: 400 }
-            );
-        }
-
-        if (!scheduledDate) {
-            return respond(apiError('VALIDATION_SCHEDULEDDATE_IS_REQUIRED'),
-                { status: 400 }
-            );
-        }
-
-        if ((!athleteIds || athleteIds.length === 0) && (!groupIds || groupIds.length === 0)) {
-            return respond(apiError('VALIDATION_AT_LEAST_ONE_ATHLETEID_OR_GROUPID_IS_REQUIRED'),
-                { status: 400 }
-            );
-        }
 
         const { data: profile } = await supabase
             .from('profiles')
@@ -211,6 +196,19 @@ export async function POST(request: NextRequest) {
                 { status: 500 }
             );
         }
+
+        const notifiedAthleteIds = Array.from(athleteSourceMap.keys());
+        await Promise.all(
+            notifiedAthleteIds.map((athleteId) =>
+                createNotification({
+                    userId: athleteId,
+                    category: 'workout_assigned',
+                    title: workoutName || training.title,
+                    body: `Nuevo entrenamiento para el ${new Date(scheduledDate).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}`,
+                    link: `/dashboard?calendarDate=${scheduledDate.slice(0, 10)}`,
+                })
+            )
+        );
 
         // Auto-resolve missing-workout alerts once a coach assigns training.
         // This keeps the dashboard clean when the underlying issue is solved.

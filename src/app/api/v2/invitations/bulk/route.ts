@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
 import { randomBytes } from 'crypto';
 import { createServiceRoleClient } from '@/lib/supabase/server';
-import { appLogger } from '@/lib/app-logger';
 import { sendInvitationEmail } from '@/lib/email/send';
+import { reportApiError } from '@/lib/api/report-error';
+import { createRequestLogger } from '@/lib/logger';
 
 interface BulkInviteRequest {
   emails: string[];
@@ -18,6 +19,7 @@ interface InviteResult {
 }
 
 export async function POST(request: NextRequest) {
+  const { requestId, logger } = createRequestLogger('/api/v2/invitations/bulk', request);
   try {
     // Only administrators can create bulk invitations
     const { user, profile, response } = await requireRole('ADMIN');
@@ -31,6 +33,14 @@ export async function POST(request: NextRequest) {
     if (!emails || !Array.isArray(emails) || emails.length === 0) {
       return NextResponse.json(
         { error: 'A list of emails is required' },
+        { status: 400 }
+      );
+    }
+
+    const MAX_BULK_EMAILS = 100;
+    if (emails.length > MAX_BULK_EMAILS) {
+      return NextResponse.json(
+        { error: `Cannot invite more than ${MAX_BULK_EMAILS} emails at once` },
         { status: 400 }
       );
     }
@@ -123,12 +133,12 @@ export async function POST(request: NextRequest) {
 
         // 2. Check if there's already a pending invitation
         const { data: existingInvitation } = await adminClient
-          .from('invitations')
+          .from('team_invite_links')
           .select('*')
           .eq('email', normalizedEmail)
-          .eq('accepted', false)
+          .eq('is_active', true)
           .gte('expires_at', new Date().toISOString())
-          .single();
+          .maybeSingle();
 
         if (existingInvitation) {
           results.push({ 
@@ -146,27 +156,30 @@ export async function POST(request: NextRequest) {
             token: existingInvitation.token,
             expiresAt: new Date(existingInvitation.expires_at),
           }).catch((err) => {
-            appLogger.error(`Failed to resend invitation email to ${normalizedEmail}:`, err);
+            reportApiError(err, { route: '/api/v2/invitations/bulk', method: 'POST', extra: { event: 'invitations.resend_email_failed', email: normalizedEmail } });
           });
 
           continue;
         }
 
-        // 3. Create new invitation
+        // 3. Create new invitation (single-use, email-targeted team_invite_links row)
         const token = randomBytes(32).toString('hex');
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + 7);
 
         const { data: invitation, error } = await adminClient
-          .from('invitations')
+          .from('team_invite_links')
           .insert({
-            email: normalizedEmail,
-            token,
-            expires_at: expiresAt.toISOString(),
-            coach_id: coachIdToAssign,
             team_id: profile.team_id,
-            accepted: false,
+            created_by: user!.id,
             role,
+            token,
+            email: normalizedEmail,
+            coach_id: coachIdToAssign,
+            is_active: true,
+            expires_at: expiresAt.toISOString(),
+            max_uses: 1,
+            uses: 0,
           })
           .select()
           .single();
@@ -189,11 +202,11 @@ export async function POST(request: NextRequest) {
             token: invitation.token,
             expiresAt,
           }).catch((err) => {
-            appLogger.error(`Failed to send invitation email to ${normalizedEmail}:`, err);
+            reportApiError(err, { route: '/api/v2/invitations/bulk', method: 'POST', extra: { event: 'invitations.send_email_failed', email: normalizedEmail } });
           });
         }
       } catch (err) {
-        appLogger.error(`Bulk invite error for ${email}:`, err);
+        reportApiError(err, { route: '/api/v2/invitations/bulk', method: 'POST', extra: { event: 'invitations.bulk_item_failed', email } });
         results.push({ email, status: 'failed', error: 'Internal error' });
       }
     }
@@ -210,7 +223,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error: unknown) {
-    appLogger.error('Bulk invitation error:', error);
+    reportApiError(error, { route: '/api/v2/invitations/bulk', method: 'POST', requestId, logger });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

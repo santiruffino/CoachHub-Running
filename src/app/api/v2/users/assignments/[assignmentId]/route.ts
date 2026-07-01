@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/api-helpers';
-import { appLogger } from '@/lib/app-logger';
+import { createRequestLogger } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
+import { reportApiError } from '@/lib/api/report-error';
 
 /**
  * Update Assignment Date
@@ -13,6 +14,7 @@ export async function PATCH(
     request: NextRequest,
     { params }: { params: Promise<{ assignmentId: string }> }
 ) {
+    const { requestId, logger } = createRequestLogger('/api/v2/users/assignments/[assignmentId]', request);
     try {
         const { assignmentId } = await params;
         const authResult = await requireAuth();
@@ -76,7 +78,7 @@ export async function PATCH(
             .single();
 
         if (updateError) {
-            appLogger.error('Update assignment error:', updateError);
+            logger.error('Update assignment error', { error: updateError });
             return NextResponse.json(apiError('FAILED_TO_UPDATE_ASSIGNMENT'),
                 { status: 500 }
             );
@@ -84,7 +86,7 @@ export async function PATCH(
 
         return NextResponse.json(updated);
     } catch (error: unknown) {
-        appLogger.error('Update assignment error:', error);
+        reportApiError(error, { route: '/api/v2/users/assignments/[assignmentId]', method: 'PATCH', requestId, logger });
         return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );

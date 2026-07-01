@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
-import { appLogger } from '@/lib/app-logger';
+import { createRequestLogger } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
+import { reportApiError } from '@/lib/api/report-error';
 
 /**
  * Get Training by ID
@@ -14,6 +15,7 @@ export async function GET(
     _request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    const { requestId, logger } = createRequestLogger('/api/v2/trainings/[id]', _request);
     try {
         const { id } = await params;
         const authResult = await requireRole('COACH');
@@ -57,7 +59,7 @@ export async function GET(
 
         return NextResponse.json(training);
     } catch (error: unknown) {
-        appLogger.error('Get training error:', error);
+        reportApiError(error, { route: '/api/v2/trainings/[id]', method: 'GET', requestId, logger });
         return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
@@ -75,6 +77,7 @@ export async function DELETE(
     _request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    const { requestId, logger } = createRequestLogger('/api/v2/trainings/[id]', _request);
     try {
         const { id } = await params;
         const authResult = await requireRole('COACH');
@@ -123,7 +126,7 @@ export async function DELETE(
             .eq('id', id);
 
         if (deleteError) {
-            appLogger.error('Delete training error:', deleteError);
+            logger.error('Delete training error', { error: deleteError });
             return NextResponse.json(apiError('FAILED_TO_DELETE_TRAINING'),
                 { status: 500 }
             );
@@ -134,7 +137,7 @@ export async function DELETE(
             { status: 200 }
         );
     } catch (error: unknown) {
-        appLogger.error('Delete training error:', error);
+        reportApiError(error, { route: '/api/v2/trainings/[id]', method: 'DELETE', requestId, logger });
         return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
@@ -152,6 +155,7 @@ export async function PATCH(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    const { requestId, logger } = createRequestLogger('/api/v2/trainings/[id]', request);
     try {
         const { id } = await params;
         const authResult = await requireRole('COACH');
@@ -205,13 +209,13 @@ export async function PATCH(
             .single();
 
         if (error) {
-            appLogger.error('Update training error:', error);
+            logger.error('Update training error', { error: error });
             return NextResponse.json(apiError('FAILED_TO_UPDATE_TRAINING'), { status: 500 });
         }
 
         return NextResponse.json(training);
     } catch (error: unknown) {
-        appLogger.error('Update training error:', error);
+        reportApiError(error, { route: '/api/v2/trainings/[id]', method: 'PATCH', requestId, logger });
         return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'), { status: 500 });
     }
 }

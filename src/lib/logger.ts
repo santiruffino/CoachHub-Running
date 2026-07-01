@@ -9,7 +9,7 @@ interface LogContext {
   [key: string]: LogValue;
 }
 
-interface Logger {
+export interface Logger {
   debug: (event: string, metadata?: Record<string, unknown>) => void;
   info: (event: string, metadata?: Record<string, unknown>) => void;
   warn: (event: string, metadata?: Record<string, unknown>) => void;

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
-import { appLogger } from '@/lib/app-logger';
+import { createRequestLogger } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
+import { reportApiError } from '@/lib/api/report-error';
 
 interface StravaZone {
     min: number;
@@ -32,8 +33,8 @@ interface StravaTokenResponse {
  * Access: ATHLETE only
  */
 export async function POST(request: NextRequest) {
+    const { requestId, logger } = createRequestLogger('/api/v2/athlete/zones', request);
     try {
-        void request;
         const authResult = await requireRole('ATHLETE');
 
         if (authResult.response) {
@@ -108,7 +109,7 @@ export async function POST(request: NextRequest) {
 
         if (!zonesResponse.ok) {
             const errorText = await zonesResponse.text();
-            appLogger.error('Strava zones API error:', errorText);
+            logger.error('Strava zones API error', { error: errorText });
             return NextResponse.json(apiError('FAILED_TO_FETCH_ZONES_FROM_STRAVA'),
                 { status: zonesResponse.status }
             );
@@ -147,7 +148,7 @@ export async function POST(request: NextRequest) {
             });
 
         if (updateError) {
-            appLogger.error('Supabase error updating zones:', updateError);
+            logger.error('Supabase error updating zones', { error: updateError });
             return NextResponse.json(apiError('FAILED_TO_UPDATE_ZONES_IN_PROFILE'),
                 { status: 500 }
             );
@@ -159,7 +160,7 @@ export async function POST(request: NextRequest) {
             zones: hrZones,
         });
     } catch (error: unknown) {
-        appLogger.error('Zones sync error:', error);
+        reportApiError(error, { route: '/api/v2/athlete/zones', method: 'POST', requestId, logger });
         return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );

@@ -172,7 +172,7 @@ function calculateVariance(actual: number, planned: number): number {
 }
 
 function getStepTolerance(stepType: FlatStep['stepType']): number {
-    return stepType === 'warmup' || stepType === 'cooldown' ? 0.2 : 0.1;
+    return stepType === 'warmup' || stepType === 'cooldown' ? 0.3 : 0.15;
 }
 
 function getLapValueByTargetType(lap: RawLap, targetType: 'distance' | 'duration'): number {

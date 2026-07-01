@@ -84,7 +84,7 @@ function SearchableMultiSelect({
             )}
 
             <div className="relative">
-                <Search className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-endurix-orange" />
+                <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-endurix-orange" />
                 <input
                     type="text"
                     value={search}
@@ -94,8 +94,8 @@ function SearchableMultiSelect({
                     }}
                     onFocus={() => setIsOpen(true)}
                     placeholder={placeholder}
-                    className="w-full bg-transparent border-0 border-b border-endurix-black/20 dark:border-white/20 pl-8 pr-0 py-2 text-endurix-black dark:text-foreground focus:ring-0 focus:border-endurix-orange placeholder-endurix-black/30 dark:placeholder:text-muted-foreground/50 transition-colors"
-                />
+                    className="w-full bg-transparent border-0 border-b border-endurix-black/20 dark:border-white/20 pl-11 pr-0 py-2 text-endurix-black dark:text-foreground focus:ring-0 focus:border-endurix-orange placeholder-endurix-black/30 dark:placeholder:text-muted-foreground/50 transition-colors"
+                    />
             </div>
 
             {isOpen && (

@@ -102,11 +102,11 @@ export default function AdminDashboard({ user, initialData = null }: AdminDashbo
                 </section>
 
                 <DashboardCard
-                    headerLabel="Coaches"
+                    headerLabel={t('dashboard.admin.coachesCardHeader')}
                     headerAccessory={<DashboardCardHeaderDots />}
                 >
                     <SectionHeader
-                        eyebrow="Activity"
+                        eyebrow={t('dashboard.admin.activityEyebrow')}
                         title={t('dashboard.admin.coachesActivity')}
                         size="sm"
                     />

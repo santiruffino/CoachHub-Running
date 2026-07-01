@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import * as Sentry from '@sentry/nextjs';
 import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { AlertOctagon, RefreshCw } from 'lucide-react';
@@ -44,6 +45,7 @@ export default function GlobalErrorPage({ error, reset }: { error: Error & { dig
         if (process.env.NODE_ENV !== 'production') {
             console.error('App error:', error);
         }
+        Sentry.captureException(error);
     }, [error]);
 
     const handleRetry = () => {

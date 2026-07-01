@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import api from '@/lib/axios';
 import { useTranslations } from 'next-intl';
 import { Skeleton } from '@/components/ui/skeleton';
+import { downsampleLTTB, movingAverage } from './chart-data-utils';
+import { averageGapPaceMinPerKm, buildGapSpeedSeries } from '@/lib/training/gap';
 
 interface Lap {
     id: number;
@@ -49,6 +51,7 @@ type XAxisType = 'time' | 'distance';
 interface ChartSamplePoint {
     xLabel: string;
     pace: number;
+    gapPace: number | null;
     heartRate: number | null;
     elevation: number | null;
 }
@@ -57,18 +60,22 @@ interface ChartDataResult {
     xAxisData: string[];
     series: {
         pace: number[];
+        gapPace: Array<number | null>;
         heartRate: Array<number | null>;
         elevation: Array<number | null>;
     };
+    avgGapPace: number | null;
 }
 
 const EMPTY_CHART_DATA: ChartDataResult = {
     xAxisData: [],
     series: {
         pace: [],
+        gapPace: [],
         heartRate: [],
         elevation: [],
     },
+    avgGapPace: null,
 };
 
 interface TooltipParam {
@@ -82,29 +89,10 @@ interface LegendSelectChangedEvent {
     selected: Record<string, boolean>;
 }
 
-const movingAverage = (data: (number | null)[], windowSize: number): (number | null)[] => {
-    if (!data || data.length === 0) return [];
-    const result: (number | null)[] = [];
-    const halfWindow = Math.floor(windowSize / 2);
-
-    for (let i = 0; i < data.length; i++) {
-        let sum = 0;
-        let count = 0;
-        for (let j = Math.max(0, i - halfWindow); j <= Math.min(data.length - 1, i + halfWindow); j++) {
-            const val = data[j];
-            if (val !== null && val !== undefined) {
-                sum += val;
-                count++;
-            }
-        }
-        result.push(count > 0 ? sum / count : null);
-    }
-    return result;
-};
-
 export function TrailRunningChart({ activityId, laps, hrZones }: TrailRunningChartProps) {
     const t = useTranslations('activities.detail.dynamics');
     const paceMetricName = t('metrics.pace');
+    const gapMetricName = t('metrics.gap');
     const elevationMetricName = t('metrics.elevationGain') || 'Desnivel';
     const [streams, setStreams] = useState<StreamData | null>(null);
     const [loading, setLoading] = useState(true);
@@ -114,6 +102,7 @@ export function TrailRunningChart({ activityId, laps, hrZones }: TrailRunningCha
 
     const [legendSelected, setLegendSelected] = useState<Record<string, boolean>>({
         [paceMetricName]: true,
+        [gapMetricName]: true,
         [t('metrics.heartRate')]: true,
         [elevationMetricName]: true,
     });
@@ -134,19 +123,6 @@ export function TrailRunningChart({ activityId, laps, hrZones }: TrailRunningCha
 
         if (activityId) fetchStreams();
     }, [activityId]);
-
-    const downsampleData = <T,>(data: T[], resolution: Resolution): T[] => {
-        if (!data || data.length === 0) return [];
-
-        const steps = {
-            low: Math.floor(data.length / 50),
-            medium: Math.floor(data.length / 150),
-            high: Math.floor(data.length / 300),
-        };
-
-        const step = Math.max(1, steps[resolution]);
-        return data.filter((_, index) => index % step === 0);
-    };
 
     const formatTime = (seconds: number): string => {
         const hours = Math.floor(seconds / 3600);
@@ -188,9 +164,11 @@ export function TrailRunningChart({ activityId, laps, hrZones }: TrailRunningCha
                 }),
                 series: {
                     pace: laps.map(l => metersPerSecondToPace(l.average_speed)),
+                    gapPace: [],
                     heartRate: laps.map(l => l.average_heartrate || null),
                     elevation: laps.map(l => l.total_elevation_gain || null),
-                }
+                },
+                avgGapPace: null,
             };
 
             return fallbackData;
@@ -202,32 +180,45 @@ export function TrailRunningChart({ activityId, laps, hrZones }: TrailRunningCha
         const smoothedHR = movingAverage(streams.heartrate?.data || [], 10);
         const smoothedAltitude = movingAverage(streams.altitude?.data || [], 10);
 
+        const gapSpeeds = buildGapSpeedSeries({
+            distance: streams.distance?.data || [],
+            altitude: streams.altitude?.data || [],
+            velocity: streams.velocity_smooth?.data || [],
+        });
+        const smoothedGapSpeeds = movingAverage(gapSpeeds, 15);
+        const avgGapPace = averageGapPaceMinPerKm(gapSpeeds);
+
         const fullData: ChartSamplePoint[] = timeData.map((time, index) => {
             const velocity = smoothedVelocity[index] || 0;
             const distance = streams.distance?.data[index] || 0;
+            const gapSpeed = smoothedGapSpeeds[index];
 
             const xLabel = xAxisType === 'time' ? formatTime(time) : formatDistance(distance);
 
             return {
                 xLabel,
                 pace: metersPerSecondToPace(velocity),
+                gapPace: typeof gapSpeed === 'number' ? metersPerSecondToPace(gapSpeed) : null,
                 heartRate: (smoothedHR[index] as number) || null,
                 elevation: (smoothedAltitude[index] as number) ?? null,
             };
         });
 
-        const sampledData = downsampleData(fullData, resolution);
+        const thresholds = { low: 50, medium: 150, high: 300 } as const;
+        const sampledData = downsampleLTTB(fullData, thresholds[resolution], (point) => point.pace);
 
         const sampledResult: ChartDataResult = {
             xAxisData: sampledData.map(d => d.xLabel),
             series: {
                 pace: sampledData.map(d => d.pace),
+                gapPace: sampledData.map(d => d.gapPace),
                 heartRate: sampledData.map(d => d.heartRate),
                 elevation: sampledData.map(d => d.elevation),
-            }
+            },
+            avgGapPace,
         };
         return sampledResult;
-    }, [streams, laps, xAxisType, resolution]);
+    }, [streams, laps, xAxisType, resolution, t]);
 
     const option = useMemo(() => {
         const yAxisArray: Array<Record<string, unknown>> = [];
@@ -285,6 +276,20 @@ export function TrailRunningChart({ activityId, laps, hrZones }: TrailRunningCha
 
         seriesArray.push(paceSeries);
         yAxisIndex++;
+
+        const hasGapData = chartData.series.gapPace?.some((v) => v !== null);
+        if (hasGapData) {
+            seriesArray.push({
+                name: gapMetricName,
+                type: 'line',
+                yAxisIndex: 0,
+                data: chartData.series.gapPace,
+                smooth: true,
+                lineStyle: { color: '#16a34a', width: 2, type: 'dashed' },
+                itemStyle: { color: '#16a34a' },
+                showSymbol: false,
+            });
+        }
 
         // Elevation axis (right, secondary)
         if (hasElevationData) {
@@ -486,7 +491,7 @@ export function TrailRunningChart({ activityId, laps, hrZones }: TrailRunningCha
                     params.forEach((param) => {
                         if (param.seriesName === t('metrics.lapBoundaries')) return;
 
-                        if (param.seriesName === paceMetricName && param.value) {
+                        if ((param.seriesName === paceMetricName || param.seriesName === gapMetricName) && param.value) {
                             tooltipText += `${param.marker} ${param.seriesName}: ${formatPace(param.value)}<br/>`;
                         } else if (param.seriesName === elevationMetricName && param.value !== null) {
                             tooltipText += `${param.marker} ${param.seriesName}: ${param.value.toFixed(0)} m<br/>`;
@@ -559,7 +564,7 @@ export function TrailRunningChart({ activityId, laps, hrZones }: TrailRunningCha
             yAxis: yAxisArray,
             series: seriesArray,
         };
-    }, [chartData, hrZones, showLaps, laps, streams, legendSelected, paceMetricName, elevationMetricName, t]);
+    }, [chartData, hrZones, showLaps, laps, streams, legendSelected, paceMetricName, gapMetricName, elevationMetricName, t]);
 
     const onChartEvents = {
         legendselectchanged: (params: LegendSelectChangedEvent) => {
@@ -629,6 +634,14 @@ export function TrailRunningChart({ activityId, laps, hrZones }: TrailRunningCha
                     <CardTitle className="flex items-center gap-2 text-base uppercase tracking-widest" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>
                         <span>⛰️</span>
                         {t('title')}
+                        {chartData.avgGapPace !== null && (
+                            <span
+                                className="ml-2 inline-flex items-center gap-1.5 bg-emerald-600/10 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold tracking-widest px-2 py-1 normal-case"
+                                style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                            >
+                                {gapMetricName} {formatPace(chartData.avgGapPace)} {t('metrics.minPerKm')}
+                            </span>
+                        )}
                     </CardTitle>
 
                     <div className="flex flex-wrap gap-3 items-center">

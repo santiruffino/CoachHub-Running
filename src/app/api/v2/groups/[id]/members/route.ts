@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
-import { appLogger } from '@/lib/app-logger';
+import { createRequestLogger } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
+import { reportApiError } from '@/lib/api/report-error';
 
 /**
  * Add Member to Group
@@ -14,6 +15,7 @@ export async function POST(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    const { requestId, logger } = createRequestLogger('/api/v2/groups/[id]/members', request);
     try {
         const { id } = await params;
         const authResult = await requireRole('COACH');
@@ -107,14 +109,14 @@ export async function POST(
             .single();
 
         if (insertError) {
-            appLogger.error('Add member error:', insertError);
+            logger.error('Add member error', { error: insertError });
             return NextResponse.json(apiError('FAILED_TO_ADD_MEMBER_TO_GROUP'),
                 { status: 500 }
             );
         }
 
         // Update athlete profile to match group team if they don't have one
-        // We use the same supabase client as the coach has permission to update team members 
+        // We use the same supabase client as the coach has permission to update team members
         // per RLS "Users can update own profile" (or team staff can update team members)
         await supabase
             .from('profiles')
@@ -124,7 +126,7 @@ export async function POST(
 
         return NextResponse.json(membership, { status: 201 });
     } catch (error: unknown) {
-        appLogger.error('Add member error:', error);
+        reportApiError(error, { route: '/api/v2/groups/[id]/members', method: 'POST', requestId, logger });
         return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
@@ -143,6 +145,7 @@ export async function DELETE(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    const { requestId, logger } = createRequestLogger('/api/v2/groups/[id]/members', request);
     try {
         const { id } = await params;
         const authResult = await requireRole('COACH');
@@ -200,7 +203,7 @@ export async function DELETE(
             .eq('athlete_id', athleteId);
 
         if (deleteError) {
-            appLogger.error('Remove member error:', deleteError);
+            logger.error('Remove member error', { error: deleteError });
             return NextResponse.json(apiError('FAILED_TO_REMOVE_MEMBER_FROM_GROUP'),
                 { status: 500 }
             );
@@ -210,7 +213,7 @@ export async function DELETE(
             message: 'Member removed successfully',
         });
     } catch (error: unknown) {
-        appLogger.error('Remove member error:', error);
+        reportApiError(error, { route: '/api/v2/groups/[id]/members', method: 'DELETE', requestId, logger });
         return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );

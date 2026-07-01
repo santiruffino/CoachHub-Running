@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { sendWishlistNotificationEmail } from '@/lib/email/send';
-import { appLogger } from '@/lib/app-logger';
 import { WishlistRole, WishlistTeamSize } from '@/lib/email/templates/wishlist-notification';
 import { buildRateLimitKey, consumeRateLimit, getClientIpFromHeaders } from '@/lib/api/rate-limit';
 import { apiError } from '@/lib/api/error-response';
 import { z } from 'zod';
 import { wishlistSchema, validateBody } from '@/lib/validation/schemas';
+import { reportApiError } from '@/lib/api/report-error';
+import { createRequestLogger } from '@/lib/logger';
 
 const WISHLIST_RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
 const WISHLIST_RATE_LIMIT_MAX_REQUESTS = 10;
@@ -16,9 +17,10 @@ function sanitize(value: string, max: number): string {
 }
 
 export async function POST(request: NextRequest) {
+  const { requestId, logger } = createRequestLogger('/api/wishlist', request);
   const clientIp = getClientIpFromHeaders(request.headers);
   const rateLimitKey = buildRateLimitKey('/api/wishlist', clientIp, null);
-  const rateLimit = consumeRateLimit({
+  const rateLimit = await consumeRateLimit({
     key: rateLimitKey,
     limit: WISHLIST_RATE_LIMIT_MAX_REQUESTS,
     windowMs: WISHLIST_RATE_LIMIT_WINDOW_MS,
@@ -107,9 +109,12 @@ export async function POST(request: NextRequest) {
           signupId: inserted?.id,
       });
   } catch (emailError) {
-      appLogger.error('[wishlist] notification email threw', {
-          email,
-          error: emailError instanceof Error ? emailError.message : String(emailError),
+      reportApiError(emailError, {
+          route: '/api/wishlist',
+          method: 'POST',
+          requestId,
+          logger,
+          extra: { email },
       });
   }
 

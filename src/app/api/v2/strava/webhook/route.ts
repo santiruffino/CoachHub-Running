@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
   try {
     const clientIp = getClientIpFromHeaders(req.headers);
     const rateLimitKey = buildRateLimitKey('/api/v2/strava/webhook', clientIp, null);
-    const rateLimit = consumeRateLimit({
+    const rateLimit = await consumeRateLimit({
       key: rateLimitKey,
       limit: WEBHOOK_RATE_LIMIT_MAX_REQUESTS,
       windowMs: WEBHOOK_RATE_LIMIT_WINDOW_MS,
@@ -116,10 +116,15 @@ export async function POST(req: NextRequest) {
       return respond(apiError('VALIDATION_INVALID_WEBHOOK_PAYLOAD'), { status: 400 });
     }
     
-    // 1. Validate subscription_id if configured
+    // 1. Validate subscription_id (mandatory: Strava doesn't sign webhook payloads,
+    // so this is our only check that the event matches our actual subscription)
     const expectedSubId = process.env.STRAVA_SUBSCRIPTION_ID;
+    if (!expectedSubId) {
+      logger.error('strava_webhook.subscription_id_not_configured');
+      return respond(apiError('WEBHOOK_CONFIGURATION_ERROR'), { status: 500 });
+    }
     const incomingSubId = payload.subscription_id?.toString();
-    if (expectedSubId && incomingSubId !== expectedSubId) {
+    if (incomingSubId !== expectedSubId) {
       logger.warn('strava_webhook.invalid_subscription_id');
       return respond(apiError('INVALID_SUBSCRIPTION_ID'), { status: 401 });
     }

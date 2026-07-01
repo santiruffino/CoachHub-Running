@@ -44,8 +44,42 @@ export const createTrainingSchema = z.object({
 
 export const assignTrainingSchema = z.object({
   trainingId: z.string().uuid('Invalid training ID'),
-  athleteIds: z.array(z.string().uuid('Invalid athlete ID')).min(1, 'At least one athlete required'),
-});
+  scheduledDate: z.string().min(1, 'Scheduled date is required'),
+  athleteIds: z.array(z.string().uuid('Invalid athlete ID')).optional(),
+  groupIds: z.array(z.string().uuid('Invalid group ID')).optional(),
+  expectedRpe: z.number().int().min(1).max(10).optional(),
+  workoutName: z.string().max(255).optional(),
+}).refine(
+  (data) => (data.athleteIds && data.athleteIds.length > 0) || (data.groupIds && data.groupIds.length > 0),
+  { message: 'At least one athleteId or groupId is required', path: ['athleteIds'] }
+);
+
+export const updateProfileSchema = z.object({
+  name: z.string().min(1).max(255).optional(),
+  firstName: z.string().min(1).max(255).optional(),
+  lastName: z.string().min(1).max(255).optional(),
+  phone: z.string().max(50).optional(),
+  gender: z.string().max(50).optional(),
+  isOnboardingCompleted: z.boolean().optional(),
+  // Coach-specific fields
+  bio: z.string().max(2000).optional(),
+  specialty: z.string().max(255).optional(),
+  experience: z.union([z.string(), z.number()]).optional(),
+  // Athlete-specific fields (accept both camelCase and snake_case, as the route does)
+  height: z.union([z.string(), z.number()]).nullable().optional(),
+  weight: z.union([z.string(), z.number()]).nullable().optional(),
+  injuries: z.string().max(2000).nullable().optional(),
+  rest_hr: z.union([z.string(), z.number()]).nullable().optional(),
+  restHR: z.union([z.string(), z.number()]).nullable().optional(),
+  max_hr: z.union([z.string(), z.number()]).nullable().optional(),
+  maxHR: z.union([z.string(), z.number()]).nullable().optional(),
+  lthr: z.union([z.string(), z.number()]).nullable().optional(),
+  vam: z.union([z.string(), z.number()]).nullable().optional(),
+  uan: z.union([z.string(), z.number()]).nullable().optional(),
+  ftp: z.union([z.string(), z.number()]).nullable().optional(),
+  dob: z.string().nullable().optional(),
+  hrZones: z.unknown().optional(),
+}).strict();
 
 export const stravaWebhookSchema = z.object({
   subscription_id: z.number().int().positive().optional(),

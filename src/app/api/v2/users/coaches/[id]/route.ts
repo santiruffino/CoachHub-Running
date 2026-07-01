@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
-import { appLogger } from '@/lib/app-logger';
+import { createRequestLogger } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
 import { appendAdminActionLog } from '@/lib/audit/admin-action-log';
+import { reportApiError } from '@/lib/api/report-error';
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { requestId, logger } = createRequestLogger('/api/v2/users/coaches/[id]', _request);
   const authResult = await requireRole('ADMIN');
   if (authResult.response) return authResult.response;
 
@@ -47,7 +49,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
       .eq('role', 'ATHLETE');
 
     if (reassignError) {
-      appLogger.error('Reassign athletes error:', reassignError);
+      logger.error('Reassign athletes error', { error: reassignError });
       throw reassignError;
     }
 
@@ -60,7 +62,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
       .eq('role', 'COACH');
 
     if (deleteError) {
-      appLogger.error('Delete coach error:', deleteError);
+      logger.error('Delete coach error', { error: deleteError });
       throw deleteError;
     }
 
@@ -78,7 +80,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
 
     return NextResponse.json({ message: 'Coach deleted and athletes reassigned successfully' });
   } catch (error: unknown) {
-    appLogger.error('DELETE coach process error:', error instanceof Error ? error.message : error);
+    reportApiError(error, { route: '/api/v2/users/coaches/[id]', method: 'DELETE', requestId, logger });
     return NextResponse.json(apiError('FAILED_TO_DELETE_COACH_AND_REASSIGN_ATHLETES'), { status: 500 });
   }
 }

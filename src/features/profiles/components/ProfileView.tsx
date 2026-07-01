@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ProfileDetails } from '@/interfaces/athlete';
 import { ProfileForm } from '@/features/profiles/components/ProfileForm';
 import { HeartRateZones } from '@/features/profiles/components/HeartRateZones';
+import { CareerProgressSummary } from '@/features/profiles/components/CareerProgressSummary';
 import { StravaStatusCard } from '@/features/strava/components/StravaStatusCard';
 import { useStravaAuth } from '@/features/strava/hooks/useStravaAuth';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -76,6 +78,16 @@ export function ProfileView({ initialProfile, user }: ProfileViewProps) {
                         </div>
                     </div>
 
+                    {user?.role === 'ATHLETE' && (
+                        <SectionLayout
+                            tag={t('careerProgress.tag')}
+                            title={t('careerProgress.title')}
+                            description={t('careerProgress.description')}
+                        >
+                            <CareerProgressSummary athleteId={user.id} />
+                        </SectionLayout>
+                    )}
+
                     <ProfileForm profile={profile} />
 
                     {user?.role === 'ATHLETE' && (
@@ -105,6 +117,16 @@ export function ProfileView({ initialProfile, user }: ProfileViewProps) {
                             </FieldGroup>
                         </SectionLayout>
                     )}
+
+                    <SectionLayout
+                        tag={t('notificationSettings.tag')}
+                        title={t('notificationSettings.title')}
+                        description={t('notificationSettings.description')}
+                    >
+                        <Button asChild variant="outline-brand" className="uppercase tracking-widest text-xs">
+                            <Link href="/settings/notifications">{t('notificationSettings.cta')}</Link>
+                        </Button>
+                    </SectionLayout>
 
                 </div>
             </div>

@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { buildRateLimitKey, consumeRateLimit, getClientIpFromHeaders } from '@/lib/api/rate-limit';
 import { apiError } from '@/lib/api/error-response';
 import { loginSchema, validateBody } from '@/lib/validation/schemas';
+import { reportApiError } from '@/lib/api/report-error';
 
 const LOGIN_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 const LOGIN_RATE_LIMIT_MAX_REQUESTS = 5;
@@ -11,7 +12,7 @@ export async function POST(request: NextRequest) {
   try {
     const clientIp = getClientIpFromHeaders(request.headers);
     const rateLimitKey = buildRateLimitKey('/api/auth/login', clientIp, null);
-    const rateLimit = consumeRateLimit({
+    const rateLimit = await consumeRateLimit({
       key: rateLimitKey,
       limit: LOGIN_RATE_LIMIT_MAX_REQUESTS,
       windowMs: LOGIN_RATE_LIMIT_WINDOW_MS,
@@ -90,6 +91,7 @@ export async function POST(request: NextRequest) {
       token: data.session?.access_token, // For backward compatibility
     }, { headers });
   } catch (error: unknown) {
+    reportApiError(error, { route: '/api/auth/login', method: 'POST' });
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Internal server error' },
       { status: 500 }

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { TeamSettingsForm } from '@/features/settings/components/TeamSettingsForm';
 import { TeamSettings } from '@/features/settings/types';
 import { TeamInviteLinksCard } from '@/features/settings/components/TeamInviteLinksCard';
+import { normalizeTeamSettings } from '@/lib/settings/defaults';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,36 +30,19 @@ export default async function TeamSettingsPage() {
         redirect('/dashboard');
     }
 
-    // Fetch team settings
+    // Fetch team settings (stored as JSONB payloads)
     const { data: settingsData } = await supabase
         .from('team_settings')
-        .select('*')
+        .select('thresholds, branding, default_models, max_athletes')
         .eq('team_id', profile.team_id)
-        .single();
+        .maybeSingle();
 
-    const initialSettings: TeamSettings = settingsData ? {
-        thresholds: {
-            rpeMismatchThreshold: settingsData.rpe_mismatch_threshold,
-            lowComplianceThreshold: settingsData.low_compliance_threshold,
-        },
-        branding: {
-            teamName: settingsData.team_name,
-            logoUrl: settingsData.logo_url,
-            primaryColor: settingsData.primary_color,
-        },
-        defaultModels: {
-            workoutMatcherModel: settingsData.workout_matcher_model,
-            complianceModel: settingsData.compliance_model,
-        },
-        limits: {
-            maxAthletes: settingsData.max_athletes ?? null,
-        },
-    } : {
-        thresholds: { rpeMismatchThreshold: 2, lowComplianceThreshold: 50 },
-        branding: { teamName: 'Endurix Team', logoUrl: '', primaryColor: '#1f2937' },
-        defaultModels: { workoutMatcherModel: 'baseline-v1', complianceModel: 'baseline-v1' },
-        limits: { maxAthletes: null },
-    };
+    const initialSettings: TeamSettings = normalizeTeamSettings({
+        thresholds: settingsData?.thresholds,
+        branding: settingsData?.branding,
+        default_models: settingsData?.default_models,
+        limits: { maxAthletes: settingsData?.max_athletes ?? null },
+    });
 
     return (
         <div className="p-4 sm:p-6 lg:p-8 space-y-6">
@@ -67,4 +51,3 @@ export default async function TeamSettingsPage() {
         </div>
     );
 }
-

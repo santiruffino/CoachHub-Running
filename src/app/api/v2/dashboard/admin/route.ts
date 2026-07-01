@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
-import { appLogger } from '@/lib/app-logger';
 import { apiError } from '@/lib/api/error-response';
+import { reportApiError } from '@/lib/api/report-error';
+import { createRequestLogger } from '@/lib/logger';
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { requestId, logger } = createRequestLogger('/api/v2/dashboard/admin', request);
   const authResult = await requireRole('ADMIN');
   if (authResult.response) return authResult.response;
 
@@ -95,7 +97,7 @@ export async function GET() {
       coaches: coachesWithActivity
     });
   } catch (error: unknown) {
-    appLogger.error('Admin Dashboard Error:', error instanceof Error ? error.message : error);
+    reportApiError(error, { route: '/api/v2/dashboard/admin', method: 'GET', requestId, logger });
     return NextResponse.json(apiError('FAILED_TO_FETCH_ADMIN_DASHBOARD_DATA'),
       { status: 500 }
     );

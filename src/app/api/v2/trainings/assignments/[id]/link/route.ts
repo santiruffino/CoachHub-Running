@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getRequesterProfile, requireAuth } from '@/lib/supabase/api-helpers';
-import { appLogger } from '@/lib/app-logger';
+import { createRequestLogger } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
+import { reportApiError } from '@/lib/api/report-error';
 
 export async function POST(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    const { requestId, logger } = createRequestLogger('/api/v2/trainings/assignments/[id]/link', request);
     try {
         const { id } = await params;
         const assignmentId = id;
@@ -90,7 +92,7 @@ export async function POST(
             .eq('id', assignmentId);
 
         if (updateError) {
-            appLogger.error('Failed to link activity:', updateError);
+            logger.error('Failed to link activity', { error: updateError });
             return NextResponse.json(apiError('FAILED_TO_LINK_ACTIVITY'),
                 { status: 500 }
             );
@@ -99,7 +101,7 @@ export async function POST(
         return NextResponse.json({ success: true });
 
     } catch (error: unknown) {
-        appLogger.error('Link activity error:', error);
+        reportApiError(error, { route: '/api/v2/trainings/assignments/[id]/link', method: 'POST', requestId, logger });
         return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
@@ -110,6 +112,7 @@ export async function DELETE(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    const { requestId, logger } = createRequestLogger('/api/v2/trainings/assignments/[id]/link', request);
     try {
         const { id } = await params;
         const assignmentId = id;
@@ -172,7 +175,7 @@ export async function DELETE(
             .eq('id', assignmentId);
 
         if (updateError) {
-            appLogger.error('Failed to unlink activity:', updateError);
+            logger.error('Failed to unlink activity', { error: updateError });
             return NextResponse.json(apiError('FAILED_TO_UNLINK_ACTIVITY'),
                 { status: 500 }
             );
@@ -180,7 +183,7 @@ export async function DELETE(
 
         return NextResponse.json({ success: true });
     } catch (error: unknown) {
-        appLogger.error('Unlink activity error:', error);
+        reportApiError(error, { route: '/api/v2/trainings/assignments/[id]/link', method: 'DELETE', requestId, logger });
         return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );

@@ -6,6 +6,7 @@ import { Settings, LogOut, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { NotificationBell } from '@/features/notifications/components/NotificationBell';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -38,7 +39,7 @@ export function Navbar() {
     const navigation = buildNavigation(t);
 
     const userRole = user?.role || '';
-    const settingsPath = getSettingsPathForRole(user?.role);
+    const settingsPath = getSettingsPathForRole();
     const userInitials = user?.name
         ? user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
         : 'U';
@@ -88,6 +89,7 @@ export function Navbar() {
                     </div>
 
                     <div className="flex items-center gap-2">
+                        <NotificationBell />
                         <ThemeToggle />
                         <DropdownMenu>
                             <DropdownMenuTrigger className="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">

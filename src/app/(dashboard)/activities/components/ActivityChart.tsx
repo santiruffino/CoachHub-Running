@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import api from '@/lib/axios';
 import { useTranslations } from 'next-intl';
 import { Skeleton } from '@/components/ui/skeleton';
+import { downsampleLTTB, movingAverage } from './chart-data-utils';
 
 interface Lap {
     id: number;
@@ -81,29 +82,6 @@ interface LegendSelectChangedEvent {
     selected: Record<string, boolean>;
 }
 
-/**
- * Moving average filter to smooth "peaky" data
- */
-const movingAverage = (data: (number | null)[], windowSize: number): (number | null)[] => {
-    if (!data || data.length === 0) return [];
-    const result: (number | null)[] = [];
-    const halfWindow = Math.floor(windowSize / 2);
-
-    for (let i = 0; i < data.length; i++) {
-        let sum = 0;
-        let count = 0;
-        for (let j = Math.max(0, i - halfWindow); j <= Math.min(data.length - 1, i + halfWindow); j++) {
-            const val = data[j];
-            if (val !== null && val !== undefined) {
-                sum += val;
-                count++;
-            }
-        }
-        result.push(count > 0 ? sum / count : null);
-    }
-    return result;
-};
-
 export function ActivityChart({ activityId, laps, hrZones, isRunning }: ActivityChartProps) {
     const t = useTranslations('activities.detail.dynamics');
     const paceMetricName = isRunning ? t('metrics.pace') : t('metrics.pace');
@@ -136,20 +114,6 @@ const [showLaps, setShowLaps] = useState(false);
 
         if (activityId) fetchStreams();
     }, [activityId]);
-
-    // Downsample data based on resolution
-    const downsampleData = <T,>(data: T[], resolution: Resolution): T[] => {
-        if (!data || data.length === 0) return [];
-
-        const steps = {
-            low: Math.floor(data.length / 50),      // ~50 points
-            medium: Math.floor(data.length / 150),  // ~150 points
-            high: Math.floor(data.length / 300),    // ~300 points
-        };
-
-        const step = Math.max(1, steps[resolution]);
-        return data.filter((_, index) => index % step === 0);
-    };
 
     // Format time as HH:MM:SS or MM:SS
     const formatTime = (seconds: number): string => {
@@ -224,7 +188,8 @@ const [showLaps, setShowLaps] = useState(false);
             };
         });
 
-        const sampledData = downsampleData(fullData, resolution);
+        const thresholds = { low: 50, medium: 150, high: 300 } as const;
+        const sampledData = downsampleLTTB(fullData, thresholds[resolution], (point) => point.pace);
 
         const sampledResult: ChartDataResult = {
             xAxisData: sampledData.map(d => d.xLabel),
@@ -234,7 +199,7 @@ const [showLaps, setShowLaps] = useState(false);
             }
         };
         return sampledResult;
-    }, [streams, laps, xAxisType, resolution]);
+    }, [streams, laps, xAxisType, resolution, t]);
 
     // Build ECharts option
     const option = useMemo(() => {

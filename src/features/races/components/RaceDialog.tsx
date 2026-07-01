@@ -112,7 +112,7 @@ export function RaceDialog({ open, onOpenChange, race, onSuccess }: RaceDialogPr
                 step="0.01"
                 value={formData.distance}
                 onChange={(e) => setFormData({ ...formData, distance: e.target.value })}
-                placeholder="e.g. 10 (in km)"
+                placeholder={t('distancePlaceholder')}
               />
             </div>
             <div className="space-y-2">

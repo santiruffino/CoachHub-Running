@@ -43,6 +43,11 @@ const TrailRunningChart = dynamic(
   { ssr: false, loading: () => <ActivityChartLoading /> }
 );
 
+const ActivityMap = dynamic(
+  () => import('@/app/(dashboard)/activities/components/ActivityMap').then(mod => ({ default: mod.ActivityMap })),
+  { ssr: false, loading: () => <ActivityChartLoading /> }
+);
+
 interface ActivityChartsTabsProps {
   activity: ActivityDetail;
   internalId: string;
@@ -60,7 +65,7 @@ interface ActivityChartsTabsProps {
   t: ReturnType<typeof useTranslations>;
 }
 
-type TabType = 'streams' | 'intervals' | 'analysis';
+type TabType = 'streams' | 'map' | 'intervals' | 'analysis';
 
 export function ActivityChartsTabs({
   activity,
@@ -86,9 +91,11 @@ export function ActivityChartsTabs({
   const hasHR = activity.average_heartrate && heartrateZones?.zones;
   const isWeight = isWeightTraining(activity.sport_type);
   const isRun = isRunning(activity.sport_type);
+  const routePolyline = activity.map?.polyline || activity.map?.summary_polyline;
 
   const tabs: Array<{ key: TabType; label: string; hidden?: boolean }> = [
     { key: 'streams', label: t('charts.liveTracking'), hidden: isWeight },
+    { key: 'map', label: t('charts.map'), hidden: isWeight || !routePolyline },
     { key: 'intervals', label: t('charts.intervalsAnalysis'), hidden: isWeight || (!hasLaps && !hasSplits) },
     { key: 'analysis', label: t('tabs.analysis'), hidden: isWeight },
   ];
@@ -138,6 +145,13 @@ export function ActivityChartsTabs({
             ) : (
               <ActivityChart activityId={internalId} laps={activity.laps} hrZones={heartrateZones?.zones} isRunning={isRun} />
             )}
+          </div>
+        )}
+
+        {/* Tab: Map */}
+        {activeTab === 'map' && routePolyline && (
+          <div className="w-full bg-white dark:bg-card overflow-hidden relative">
+            <ActivityMap activityId={internalId} encodedPolyline={routePolyline} />
           </div>
         )}
 

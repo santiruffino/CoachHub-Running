@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { appLogger } from '@/lib/app-logger';
+import { createRequestLogger } from '@/lib/logger';
 
 const METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'] as const;
 
@@ -12,7 +12,8 @@ async function proxyToV2(request: NextRequest, path: string[]) {
   const targetUrl = new URL(`/api/v2/${path.join('/')}`, request.url);
   targetUrl.search = request.nextUrl.search;
 
-  appLogger.info('legacy.api.alias.hit', {
+  const { logger } = createRequestLogger(legacyPath, request);
+  logger.info('legacy.api.alias.hit', {
     method: request.method,
     legacyPath,
     targetPath: `${targetUrl.pathname}${targetUrl.search}`,

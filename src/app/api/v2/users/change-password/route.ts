@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/api-helpers';
-import { appLogger } from '@/lib/app-logger';
+import { createRequestLogger } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
 import { changePasswordSchema, validateBody } from '@/lib/validation/schemas';
+import { reportApiError } from '@/lib/api/report-error';
 
 /**
  * Change Password Endpoint
@@ -11,6 +12,7 @@ import { changePasswordSchema, validateBody } from '@/lib/validation/schemas';
  * Uses regular Supabase Auth (no service role key needed).
  */
 export async function PATCH(request: NextRequest) {
+    const { requestId, logger } = createRequestLogger('/api/v2/users/change-password', request);
     try {
         const authResult = await requireAuth();
 
@@ -63,14 +65,14 @@ export async function PATCH(request: NextRequest) {
             .eq('id', user!.id);
 
         if (profileError) {
-            appLogger.error('Failed to update profile flag:', profileError);
+            logger.error('Failed to update profile flag', { error: profileError });
         }
 
         return NextResponse.json({
             message: 'Password updated successfully',
         });
     } catch (error: unknown) {
-        appLogger.error('Change password error:', error);
+        reportApiError(error, { route: '/api/v2/users/change-password', method: 'PATCH', requestId, logger });
         return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );

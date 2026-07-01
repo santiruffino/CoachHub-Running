@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/api-helpers';
-import { appLogger } from '@/lib/app-logger';
 import { apiError } from '@/lib/api/error-response';
+import { reportApiError } from '@/lib/api/report-error';
+import { createRequestLogger } from '@/lib/logger';
 
 /**
  * Get Activity Details with Streams
@@ -17,6 +18,7 @@ export async function GET(
     _request: NextRequest,
     { params }: { params: Promise<{ activityId: string }> }
 ) {
+    const { requestId, logger } = createRequestLogger('/api/v2/users/activities/[activityId]', _request);
     try {
         const { activityId } = await params;
         const authResult = await requireAuth();
@@ -79,7 +81,7 @@ export async function GET(
 
         return NextResponse.json(activity);
     } catch (error: unknown) {
-        appLogger.error('Get activity details error:', error);
+        reportApiError(error, { route: '/api/v2/users/activities/[activityId]', method: 'GET', requestId, logger });
         return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );

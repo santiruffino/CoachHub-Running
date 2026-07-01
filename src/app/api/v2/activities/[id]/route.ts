@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/api-helpers';
 import { createServiceRoleClient } from '@/lib/supabase/server';
-import { appLogger } from '@/lib/app-logger';
+import { createRequestLogger } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
+import { reportApiError } from '@/lib/api/report-error';
 
 interface StravaTokenResponse {
     access_token: string;
@@ -24,6 +25,7 @@ export async function GET(
     _request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    const { requestId, logger } = createRequestLogger('/api/v2/activities/[id]', _request);
     try {
         const { id } = await params;
         const authResult = await requireAuth();
@@ -148,7 +150,7 @@ export async function GET(
         );
 
         if (!stravaResponse.ok) {
-            appLogger.error('Strava API error:', await stravaResponse.text());
+            logger.error('Strava API error', { error: await stravaResponse.text() });
             return NextResponse.json(apiError('FAILED_TO_FETCH_ACTIVITY_FROM_STRAVA'),
                 { status: 500 }
             );
@@ -167,7 +169,7 @@ export async function GET(
             lap_overrides: activity.lap_overrides || {},
         });
     } catch (error: unknown) {
-        appLogger.error('Get activity detail error:', error);
+        reportApiError(error, { route: '/api/v2/activities/[id]', method: 'GET', requestId, logger });
         return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
@@ -181,6 +183,7 @@ export async function PATCH(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    const { requestId, logger } = createRequestLogger('/api/v2/activities/[id]', request);
     try {
         const { id } = await params;
         const authResult = await requireAuth();
@@ -244,7 +247,7 @@ export async function PATCH(
             .eq('id', activity.id);
 
         if (updateError) {
-            appLogger.error('Failed to update lap overrides:', updateError);
+            logger.error('Failed to update lap overrides', { error: updateError });
             return NextResponse.json(apiError('FAILED_TO_UPDATE_OVERRIDES'),
                 { status: 500 }
             );
@@ -253,7 +256,7 @@ export async function PATCH(
         return NextResponse.json({ success: true, lapOverrides });
 
     } catch (error: unknown) {
-        appLogger.error('Update activity detail error:', error);
+        reportApiError(error, { route: '/api/v2/activities/[id]', method: 'PATCH', requestId, logger });
         return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );

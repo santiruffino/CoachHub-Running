@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/api-helpers';
-import { appLogger } from '@/lib/app-logger';
+import { createRequestLogger } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
+import { reportApiError } from '@/lib/api/report-error';
 
 interface GroupDetails {
     id: string;
@@ -23,7 +24,8 @@ interface AssignmentWithGroup {
  * Fetches training assignments for the authenticated user.
  * Includes full training details for each assignment.
  */
-export async function GET() {
+export async function GET(request: Request) {
+    const { requestId, logger } = createRequestLogger('/api/v2/users/assignments', request);
     try {
         const authResult = await requireAuth();
 
@@ -59,7 +61,7 @@ export async function GET() {
             .order('scheduled_date', { ascending: true });
 
         if (error) {
-            appLogger.error('Fetch assignments error:', error);
+            logger.error('Fetch assignments error', { error: error });
             return NextResponse.json(apiError('FAILED_TO_FETCH_ASSIGNMENTS'),
                 { status: 500 }
             );
@@ -95,7 +97,7 @@ export async function GET() {
 
         return NextResponse.json(resolvedAssignments);
     } catch (error: unknown) {
-        appLogger.error('Get assignments error:', error);
+        reportApiError(error, { route: '/api/v2/users/assignments', method: 'GET', requestId, logger });
         return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );

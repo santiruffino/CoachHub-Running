@@ -1,9 +1,10 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
-import { appLogger } from '@/lib/app-logger';
+import { createRequestLogger } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
 import { appendAdminActionLog } from '@/lib/audit/admin-action-log';
+import { reportApiError } from '@/lib/api/report-error';
 
 /**
  * GET /v2/races
@@ -12,7 +13,8 @@ import { appendAdminActionLog } from '@/lib/audit/admin-action-log';
  * Coaches/admins see races in their team.
  * Athletes see races assigned to them.
  */
-export async function GET() {
+export async function GET(request: Request) {
+  const { requestId, logger } = createRequestLogger('/api/v2/races', request);
   try {
     const supabase = await createClient();
 
@@ -56,14 +58,15 @@ export async function GET() {
     const { data: races, error } = await racesQuery;
 
     if (error) {
-      appLogger.error('Fetch races error:', error);
+      logger.error('Fetch races error', { error: error });
       return NextResponse.json(apiError('FAILED_TO_FETCH_RACES'),
         { status: 500 }
       );
     }
 
     return NextResponse.json(races || []);
-  } catch {
+  } catch (error: unknown) {
+    reportApiError(error, { route: '/api/v2/races', method: 'GET', requestId, logger });
     return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
       { status: 500 }
     );
@@ -77,6 +80,7 @@ export async function GET() {
  * Restricted to coaches and admins.
  */
 export async function POST(request: Request) {
+  const { requestId, logger } = createRequestLogger('/api/v2/races', request);
   try {
     const authResult = await requireRole(['COACH', 'ADMIN']);
     if (authResult.response) {
@@ -129,7 +133,7 @@ export async function POST(request: Request) {
       .single();
 
     if (error) {
-      appLogger.error('Create race error:', { message: error.message, code: error.code, details: error.details, hint: error.hint });
+      logger.error('Create race error', { error: { message: error.message, code: error.code, details: error.details, hint: error.hint } });
       return NextResponse.json(apiError('FAILED_TO_CREATE_RACE'),
         { status: 500 }
       );
@@ -148,7 +152,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(race, { status: 201 });
   } catch (error: unknown) {
-    appLogger.error('POST /v2/races error:', error);
+    reportApiError(error, { route: '/api/v2/races', method: 'POST', requestId, logger });
     return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
       { status: 500 }
     );

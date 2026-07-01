@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
-import { appLogger } from '@/lib/app-logger';
+import * as Sentry from '@sentry/nextjs';
+import { createRequestLogger } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
 
 interface TrainingRow {
@@ -19,8 +20,8 @@ interface TrainingRow {
  * Access: COACH only
  */
 export async function GET(request: NextRequest) {
+    const { requestId, logger } = createRequestLogger('/api/v2/trainings', request);
     try {
-        void request;
         const { user, supabase, profile, response } = await requireRole('COACH');
 
         if (response) {
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest) {
         const { data: trainings, error } = await query;
 
         if (error) {
-            appLogger.error('Fetch trainings error:', error);
+            logger.error('Fetch trainings error', { error: error });
             return NextResponse.json(apiError('FAILED_TO_FETCH_TRAININGS'),
                 { status: 500 }
             );
@@ -74,7 +75,10 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json(mutableTrainings);
     } catch (error: unknown) {
-        appLogger.error('Get trainings error:', error);
+        logger.error('Get trainings error', { error });
+        Sentry.captureException(error, {
+            tags: { route: '/api/v2/trainings', method: 'GET', requestId },
+        });
         return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
@@ -89,6 +93,7 @@ export async function GET(request: NextRequest) {
  * Access: COACH only
  */
 export async function POST(request: NextRequest) {
+    const { requestId, logger } = createRequestLogger('/api/v2/trainings', request);
     try {
         const { user, supabase, profile, response } = await requireRole('COACH');
 
@@ -135,7 +140,7 @@ export async function POST(request: NextRequest) {
             .single();
 
         if (error) {
-            appLogger.error('Create training error:', error);
+            logger.error('Create training error', { error: error });
             return NextResponse.json(apiError('FAILED_TO_CREATE_TRAINING'),
                 { status: 500 }
             );
@@ -143,7 +148,10 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json(training, { status: 201 });
     } catch (error: unknown) {
-        appLogger.error('Create training error:', error);
+        logger.error('Create training error', { error });
+        Sentry.captureException(error, {
+            tags: { route: '/api/v2/trainings', method: 'POST', requestId },
+        });
         return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );

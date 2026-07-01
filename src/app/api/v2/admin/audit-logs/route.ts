@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
 import { apiError } from '@/lib/api/error-response';
+import { createRequestLogger } from '@/lib/logger';
+import { reportApiError } from '@/lib/api/report-error';
 
 const DEFAULT_LIMIT = 25;
 const MAX_LIMIT = 100;
 
 export async function GET(request: NextRequest) {
+  const { requestId, logger } = createRequestLogger('/api/v2/admin/audit-logs', request);
+  try {
   const authResult = await requireRole('ADMIN');
   if (authResult.response) return authResult.response;
 
@@ -56,6 +60,7 @@ export async function GET(request: NextRequest) {
   const { data, error, count } = await query.range(offset, offset + limit - 1);
 
   if (error) {
+    logger.error('Failed to fetch audit logs', { error });
     return NextResponse.json(apiError('FAILED_TO_FETCH_AUDIT_LOGS'), { status: 500 });
   }
 
@@ -68,4 +73,8 @@ export async function GET(request: NextRequest) {
       hasNextPage: offset + limit < (count || 0),
     },
   });
+  } catch (error: unknown) {
+    reportApiError(error, { route: '/api/v2/admin/audit-logs', method: 'GET', requestId, logger });
+    return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'), { status: 500 });
+  }
 }

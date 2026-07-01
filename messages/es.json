@@ -17,6 +17,245 @@
         "coachSettings": "Ajustes Coach",
         "teamSettings": "Ajustes Equipo"
     },
+    "settings": {
+        "hub": {
+            "eyebrow": "Ajustes",
+            "title": "Configuración",
+            "description": "Todo lo que podés personalizar en Endurix, en un solo lugar.",
+            "tiles": {
+                "notifications": {
+                    "title": "Notificaciones",
+                    "description": "Mensajes, entrenamientos asignados y otros eventos — in-app y push."
+                },
+                "coach": {
+                    "title": "Entrenador",
+                    "description": "Umbrales de alerta y modelos por defecto para tu seguimiento."
+                },
+                "team": {
+                    "title": "Equipo",
+                    "description": "Configuración general del equipo y umbrales compartidos."
+                },
+                "auditLogs": {
+                    "title": "Auditoría",
+                    "description": "Historial de acciones administrativas."
+                }
+            }
+        },
+        "notifications": {
+            "eyebrow": "Ajustes",
+            "title": "Notificaciones",
+            "description": "Elegí cómo querés enterarte de mensajes, entrenamientos asignados y otros eventos."
+        },
+        "coach": {
+            "eyebrow": "Ajustes",
+            "title": "Entrenador",
+            "description": "Configura tus propios umbrales y preferencias para el seguimiento.",
+            "save": "Guardar Preferencias",
+            "saving": "Guardando...",
+            "alertsCard": {
+                "title": "Umbrales de Alerta",
+                "rpeMismatch": {
+                    "label": "Desviación RPE",
+                    "help": "Alertar si la diferencia entre RPE planificado y real es mayor a este valor."
+                },
+                "lowCompliance": {
+                    "label": "Cumplimiento Mínimo (%)",
+                    "help": "Alertar si el cumplimiento total cae por debajo de este porcentaje."
+                },
+                "matchingThreshold": {
+                    "label": "Tolerancia de Matching (%)",
+                    "help": "Ajusta el margen usado por el motor para emparejar laps con el plan."
+                }
+            },
+            "loadRiskCard": {
+                "title": "Riesgo de Carga",
+                "intro": "ACWR y TSB se calculan a partir del historial de actividades de cada atleta. Pasá el cursor sobre cada ícono para ver qué significa y cuándo dispara una alerta.",
+                "whatDoesMean": "Qué significa {label}"
+            },
+            "loadRisk": {
+                "highAcwr": {
+                    "label": "ACWR Alto",
+                    "explanation": "ACWR (Acute:Chronic Workload Ratio) compara la carga de los últimos 7 días con el promedio de las últimas 4-6 semanas. Si el ACWR de un atleta supera este número, se dispara una alerta de Riesgo Alto: está entrenando muy por encima de lo que su cuerpo viene tolerando, lo que aumenta el riesgo de lesión. Referencia habitual: 1.5."
+                },
+                "moderateAcwr": {
+                    "label": "ACWR Moderado",
+                    "explanation": "Mismo cálculo que ACWR Alto, pero con un umbral más bajo. Si el ACWR supera este número (sin llegar al umbral Alto), se marca Riesgo Moderado: una señal temprana de que la carga subió rápido. Referencia habitual: 1.3."
+                },
+                "lowStimulusAcwr": {
+                    "label": "ACWR Bajo",
+                    "explanation": "Si el ACWR cae por debajo de este número, se marca Estímulo Bajo: el atleta está entrenando muy por debajo de su carga habitual (riesgo de pérdida de forma, no de lesión). Referencia habitual: 0.8."
+                },
+                "highTsb": {
+                    "label": "TSB Alto",
+                    "explanation": "TSB (Training Stress Balance / 'Forma') es la diferencia entre el fitness acumulado (CTL) y la fatiga reciente (ATL) del atleta. Es un número negativo cuando hay fatiga. Si el TSB cae por debajo de este valor (ej. -30), se dispara Riesgo Alto por fatiga excesiva acumulada."
+                },
+                "moderateTsb": {
+                    "label": "TSB Moderado",
+                    "explanation": "Mismo concepto que TSB Alto, con un umbral menos exigente. Si el TSB cae por debajo de este valor (ej. -15) sin llegar al umbral Alto, se marca Riesgo Moderado."
+                },
+                "lowStimulusTsb": {
+                    "label": "TSB Bajo",
+                    "explanation": "Si el TSB sube por encima de este valor (ej. +25), se marca Estímulo Bajo: el atleta está muy descansado y/o con poca carga reciente, lo que puede indicar que no está entrenando lo suficiente para seguir progresando."
+                }
+            },
+            "workoutMatchingCard": {
+                "title": "Vinculación de Entrenamientos",
+                "autoLink": {
+                    "label": "Vincular automáticamente",
+                    "help": "Si está activo, el motor vincula actividades de Strava al plan sin intervención. Si está desactivado, cada coincidencia queda en revisión manual antes de confirmarse."
+                }
+            },
+            "dashboardCard": {
+                "title": "Defaults del Dashboard",
+                "priorityFirst": {
+                    "label": "Alerta prioritaria",
+                    "help": "La card de esta alerta aparece siempre primero en el dashboard de atletas.",
+                    "options": {
+                        "load_risk": "Riesgo de carga",
+                        "compliance": "Cumplimiento",
+                        "rpe_mismatch": "Desvío de RPE"
+                    }
+                }
+            },
+            "planningCard": {
+                "title": "Defaults de Planificación",
+                "defaultRpe": {
+                    "label": "RPE esperado por defecto",
+                    "help": "RPE inicial sugerido al crear un nuevo entrenamiento sin esfuerzo definido."
+                },
+                "restDaysPerWeek": {
+                    "label": "Días de descanso por semana"
+                },
+                "weekStartsOn": {
+                    "label": "Semana empieza el",
+                    "monday": "Lunes",
+                    "sunday": "Domingo"
+                }
+            },
+            "stravaCard": {
+                "title": "Sincronización con Strava",
+                "autoMatch": {
+                    "label": "Matching automático",
+                    "help": "Si está activo, las actividades de Strava se vinculan al plan sin confirmación. Si no, quedan pendientes de revisión."
+                },
+                "duplicateHandling": {
+                    "label": "Actividades duplicadas",
+                    "help": "Qué hacer cuando una actividad ya fue importada anteriormente.",
+                    "options": {
+                        "skip": "Ignorar (no importar)",
+                        "flag": "Marcar para revisión",
+                        "replace": "Reemplazar la existente"
+                    }
+                }
+            }
+        },
+        "team": {
+            "eyebrow": "Ajustes",
+            "title": "Configuración del Equipo",
+            "description": "Personaliza el nombre, colores y modelos para toda tu organización.",
+            "save": "Guardar Cambios",
+            "saving": "Guardando...",
+            "brandingCard": {
+                "title": "Marca y branding",
+                "teamName": {
+                    "label": "Nombre del equipo"
+                },
+                "primaryColor": {
+                    "label": "Color primario (Hex)"
+                },
+                "logoUrl": {
+                    "label": "URL del Logo",
+                    "placeholder": "https://ejemplo.com/logo.png"
+                }
+            },
+            "alertsCard": {
+                "title": "Umbrales de Alerta",
+                "rpeMismatch": {
+                    "label": "Desviación RPE",
+                    "help": "Alertar si la diferencia entre RPE planificado y real es mayor a este valor."
+                },
+                "lowCompliance": {
+                    "label": "Cumplimiento Bajo (%)",
+                    "help": "Alertar si el cumplimiento total cae por debajo de este porcentaje."
+                }
+            },
+            "algorithmsCard": {
+                "title": "Algoritmos",
+                "workoutMatcherModel": {
+                    "label": "Motor de Matching"
+                },
+                "complianceModel": {
+                    "label": "Motor de Cumplimiento"
+                }
+            },
+            "limits": {
+                "title": "Límites del Equipo",
+                "maxAthletes": {
+                    "label": "Máx. atletas",
+                    "placeholder": "Sin límite",
+                    "help": "Dejar vacío para sin límite. Usado para control de precios por plan."
+                }
+            }
+        },
+        "auditLogs": {
+            "eyebrow": "Auditoría",
+            "title": "Registros de auditoría",
+            "description": "Historial inmutable de acciones administrativas críticas.",
+            "filtersTitle": "Filtros",
+            "filterPlaceholder": "Filtrá por acción (ej. group.updated)",
+            "eventsTitle": "Eventos ({count})",
+            "loading": "Cargando...",
+            "empty": "No se encontraron eventos de auditoría.",
+            "previous": "Anterior",
+            "next": "Siguiente",
+            "table": {
+                "time": "Hora",
+                "action": "Acción",
+                "actor": "Actor",
+                "target": "Destino",
+                "metadata": "Metadatos"
+            }
+        }
+    },
+    "notifications": {
+        "title": "Notificaciones",
+        "loading": "Cargando notificaciones...",
+        "empty": "No tenés notificaciones todavía.",
+        "markAllRead": "Marcar todo como leído",
+        "preferencesLink": "Preferencias de notificación",
+        "groups": {
+            "today": "Hoy",
+            "thisWeek": "Esta semana",
+            "older": "Anteriores"
+        },
+        "preferences": {
+            "devicePushTitle": "Notificaciones push en este dispositivo",
+            "devicePushDescription": "Recibí avisos aunque no tengas la app abierta en este navegador.",
+            "devicePushUnsupported": "Este navegador no soporta notificaciones push.",
+            "comingSoon": "Próximamente",
+            "table": {
+                "category": "Tipo de evento",
+                "inApp": "En la app",
+                "push": "Push",
+                "frequency": "Frecuencia",
+                "email": "Email"
+            },
+            "categories": {
+                "chat_message": "Mensajes de chat",
+                "workout_assigned": "Entrenamientos asignados",
+                "race_reminder": "Recordatorios de carrera",
+                "system": "Notificaciones del sistema",
+                "rpe_mismatch": "Alertas de RPE inesperado",
+                "low_compliance": "Alertas de bajo cumplimiento",
+                "training_load": "Alertas de carga de entrenamiento"
+            },
+            "frequencies": {
+                "immediate": "Inmediata",
+                "daily": "Resumen diario",
+                "weekly": "Resumen semanal"
+            }
+        }
+    },
     "dashboard": {
         "title": "Coach Dashboard",
         "admin": {
@@ -28,6 +267,8 @@
                 "activeCoaches": "Coaches Activos"
             },
             "globalScope": "Global",
+            "activityEyebrow": "Actividad",
+            "coachesCardHeader": "Coaches",
 
             "coachesActivity": "Coaches & Actividad",
             "noName": "Sin nombre",
@@ -40,6 +281,9 @@
         },
         "messages": {
             "hi": "Hola, {name}"
+        },
+        "careerProgress": {
+            "title": "Progreso de Carrera"
         },
         "fitness": {
             "fitnessCard": "Forma Física (CTL)",
@@ -66,7 +310,10 @@
                 "syncing": "Sincronizando historial de Strava (90 días)...",
                 "partial": "Historial parcial ({days} días).",
                 "ready": "Métricas de carga actualizadas"
-            }
+            },
+            "weeklyLoadChartTitle": "Carga Semanal",
+            "weeklyLoadChartSubtitle": "Km, minutos y TSS de las últimas 8 semanas",
+            "weeklyLoadHrTssNote": "TSS calculado con frecuencia cardíaca cuando hay datos disponibles; en caso contrario se estima por duración/ritmo."
         },
         "athleteFeedbackModal": {
             "title": "Feedback de tu nueva actividad",
@@ -127,6 +374,10 @@
             "noRecentActivity": "No hay actividad reciente",
             "nextRaces": "Próximas Carreras",
             "noNextRaces": "No hay carreras próximas programadas"
+        },
+        "matching": {
+            "eyebrow": "Matching",
+            "title": "Revisión de Matches"
         },
         "alertTypes": {
             "rpe_mismatch": "Fallo en RPE objetivo",
@@ -196,6 +447,26 @@
             "save": "Guardar Nota",
             "saving": "Guardando..."
         },
+        "chat": {
+            "eyebrow": "MENSAJES",
+            "title": "Chat coach-atleta",
+            "subtitle": "Mantén la conversación sincronizada entre coach y atleta.",
+            "subtitleWithName": "Conversación con {name}",
+            "loading": "Cargando mensajes...",
+            "refresh": "Actualizar",
+            "refreshing": "Actualizando...",
+            "emptyTitle": "Sin mensajes",
+            "emptyState": "Envía el primer mensaje para iniciar la conversación.",
+            "emptyWithName": "Envía el primer mensaje a {name}.",
+            "placeholder": "Escribe un mensaje...",
+            "threadHint": "Los mensajes se guardan automáticamente en este hilo.",
+            "send": "Enviar",
+            "sending": "Enviando...",
+            "you": "Tú",
+            "read": "Leído",
+            "loadError": "No se pudo cargar el chat.",
+            "sendError": "No se pudo enviar el mensaje."
+        },
         "performanceTrend": {
             "title": "Tendencia de Cumplimiento"
         },
@@ -208,6 +479,44 @@
             "default": "Entrenamiento"
         },
         "weekLabel": "Sem {n}"
+    },
+    "testDashboard": {
+        "status": {
+            "optimalShort": "ÓPTIMO",
+            "optimal": "ÓPTIMA",
+            "stable": "ESTABLE",
+            "alert": "ALERTA",
+            "monitor": "MONITOREO"
+        },
+        "metrics": {
+            "activeAthletes": "ATLETAS ACTIVOS",
+            "weeklyLoad": "CARGA SEMANAL",
+            "compliance": "CUMPLIMIENTO",
+            "activeAlerts": "ALERTAS ACTIVAS"
+        },
+        "sections": {
+            "weeklySummary": "RESUMEN SEMANAL",
+            "weekOverWeek": "14% vs semana anterior",
+            "athletes": "ATLETAS",
+            "alerts": "ALERTAS"
+        },
+        "actions": {
+            "viewFullAnalysis": "VER ANÁLISIS COMPLETO",
+            "viewAll": "VER TODOS"
+        },
+        "table": {
+            "athlete": "ATLETA",
+            "sport": "DEPORTE",
+            "tss": "TSS",
+            "form": "FORMA",
+            "status": "ESTADO"
+        },
+        "units": {
+            "tss": "TSS"
+        },
+        "chart": {
+            "load": "Carga"
+        }
     },
     "athletes": {
         "title": "Atletas",
@@ -280,14 +589,16 @@
             "recentActivity": "Actividad Reciente",
             "noRecentActivity": "No hay actividad reciente",
             "week": "Sem {n}",
-            "coachComments": "Comentarios del coach",
+            "coachNotesTitle": "Notas privadas",
+            "chatWithCoach": "Chat con el coach",
             "performanceAndZones": "Rendimiento y Zonas",
+            "performanceTrend": "Tendencia de Cumplimiento",
             "loadMonitoringTitle": "Monitoreo de Carga",
             "loadMonitoringSubtitle": "Estado de carga interna y riesgo de fatiga",
             "overviewTab": "Resumen",
             "trainingTab": "Entrenamiento",
             "healthTab": "Salud y Carga",
-            "racesNotesTab": "Carreras y Notas",
+            "racesNotesTab": "Notas y chat",
             "trendTab": "Tendencia",
             "athleteProfileTitle": "Perfil del atleta",
             "athleteProfileSubtitle": "Datos fisiologicos y pruebas de referencia",
@@ -412,6 +723,7 @@
                 "elevationProfile": "Perfil de Elevación",
                 "hrPerformance": "Rendimiento de Frecuencia Cardíaca",
                 "liveTracking": "Datos en Tiempo Real",
+                "map": "Mapa",
                 "intensityDistribution": "Distribución de Intensidad",
                 "intervalsAnalysis": "Análisis de Intervalos",
                 "pace": "Ritmo",
@@ -445,6 +757,11 @@
                     "steepUphill": "Subida Pronunciada"
                 },
                 "noSplitData": "No hay datos de splits disponibles"
+            },
+            "map": {
+                "colorBy": "Colorear por",
+                "pace": "Ritmo",
+                "heartRate": "Frecuencia cardíaca"
             },
             "tabs": {
                 "analysis": "Análisis de Vueltas y Splits",
@@ -512,11 +829,13 @@
                 },
                 "metrics": {
                     "pace": "Ritmo",
+                    "gap": "GAP",
                     "heartRate": "Frecuencia Cardíaca",
                     "cadence": "Cadencia",
                     "elevation": "Elevación",
                     "grade": "Pendiente",
-                    "lapBoundaries": "Límites de Vuelta"
+                    "lapBoundaries": "Límites de Vuelta",
+                    "minPerKm": "min/km"
                 }
             },
             "lapFilters": {
@@ -1177,6 +1496,25 @@
         "title": "Configura tu cuenta",
         "subtitle": "Completa tu información personal. Estos datos servirán de base para personalizar tus métricas y planes de entrenamiento.",
         "errorSave": "Ocurrió un error al guardar tu perfil. Intenta de nuevo.",
+        "coach": {
+            "title": "Onboarding de entrenador",
+            "description": "Completá tu perfil de entrenador y vamos a crear plantillas iniciales para tu equipo.",
+            "completionTracker": "Progreso",
+            "saving": "Guardando...",
+            "submit": "Completar onboarding",
+            "errors": {
+                "submitFailed": "No se pudo completar el onboarding. Intenta de nuevo."
+            },
+            "fields": {
+                "bio": "Bio del entrenador",
+                "bioPlaceholder": "Tu experiencia como coach",
+                "bioHelp": "Ayuda a los atletas a entender tu enfoque.",
+                "specialty": "Especialidad",
+                "specialtyPlaceholder": "ej. Maratón, Trail, progresión 10K",
+                "experience": "Experiencia",
+                "experiencePlaceholder": "ej. 8 años, federado"
+            }
+        },
         "sections": {
             "identity": {
                 "tag": "IDENTIDAD",
@@ -1329,7 +1667,29 @@
                 "title": "Frecuencia cardíaca",
                 "description": "Calculadas a partir de tu FC máxima y de reposo."
             },
+            "careerProgress": {
+                "tag": "TRAYECTORIA",
+                "title": "Progreso de Carrera",
+                "description": "Totales del año y de toda tu trayectoria, según Strava."
+            },
+            "notificationSettings": {
+                "tag": "NOTIFICACIONES",
+                "title": "Preferencias de notificación",
+                "description": "Elegí qué eventos te notifican en la app y por push.",
+                "cta": "Administrar notificaciones"
+            },
             "saveHint": "Los cambios se guardan en tu perfil de inmediato."
+        },
+        "careerProgress": {
+            "ytdDistance": "Distancia (Año)",
+            "ytdElevation": "Desnivel (Año)",
+            "ytdRuns": "Carreras (Año)",
+            "units": {
+                "km": "km",
+                "m": "m"
+            },
+            "unavailable": "No hay datos de Strava disponibles todavía.",
+            "staleNotice": "Mostrando datos en caché; no se pudo sincronizar con Strava."
         }
     },
     "calendar": {

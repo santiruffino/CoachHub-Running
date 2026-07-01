@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { CoachSettingsForm } from '@/features/settings/components/CoachSettingsForm';
 import { CoachSettings } from '@/features/settings/types';
+import { normalizeCoachSettings } from '@/lib/settings/defaults';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,26 +29,18 @@ export default async function CoachSettingsPage() {
         redirect('/dashboard');
     }
 
-    // Fetch coach settings
+    // Fetch coach settings (stored as JSONB payloads)
     const { data: settingsData } = await supabase
         .from('coach_settings')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
+        .select('thresholds, default_models, preferences')
+        .eq('coach_id', user.id)
+        .maybeSingle();
 
-    const initialSettings: CoachSettings = settingsData ? {
-        thresholds: {
-            rpeMismatchThreshold: settingsData.rpe_mismatch_threshold,
-            lowComplianceThreshold: settingsData.low_compliance_threshold,
-        },
-        defaultModels: {
-            workoutMatcherModel: settingsData.workout_matcher_model,
-            complianceModel: settingsData.compliance_model,
-        },
-    } : {
-        thresholds: { rpeMismatchThreshold: 2, lowComplianceThreshold: 50 },
-        defaultModels: { workoutMatcherModel: 'baseline-v1', complianceModel: 'baseline-v1' },
-    };
+    const initialSettings: CoachSettings = normalizeCoachSettings({
+        thresholds: settingsData?.thresholds,
+        default_models: settingsData?.default_models,
+        preferences: settingsData?.preferences,
+    });
 
     return (
         <div className="p-4 sm:p-6 lg:p-8">

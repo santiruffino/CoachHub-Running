@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
-import { appLogger } from '@/lib/app-logger';
+import * as Sentry from '@sentry/nextjs';
+import { createRequestLogger } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
 
 interface AthleteGroup {
@@ -13,6 +14,7 @@ interface AthleteGroupMembership {
 }
 
 export async function GET(request: Request) {
+  const { requestId, logger } = createRequestLogger('/api/v2/users/athletes', request);
   try {
     const supabase = await createClient();
     const { searchParams } = new URL(request.url);
@@ -77,10 +79,11 @@ export async function GET(request: Request) {
       query = query.eq('coach_id', user.id);
     }
 
-    const { data: athletes, error } = await query;
+    // Safety cap: guards against an unbounded response for an unusually large team.
+    const { data: athletes, error } = await query.limit(1000);
 
     if (error) {
-      appLogger.error('Failed to fetch athletes:', error);
+      logger.error('Failed to fetch athletes', { error: error });
       return NextResponse.json(apiError('FAILED_TO_FETCH_ATHLETES'),
         { status: 500 }
       );
@@ -98,7 +101,7 @@ export async function GET(request: Request) {
       .in('user_id', athleteIds);
 
     if (assignmentsError) {
-      appLogger.error('Failed to fetch assignments:', assignmentsError);
+      logger.error('Failed to fetch assignments', { error: assignmentsError });
       return NextResponse.json(apiError('FAILED_TO_FETCH_ASSIGNMENTS'),
         { status: 500 }
       );
@@ -171,7 +174,11 @@ export async function GET(request: Request) {
     });
 
     return NextResponse.json(athletesWithData);
-  } catch {
+  } catch (error: unknown) {
+    logger.error('Get athletes error', { error });
+    Sentry.captureException(error, {
+      tags: { route: '/api/v2/users/athletes', requestId },
+    });
     return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
       { status: 500 }
     );

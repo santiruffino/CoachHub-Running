@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
-import { appLogger } from '@/lib/app-logger';
+import { createRequestLogger } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
 import { appendAdminActionLog } from '@/lib/audit/admin-action-log';
 import { z } from 'zod';
 import { updateUserSchema, validateBody } from '@/lib/validation/schemas';
+import { reportApiError } from '@/lib/api/report-error';
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { requestId, logger } = createRequestLogger('/api/v2/users/[id]', request);
   const { user, supabase, profile, response } = await requireRole(['ADMIN', 'COACH']);
   if (response) return response;
 
@@ -86,12 +88,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     return NextResponse.json({ message: 'User updated successfully' });
   } catch (error: unknown) {
-    appLogger.error('PATCH user Error:', error instanceof Error ? error.message : error);
+    reportApiError(error, { route: '/api/v2/users/[id]', method: 'PATCH', requestId, logger });
     return NextResponse.json(apiError('FAILED_TO_UPDATE_USER'), { status: 500 });
   }
 }
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { requestId, logger } = createRequestLogger('/api/v2/users/[id]', _request);
   const { user, supabase, profile, response } = await requireRole(['ADMIN', 'COACH']);
   if (response) return response;
 
@@ -138,7 +141,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     if (deleteError) {
        // If RLS prevents deletion from profiles (it sometimes happens because it's tied to auth.users in a 1:1), 
        // fallback to setting 'coach_id' = null to orphan them if COACH deletes them.
-       appLogger.error("Failed to delete profile, possibly RLS:", deleteError);
+       logger.error('Failed to delete profile, possibly RLS', { error: deleteError });
        throw deleteError;
     }
 
@@ -155,7 +158,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
 
     return NextResponse.json({ message: 'User deleted successfully' });
   } catch (error: unknown) {
-    appLogger.error('DELETE user Error:', error instanceof Error ? error.message : error);
+    reportApiError(error, { route: '/api/v2/users/[id]', method: 'DELETE', requestId, logger });
     return NextResponse.json(apiError('FAILED_TO_DELETE_USER'), { status: 500 });
   }
 }

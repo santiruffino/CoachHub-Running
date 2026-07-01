@@ -13,7 +13,9 @@ import { AthleteWeeklyCalendar } from '@/components/dashboard/AthleteWeeklyCalen
 import { StatCard, DashboardCard, DashboardCardHeaderDots, MonospaceLabel } from '@/components/dashboard';
 import { PerformanceTrendChart } from '@/components/dashboard/PerformanceTrendChart';
 import { LoadMetricsTrendChart } from '@/components/dashboard/LoadMetricsTrendChart';
-import { CoachNotes } from '@/components/dashboard/CoachNotes';
+import { WeeklyLoadChart } from '@/components/dashboard/WeeklyLoadChart';
+import { CareerProgressSummary } from '@/features/profiles/components/CareerProgressSummary';
+import { CoachAthleteChat } from '@/components/dashboard/CoachAthleteChat';
 import { HeartRateZones } from '@/features/profiles/components/HeartRateZones';
 import { PaceZones } from '@/features/profiles/components/PaceZones';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -22,7 +24,7 @@ import { Button } from '@/components/ui/button';
 import { stravaService } from '@/features/strava/services/strava.service';
 import { racesService } from '@/features/races/services/races.service';
 import { AssignRaceModal } from '@/features/races/components/AssignRaceModal';
-import { athletesService, LoadMetricsRange, LoadMetricsResponse } from '@/features/users/services/athletes.service';
+import { athletesService, LoadMetricsRange, LoadMetricsResponse, WeeklyLoadResponse } from '@/features/users/services/athletes.service';
 import { normalizeActivityType } from '@/utils/activity-utils';
 import { NextRaces } from './NextRaces';
 import { NewActivityFeedbackModal } from './NewActivityFeedbackModal';
@@ -34,7 +36,6 @@ import { HeartRateZones as HeartRateZonesType } from '@/interfaces/athlete';
 
 interface AthleteDetails {
     athleteProfile?: {
-        coachNotes?: string;
         hrZones?: HeartRateZonesType;
         vam?: string;
     } | null;
@@ -43,6 +44,32 @@ interface AthleteDetails {
 interface PerformancePoint {
     week: string;
     value: number;
+}
+
+const FEEDBACK_MODAL_SEEN_STORAGE_KEY = 'endurix.dashboard.athlete.feedbackModal.seenActivities';
+
+function readSeenFeedbackActivityIds(): Set<string> {
+    if (typeof window === 'undefined') {
+        return new Set<string>();
+    }
+
+    try {
+        const raw = window.localStorage.getItem(FEEDBACK_MODAL_SEEN_STORAGE_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
+        return new Set(Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === 'string') : []);
+    } catch {
+        return new Set<string>();
+    }
+}
+
+function markFeedbackActivitySeen(activityId: string) {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    const next = readSeenFeedbackActivityIds();
+    next.add(activityId);
+    window.localStorage.setItem(FEEDBACK_MODAL_SEEN_STORAGE_KEY, JSON.stringify(Array.from(next)));
 }
 
 interface AthleteDashboardProps {
@@ -71,6 +98,8 @@ export default function AthleteDashboard({ user, initialData = null }: AthleteDa
     const [loadRange, setLoadRange] = useState<LoadMetricsRange>(30);
     const [loadMetricsLoading, setLoadMetricsLoading] = useState(true);
     const [isSwitchingLoadRange, setIsSwitchingLoadRange] = useState(false);
+    const [weeklyLoadData, setWeeklyLoadData] = useState<WeeklyLoadResponse | null>(null);
+    const [weeklyLoadLoading, setWeeklyLoadLoading] = useState(true);
 
     const calculatePerformanceTrend = useCallback((assignmentsData: TrainingAssignment[], activitiesData: Activity[]) => {
         const trend = [];
@@ -186,39 +215,61 @@ export default function AthleteDashboard({ user, initialData = null }: AthleteDa
     }, [user, loadRange]);
 
     useEffect(() => {
+        if (!user) return;
+        let cancelled = false;
+        const load = async () => {
+            try {
+                setWeeklyLoadLoading(true);
+                const res = await athletesService.getWeeklyLoad(user.id);
+                if (!cancelled) setWeeklyLoadData(res.data);
+            } catch (error) {
+                appLogger.error('Failed to fetch weekly load:', error);
+            } finally {
+                if (!cancelled) setWeeklyLoadLoading(false);
+            }
+        };
+        void load();
+        return () => {
+            cancelled = true;
+        };
+    }, [user]);
+
+    useEffect(() => {
         if (!activities.length) {
             setPendingFeedbackActivity(null);
             setIsFeedbackModalOpen(false);
             return;
         }
 
-        const nextPendingActivity = activities.find((activity) => !activity.hasFeedback) || null;
+        const latestActivity = [...activities].sort(
+            (a, b) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime()
+        )[0] || null;
 
-        if (!nextPendingActivity) {
+        if (!latestActivity || latestActivity.hasFeedback) {
             setPendingFeedbackActivity(null);
             setIsFeedbackModalOpen(false);
             return;
         }
 
-        const dismissedKey = `feedback_modal_dismissed_${nextPendingActivity.id}`;
-        const wasDismissed = sessionStorage.getItem(dismissedKey) === 'true';
+        const seenActivityIds = readSeenFeedbackActivityIds();
+        const activityId = String(latestActivity.id);
 
-        setPendingFeedbackActivity(nextPendingActivity);
-        setIsFeedbackModalOpen(!wasDismissed);
+        if (seenActivityIds.has(activityId)) {
+            setPendingFeedbackActivity(null);
+            setIsFeedbackModalOpen(false);
+            return;
+        }
+
+        setPendingFeedbackActivity(latestActivity);
+        setIsFeedbackModalOpen(true);
+        markFeedbackActivitySeen(activityId);
     }, [activities]);
 
     const handleFeedbackModalOpenChange = (open: boolean) => {
         setIsFeedbackModalOpen(open);
-
-        if (!open && pendingFeedbackActivity) {
-            sessionStorage.setItem(`feedback_modal_dismissed_${pendingFeedbackActivity.id}`, 'true');
-        }
     };
 
     const handleFeedbackSubmitted = () => {
-        if (pendingFeedbackActivity) {
-            sessionStorage.removeItem(`feedback_modal_dismissed_${pendingFeedbackActivity.id}`);
-        }
         void fetchData();
     };
 
@@ -304,6 +355,18 @@ export default function AthleteDashboard({ user, initialData = null }: AthleteDa
         })),
         [loadMetricsData]
     );
+
+    const weeklyLoadChartData = useMemo(
+        () => (weeklyLoadData?.series || []).map((point) => ({
+            weekLabel: format(parseISO(point.weekStart), 'd MMM', { locale: es }),
+            km: point.km,
+            minutes: point.minutes,
+            tss: point.tss,
+        })),
+        [weeklyLoadData]
+    );
+
+    const showWeeklyLoadSkeleton = weeklyLoadLoading && !weeklyLoadData;
 
     const handleLoadRangeChange = (nextRange: LoadMetricsRange) => {
         if (nextRange === loadRange) return;
@@ -416,18 +479,21 @@ export default function AthleteDashboard({ user, initialData = null }: AthleteDa
                     />
                 </div>
 
+                <DashboardCard
+                    headerLabel={t('dashboard.careerProgress.title')}
+                    headerAccessory={<DashboardCardHeaderDots />}
+                >
+                    <CareerProgressSummary athleteId={user.id} />
+                </DashboardCard>
+
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
                     <div className="lg:col-span-7">
                         <DashboardCard
-                            headerLabel="Coach Notes"
+                            headerLabel={t('dashboard.chat.title')}
                             headerAccessory={<DashboardCardHeaderDots />}
                             className="h-full"
                         >
-                            <CoachNotes
-                                athleteId={user.id}
-                                initialNotes={athleteDetails?.athleteProfile?.coachNotes}
-                                readOnly
-                            />
+                            <CoachAthleteChat athleteId={user.id} showHeader={false} />
                         </DashboardCard>
                     </div>
 
@@ -437,7 +503,7 @@ export default function AthleteDashboard({ user, initialData = null }: AthleteDa
                 </div>
 
                 <DashboardCard
-                    headerLabel="Fitness"
+                    headerLabel={t('dashboard.fitness.fitnessCard')}
                     headerAccessory={<DashboardCardHeaderDots />}
                     bodyClassName="p-0"
                 >
@@ -499,7 +565,29 @@ export default function AthleteDashboard({ user, initialData = null }: AthleteDa
                 </DashboardCard>
 
                 <DashboardCard
-                    headerLabel="Performance"
+                    headerLabel={t('dashboard.fitness.weeklyLoadChartTitle')}
+                    headerAccessory={<DashboardCardHeaderDots />}
+                    bodyClassName="p-0"
+                >
+                    <div className="px-6 pt-4">
+                        <MonospaceLabel color="muted" size="sm" className="block mb-1">
+                            {t('dashboard.fitness.weeklyLoadChartSubtitle')}
+                        </MonospaceLabel>
+                    </div>
+                    <div className="px-2 pb-4">
+                        {showWeeklyLoadSkeleton ? (
+                            <Skeleton className="h-72 w-full" />
+                        ) : (
+                            <WeeklyLoadChart data={weeklyLoadChartData} />
+                        )}
+                    </div>
+                    <p className="px-6 pb-4 text-[11px] text-endurix-black/50 dark:text-muted-foreground">
+                        {t('dashboard.fitness.weeklyLoadHrTssNote')}
+                    </p>
+                </DashboardCard>
+
+                <DashboardCard
+                    headerLabel={t('dashboard.performanceTrend.title')}
                     headerAccessory={<DashboardCardHeaderDots />}
                     bodyClassName="p-0"
                 >

@@ -11,7 +11,7 @@ export async function proxy(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith('/api/v2/')) {
     const clientIp = getClientIpFromHeaders(request.headers);
     const key = buildRateLimitKey(request.nextUrl.pathname, clientIp, null);
-    const result = consumeRateLimit({
+    const result = await consumeRateLimit({
       key,
       limit: API_RATE_LIMIT_MAX_REQUESTS,
       windowMs: API_RATE_LIMIT_WINDOW_MS,

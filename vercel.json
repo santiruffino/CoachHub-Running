@@ -1,0 +1,16 @@
+{
+  "crons": [
+    {
+      "path": "/api/health",
+      "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/cron/notifications-digest?window=daily",
+      "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/cron/notifications-digest?window=weekly",
+      "schedule": "0 8 * * 1"
+    }
+  ]
+}

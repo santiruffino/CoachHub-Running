@@ -19,8 +19,6 @@ export const buildNavigation = (t: Translator): NavigationItem[] => [
     { name: t('auditLogs'), href: '/settings/audit-logs', icon: Shield, roles: ['ADMIN'] },
 ];
 
-export function getSettingsPathForRole(role: string | undefined): string {
-    if (role === 'ADMIN') return '/settings/team';
-    if (role === 'COACH') return '/settings/coach';
-    return '/profile';
+export function getSettingsPathForRole(): string {
+    return '/settings';
 }

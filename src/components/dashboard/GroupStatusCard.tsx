@@ -24,8 +24,8 @@ function getStatusConfig(rate: number, t: (key: string, values?: Record<string, 
     } else {
         return {
             label: t('dashboard.groupStatus.critical'),
-            color: 'text-endurix-orange',
-            bgColor: 'bg-endurix-orange',
+            color: 'text-red-600 dark:text-red-500',
+            bgColor: 'bg-red-500',
         };
     }
 }

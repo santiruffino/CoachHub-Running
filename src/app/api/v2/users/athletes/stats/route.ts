@@ -1,9 +1,11 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
-import { appLogger } from '@/lib/app-logger';
+import { createRequestLogger } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
+import { reportApiError } from '@/lib/api/report-error';
 
-export async function GET() {
+export async function GET(request: Request) {
+    const { requestId, logger } = createRequestLogger('/api/v2/users/athletes/stats', request);
     try {
         const supabase = await createClient();
 
@@ -57,7 +59,7 @@ export async function GET() {
             .eq('team_id', profile.team_id);
 
         if (athletesError) {
-            appLogger.error('Failed to fetch athletes:', athletesError);
+            logger.error('Failed to fetch athletes', { error: athletesError });
             return NextResponse.json(apiError('FAILED_TO_FETCH_ATHLETES'),
                 { status: 500 }
             );
@@ -78,7 +80,7 @@ export async function GET() {
             .lte('scheduled_date', weekEnd.toISOString());
 
         if (assignmentsError) {
-            appLogger.error('Failed to fetch assignments:', assignmentsError);
+            logger.error('Failed to fetch assignments', { error: assignmentsError });
             return NextResponse.json(apiError('FAILED_TO_FETCH_ASSIGNMENTS'),
                 { status: 500 }
             );
@@ -115,7 +117,7 @@ export async function GET() {
 
         return NextResponse.json(athletesWithStats);
     } catch (error: unknown) {
-        appLogger.error('Error in athletes/stats route:', error);
+        reportApiError(error, { route: '/api/v2/users/athletes/stats', method: 'GET', requestId, logger });
         return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );

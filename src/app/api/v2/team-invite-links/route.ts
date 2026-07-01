@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { randomBytes } from 'crypto';
 import { requireRole } from '@/lib/supabase/api-helpers';
 import { createServiceRoleClient } from '@/lib/supabase/server';
-import { appLogger } from '@/lib/app-logger';
+import { createRequestLogger } from '@/lib/logger';
 import { trackTeamInviteLinkCreated } from '@/lib/analytics/events';
 import { apiError } from '@/lib/api/error-response';
+import { reportApiError } from '@/lib/api/report-error';
 
 const DEFAULT_TTL_DAYS: number | null = null;
 const DEFAULT_MAX_USES: number | null = null;
@@ -44,6 +45,7 @@ function rowToDto(row: Record<string, unknown>, request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+    const { requestId, logger } = createRequestLogger('/api/v2/team-invite-links', request);
     try {
         const { profile, response } = await requireRole(['COACH', 'ADMIN']);
         if (response) return response;
@@ -60,7 +62,7 @@ export async function GET(request: NextRequest) {
             .order('created_at', { ascending: false });
 
         if (error) {
-            appLogger.error('team_invite_links.list_failed', { error });
+            logger.error('team_invite_links.list_failed', { error: { error } });
             return NextResponse.json(apiError('FAILED_TO_LIST_LINKS'), { status: 500 });
         }
 
@@ -68,12 +70,13 @@ export async function GET(request: NextRequest) {
             items: (data ?? []).map((row) => rowToDto(row, request)),
         });
     } catch (error: unknown) {
-        appLogger.error('team_invite_links.list_unexpected', { error });
+        reportApiError(error, { route: '/api/v2/team-invite-links', method: 'GET', requestId, logger });
         return NextResponse.json(apiError('INTERNAL_ERROR'), { status: 500 });
     }
 }
 
 export async function POST(request: NextRequest) {
+    const { requestId, logger } = createRequestLogger('/api/v2/team-invite-links', request);
     try {
         const { user, profile, response } = await requireRole(['COACH', 'ADMIN']);
         if (response) return response;
@@ -124,7 +127,7 @@ export async function POST(request: NextRequest) {
             .single();
 
         if (error) {
-            appLogger.error('team_invite_links.create_failed', { error });
+            logger.error('team_invite_links.create_failed', { error: { error } });
             return NextResponse.json(apiError('FAILED_TO_CREATE_LINK'), { status: 500 });
         }
 
@@ -136,7 +139,7 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json(rowToDto(data, request), { status: 201 });
     } catch (error: unknown) {
-        appLogger.error('team_invite_links.create_unexpected', { error });
+        reportApiError(error, { route: '/api/v2/team-invite-links', method: 'POST', requestId, logger });
         return NextResponse.json(apiError('INTERNAL_ERROR'), { status: 500 });
     }
 }

@@ -5,6 +5,7 @@ import * as Sentry from '@sentry/nextjs';
 import { createRequestLogger, withRequestId } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
 import { ActivityLoadRow, buildDailyLoadSeries, classifyLoadRisk, estimateLoadFromActivity } from '@/lib/training/load';
+import { normalizeCoachSettings } from '@/lib/settings/defaults';
 import { differenceInCalendarDays, startOfDay } from 'date-fns';
 
 type RangeDays = 7 | 30 | 90;
@@ -230,6 +231,11 @@ export async function GET(
 
     const { supabase, user } = authResult;
     const targetUserId = id;
+    const { data: targetProfile } = await supabase
+      .from('profiles')
+      .select('team_id, coach_id')
+      .eq('id', targetUserId)
+      .single();
 
     if (user!.id !== targetUserId) {
       const { data: profile } = await supabase
@@ -251,6 +257,64 @@ export async function GET(
       } else {
         return respond(apiError('AUTH_FORBIDDEN'), { status: 403 });
       }
+    }
+
+    const { data: currentProfile } = await supabase
+      .from('profiles')
+      .select('role, team_id')
+      .eq('id', user!.id)
+      .single();
+
+    let settingsThresholds = normalizeCoachSettings({}).thresholds;
+
+    if (currentProfile?.role === 'COACH' && currentProfile.team_id) {
+      const { data: coachSettings } = await supabase
+        .from('coach_settings')
+        .select('thresholds, default_models')
+        .eq('coach_id', user!.id)
+        .eq('team_id', currentProfile.team_id)
+        .maybeSingle();
+
+      if (coachSettings) {
+        settingsThresholds = normalizeCoachSettings({
+          thresholds: coachSettings.thresholds,
+          default_models: coachSettings.default_models,
+        }).thresholds;
+      } else {
+        const { data: teamSettings } = await supabase
+          .from('team_settings')
+          .select('thresholds, default_models')
+          .eq('team_id', currentProfile.team_id)
+          .maybeSingle();
+
+        settingsThresholds = normalizeCoachSettings({
+          thresholds: teamSettings?.thresholds,
+          default_models: teamSettings?.default_models,
+        }).thresholds;
+      }
+    } else if (currentProfile?.role === 'ADMIN' && currentProfile.team_id) {
+      const { data: teamSettings } = await supabase
+        .from('team_settings')
+        .select('thresholds, default_models')
+        .eq('team_id', currentProfile.team_id)
+        .maybeSingle();
+
+      settingsThresholds = normalizeCoachSettings({
+        thresholds: teamSettings?.thresholds,
+        default_models: teamSettings?.default_models,
+      }).thresholds;
+    } else if (targetProfile?.coach_id && targetProfile.team_id) {
+      const { data: coachSettings } = await supabase
+        .from('coach_settings')
+        .select('thresholds, default_models')
+        .eq('coach_id', targetProfile.coach_id)
+        .eq('team_id', targetProfile.team_id)
+        .maybeSingle();
+
+      settingsThresholds = normalizeCoachSettings({
+        thresholds: coachSettings?.thresholds,
+        default_models: coachSettings?.default_models,
+      }).thresholds;
     }
 
     const range = parseRange(new URL(request.url).searchParams.get('range'));
@@ -294,7 +358,7 @@ export async function GET(
       },
     });
 
-    const risk = classifyLoadRisk(loadData.current.acwr, loadData.current.tsb);
+    const risk = classifyLoadRisk(loadData.current.acwr, loadData.current.tsb, settingsThresholds);
     const latestJob = jobs?.[0] || null;
     const oldestActivityDate = oldestActivityRows?.[0]?.start_date
       ? startOfDay(new Date(oldestActivityRows[0].start_date))

@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/supabase/api-helpers';
 import { addDays, subDays } from 'date-fns';
-import { appLogger } from '@/lib/app-logger';
 import { apiError } from '@/lib/api/error-response';
+import { reportApiError } from '@/lib/api/report-error';
+import { createRequestLogger } from '@/lib/logger';
 
 interface AssignmentCandidateRow {
     id: string;
@@ -16,8 +17,8 @@ export async function GET(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    const { requestId, logger } = createRequestLogger('/api/v2/activities/[id]/candidates', request);
     try {
-        void request;
         const { id } = await params;
         const activityId = id;
         const authResult = await requireAuth();
@@ -118,7 +119,7 @@ export async function GET(
         return NextResponse.json(candidates);
 
     } catch (error: unknown) {
-        appLogger.error('Get candidate assignments error:', error);
+        reportApiError(error, { route: '/api/v2/activities/[id]/candidates', method: 'GET', requestId, logger });
         return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );

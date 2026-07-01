@@ -83,4 +83,6 @@ export interface SmartAlert {
   reasonCodes: string[];
   fitness?: { ctl: number; tsb: number };
   scope?: 'athlete' | 'group';
+  /** Free-text comment left by the athlete, present on `new_feedback` alerts. */
+  content?: string;
 }

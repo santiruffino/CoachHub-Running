@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
-import { appLogger } from '@/lib/app-logger';
+import { createRequestLogger } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
+import { reportApiError } from '@/lib/api/report-error';
 
 /**
  * Get Strava Connection Status
@@ -11,6 +12,7 @@ import { apiError } from '@/lib/api/error-response';
  * Access: ATHLETE only
  */
 export async function GET(request: NextRequest) {
+    const { requestId, logger } = createRequestLogger('/api/v2/strava/auth/status', request);
     try {
         void request;
         const authResult = await requireRole('ATHLETE');
@@ -29,7 +31,7 @@ export async function GET(request: NextRequest) {
             .single();
 
         if (error && error.code !== 'PGRST116') { // PGRST116 = not found
-            appLogger.error('Fetch Strava connection error:', error);
+            logger.error('Fetch Strava connection error', { error: error });
             return NextResponse.json(apiError('FAILED_TO_FETCH_CONNECTION_STATUS'),
                 { status: 500 }
             );
@@ -56,7 +58,7 @@ export async function GET(request: NextRequest) {
             lastSync: lastSync || connection?.updated_at,
         });
     } catch (error: unknown) {
-        appLogger.error('Get Strava status error:', error);
+        reportApiError(error, { route: '/api/v2/strava/auth/status', method: 'GET', requestId, logger });
         return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );

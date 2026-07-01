@@ -1,132 +1,58 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import { appLogger } from '@/lib/app-logger';
+import { createServiceRoleClient } from '@/lib/supabase/server';
+import { createRequestLogger } from '@/lib/logger';
+import { apiError } from '@/lib/api/error-response';
+import { reportApiError } from '@/lib/api/report-error';
+import { acceptTeamInviteLink } from '@/lib/invitations/accept-team-invite';
 
+/**
+ * Legacy per-email invite acceptance.
+ *
+ * Kept as a thin alias over the same `team_invite_links` data + accept logic
+ * used by `/api/join/[token]/accept` (SAN-59) -- this route only differs in
+ * that the recipient's email isn't supplied by the caller (the legacy signup
+ * form never collected it), so it's resolved from the link record by token
+ * first.
+ */
 export async function POST(request: NextRequest) {
+    const { requestId, logger } = createRequestLogger('/api/auth/accept-invitation', request);
     try {
         const { token, name, password } = await request.json();
 
         if (!token || !name || !password) {
-            return NextResponse.json(
-                { error: 'Missing required fields' },
-                { status: 400 }
-            );
+            return NextResponse.json(apiError('VALIDATION_MISSING_FIELDS', 'Missing required fields'), { status: 400 });
         }
 
-        // Create Supabase admin client (server-side only)
-        const supabase = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SECRET_KEY!, // Secret key for admin operations
-            {
-                auth: {
-                    autoRefreshToken: false,
-                    persistSession: false,
-                },
-            }
-        );
-
-        // Validate invitation token
-        const { data: invitation, error: invitationError } = await supabase
-            .from('invitations')
-            .select('*')
+        const adminClient = createServiceRoleClient();
+        const { data: link, error: linkError } = await adminClient
+            .from('team_invite_links')
+            .select('email')
             .eq('token', token)
-            .eq('accepted', false)
-            .single();
+            .maybeSingle();
 
-        if (invitationError || !invitation) {
-            return NextResponse.json(
-                { error: 'Invalid or expired invitation' },
-                { status: 400 }
-            );
+        if (linkError || !link?.email) {
+            return NextResponse.json(apiError('LINK_NOT_FOUND', 'Invalid or expired invitation'), { status: 404 });
         }
 
-        // Check if invitation is expired
-        if (new Date(invitation.expires_at) < new Date()) {
-            return NextResponse.json(
-                { error: 'Invitation has expired' },
-                { status: 400 }
-            );
-        }
-
-        // Create user in Supabase Auth using admin API
-        const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-            email: invitation.email,
-            password: password,
-            email_confirm: true, // Auto-confirm email for invited users
+        const result = await acceptTeamInviteLink({
+            token,
+            email: link.email.trim().toLowerCase(),
+            name: String(name).trim(),
+            password,
+            logger,
         });
 
-        if (authError || !authData.user) {
-            appLogger.error('Auth error:', authError);
-            return NextResponse.json(
-                { error: 'Failed to create user account' },
-                { status: 500 }
-            );
-        }
-
-        // Determine the role, defaulting to ATHLETE if not specified in old invitations
-        const userRole = invitation.role || 'ATHLETE';
-
-        // Update profile with name, role, and coach/team relationships
-        const { error: profileError } = await supabase
-            .from('profiles')
-            .update({
-                name: name,
-                must_change_password: false, // User already set their own password
-                role: userRole, 
-                coach_id: invitation.coach_id, // Link athlete to coach (null if invited directly by Super Coach or if user is a coach)
-                team_id: invitation.team_id,   // Link user directly to the Running Team
-            })
-            .eq('id', authData.user.id);
-
-        if (profileError) {
-            appLogger.error('Profile update error:', profileError);
-            // User created but profile update failed - still proceed
-        }
-
-        // Mark invitation as accepted
-        const { error: updateError } = await supabase
-            .from('invitations')
-            .update({ accepted: true })
-            .eq('id', invitation.id);
-
-        if (updateError) {
-            appLogger.error('Invitation update error:', updateError);
-        }
-
-        // Create specific profile based on role
-        if (userRole === 'COACH') {
-            const { error: coachProfileError } = await supabase
-                .from('coach_profiles')
-                .insert({
-                    id: authData.user.id,
-                });
-
-            if (coachProfileError && !coachProfileError.message.includes('duplicate')) {
-                appLogger.error('Coach profile creation error:', coachProfileError);
-            }
-        } else {
-            // Default to creating an athlete profile
-            const { error: athleteProfileError } = await supabase
-                .from('athlete_profiles')
-                .insert({
-                    user_id: authData.user.id,
-                });
-
-            if (athleteProfileError && !athleteProfileError.message.includes('duplicate')) {
-                appLogger.error('Athlete profile creation error:', athleteProfileError);
-            }
+        if (!result.ok) {
+            return NextResponse.json(apiError(result.code, result.message), { status: result.status });
         }
 
         return NextResponse.json({
             success: true,
             message: 'Account created successfully',
-            email: invitation.email,
+            email: result.email,
         });
     } catch (error: unknown) {
-        appLogger.error('Accept invitation error:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
-            { status: 500 }
-        );
+        reportApiError(error, { route: '/api/auth/accept-invitation', method: 'POST', requestId, logger });
+        return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'), { status: 500 });
     }
 }

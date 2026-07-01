@@ -1,17 +1,10 @@
-type RateLimitRecord = {
-  count: number;
-  resetAt: number;
-};
-
-type RateLimitBucket = {
-  map: Map<string, RateLimitRecord>;
-};
+import { createServiceRoleClient } from '@/lib/supabase/server';
+import { appLogger } from '@/lib/app-logger';
 
 type RateLimitOptions = {
   key: string;
   limit: number;
   windowMs: number;
-  now?: number;
 };
 
 type RateLimitResult = {
@@ -22,50 +15,51 @@ type RateLimitResult = {
   retryAfterSeconds: number;
 };
 
-declare global {
-  var __endurixRateLimitStore: RateLimitBucket | undefined;
+interface ConsumeRateLimitRow {
+  allowed: boolean;
+  limit_value: number;
+  remaining: number;
+  reset_at: string;
+  retry_after_seconds: number;
 }
 
-function getStore(): RateLimitBucket {
-  if (!globalThis.__endurixRateLimitStore) {
-    globalThis.__endurixRateLimitStore = {
-      map: new Map<string, RateLimitRecord>(),
-    };
-  }
+/**
+ * Shared, cross-instance rate limiter backed by the `rate_limit_buckets`
+ * table + `consume_rate_limit` RPC (see migration 20260627010000).
+ *
+ * Fails open on infrastructure errors (DB unreachable, etc.) so an outage
+ * in the rate-limit store never blocks legitimate traffic; the error is
+ * still logged so it's visible.
+ */
+export async function consumeRateLimit(options: RateLimitOptions): Promise<RateLimitResult> {
+  const supabase = createServiceRoleClient();
 
-  return globalThis.__endurixRateLimitStore;
-}
+  const { data, error } = await supabase
+    .rpc('consume_rate_limit', {
+      p_key: options.key,
+      p_limit: options.limit,
+      p_window_ms: options.windowMs,
+    })
+    .single<ConsumeRateLimitRow>();
 
-export function consumeRateLimit(options: RateLimitOptions): RateLimitResult {
-  const now = options.now ?? Date.now();
-  const store = getStore();
-  const existing = store.map.get(options.key);
-
-  if (!existing || existing.resetAt <= now) {
-    const resetAt = now + options.windowMs;
-    store.map.set(options.key, { count: 1, resetAt });
-
+  if (error || !data) {
+    appLogger.error('rate_limit.store_unavailable', { error, key: options.key });
+    const resetAt = Date.now() + options.windowMs;
     return {
       allowed: true,
       limit: options.limit,
-      remaining: Math.max(0, options.limit - 1),
+      remaining: options.limit,
       resetAt,
       retryAfterSeconds: Math.max(1, Math.ceil(options.windowMs / 1000)),
     };
   }
 
-  existing.count += 1;
-  store.map.set(options.key, existing);
-
-  const remaining = Math.max(0, options.limit - existing.count);
-  const retryAfterSeconds = Math.max(1, Math.ceil((existing.resetAt - now) / 1000));
-
   return {
-    allowed: existing.count <= options.limit,
-    limit: options.limit,
-    remaining,
-    resetAt: existing.resetAt,
-    retryAfterSeconds,
+    allowed: data.allowed,
+    limit: data.limit_value,
+    remaining: data.remaining,
+    resetAt: new Date(data.reset_at).getTime(),
+    retryAfterSeconds: data.retry_after_seconds,
   };
 }
 

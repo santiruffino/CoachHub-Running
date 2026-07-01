@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { randomBytes } from 'crypto';
 import { requireRole } from '@/lib/supabase/api-helpers';
 import { createServiceRoleClient } from '@/lib/supabase/server';
-import { appLogger } from '@/lib/app-logger';
+import { createRequestLogger } from '@/lib/logger';
 import { trackTeamInviteLinkRotated } from '@/lib/analytics/events';
 import { apiError } from '@/lib/api/error-response';
+import { reportApiError } from '@/lib/api/report-error';
 
 function buildLinkUrl(token: string): string {
     const appUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://endurix.app';
@@ -38,6 +39,7 @@ export async function POST(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    const { requestId, logger } = createRequestLogger('/api/v2/team-invite-links/[id]/rotate', request);
     try {
         const { user, profile, response } = await requireRole(['COACH', 'ADMIN']);
         if (response) return response;
@@ -70,7 +72,7 @@ export async function POST(
             .eq('id', existing.id);
 
         if (deactivateError) {
-            appLogger.error('team_invite_links.rotate.deactivate_failed', { deactivateError });
+            logger.error('team_invite_links.rotate.deactivate_failed', { error: { deactivateError } });
             return NextResponse.json(apiError('FAILED_TO_ROTATE_LINK'), { status: 500 });
         }
 
@@ -92,7 +94,7 @@ export async function POST(
             .single();
 
         if (createError || !created) {
-            appLogger.error('team_invite_links.rotate.create_failed', { createError });
+            logger.error('team_invite_links.rotate.create_failed', { error: { createError } });
             return NextResponse.json(apiError('FAILED_TO_ROTATE_LINK'), { status: 500 });
         }
 
@@ -100,7 +102,7 @@ export async function POST(
 
         return NextResponse.json(rowToDto(created, request), { status: 201 });
     } catch (error: unknown) {
-        appLogger.error('team_invite_links.rotate_unexpected', { error });
+        reportApiError(error, { route: '/api/v2/team-invite-links/[id]/rotate', method: 'POST', requestId, logger });
         return NextResponse.json(apiError('INTERNAL_ERROR'), { status: 500 });
     }
 }

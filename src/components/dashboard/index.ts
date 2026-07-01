@@ -17,6 +17,9 @@ export { GroupStatusCard } from './GroupStatusCard';
 export { AthleteWeeklyCalendar } from './AthleteWeeklyCalendar';
 export { PerformanceTrendChart } from './PerformanceTrendChart';
 export { LoadMetricsTrendChart } from './LoadMetricsTrendChart';
+export { WeeklyLoadChart } from './WeeklyLoadChart';
+export type { WeeklyLoadChartPoint } from './WeeklyLoadChart';
+export { ConversationList } from './ConversationList';
 export {
     StatCardSkeleton,
     SectionHeaderSkeleton,

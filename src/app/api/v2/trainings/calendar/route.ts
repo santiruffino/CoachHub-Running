@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
-import { appLogger } from '@/lib/app-logger';
+import { createRequestLogger } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
+import { reportApiError } from '@/lib/api/report-error';
 
 interface AssignmentWithGroup {
     user_id: string;
@@ -29,6 +30,7 @@ interface AssignmentWithGroup {
  * Access: COACH only
  */
 export async function GET(request: NextRequest) {
+    const { requestId, logger } = createRequestLogger('/api/v2/trainings/calendar', request);
     try {
         const { user, supabase, profile, response } = await requireRole(['COACH', 'ADMIN']);
 
@@ -37,10 +39,10 @@ export async function GET(request: NextRequest) {
         }
 
         if (!profile?.team_id) {
-            appLogger.warn('[TRAININGS_CALENDAR] Missing team_id for coach/admin', {
+            logger.warn('[TRAININGS_CALENDAR] Missing team_id for coach/admin', { error: {
                 userId: user!.id,
                 role: profile?.role,
-            });
+            } });
             return NextResponse.json(apiError('AUTH_FORBIDDEN'),
                 { status: 403 }
             );
@@ -151,7 +153,7 @@ export async function GET(request: NextRequest) {
         const { data: assignments, error } = await query;
 
         if (error) {
-            appLogger.error('Fetch calendar assignments error:', error);
+            logger.error('Fetch calendar assignments error', { error: error });
             return NextResponse.json(apiError('FAILED_TO_FETCH_ASSIGNMENTS'),
                 { status: 500 }
             );
@@ -187,7 +189,7 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json(resolvedAssignments);
     } catch (error: unknown) {
-        appLogger.error('Get calendar assignments error:', error);
+        reportApiError(error, { route: '/api/v2/trainings/calendar', method: 'GET', requestId, logger });
         return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );

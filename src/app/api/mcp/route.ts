@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/supabase/api-helpers";
 import { buildRateLimitKey, consumeRateLimit, getClientIpFromHeaders } from "@/lib/api/rate-limit";
 import { apiError } from "@/lib/api/error-response";
+import { createRequestLogger } from "@/lib/logger";
 
 export const dynamic = 'force-dynamic';
 
@@ -39,7 +40,7 @@ async function checkAuthAndRateLimit(request: NextRequest) {
   const clientIp = getClientIpFromHeaders(request.headers);
   const userId = authResult.user!.id;
   const rateLimitKey = buildRateLimitKey('/api/mcp', clientIp, userId);
-  const rateLimit = consumeRateLimit({
+  const rateLimit = await consumeRateLimit({
     key: rateLimitKey,
     limit: MCP_RATE_LIMIT_MAX_REQUESTS,
     windowMs: MCP_RATE_LIMIT_WINDOW_MS,
@@ -65,31 +66,37 @@ async function checkAuthAndRateLimit(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+  const { logger } = createRequestLogger('/api/mcp', request);
   const check = await checkAuthAndRateLimit(request);
   if (check.response) {
     return check.response;
   }
 
+  logger.info('mcp.request', { method: 'GET', userId: check.userId });
   const t = await getTransport();
   return await t.handleRequest(request);
 }
 
 export async function POST(request: NextRequest) {
+  const { logger } = createRequestLogger('/api/mcp', request);
   const check = await checkAuthAndRateLimit(request);
   if (check.response) {
     return check.response;
   }
 
+  logger.info('mcp.request', { method: 'POST', userId: check.userId });
   const t = await getTransport();
   return await t.handleRequest(request);
 }
 
 export async function DELETE(request: NextRequest) {
+  const { logger } = createRequestLogger('/api/mcp', request);
   const check = await checkAuthAndRateLimit(request);
   if (check.response) {
     return check.response;
   }
 
+  logger.info('mcp.request', { method: 'DELETE', userId: check.userId });
   const t = await getTransport();
   return await t.handleRequest(request);
 }

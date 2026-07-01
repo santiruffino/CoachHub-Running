@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
-import { appLogger } from '@/lib/app-logger';
+import * as Sentry from '@sentry/nextjs';
+import { createRequestLogger } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
 import { verifySignedStravaOauthState } from '@/lib/strava/oauth-state';
 
@@ -30,6 +31,7 @@ interface StravaTokenResponse {
  * Access: ATHLETE only
  */
 export async function POST(request: NextRequest) {
+    const { requestId, logger } = createRequestLogger('/api/v2/strava/auth/exchange', request);
     try {
         const authResult = await requireRole('ATHLETE');
 
@@ -61,7 +63,7 @@ export async function POST(request: NextRequest) {
         });
 
         if (!state || !verification.isValid) {
-            appLogger.warn('strava_oauth.invalid_state', { reason: verification.reason, userId: user!.id });
+            logger.warn('strava_oauth.invalid_state', { reason: verification.reason, userId: user!.id });
             return NextResponse.json(apiError('VALIDATION_INVALID_OAUTH_STATE'),
                 { status: 400 }
             );
@@ -92,7 +94,7 @@ export async function POST(request: NextRequest) {
 
         if (!tokenResponse.ok) {
             const error = await tokenResponse.json();
-            appLogger.error('Strava token exchange error:', error);
+            logger.error('Strava token exchange error', { error: error });
             return NextResponse.json(apiError('VALIDATION_FAILED_TO_EXCHANGE_AUTHORIZATION_CODE'),
                 { status: 400 }
             );
@@ -116,7 +118,7 @@ export async function POST(request: NextRequest) {
             });
 
         if (upsertError) {
-            appLogger.error('Failed to store Strava connection:', upsertError);
+            logger.error('Failed to store Strava connection', { error: upsertError });
             return NextResponse.json(apiError('FAILED_TO_SAVE_CONNECTION'),
                 { status: 500 }
             );
@@ -134,28 +136,59 @@ export async function POST(request: NextRequest) {
         if (zonesResult.success) {
             // Zones synced successfully
         } else {
-            appLogger.warn('Failed to sync heart rate zones:', zonesResult.error);
+            logger.warn('Failed to sync heart rate zones', { error: zonesResult.error });
             // Don't fail the connection if zones sync fails
         }
+
+        const logInitialSyncResult = async (
+            status: 'SUCCESS' | 'FAILED',
+            message: string,
+            itemsProcessed?: number
+        ) => {
+            const { error } = await supabase.from('sync_logs').insert({
+                user_id: user!.id,
+                status,
+                message,
+                items_processed: itemsProcessed,
+                completed_at: new Date().toISOString(),
+            });
+
+            if (error) {
+                logger.warn('Failed to record initial Strava sync log', {
+                    userId: user!.id,
+                    status,
+                    error,
+                });
+            }
+        };
 
         // Trigger 90-day historical activity sync (non-blocking)
         // This runs in the background so the response returns immediately
         const { syncStravaActivities } = await import('@/lib/strava/sync-activities');
         syncStravaActivities(supabase, user!.id, tokenData.access_token, { days: 90 })
             .then((result) => {
-                appLogger.info('Initial 90-day Strava sync completed', {
+                logger.info('Initial 90-day Strava sync completed', {
                     userId: user!.id,
                     inserted: result.inserted,
                     updated: result.updated,
                     total: result.total,
                     pages: result.pages,
                 });
+                return logInitialSyncResult(
+                    'SUCCESS',
+                    `Initial sync: ${result.inserted} new activities, updated ${result.updated} existing (last 90 days)`,
+                    result.total
+                );
             })
             .catch((err) => {
-                appLogger.error('Initial 90-day Strava sync failed', {
+                logger.error('Initial 90-day Strava sync failed', {
                     userId: user!.id,
                     error: err instanceof Error ? err.message : err,
                 });
+                return logInitialSyncResult(
+                    'FAILED',
+                    err instanceof Error ? err.message : 'Initial 90-day sync failed'
+                );
             });
 
         const response = NextResponse.json({
@@ -178,7 +211,10 @@ export async function POST(request: NextRequest) {
 
         return response;
     } catch (error: unknown) {
-        appLogger.error('Exchange Strava code error:', error);
+        logger.error('Exchange Strava code error', { error });
+        Sentry.captureException(error, {
+            tags: { route: '/api/v2/strava/auth/exchange', requestId },
+        });
         return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );

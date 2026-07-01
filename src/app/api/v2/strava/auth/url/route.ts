@@ -1,17 +1,19 @@
 import { NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
-import { appLogger } from '@/lib/app-logger';
 import { apiError } from '@/lib/api/error-response';
 import { createSignedStravaOauthState } from '@/lib/strava/oauth-state';
+import { reportApiError } from '@/lib/api/report-error';
+import { createRequestLogger } from '@/lib/logger';
 
 /**
  * Get Strava OAuth Authorization URL
- * 
+ *
  * Returns the URL to redirect the user to for Strava OAuth.
- * 
+ *
  * Access: ATHLETE only
  */
-export async function GET() {
+export async function GET(request: Request) {
+    const { requestId, logger } = createRequestLogger('/api/v2/strava/auth/url', request);
     try {
         const authResult = await requireRole('ATHLETE');
 
@@ -58,7 +60,7 @@ export async function GET() {
 
         return response;
     } catch (error: unknown) {
-        appLogger.error('Get Strava auth URL error:', error);
+        reportApiError(error, { route: '/api/v2/strava/auth/url', method: 'GET', requestId, logger });
         return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'),
             { status: 500 }
         );
