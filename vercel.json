@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/health",
-      "schedule": "*/15 * * * *"
+      "schedule": "0 0 * * *"
     },
     {
       "path": "/api/cron/notifications-digest?window=daily",
@@ -18,7 +18,7 @@
     },
     {
       "path": "/api/cron/strava-backfill",
-      "schedule": "*/5 * * * *"
+      "schedule": "0 10 * * *"
     }
   ]
 }
