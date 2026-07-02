@@ -4,6 +4,7 @@ import * as Sentry from '@sentry/nextjs';
 import { createRequestLogger } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
 import { verifySignedStravaOauthState } from '@/lib/strava/oauth-state';
+import { enqueueStravaBackfillJob } from '@/lib/strava/backfill-jobs';
 
 interface ExchangeRequestBody {
     code?: string;
@@ -140,62 +141,21 @@ export async function POST(request: NextRequest) {
             // Don't fail the connection if zones sync fails
         }
 
-        const logInitialSyncResult = async (
-            status: 'SUCCESS' | 'FAILED',
-            message: string,
-            itemsProcessed?: number
-        ) => {
-            const { error } = await supabase.from('sync_logs').insert({
-                user_id: user!.id,
-                status,
-                message,
-                items_processed: itemsProcessed,
-                completed_at: new Date().toISOString(),
-            });
-
-            if (error) {
-                logger.warn('Failed to record initial Strava sync log', {
-                    userId: user!.id,
-                    status,
-                    error,
-                });
-            }
-        };
-
-        // Trigger 90-day historical activity sync (non-blocking)
-        // This runs in the background so the response returns immediately
-        const { syncStravaActivities } = await import('@/lib/strava/sync-activities');
-        syncStravaActivities(supabase, user!.id, tokenData.access_token, { days: 90 })
-            .then((result) => {
-                logger.info('Initial 90-day Strava sync completed', {
-                    userId: user!.id,
-                    inserted: result.inserted,
-                    updated: result.updated,
-                    total: result.total,
-                    pages: result.pages,
-                });
-                return logInitialSyncResult(
-                    'SUCCESS',
-                    `Initial sync: ${result.inserted} new activities, updated ${result.updated} existing (last 90 days)`,
-                    result.total
-                );
-            })
-            .catch((err) => {
-                logger.error('Initial 90-day Strava sync failed', {
-                    userId: user!.id,
-                    error: err instanceof Error ? err.message : err,
-                });
-                return logInitialSyncResult(
-                    'FAILED',
-                    err instanceof Error ? err.message : 'Initial 90-day sync failed'
-                );
-            });
+        // Enqueue the initial 90-day historical sync; the cron worker
+        // (/api/cron/strava-backfill) picks it up. This replaces the old
+        // fire-and-forget syncStravaActivities call, which could be killed
+        // mid-flight if the serverless function froze after responding.
+        const { queued: backfillQueued } = await enqueueStravaBackfillJob(supabase, {
+            userId: user!.id,
+            requestedBy: user!.id,
+            windowDays: 90,
+        });
 
         const response = NextResponse.json({
             success: true,
             athleteName: tokenData.athlete.username || tokenData.athlete.firstname,
             message: 'Successfully connected to Strava',
-            shouldSync: true, // Indicate that frontend can trigger initial sync
+            backfillQueued,
             zonesSynced: zonesResult.success,
         });
 

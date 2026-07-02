@@ -1,17 +1,22 @@
 import api from '@/lib/axios';
 
+export type StravaBackfillStatus = 'idle' | 'queued' | 'running' | 'success' | 'failed';
+
 export interface StravaConnectionStatus {
     isConnected: boolean;
     athleteId?: string;
     athleteName?: string;
     lastSync?: string;
+    backfillStatus?: StravaBackfillStatus;
+    backfillActivitiesProcessed?: number | null;
+    backfillError?: string | null;
 }
 
 export interface StravaExchangeResponse {
     success: boolean;
     athleteName?: string;
     message: string;
-    shouldSync: boolean;
+    backfillQueued: boolean;
     zonesSynced: boolean;
 }
 

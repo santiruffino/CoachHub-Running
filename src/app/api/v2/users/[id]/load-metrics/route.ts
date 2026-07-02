@@ -4,212 +4,17 @@ import { createServiceRoleClient } from '@/lib/supabase/server';
 import * as Sentry from '@sentry/nextjs';
 import { createRequestLogger, withRequestId } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
-import { ActivityLoadRow, buildDailyLoadSeries, classifyLoadRisk, estimateLoadFromActivity } from '@/lib/training/load';
+import { ActivityLoadRow, buildDailyLoadSeries, classifyLoadRisk } from '@/lib/training/load';
 import { normalizeCoachSettings } from '@/lib/settings/defaults';
+import { enqueueStravaBackfillJob } from '@/lib/strava/backfill-jobs';
 import { differenceInCalendarDays, startOfDay } from 'date-fns';
 
 type RangeDays = 7 | 30 | 90;
-
-type StravaConnectionRow = {
-  user_id: string;
-  access_token: string;
-  refresh_token: string;
-  expires_at: number;
-};
-
-type StravaTokenResponse = {
-  access_token: string;
-  refresh_token: string;
-  expires_at: number;
-};
-
-type StravaActivity = {
-  id: number;
-  name: string;
-  type: string;
-  distance: number;
-  moving_time: number;
-  elapsed_time: number;
-  start_date: string;
-  total_elevation_gain: number;
-  average_speed?: number | null;
-  max_speed?: number | null;
-  average_heartrate?: number | null;
-  max_heartrate?: number | null;
-  suffer_score?: number | null;
-  private?: boolean;
-};
-
-type ActivityUpsertRow = {
-  user_id: string;
-  external_id: string;
-  title: string;
-  type: string;
-  distance: number;
-  duration: number;
-  start_date: string;
-  elapsed_time: number;
-  elevation_gain: number;
-  average_speed: number;
-  max_speed: number;
-  avg_hr: number | null;
-  max_hr: number | null;
-  suffer_score: number | null;
-  load_score: number;
-  is_private: boolean;
-  metadata: StravaActivity;
-  updated_at: string;
-};
 
 function parseRange(raw: string | null): RangeDays {
   if (raw === '7') return 7;
   if (raw === '90') return 90;
   return 30;
-}
-
-function chunkArray<T>(items: T[], chunkSize: number): T[][] {
-  if (items.length === 0) return [];
-  const chunks: T[][] = [];
-  for (let index = 0; index < items.length; index += chunkSize) {
-    chunks.push(items.slice(index, index + chunkSize));
-  }
-  return chunks;
-}
-
-async function runBackfillJob(jobId: string, targetUserId: string) {
-  const serviceSupabase = createServiceRoleClient();
-
-  try {
-    await serviceSupabase
-      .from('activity_backfill_jobs')
-      .update({ status: 'running', started_at: new Date().toISOString(), updated_at: new Date().toISOString() })
-      .eq('id', jobId);
-
-    const { data: connection, error: connError } = await serviceSupabase
-      .from('strava_connections')
-      .select('user_id, access_token, refresh_token, expires_at')
-      .eq('user_id', targetUserId)
-      .single();
-
-    if (connError || !connection) {
-      throw new Error('STRAVA_NOT_CONNECTED');
-    }
-
-    let accessToken = (connection as StravaConnectionRow).access_token;
-    const now = Math.floor(Date.now() / 1000);
-
-    if ((connection as StravaConnectionRow).expires_at <= now + 60) {
-      const refreshResponse = await fetch('https://www.strava.com/oauth/token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          client_id: process.env.STRAVA_CLIENT_ID,
-          client_secret: process.env.STRAVA_CLIENT_SECRET,
-          refresh_token: (connection as StravaConnectionRow).refresh_token,
-          grant_type: 'refresh_token',
-        }),
-      });
-
-      if (!refreshResponse.ok) {
-        throw new Error('FAILED_TO_REFRESH_STRAVA_TOKEN');
-      }
-
-      const tokenData = (await refreshResponse.json()) as StravaTokenResponse;
-      accessToken = tokenData.access_token;
-
-      await serviceSupabase
-        .from('strava_connections')
-        .update({
-          access_token: tokenData.access_token,
-          refresh_token: tokenData.refresh_token,
-          expires_at: tokenData.expires_at,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('user_id', targetUserId);
-    }
-
-    const afterTs = Math.floor((Date.now() - 90 * 24 * 60 * 60 * 1000) / 1000);
-    const dedupedActivities = new Map<string, StravaActivity>();
-
-    for (let page = 1; page <= 5; page++) {
-      const url = `https://www.strava.com/api/v3/athlete/activities?per_page=200&page=${page}&after=${afterTs}`;
-      const activitiesResponse = await fetch(url, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-
-      if (!activitiesResponse.ok) {
-        throw new Error(`FAILED_TO_FETCH_ACTIVITIES_FROM_STRAVA:${activitiesResponse.status}`);
-      }
-
-      const pageActivities = (await activitiesResponse.json()) as StravaActivity[];
-      for (const activity of pageActivities) {
-        dedupedActivities.set(activity.id.toString(), activity);
-      }
-
-      if (pageActivities.length < 200) break;
-    }
-
-    const upsertRows: ActivityUpsertRow[] = Array.from(dedupedActivities.values()).map((activity) => {
-      const sufferScore = typeof activity.suffer_score === 'number' ? activity.suffer_score : null;
-      const loadScore = estimateLoadFromActivity({
-        start_date: activity.start_date,
-        load_score: null,
-        suffer_score: sufferScore,
-        duration: activity.moving_time || activity.elapsed_time || 0,
-        avg_hr: activity.average_heartrate || null,
-        max_hr: activity.max_heartrate || null,
-      });
-
-      return {
-        user_id: targetUserId,
-        external_id: activity.id.toString(),
-        title: activity.name,
-        type: activity.type,
-        distance: activity.distance || 0,
-        duration: activity.moving_time || activity.elapsed_time || 0,
-        start_date: activity.start_date,
-        elapsed_time: activity.elapsed_time || 0,
-        elevation_gain: activity.total_elevation_gain || 0,
-        average_speed: activity.average_speed || 0,
-        max_speed: activity.max_speed || 0,
-        avg_hr: activity.average_heartrate || null,
-        max_hr: activity.max_heartrate || null,
-        suffer_score: sufferScore,
-        load_score: loadScore,
-        is_private: activity.private || false,
-        metadata: activity,
-        updated_at: new Date().toISOString(),
-      };
-    });
-
-    for (const batch of chunkArray(upsertRows, 100)) {
-      const { error: upsertError } = await serviceSupabase
-        .from('activities')
-        .upsert(batch, { onConflict: 'user_id,external_id' });
-
-      if (upsertError) throw upsertError;
-    }
-
-    await serviceSupabase
-      .from('activity_backfill_jobs')
-      .update({
-        status: 'success',
-        activities_processed: upsertRows.length,
-        finished_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', jobId);
-  } catch (error) {
-    await serviceSupabase
-      .from('activity_backfill_jobs')
-      .update({
-        status: 'failed',
-        error: error instanceof Error ? error.message : 'BACKFILL_FAILED',
-        finished_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', jobId);
-  }
 }
 
 export async function GET(
@@ -372,23 +177,16 @@ export async function GET(
     const partial = !hasEnoughHistory;
 
     if (!hasEnoughHistory && (!latestJob || !['queued', 'running'].includes(latestJob.status))) {
-      const { data: insertedJob, error: insertError } = await serviceSupabase
-        .from('activity_backfill_jobs')
-        .insert({
-          user_id: targetUserId,
-          requested_by: user!.id,
-          status: 'queued',
-          window_days: 90,
-          updated_at: new Date().toISOString(),
-        })
-        .select('id')
-        .single();
+      // The /api/cron/strava-backfill worker claims and processes this job
+      // on its next tick — no work runs inline within this GET request.
+      const { queued } = await enqueueStravaBackfillJob(serviceSupabase, {
+        userId: targetUserId,
+        requestedBy: user!.id,
+        windowDays: 90,
+      });
 
-      if (!insertError && insertedJob?.id) {
+      if (queued) {
         backfillStatus = 'queued';
-        queueMicrotask(() => {
-          void runBackfillJob(insertedJob.id, targetUserId);
-        });
       }
     }
 

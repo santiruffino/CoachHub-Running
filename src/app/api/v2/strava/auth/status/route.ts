@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 import { createRequestLogger } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
 import { reportApiError } from '@/lib/api/report-error';
@@ -52,10 +53,29 @@ export async function GET(request: NextRequest) {
             lastSync = lastActivity?.created_at;
         }
 
+        // activity_backfill_jobs only has a service-role RLS policy, so this
+        // query needs the service-role client even though the rest of this
+        // route uses the caller's authenticated client.
+        let latestJob: { status: string; activities_processed: number | null; error: string | null } | null = null;
+        if (connection) {
+            const serviceSupabase = createServiceRoleClient();
+            const { data } = await serviceSupabase
+                .from('activity_backfill_jobs')
+                .select('status, activities_processed, error')
+                .eq('user_id', user!.id)
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+            latestJob = data;
+        }
+
         return NextResponse.json({
             isConnected: !!connection,
             athleteId: connection?.strava_athlete_id,
             lastSync: lastSync || connection?.updated_at,
+            backfillStatus: latestJob?.status ?? 'idle',
+            backfillActivitiesProcessed: latestJob?.activities_processed ?? null,
+            backfillError: latestJob?.error ?? null,
         });
     } catch (error: unknown) {
         reportApiError(error, { route: '/api/v2/strava/auth/status', method: 'GET', requestId, logger });

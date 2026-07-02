@@ -98,7 +98,21 @@ export function StravaStatusCard({ status, loading, onConnect, onDisconnect, onR
                             </div>
                         )}
                     </div>
-                ) : (
+                ) : null}
+
+                {(status.backfillStatus === 'queued' || status.backfillStatus === 'running') && (
+                    <CardDescription className="flex items-center gap-2">
+                        <RefreshCw className="h-3.5 w-3.5 animate-spin shrink-0" />
+                        {t('backfillInProgress')}
+                    </CardDescription>
+                )}
+                {status.backfillStatus === 'failed' && (
+                    <CardDescription className="text-red-600 dark:text-red-400">
+                        {t('backfillFailed')}
+                    </CardDescription>
+                )}
+
+                {!status.isConnected && (
                     <ConnectStravaButton onConnect={onConnect} loading={loading} />
                 )}
             </CardContent>

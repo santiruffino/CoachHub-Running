@@ -1,5 +1,7 @@
+import { Toaster } from 'sonner';
 import { Navbar } from '@/components/layout/Navbar';
 import { BottomNav } from '@/components/layout/BottomNav';
+import { NotificationToastListener } from '@/features/notifications/components/NotificationToastListener';
 
 export default async function DashboardLayout({
     children,
@@ -13,6 +15,8 @@ export default async function DashboardLayout({
                 {children}
             </main>
             <BottomNav />
+            <NotificationToastListener />
+            <Toaster position="top-right" richColors />
         </div>
     );
 }

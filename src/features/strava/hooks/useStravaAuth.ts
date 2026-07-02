@@ -36,6 +36,17 @@ export function useStravaAuth(options?: { enabled?: boolean }) {
         }
     }, [fetchStatus, enabled]);
 
+    useEffect(() => {
+        if (!enabled) return;
+        if (status?.backfillStatus !== 'queued' && status?.backfillStatus !== 'running') return;
+
+        const interval = setInterval(() => {
+            fetchStatus();
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, [enabled, status?.backfillStatus, fetchStatus]);
+
     const connect = useCallback(async () => {
         try {
             setLoading(true);
@@ -67,15 +78,11 @@ export function useStravaAuth(options?: { enabled?: boolean }) {
     const handleCallback = useCallback(async (code: string) => {
         try {
             setLoading(true);
+            // The backend enqueues the initial 90-day backfill job as part of
+            // exchange; the /api/cron/strava-backfill worker processes it, so
+            // there's no separate sync call to make here.
             await stravaService.exchangeCode(code);
-            // Trigger initial sync for immediate feedback (non-blocking with exchange)
-            try {
-                await stravaService.sync(90);
-                await fetchStatus();
-            } catch (syncErr) {
-                appLogger.error('Initial sync after exchange failed', syncErr);
-                // Don't fail the connection if initial sync fails
-            }
+            await fetchStatus();
             router.push('/profile'); // Redirect back to profile page
         } catch (err: unknown) {
             appLogger.error(err);

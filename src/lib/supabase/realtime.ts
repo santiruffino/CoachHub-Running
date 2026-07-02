@@ -1,8 +1,9 @@
 import { createClient } from '@/lib/supabase/client';
 import { appLogger } from '@/lib/app-logger';
+import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 type PostgresChangesFilter = {
-  event: '*';
+  event: '*' | 'INSERT' | 'UPDATE' | 'DELETE';
   schema: string;
   table: string;
   filter?: string;
@@ -17,10 +18,10 @@ type PostgresChangesFilter = {
  *
  * Returns a cleanup function safe to call unconditionally on unmount.
  */
-export function subscribeToTableChanges(
+export function subscribeToTableChanges<T extends object = Record<string, unknown>>(
   channelName: string,
   filter: PostgresChangesFilter,
-  onChange: () => void
+  onChange: (payload: RealtimePostgresChangesPayload<T>) => void
 ): () => void {
   if (typeof window === 'undefined' || typeof WebSocket === 'undefined') {
     return () => {};
@@ -28,10 +29,19 @@ export function subscribeToTableChanges(
 
   try {
     const supabase = createClient();
-    const channel = supabase
-      .channel(channelName)
-      .on('postgres_changes', filter, onChange)
-      .subscribe();
+    // The generated `.on()` overloads key off a literal `event` value, which
+    // doesn't resolve when this wrapper accepts a union of event types — cast
+    // the channel at this single boundary (keeping normal method-call syntax
+    // so `this` binding is preserved) so callers keep full type safety.
+    const rawChannel = supabase.channel(channelName);
+    const typedChannel = rawChannel as unknown as {
+      on: (
+        type: 'postgres_changes',
+        filter: PostgresChangesFilter,
+        callback: (payload: RealtimePostgresChangesPayload<T>) => void
+      ) => RealtimeChannel;
+    };
+    const channel = typedChannel.on('postgres_changes', filter, onChange).subscribe();
 
     return () => {
       void supabase.removeChannel(channel);

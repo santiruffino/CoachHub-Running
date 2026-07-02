@@ -423,7 +423,12 @@ Deno.serve(async (req) => {
               'Content-Type': 'application/json',
               'X-Webhook-Secret': webhookSecret,
             },
-            body: JSON.stringify({ athleteUserId: user_id }),
+            body: JSON.stringify({
+              athleteUserId: user_id,
+              activityId: upsertData.id,
+              activityTitle: activity.name,
+              isNewActivity: aspect_type === 'create',
+            }),
           })
         } else {
           logger.warn('webhook.evaluate_alerts_skipped_missing_config')

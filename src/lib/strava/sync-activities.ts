@@ -1,4 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { consumeRateLimit } from '@/lib/api/rate-limit';
+import { estimateLoadFromActivity, type LoadProfileInput } from '@/lib/training/load';
 
 interface StravaActivity {
     id: number;
@@ -50,15 +52,54 @@ export interface SyncOptions {
     maxPages?: number;
 }
 
-function estimateLoadScore(activity: StravaActivity): number {
-    if (typeof activity.suffer_score === 'number' && Number.isFinite(activity.suffer_score)) {
-        return Math.max(0, activity.suffer_score);
+// Strava free tier rate limit is app-wide (not per-athlete): 200 req/15min,
+// 2000/day. Leave headroom below the hard limit so manual /auth/sync calls
+// from users browsing the app concurrently with the backfill cron worker
+// don't get starved.
+const STRAVA_GLOBAL_RATE_KEY = 'strava:api:global';
+const STRAVA_RATE_LIMIT_MAX = 180;
+const STRAVA_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+
+async function waitForStravaRateLimit(): Promise<void> {
+    for (let attempt = 0; attempt < 20; attempt++) {
+        const result = await consumeRateLimit({
+            key: STRAVA_GLOBAL_RATE_KEY,
+            limit: STRAVA_RATE_LIMIT_MAX,
+            windowMs: STRAVA_RATE_LIMIT_WINDOW_MS,
+        });
+        if (result.allowed) return;
+
+        // Bounded wait: never block a serverless invocation indefinitely.
+        const waitMs = Math.min(result.retryAfterSeconds * 1000, 30_000);
+        await new Promise((resolve) => setTimeout(resolve, waitMs));
     }
+    throw new Error('STRAVA_RATE_LIMIT_EXHAUSTED');
+}
 
-    const durationHours = Math.max(0, activity.moving_time || activity.elapsed_time || 0) / 3600;
-    if (durationHours <= 0) return 0;
+async function fetchWithRetry(url: string, accessToken: string, maxRetries = 3): Promise<Response> {
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        await waitForStravaRateLimit();
 
-    return durationHours * 45;
+        const response = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+
+        if (response.status === 429) {
+            if (attempt === maxRetries) {
+                throw new Error(`Strava API error: ${response.status} rate limited after ${maxRetries} retries`);
+            }
+            const retryAfterHeader = response.headers.get('Retry-After');
+            const retryAfterMs = retryAfterHeader ? Number(retryAfterHeader) * 1000 : 2 ** attempt * 1000;
+            await new Promise((resolve) => setTimeout(resolve, Math.min(retryAfterMs, 60_000)));
+            continue;
+        }
+
+        if (response.status >= 500 && attempt < maxRetries) {
+            await new Promise((resolve) => setTimeout(resolve, 2 ** attempt * 500));
+            continue;
+        }
+
+        return response;
+    }
+    throw new Error('unreachable');
 }
 
 function chunkArray<T>(items: T[], chunkSize: number): T[][] {
@@ -92,11 +133,9 @@ async function fetchStravaActivities(
             params.set('after', options.afterTimestamp.toString());
         }
 
-        const response = await fetch(
+        const response = await fetchWithRetry(
             `https://www.strava.com/api/v3/athlete/activities?${params.toString()}`,
-            {
-                headers: { Authorization: `Bearer ${accessToken}` },
-            }
+            accessToken
         );
 
         if (!response.ok) {
@@ -141,15 +180,28 @@ async function upsertActivities(
 
     const existingExternalIds = new Set((existingRows || []).map((row) => row.external_id));
 
+    const { data: athleteProfile } = await supabase
+        .from('athlete_profiles')
+        .select('lthr, rest_hr, max_hr')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+    const loadProfile: LoadProfileInput = {
+        lthr: athleteProfile?.lthr,
+        restHR: athleteProfile?.rest_hr,
+        maxHR: athleteProfile?.max_hr,
+    };
+
     const upsertRows: ActivityUpsertRow[] = activities.map((activity) => {
         const sufferScore = typeof activity.suffer_score === 'number' ? activity.suffer_score : null;
+        const duration = activity.moving_time || activity.elapsed_time || 0;
         return {
             user_id: userId,
             external_id: activity.id.toString(),
             title: activity.name,
             type: activity.type,
             distance: activity.distance || 0,
-            duration: activity.moving_time || activity.elapsed_time || 0,
+            duration,
             start_date: activity.start_date,
             elapsed_time: activity.elapsed_time || 0,
             elevation_gain: activity.total_elevation_gain || 0,
@@ -158,7 +210,16 @@ async function upsertActivities(
             avg_hr: activity.average_heartrate,
             max_hr: activity.max_heartrate,
             suffer_score: sufferScore,
-            load_score: estimateLoadScore(activity),
+            load_score: estimateLoadFromActivity(
+                {
+                    start_date: activity.start_date,
+                    suffer_score: sufferScore,
+                    duration,
+                    avg_hr: activity.average_heartrate,
+                    max_hr: activity.max_heartrate,
+                },
+                loadProfile
+            ),
             is_private: activity.private || false,
             metadata: activity,
             updated_at: new Date().toISOString(),

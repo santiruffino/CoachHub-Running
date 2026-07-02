@@ -11,6 +11,14 @@
     {
       "path": "/api/cron/notifications-digest?window=weekly",
       "schedule": "0 8 * * 1"
+    },
+    {
+      "path": "/api/cron/races-approaching",
+      "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/strava-backfill",
+      "schedule": "*/5 * * * *"
     }
   ]
 }

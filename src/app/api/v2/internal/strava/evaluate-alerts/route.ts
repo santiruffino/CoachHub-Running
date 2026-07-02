@@ -14,9 +14,10 @@ const ALERT_TYPE_TO_CATEGORY: Record<AthleteAlertType, NotificationCategory> = {
 
 /**
  * Internal endpoint called by the `process-strava-activity` Edge Function right after a
- * Strava activity is synced and matched. Evaluates RPE mismatch / low compliance / training
- * load alerts for the affected athlete, persists them to `alerts` (deduped per coach+athlete+
- * type+day via a unique index) and notifies the coach only when the alert is newly created.
+ * Strava activity is synced and matched. Notifies the athlete that their activity synced
+ * (when newly created), then evaluates RPE mismatch / low compliance / training load alerts
+ * for the affected athlete, persists them to `alerts` (deduped per coach+athlete+type+day via
+ * a unique index) and notifies the coach only when the alert is newly created.
  */
 export async function POST(request: NextRequest) {
   const { requestId, logger } = createRequestLogger('/api/v2/internal/strava/evaluate-alerts', request);
@@ -32,7 +33,12 @@ export async function POST(request: NextRequest) {
       return respond(apiError('AUTH_UNAUTHORIZED'), { status: 401 });
     }
 
-    const body = (await request.json()) as { athleteUserId?: string };
+    const body = (await request.json()) as {
+      athleteUserId?: string;
+      activityId?: string;
+      activityTitle?: string;
+      isNewActivity?: boolean;
+    };
     const athleteUserId = body?.athleteUserId;
 
     if (!athleteUserId) {
@@ -40,6 +46,16 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = createServiceRoleClient();
+
+    if (body.isNewActivity && body.activityId) {
+      await createNotification({
+        userId: athleteUserId,
+        category: 'system',
+        title: 'Actividad sincronizada',
+        body: body.activityTitle || null,
+        link: `/activities/${body.activityId}`,
+      });
+    }
 
     const { data: profile } = await supabase
       .from('profiles')
