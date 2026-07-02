@@ -6,6 +6,7 @@ import { apiError } from '@/lib/api/error-response';
 import { appendAdminActionLog } from '@/lib/audit/admin-action-log';
 import { assignTrainingSchema, validateBody } from '@/lib/validation/schemas';
 import { createNotification } from '@/lib/notifications/create-notification';
+import { pushAssignmentsForAthletes } from '@/lib/garmin/push-workout';
 
 interface AssignmentToCreate {
     user_id: string;
@@ -236,6 +237,27 @@ export async function POST(request: NextRequest) {
             assignments: assignments?.length || 0,
             athleteCount: athleteSourceMap.size,
         });
+
+        // Best-effort: push the workout to Garmin for pilot athletes who have an
+        // active connection. Never fail the assignment if a Garmin push fails —
+        // failures are recorded on garmin_workout_links for later retry.
+        try {
+            const pushable = (assignments || [])
+                .filter((a) => a?.id && a?.user_id)
+                .map((a) => ({ id: a.id as string, user_id: a.user_id as string }));
+            const pushResults = await pushAssignmentsForAthletes(pushable);
+            if (pushResults.length > 0) {
+                logger.info('assign_training.garmin_push', {
+                    userId: user!.id,
+                    trainingId,
+                    attempted: pushResults.length,
+                    synced: pushResults.filter((r) => r.status === 'synced').length,
+                    failed: pushResults.filter((r) => r.status === 'failed').length,
+                });
+            }
+        } catch (garminError) {
+            logger.warn('assign_training.garmin_push_unhandled', { userId: user!.id, error: String(garminError) });
+        }
 
         const { data: actorProfile } = await supabase
             .from('profiles')

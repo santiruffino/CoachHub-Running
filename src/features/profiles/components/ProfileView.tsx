@@ -2,13 +2,13 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { ProfileDetails } from '@/interfaces/athlete';
 import { ProfileForm } from '@/features/profiles/components/ProfileForm';
 import { HeartRateZones } from '@/features/profiles/components/HeartRateZones';
 import { CareerProgressSummary } from '@/features/profiles/components/CareerProgressSummary';
 import { StravaStatusCard } from '@/features/strava/components/StravaStatusCard';
 import { useStravaAuth } from '@/features/strava/hooks/useStravaAuth';
+import { GarminStatusCard } from '@/features/garmin/components/GarminStatusCard';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { SectionLayout, FieldGroup } from '@/components/layout/EditorialLayout';
@@ -24,7 +24,6 @@ interface ProfileViewProps {
 export function ProfileView({ initialProfile, user }: ProfileViewProps) {
     const t = useTranslations('profile.page');
     const tCommon = useTranslations('common');
-    const router = useRouter();
     const [profile] = useState<ProfileDetails>(initialProfile);
 
     const {
@@ -103,6 +102,8 @@ export function ProfileView({ initialProfile, user }: ProfileViewProps) {
                                 onDisconnect={disconnectStrava}
                                 onRefresh={refreshStrava}
                             />
+                            {/* Renders only for pilot athletes (gated by status.available). */}
+                            <GarminStatusCard enabled={user?.role === 'ATHLETE'} />
                         </SectionLayout>
                     )}
 
