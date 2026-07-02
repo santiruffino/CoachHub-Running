@@ -6,7 +6,13 @@ import { syncStravaActivities } from '@/lib/strava/sync-activities';
 
 export const maxDuration = 60;
 
-const JOBS_PER_INVOCATION = 5;
+// Vercel Hobby plan only allows daily cron schedules (see vercel.json), so
+// this is the only chance to drain the queue for the next 24h. A small
+// batch sized for a 5-minute cadence would let the backlog grow unbounded
+// if more than a handful of athletes connect Strava on the same day. If a
+// job gets cut off mid-flight by the maxDuration timeout, the stuck-job
+// recovery in claim_activity_backfill_jobs picks it up on tomorrow's run.
+const JOBS_PER_INVOCATION = 25;
 const STUCK_JOB_TIMEOUT = '10 minutes';
 
 interface StravaConnectionRow {
