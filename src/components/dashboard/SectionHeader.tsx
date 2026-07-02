@@ -28,11 +28,8 @@ export function SectionHeader({
     ...props
 }: SectionHeaderProps) {
     return (
-        <div
-            className={cn('flex items-end justify-between gap-4 mb-3', className)}
-            {...props}
-        >
-            <div>
+        <div className={cn('flex w-full flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-3', className)} {...props}>
+            <div className="min-w-0">
                 {eyebrow && (
                     <span
                         className="inline-block text-[10px] text-endurix-black/50 dark:text-muted-foreground tracking-widest mb-1 uppercase"
@@ -54,7 +51,7 @@ export function SectionHeader({
                     <p className="text-sm text-muted-foreground mt-1 max-w-2xl">{description}</p>
                 )}
             </div>
-            {action && <div className="flex-shrink-0">{action}</div>}
+            {action && <div className="flex-shrink-0 sm:ml-auto">{action}</div>}
         </div>
     );
 }

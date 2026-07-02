@@ -65,7 +65,8 @@ This document is the current MVP baseline for the running platform, with status 
 ## Not in MVP baseline
 
 - Billing / subscription product lifecycle
-- Fully productized notification system (email / push)
+- Fully productized notification system (email / push) — **delivered post-baseline**
+  (in-app inbox + Web Push + digests; see `documentation/notifications.md`)
 - Fully complete cycling domain model (power-only compliance, sport-aware matching)
 
 ## Cycling extension note

@@ -1,5 +1,9 @@
 # Database Schema (Current Overview)
 
+> **Canonical reference:** [`documentation/database.md`](../documentation/database.md).
+> This file is a condensed table-family map; the architecture doc has the full
+> column-level detail, the settings/audit model, and hardening notes.
+
 ## Runtime
 
 - PostgreSQL via Supabase
@@ -36,8 +40,19 @@
 
 ### Invitations and ops
 
-- `invitations`
+- `invitations`, `team_invite_links` (shareable sign-up URLs)
+- `teams` (canonical team registry)
+- `coach_settings`, `team_settings`, `admin_action_logs` (append-only)
+- `rate_limit_buckets` (DB-backed API rate limiting)
+- `activity_backfill_jobs` (async Strava load recomputation)
 - webhook/sync support tables used by integration flows
+
+### Notifications and messaging
+
+- `coach_athlete_messages` (two-way coach↔athlete chat)
+- `notifications`, `push_subscriptions`, `notification_preferences` (migration
+  `20260702110000_notification_tables.sql`; see
+  [`documentation/notifications.md`](../documentation/notifications.md))
 
 ## Policy model
 

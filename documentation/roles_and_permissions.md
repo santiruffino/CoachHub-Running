@@ -26,6 +26,17 @@ Endurix uses a role model with team-scoped authorization.
 
 - Accesses own profile, assignments, activities, and feedback features.
 - Can connect/disconnect Strava and sync own activities.
+- Can chat with their coach(es) (`coach_athlete_messages`) and manage own
+  notification preferences / push subscriptions.
+
+## Cross-role: notifications & messaging
+
+- Notification **preferences and push subscriptions are per-user** — every role
+  manages their own via `/api/v2/notifications/**`.
+- Coach↔athlete **chat threads** are readable by the athlete and any coach/admin
+  in the team; the API validates the caller is the athlete, a coach, or an admin.
+  See [notifications.md](./notifications.md) and
+  [../docs/COACH_ATHLETE_COMMUNICATION.md](../docs/COACH_ATHLETE_COMMUNICATION.md).
 
 ## Enforcement layers
 
@@ -40,6 +51,13 @@ Most shared resources are scoped by `team_id`.
 - migration references:
   - `supabase/migrations/20260429000000_team_based_rls.sql`
   - `supabase/migrations/20260429000001_created_by_and_team_policies.sql`
+
+## RLS hardening (June 2026)
+
+A batch of migrations tightened and optimized the policies — including a
+**security fix** (`20260627024000_fix_profile_update_authorization.sql`) where the
+"update own profile" policy previously allowed any team member to update any other
+member's profile. See [database.md](./database.md#security--performance-hardening-june-2026).
 
 ## Notes
 

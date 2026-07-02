@@ -70,11 +70,13 @@ export function AuditLogsList({ initialLogs, initialTotal }: AuditLogsListProps)
             />
 
             <Card className={`${PAPER_BG} border border-endurix-black/10 dark:border-border`}>
-                <CardHeader className="border-b border-endurix-black/10 dark:border-border flex flex-row items-center justify-between">
-                    <CardTitle className="text-base uppercase tracking-widest" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>
+                <CardHeader className="border-b border-endurix-black/10 dark:border-border flex flex-row items-center gap-3 space-y-0">
+                    <CardTitle className="min-w-0 flex-1 text-base uppercase tracking-widest" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>
                         {t('filtersTitle')}
                     </CardTitle>
-                    <DashboardCardHeaderDots />
+                    <div className="ml-auto flex shrink-0 items-center">
+                        <DashboardCardHeaderDots />
+                    </div>
                 </CardHeader>
                 <CardContent className="flex gap-3 p-6">
                     <Input
@@ -88,11 +90,13 @@ export function AuditLogsList({ initialLogs, initialTotal }: AuditLogsListProps)
             </Card>
 
             <Card className={`${PAPER_BG} border border-endurix-black/10 dark:border-border`}>
-                <CardHeader className="border-b border-endurix-black/10 dark:border-border flex flex-row items-center justify-between">
-                    <CardTitle className="text-base uppercase tracking-widest" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>
+                <CardHeader className="border-b border-endurix-black/10 dark:border-border flex flex-row items-center gap-3 space-y-0">
+                    <CardTitle className="min-w-0 flex-1 text-base uppercase tracking-widest" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>
                         {t('eventsTitle', { count: total })}
                     </CardTitle>
-                    <DashboardCardHeaderDots />
+                    <div className="ml-auto flex shrink-0 items-center">
+                        <DashboardCardHeaderDots />
+                    </div>
                 </CardHeader>
                 <CardContent className="p-6">
                     <div className="border border-endurix-black/10 dark:border-border overflow-hidden">

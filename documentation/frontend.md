@@ -132,3 +132,21 @@ Settings pages are client-driven and persist through v2 APIs under `/api/v2/sett
 New events in `src/lib/analytics/events.ts`:
 - `team_invite_link_created` / `revoked` / `rotated` / `used`
 - `sign_up_completed` now includes `method: 'team_link'`
+
+## Notifications UI
+
+- `src/features/notifications/components/NotificationBell.tsx` — inbox dropdown with unread badge (reads `/api/v2/notifications`).
+- `NotificationToastListener.tsx` — surfaces new notifications as toasts (`sonner`).
+- `NotificationPreferencesForm.tsx` — per-category channel + frequency controls; page at `src/app/(dashboard)/settings/notifications/page.tsx`.
+- `hooks/usePushSubscription.ts` — browser permission → service-worker subscribe → register with the push-subscriptions API.
+
+Architecture and delivery model: [notifications.md](./notifications.md).
+
+## Coach↔athlete chat UI
+
+- `src/components/dashboard/CoachAthleteChat.tsx` — two-way thread, polled for freshness, read-state per message.
+- Appears on the coach's `AthleteDetailsView` and on the athlete's dashboard.
+- Backed by `GET/POST /api/v2/users/[id]/messages` and `coach_athlete_messages`.
+
+Full behavior (and how it differs from private coach notes):
+[docs/COACH_ATHLETE_COMMUNICATION.md](../docs/COACH_ATHLETE_COMMUNICATION.md).

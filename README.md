@@ -24,7 +24,11 @@ Endurix is a multi-tenant coaching platform focused on running, with a staged pa
 - **Calendar & assignments**: weekly view, group-level assignment, race calendar with countdowns.
 - **Training load**: Banister-style CTL / ATL / TSB / ACWR computed from `suffer_score` and `load_score`, surfaced on the coach's athlete detail and on the athlete's own dashboard.
 - **Team settings & admin audit log**: persisted `coach_settings`, `team_settings`, and an append-only `admin_action_logs` table.
-- **Observability**: Sentry (server + client), structured logging, GA4 product analytics.
+- **Notifications**: unified in-app inbox + Web Push (VAPID), per-category preferences, and daily/weekly push digests via cron.
+- **Coach↔athlete chat**: two-way messaging thread (`coach_athlete_messages`), separate from private coach notes.
+- **Scheduled jobs**: Vercel Cron for notification digests, race reminders, and Strava backfill.
+- **MCP server**: authenticated `/api/mcp` endpoint exposing athlete-data tools to AI clients.
+- **Observability**: Sentry (server + client), structured logging with secret redaction, DB-backed rate limiting, GA4 product analytics.
 
 ## Roles
 
@@ -65,6 +69,19 @@ SUPABASE_SECRET_KEY=
 # App URL
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_GA_MEASUREMENT_ID=
+
+# Web Push (VAPID) — generate with `npx web-push generate-vapid-keys`
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=
+VAPID_PRIVATE_KEY=
+VAPID_SUBJECT=mailto:support@endurix.app
+
+# Cron (bearer token required by /api/cron/* handlers)
+CRON_SECRET=
+
+# Email (Resend) — invitations, wishlist notifications
+RESEND_API_KEY=
+WISHLIST_FROM_EMAIL=Endurix Wishlist <wishlist@endurix.app>
+WISHLIST_NOTIFY_EMAIL=
 
 # Strava OAuth
 STRAVA_CLIENT_ID=
@@ -163,6 +180,31 @@ Only admins can invite coaches.
 
 Audit logs are append-only at DB level and capture first-cut critical admin writes.
 
+### Notifications & messaging
+
+- All notifications go through one producer, `createNotification()`, which fans out
+  to an in-app inbox (`notifications`) and Web Push (`push_subscriptions`) based on
+  per-category `notification_preferences`.
+- Coach↔athlete chat lives in `coach_athlete_messages` (`/api/v2/users/[id]/messages`).
+- See `documentation/notifications.md` and `docs/COACH_ATHLETE_COMMUNICATION.md`.
+
+### Scheduled jobs (Vercel Cron)
+
+Declared in `vercel.json` (daily granularity — Hobby plan). Cron handlers require
+`Authorization: Bearer $CRON_SECRET`:
+
+- `/api/cron/notifications-digest?window=daily|weekly` — batched push digests
+- `/api/cron/races-approaching` — 7-day race reminders
+- `/api/cron/strava-backfill` — drains queued activity backfill jobs
+- `/api/health` — daily liveness ping
+
+See `documentation/observability.md`.
+
+### MCP server
+
+`/api/mcp` is an authenticated Model Context Protocol server (RLS-enforced, rate
+limited) exposing coach tools to AI clients. See `documentation/mcp-server.md`.
+
 ## Migrations
 
 Apply latest Supabase migrations before running new settings/audit features:
@@ -172,12 +214,22 @@ Apply latest Supabase migrations before running new settings/audit features:
 - applies RLS policies and append-only triggers for admin logs
 - includes `20260605110000_teams_table.sql` — creates the canonical `public.teams` table (idempotent backfill from existing `profiles.team_id`)
 - includes `20260605120000_team_invite_links.sql` — creates `public.team_invite_links` and the atomic `consume_team_invite_link(token)` RPC
+- includes `20260627000000_coach_athlete_messages.sql` — coach↔athlete chat storage
+- includes `20260627010000_rate_limit_buckets.sql` — DB-backed API rate limiting (`consume_rate_limit` RPC)
+- includes the `20260627021000`–`20260627024000` batch — RLS/`SECURITY DEFINER` hardening and a profile-update authorization fix
+- includes `20260702100000_activity_backfill_job_claim.sql` — atomic backfill job claiming for the Strava backfill cron
+- includes `20260702110000_notification_tables.sql` — backfills the `notifications`, `push_subscriptions`, and `notification_preferences` tables + RLS (idempotent; these previously existed only in the live DB)
 
 ## Documentation map
 
-- Product/architecture docs: `documentation/`
-- Operational/project docs: `docs/`
-- SQL scripts: `supabase/migrations/` (canonical) and `supabase/queries/legacy/` (historical)
+Start at **[`documentation/README.md`](documentation/README.md)** — the index that
+maps every doc and marks which file is canonical per topic.
+
+- Architecture docs: `documentation/` (backend, frontend, database, models, roles,
+  notifications, observability, mcp-server, analytics)
+- Product/feature + operational docs: `docs/`
+- Agent onboarding: `CLAUDE.md`
+- SQL: `supabase/migrations/` (canonical) and `supabase/queries/legacy/` (historical)
 - Security/i18n/unused code audit report: `documentation/platform-analysis-report.md`
 
 ## Current status (high level)

@@ -22,6 +22,25 @@ Most feature routes are under `src/app/api/v2/**`:
 - Strava auth + webhook
 - Settings (coach / team) and admin audit logs
 - Dashboard / admin / coach data
+- Notifications (inbox, preferences, push subscriptions)
+- Coach↔athlete messaging (conversations, per-athlete threads)
+
+### Cron & internal jobs
+
+Scheduled handlers under `src/app/api/cron/**` (auth: `Authorization: Bearer $CRON_SECRET`):
+
+- `GET /api/cron/notifications-digest?window=daily|weekly` — batched push digests
+- `GET /api/cron/races-approaching` — 7-day race reminders
+- `GET /api/cron/strava-backfill` — drains queued activity backfill jobs
+
+Schedules and design notes: [observability.md](./observability.md). Notification
+fan-out: [notifications.md](./notifications.md).
+
+### MCP server
+
+`/api/mcp` exposes an authenticated Model Context Protocol server so coaches can
+query athlete data from an AI client. Auth via `requireAuth()`, rate-limited to
+30 req/min, RLS-enforced. See [mcp-server.md](./mcp-server.md).
 
 ### Compatibility / legacy routes
 
@@ -146,8 +165,13 @@ Webhook flow is hardened with stricter payload / content-type checks, body-size 
 V2 routes now standardize error payloads via `apiError()`:
 
 - shape: `{ success: false, code, error, message }`
-- middleware-level v2 throttling returns `429` with rate-limit headers
 - request tracing continues to use `x-request-id`
+
+Rate limiting is **cross-instance and DB-backed** (`rate_limit_buckets` +
+`consume_rate_limit` RPC), not in-memory, so limits hold across serverless
+instances. It **fails open** if the store is unavailable. `429` responses carry
+`x-ratelimit-*` and `retry-after` headers. Helper: `src/lib/api/rate-limit.ts`.
+Full details in [observability.md](./observability.md#rate-limiting).
 
 ### Edge Functions in repo
 

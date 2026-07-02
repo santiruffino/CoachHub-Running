@@ -28,6 +28,7 @@ Endurix is the all-in-one platform for endurance coaches and athletes who reject
 8. Configure coach / team settings (thresholds, branding, default models, **athlete limit**)
 9. Review append-only admin audit logs for critical writes (includes team invite link events)
 10. Monitor **training load** per athlete (CTL / ATL / TSB / ACWR) with smart alert scoring
+11. **Message athletes** directly through the coach↔athlete chat thread
 
 ### Athlete workflows
 
@@ -39,6 +40,7 @@ Endurix is the all-in-one platform for endurance coaches and athletes who reject
 6. **Open the home dashboard to see fitness, fatigue, form, and injury risk** (CTL / ATL / TSB / ACWR)
 7. Review personalized training zones (HR + VAM-based pace)
 8. Provide RPE / sensations / comments feedback
+9. **Chat with their coach** and receive notifications (in-app + push) for messages, assigned workouts, race reminders, and training-load alerts
 
 ## Current platform characteristics
 
@@ -50,6 +52,10 @@ Endurix is the all-in-one platform for endurance coaches and athletes who reject
 - **Team athlete limit** (`max_athletes`) enforced on both email invitations and team-link sign-ups
 - **Team invite links** (reusable per-team URL, coach/admin creates, athlete signs up via `/join/[token]`)
 - Training load (Banister model) computed from `load_score` / `suffer_score` and surfaced on both coach and athlete views
+- **Notifications**: unified in-app inbox + Web Push with per-category preferences and daily/weekly digests ([notifications.md](./notifications.md))
+- **Coach↔athlete chat**: two-way messaging thread, distinct from private coach notes
+- **Scheduled jobs**: cron-driven digests, race reminders, and Strava backfill ([observability.md](./observability.md))
+- **AI access**: authenticated MCP server (`/api/mcp`) exposing coach tools ([mcp-server.md](./mcp-server.md))
 
 ## Athlete home dashboard — daily cockpit
 

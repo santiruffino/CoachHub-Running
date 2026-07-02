@@ -137,6 +137,46 @@ erDiagram
         timestamp last_used_at
     }
 
+    COACH_ATHLETE_MESSAGES {
+        uuid id PK
+        uuid athlete_id
+        uuid coach_id
+        uuid sender_id
+        string body
+        timestamp read_at
+        timestamp created_at
+    }
+
+    NOTIFICATIONS {
+        uuid id PK
+        uuid user_id
+        string type
+        string title
+        string body
+        string link
+        bool is_read
+        timestamp push_sent_at
+        timestamp created_at
+    }
+
+    NOTIFICATION_PREFERENCES {
+        uuid id PK
+        uuid user_id
+        string category
+        bool in_app_enabled
+        bool push_enabled
+        bool email_enabled
+        string frequency
+    }
+
+    PUSH_SUBSCRIPTIONS {
+        uuid id PK
+        uuid user_id
+        string endpoint
+        string p256dh
+        string auth
+    }
+
     PROFILES ||--o{ GROUPS : creates
     PROFILES ||--o{ TRAININGS : creates
     PROFILES ||--o{ ACTIVITIES : performs
@@ -153,7 +193,15 @@ erDiagram
     TEAMS ||--o{ TEAM_INVITE_LINKS : owns
     TEAM_INVITE_LINKS }o--|| PROFILES : created_by
     TEAM_INVITE_LINKS }o--|| ADMIN_ACTION_LOGS : logged_as
+    PROFILES ||--o{ COACH_ATHLETE_MESSAGES : participates
+    PROFILES ||--o{ NOTIFICATIONS : receives
+    PROFILES ||--o{ NOTIFICATION_PREFERENCES : configures
+    PROFILES ||--o{ PUSH_SUBSCRIPTIONS : registers
 ```
+
+> **Note:** `NOTIFICATIONS`, `NOTIFICATION_PREFERENCES`, and `PUSH_SUBSCRIPTIONS`
+> are defined in migration `20260702110000_notification_tables.sql`. See
+> [notifications.md](./notifications.md) and [database.md](./database.md).
 
 ## Key behavior notes
 
@@ -165,6 +213,11 @@ erDiagram
 - **`team_settings.max_athletes`** (integer, nullable) enforces athlete cap for pricing tiers; checked on per-email invites and team-link sign-ups.
 - **`team_invite_links`** provides shareable sign-up URLs per team; atomic consumption via `consume_team_invite_link(token)` RPC; every use logs `team_invite_link.used` to `admin_action_logs`.
 - Admin critical writes are captured in append-only `admin_action_logs`.
+- **`coach_athlete_messages`** stores the two-way coach↔athlete chat; `sender_id`
+  preserves the real author even on a shared thread. Chat messages produce a
+  `chat_message` notification via `createNotification()`.
+- **Notifications** fan out through a single producer (`createNotification`) to an
+  in-app inbox and Web Push, gated by per-user, per-category `notification_preferences`.
 
 ## Activity IDs
 

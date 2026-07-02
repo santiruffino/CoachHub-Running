@@ -20,6 +20,10 @@ Endurix is a multi-tenant coaching platform for running teams, with a staged pat
 - **Training load (CTL / ATL / TSB / ACWR)** visible to both coach and athlete
 - Coach and team settings with admin override
 - Append-only admin audit log
+- **Notifications** (in-app inbox + Web Push) with per-category preferences and digests
+- **Coach↔athlete chat** messaging
+- **Scheduled jobs** (Vercel Cron): digests, race reminders, Strava backfill
+- **MCP server** (`/api/mcp`) exposing coach tools to AI clients
 - GA4 product analytics
 
 ## Out-of-scope (for now)

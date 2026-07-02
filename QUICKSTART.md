@@ -17,7 +17,7 @@ Create `frontend/.env.local` with your Supabase credentials:
 NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SECRET_KEY=your-secret-key
-NEXT_PUBLIC_APP_URL=http://localhost:3001
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
 ### 3. Set Up Database
@@ -41,7 +41,7 @@ Enter email, password, and name when prompted.
 npm run dev
 ```
 
-Visit http://localhost:3001 and login!
+Visit http://localhost:3000 and login!
 
 ## That's It! 🎉
 

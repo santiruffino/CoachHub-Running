@@ -30,7 +30,7 @@ export default async function AuditLogsPage() {
 
     // Fetch initial logs
     const { data: logs, count } = await supabase
-        .from('admin_audit_logs')
+        .from('admin_action_logs')
         .select('*', { count: 'exact' })
         .eq('team_id', profile.team_id)
         .order('created_at', { ascending: false })

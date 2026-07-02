@@ -1,5 +1,11 @@
 # Design System Strategy: High-End Endurance Coaching (Desktop)
 
+> ⚠️ **Duplicate.** The canonical design docs live in `docs/`:
+> [`docs/DESIGN.md`](../docs/DESIGN.md) (strategy) and
+> [`docs/DASHBOARD-DESIGN-SYSTEM.md`](../docs/DASHBOARD-DESIGN-SYSTEM.md)
+> (practical implementation reference). Update those; this copy is kept only to
+> avoid breaking old links and may lag behind.
+
 Implementation note: this is a strategic design direction document. Some sections are aspirational and may not be fully implemented in every active screen.
 
 ## 1. Overview & Creative North Star

@@ -45,7 +45,20 @@ The active tenant boundary is `team_id`.
 - `alerts` (smart alert scoring)
 - `wishlist_signups` (public landing-page captures)
 - `teams` (canonical team registry — id, name, sport, created_at; backfilled from `profiles.team_id`)
-- `team_invite_links` (shareable sign-up URLs — token, team_id, created_by, label, is_active, expires_at, max_uses, uses, last_used_at)
+- `team_invite_links` (shareable sign-up URLs — token, team_id, created_by, label, is_active, expires_at, max_uses, uses, last_used_at; supports targeted invites and coach-role links)
+- `coach_athlete_messages` (two-way coach↔athlete chat — `athlete_id`, `coach_id`, `sender_id`, `body`, `read_at`, `created_at`)
+- `rate_limit_buckets` (cross-instance API rate limiting, consumed via `consume_rate_limit` RPC; scheduled purge)
+- `notifications`, `push_subscriptions`, `notification_preferences` — see the notifications section below
+
+## Notifications tables
+
+The notification system (see [notifications.md](./notifications.md)) uses three
+tables. They originally existed only in the live database; they are now backfilled
+in `20260702110000_notification_tables.sql` (idempotent, matches production).
+
+- `notifications` — `id`, `user_id`, `type`, `title`, `body`, `link`, `is_read`, `created_at`, `push_sent_at` (read state is the boolean `is_read`; rows inserted via service role)
+- `push_subscriptions` — `id`, `user_id`, `endpoint` (unique), `p256dh`, `auth`, `created_at`
+- `notification_preferences` — `id`, `user_id`, `category`, `in_app_enabled`, `push_enabled`, `email_enabled`, `frequency` (`immediate|daily|weekly`), `created_at`, `updated_at`, unique `(user_id, category)`
 
 ## Access model
 
@@ -90,6 +103,32 @@ This UUID-first approach is now standard in v2 activity endpoints.
   - actions include: `team_settings.updated`, `team_invite_link.created`, `team_invite_link.revoked`, `team_invite_link.rotated`, `team_invite_link.used`
   - update / delete blocked by DB triggers
   - admin team-scoped read access via RLS
+
+## Security & performance hardening (June 2026)
+
+A batch of migrations resolved Supabase advisor findings:
+
+- `20260627021000_harden_security_definer_functions.sql` — pins an explicit
+  `search_path` on every `SECURITY DEFINER` function (`function_search_path_mutable`).
+- `20260627022000_optimize_rls_auth_function_calls.sql` — wraps `auth.uid()`/
+  `auth.role()` in RLS policies as `(select …)` so they evaluate once per query
+  (`auth_rls_initplan`).
+- `20260627023000_drop_duplicate_rls_policies.sql` — removes duplicate permissive
+  policies (`multiple_permissive_policies`).
+- `20260627024000_fix_profile_update_authorization.sql` — **security fix**: the
+  "update own profile" policy previously let any team member update any other
+  member's profile (checked `team_id` only, not role/ownership).
+- `20260627020000_add_missing_fk_indexes.sql` — covering indexes for FK columns
+  used in joins/RLS lookups.
+
+See [roles_and_permissions.md](./roles_and_permissions.md).
+
+## Rate limiting
+
+DB-backed, cross-instance rate limiting lives in `rate_limit_buckets` +
+`consume_rate_limit(p_key, p_limit, p_window_ms)`
+(`20260627010000_rate_limit_buckets.sql`, purge `20260627011000`). Details in
+[observability.md](./observability.md#rate-limiting).
 
 ## Notes for future cycling support
 

@@ -42,11 +42,15 @@ The Team Admin has "Global" visibility over the entire team. They can act as a c
    - Go to the **Groups** section.
    - Click **New Group** (e.g., "Marathon Group", "Beginners 5k").
    - Optionally link a **Target Race** to the group.
-5. **Invite Athletes:**
-   - Go to the **Athletes** section.
-   - Click **Add Athlete**.
-   - You can invite a single athlete or use the **Bulk Upload (CSV)** feature to invite many at once.
+5. **Invite Athletes:** three options in **Add Athlete**:
+   - Invite a single athlete by email.
+   - Use **Bulk Upload (CSV)** to invite many at once.
+   - Create a reusable **Team Invite Link** (share via WhatsApp/QR; athletes sign
+     up at `/join/[token]` and join automatically). Manage/rotate/revoke links in
+     **Settings → Team**.
    - Assign them to a specific coach (or yourself) and a group.
+   - Note: the **athlete limit** (`max_athletes`, admin-only in Team settings)
+     caps sign-ups across both email invites and team links.
 
 ---
 
@@ -78,8 +82,11 @@ Athletes are the end-users executing the plans.
    - Go to **Profile** -> **Integrations**.
    - Click **Connect with Strava**.
    - This allows the platform to automatically sync activities and calculate compliance scores.
-5. **Start Training:** View the assigned workouts in the **Calendar** or **Dashboard**.
+5. **Start Training:** View the assigned workouts on the **Dashboard** weekly calendar.
 6. **Provide Feedback:** After finishing a run (synced via Strava), click on the activity to rate the **RPE** (effort) and add comments for the coach.
+7. **Stay in the loop:** Chat with your coach from the dashboard, and enable
+   notifications (**Settings → Notifications**) to get in-app + push alerts for
+   messages, assigned workouts, and race reminders.
 
 ---
 

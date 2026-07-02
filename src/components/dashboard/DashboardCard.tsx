@@ -29,7 +29,7 @@ export function DashboardCard({
             {...props}
         >
             {!headerless && (headerLabel || headerAccessory) && (
-                <div className="flex items-center justify-between px-4 py-2.5 bg-endurix-paper dark:bg-muted border-b border-endurix-black/8 dark:border-border">
+                <div className="flex w-full items-center justify-between gap-3 px-4 py-2.5 bg-endurix-paper dark:bg-muted border-b border-endurix-black/8 dark:border-border">
                     {headerLabel && (
                         <span
                             className="text-[9px] text-endurix-black/60 dark:text-muted-foreground tracking-widest uppercase"
@@ -38,7 +38,7 @@ export function DashboardCard({
                             {headerLabel}
                         </span>
                     )}
-                    {headerAccessory && <div className="flex items-center gap-1.5">{headerAccessory}</div>}
+                    {headerAccessory && <div className="ml-auto flex shrink-0 items-center gap-1.5">{headerAccessory}</div>}
                 </div>
             )}
             <div className={cn('p-4', bodyClassName)}>{children}</div>

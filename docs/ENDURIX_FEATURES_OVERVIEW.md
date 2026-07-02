@@ -155,6 +155,18 @@ Platform settings are split between coach and team scope.
 - Team settings store shared configuration such as max athletes
 - Admin audit logs record critical changes
 
+## 17b. Notifications
+
+Endurix delivers notifications through a single system across two channels.
+
+- In-app inbox (notification bell) plus optional Web Push to the browser
+- Categories include new chat messages, assigned workouts, race reminders,
+  low compliance, RPE mismatch, and training-load alerts
+- Each user controls per-category preferences and channel (in-app / push) and
+  can choose immediate, daily, or weekly delivery
+- Daily/weekly digests are batched and sent by a scheduled job
+- Details: `documentation/notifications.md`
+
 ## 18. Why Notes and Chat Are Separate
 
 They solve different problems:
@@ -171,7 +183,6 @@ Keeping them separate makes the product clearer and safer to use.
 The main app does not currently focus on:
 
 - Billing and subscriptions
-- Full notification productization
 - A complete cycling-specific domain model
 
 These are later-stage product areas.

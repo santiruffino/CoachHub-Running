@@ -1,6 +1,6 @@
 # MVP Status (Running)
 
-Last updated: 2026-06-05
+Last updated: 2026-07-02
 
 This file reflects current implementation status in code (not original target spec language).
 
@@ -32,6 +32,11 @@ This file reflects current implementation status in code (not original target sp
 - Smart alert scoring (`lib/alerts/scoring.ts`) for `training_load` alert type
 - **Team invite links (shareable sign-up URL)**: reusable per-team link, coach/admin creates once, shares via WhatsApp/QR; athlete signs up and joins team; atomic RPC + audit log
 - **Team athlete limit (pricing-tier cap)**: `max_athletes` in `team_settings`; enforced on both per-email and team-link sign-ups; admin-only UI in `/settings/team`
+- **Notifications**: unified in-app inbox + Web Push, per-category preferences, daily/weekly digest cron (`documentation/notifications.md`)
+- **Coach↔athlete chat**: two-way messaging thread (`coach_athlete_messages`), separate from private coach notes
+- **Scheduled jobs**: Vercel Cron for digests, race reminders, and Strava backfill (`documentation/observability.md`)
+- **MCP server**: authenticated `/api/mcp` exposing coach tools to AI clients (`documentation/mcp-server.md`)
+- **DB-backed rate limiting** and a June 2026 RLS/security hardening batch (incl. a profile-update authorization fix)
 
 ## Partial / in progress quality
 
@@ -42,8 +47,8 @@ This file reflects current implementation status in code (not original target sp
 ## Not completed (from old MVP expectations)
 
 - Integrated billing / subscription lifecycle
-- Full notification pipeline (email / push) at product level
 - Full cycling-ready domain logic (currently running-first with sport-aware scaffolding)
+- Email notification channel (`notification_preferences.email_enabled` exists, but only in-app + Web Push are wired up)
 
 ## Reference
 

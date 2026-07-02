@@ -30,6 +30,14 @@ Use this file as a lightweight product / engineering backlog.
 | Personalized pace zones (VAM) component | done | P1 | New `features/profiles/components/PaceZones.tsx` mirroring `HeartRateZones` pattern; falls back to `/profile` link when VAM absent |
 | **Team invite links (shareable sign-up URL)** | done | P1 | Reusable per-team link; coach/admin creates once, shares via WhatsApp/QR; athlete signs up and joins team; atomic RPC + audit log |
 | **Team athlete limit (pricing-tier cap)** | done | P1 | `max_athletes` in `team_settings`; enforced on both per-email and team-link sign-ups; admin-only UI in `/settings/team` |
+| **Notifications system (in-app + Web Push + digests)** | done | P1 | Unified `createNotification()` producer, per-category preferences, VAPID push, daily/weekly digest cron; see `documentation/notifications.md` |
+| **Coach↔athlete chat (SAN-115)** | done | P1 | `coach_athlete_messages`, `/api/v2/users/[id]/messages`, chat UI on coach + athlete views; see `docs/COACH_ATHLETE_COMMUNICATION.md` |
+| **MCP server for AI coach tools** | done | P2 | Authenticated `/api/mcp` with 7 tools (profile, athletes, groups, compliance, races, notify); RLS-enforced, rate limited; see `documentation/mcp-server.md` |
+| **Scheduled jobs (Vercel Cron)** | done | P1 | `notifications-digest`, `races-approaching`, `strava-backfill`, health ping; `CRON_SECRET` auth; see `documentation/observability.md` |
+| **DB-backed rate limiting** | done | P1 | `rate_limit_buckets` + `consume_rate_limit` RPC; cross-instance, fails open |
+| **Security/RLS hardening (June 2026)** | done | P0 | `SECURITY DEFINER` search_path, RLS initplan optimization, duplicate-policy cleanup, FK indexes, **profile-update authz fix** |
+| **Strava backfill queue** | done | P1 | `activity_backfill_jobs` + atomic `claim_activity_backfill_jobs` RPC drained by daily cron |
+| Add migration for notification tables | done | P1 | `20260702110000_notification_tables.sql` backfills `notifications`/`push_subscriptions`/`notification_preferences` + RLS (idempotent; matches the live DB) |
 | Marketing features doc refresh | done | P2 | `docs/MARKETING_FEATURES.md` aligned to current product pillars and the new athlete cockpit |
 | English copy bank for marketing / landing | done | P2 | Added to `docs/MARKETING_FEATURES.md` §6 |
 | Instagram promotion strategy | done | P2 | `docs/INSTAGRAM_STRATEGY.md` with content pillars, posting cadence, hashtag set, KPI loop |

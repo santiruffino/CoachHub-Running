@@ -4,9 +4,8 @@ This list reflects currently implemented screens from the App Router.
 
 ## Public
 
-- `src/app/page.tsx` — Landing
+- `src/app/page.tsx` — Landing (with wishlist capture)
 - `src/app/privacy/**` — Privacy / legal pages
-- `src/app/endurix-test/page.tsx` — High-fidelity prototype dashboard (not connected to real data)
 
 ## Auth and account
 
@@ -17,17 +16,16 @@ This list reflects currently implemented screens from the App Router.
 - `src/app/(auth)/accept-invitation/[token]/page.tsx`
 - `src/app/accept-invitation/page.tsx`
 - `src/app/(auth)/auth/auth-code-error/page.tsx`
-- `src/app/onboarding/**` — Coach / athlete onboarding flows
+- `src/app/(auth)/join/[token]/page.tsx` — Public team-invite-link sign-up
 
 ## Onboarding
 
+- `src/app/onboarding/page.tsx` — Athlete onboarding (thresholds, VAM, UAN, FC, etc.)
 - `src/app/onboarding/coach/page.tsx` — Coach onboarding with completion tracker
-- `src/app/onboarding/athlete/page.tsx` — Athlete onboarding (thresholds, VAM, UAN, FC, etc.)
 
 ## Main product (dashboard)
 
 - `src/app/(dashboard)/dashboard/page.tsx` — **Role-aware dashboard** (admin / coach / athlete)
-- `src/app/(dashboard)/dashboard/calendar/page.tsx` — Calendar overview
 - `src/app/(dashboard)/athletes/page.tsx` — Coach's athlete list
 - `src/app/(dashboard)/athletes/[id]/page.tsx` — Athlete detail (5 tabs: Resumen, Entrenamiento, Salud y Carga, Carreras y Notas, Tendencia)
 - `src/app/(dashboard)/groups/page.tsx` — Group list
@@ -44,17 +42,16 @@ This list reflects currently implemented screens from the App Router.
 
 ## Settings
 
+- `src/app/(dashboard)/settings/page.tsx` — Settings index (role-aware shortcuts)
 - `src/app/(dashboard)/settings/coach/page.tsx` — Coach settings (thresholds, default models)
-- `src/app/(dashboard)/settings/team/page.tsx` — Team settings (admin only, branding, defaults)
+- `src/app/(dashboard)/settings/team/page.tsx` — Team settings (admin only, branding, defaults, athlete limit, invite links)
+- `src/app/(dashboard)/settings/notifications/page.tsx` — Notification preferences (per-category channel + frequency)
 - `src/app/(dashboard)/settings/audit-logs/page.tsx` — Admin audit log viewer
 
 ## Integration callbacks
 
 - `src/app/strava/callback/page.tsx` — Strava OAuth callback
-
-## Internal / testing
-
-- `src/app/(dashboard)/dashboard/builder-test/page.tsx` — Builder test harness
+- `src/app/auth/callback/**` — Supabase auth callback
 
 ## Highlights of the athlete home dashboard
 
