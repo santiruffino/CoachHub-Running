@@ -37,7 +37,8 @@ Use this file as a lightweight product / engineering backlog.
 | **DB-backed rate limiting** | done | P1 | `rate_limit_buckets` + `consume_rate_limit` RPC; cross-instance, fails open |
 | **Security/RLS hardening (June 2026)** | done | P0 | `SECURITY DEFINER` search_path, RLS initplan optimization, duplicate-policy cleanup, FK indexes, **profile-update authz fix** |
 | **Strava backfill queue** | done | P1 | `activity_backfill_jobs` + atomic `claim_activity_backfill_jobs` RPC drained by daily cron |
-| Add migration for notification tables | done | P1 | `20260702110000_notification_tables.sql` backfills `notifications`/`push_subscriptions`/`notification_preferences` + RLS (idempotent; matches the live DB) |
+| Notification table migrations mirrored locally | done | P1 | `notifications`/`push_subscriptions`/`notification_preferences` were already in the remote history; mirrored as local files `20260628213203`, `20260628225621`, `20260630003820` |
+| Reconcile local ↔ remote migration divergence | todo | P1 | Local `supabase/migrations/` uses a different versioning scheme than the remote history (which only tracks from 2026-06-27); run `supabase db pull` to fully reconcile |
 | Marketing features doc refresh | done | P2 | `docs/MARKETING_FEATURES.md` aligned to current product pillars and the new athlete cockpit |
 | English copy bank for marketing / landing | done | P2 | Added to `docs/MARKETING_FEATURES.md` §6 |
 | Instagram promotion strategy | done | P2 | `docs/INSTAGRAM_STRATEGY.md` with content pillars, posting cadence, hashtag set, KPI loop |

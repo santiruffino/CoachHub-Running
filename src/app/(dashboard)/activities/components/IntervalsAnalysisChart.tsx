@@ -183,6 +183,11 @@ export function IntervalsAnalysisChart({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const paceAxisDomain = [
+    (dataMin: number) => Math.max(0, (dataMin || 0) - 0.25),
+    (dataMax: number) => (dataMax || 0) + 0.25,
+  ] as const;
+
   const tooltipLabels: IntervalsTooltipLabels = {
     avgPace: t('metrics.avgPace') || 'Ritmo',
     avgSpeed: t('metrics.avgSpeed') || 'Velocidad',
@@ -325,7 +330,7 @@ export function IntervalsAnalysisChart({
               axisLine={false}
               tickLine={false}
               tick={{fill: 'gray', fontSize: '10px'}}
-              domain={['auto', 'auto']}
+              domain={paceAxisDomain}
               width={45}
               tickFormatter={(val) => isRunning ? formatPace(val) : `${val}`}
               label={{

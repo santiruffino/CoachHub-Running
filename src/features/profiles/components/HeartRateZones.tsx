@@ -36,7 +36,7 @@ function formatZoneNote(zone: { min: number; max: number }, isLastZone: boolean)
     const openEnded = isLastZone || zone.max <= 0 || zone.max < zone.min;
 
     if (openEnded) {
-        return 'Strava guarda esta zona sin tope superior';
+        return 'Sin tope superior';
     }
 
     return `${zone.max - zone.min + 1} bpm de ancho`;

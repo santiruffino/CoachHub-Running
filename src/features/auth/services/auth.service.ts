@@ -155,9 +155,13 @@ export const authService = {
     resetPassword: async (email: string): Promise<void> => {
         const supabase = createClient();
 
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
-        });
+        // The recovery link's destination is controlled by the Supabase
+        // "Reset Password" email template, which points to
+        // `{{ .SiteURL }}/auth/confirm?token_hash=...&type=recovery&next=/reset-password`
+        // (verified server-side in `src/app/auth/confirm/route.ts`). No
+        // `redirectTo` is passed here so the flow can't fall back to the
+        // implicit `/verify` hash flow.
+        const { error } = await supabase.auth.resetPasswordForEmail(email);
 
         if (error) {
             appLogger.error('❌ [AuthService] resetPasswordForEmail failed:', error);

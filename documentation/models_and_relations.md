@@ -200,7 +200,8 @@ erDiagram
 ```
 
 > **Note:** `NOTIFICATIONS`, `NOTIFICATION_PREFERENCES`, and `PUSH_SUBSCRIPTIONS`
-> are defined in migration `20260702110000_notification_tables.sql`. See
+> are defined by migrations `20260628213203`, `20260628225621`, and `20260630003820`
+> (the last adds `notifications.push_sent_at`). See
 > [notifications.md](./notifications.md) and [database.md](./database.md).
 
 ## Key behavior notes

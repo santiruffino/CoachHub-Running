@@ -218,7 +218,20 @@ Apply latest Supabase migrations before running new settings/audit features:
 - includes `20260627010000_rate_limit_buckets.sql` — DB-backed API rate limiting (`consume_rate_limit` RPC)
 - includes the `20260627021000`–`20260627024000` batch — RLS/`SECURITY DEFINER` hardening and a profile-update authorization fix
 - includes `20260702100000_activity_backfill_job_claim.sql` — atomic backfill job claiming for the Strava backfill cron
-- includes `20260702110000_notification_tables.sql` — backfills the `notifications`, `push_subscriptions`, and `notification_preferences` tables + RLS (idempotent; these previously existed only in the live DB)
+- includes `20260628213203_create_notifications_table.sql`, `20260628225621_create_notification_preferences_and_push_subscriptions.sql`, and `20260630003820_add_alert_dedup_and_notification_digest_columns.sql` — the notification system tables + RLS
+
+> ℹ️ **Local ↔ remote migration divergence.** The local `supabase/migrations/`
+> folder and the remote Supabase migration history use different versioning schemes
+> (the remote history only tracks migrations from 2026-06-27 onward). Every
+> remote-tracked migration is now reproduced locally: 8 were mirrored verbatim from
+> the remote history (`20260628193422`, `20260628210609`, `20260628213203`,
+> `20260628225621`, `20260629015357`, `20260630000841`, `20260630003820`,
+> `20260702170216`); the other 3 already existed locally under different version
+> numbers (`add_missing_fk_indexes`, `add_athlete_races_reminder_sent_at`,
+> `activity_backfill_job_claim`). A fresh DB built from local migrations now
+> reproduces the full schema, but the version numbers still differ from remote — run
+> `supabase db pull` / `supabase migration repair` to fully reconcile before relying
+> on `supabase db push`.
 
 ## Documentation map
 
