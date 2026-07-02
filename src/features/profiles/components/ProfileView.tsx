@@ -9,6 +9,7 @@ import { HeartRateZones } from '@/features/profiles/components/HeartRateZones';
 import { CareerProgressSummary } from '@/features/profiles/components/CareerProgressSummary';
 import { StravaStatusCard } from '@/features/strava/components/StravaStatusCard';
 import { useStravaAuth } from '@/features/strava/hooks/useStravaAuth';
+import { GarminStatusCard } from '@/features/garmin/components/GarminStatusCard';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { SectionLayout, FieldGroup } from '@/components/layout/EditorialLayout';
@@ -103,6 +104,8 @@ export function ProfileView({ initialProfile, user }: ProfileViewProps) {
                                 onDisconnect={disconnectStrava}
                                 onRefresh={refreshStrava}
                             />
+                            {/* Renders only for pilot athletes (gated by status.available). */}
+                            <GarminStatusCard enabled={user?.role === 'ATHLETE'} />
                         </SectionLayout>
                     )}
 
