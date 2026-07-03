@@ -2,10 +2,9 @@
  * Pulls recent activities from Garmin Connect into the shared `activities` table
  * (provider = 'garmin', external_id = 'garmin:<id>').
  *
- * Dedup rule: Strava is the primary source. If a Strava-sourced activity already
+ * Dedup rule: Garmin is the primary source. If a Strava-sourced activity already
  * exists for the same athlete at (roughly) the same start time and distance, the
- * Garmin copy is skipped — most Garmin devices already sync to Strava, so without
- * this the athlete would see every workout twice.
+ * Strava copy is removed and Garmin's version is kept.
  */
 
 import * as Sentry from '@sentry/nextjs';
@@ -49,17 +48,20 @@ function toIso(gmt: string | undefined): string | null {
 }
 
 interface StravaRow {
+    id: string;
     start: number;
     distance: number;
 }
 
-function hasStravaDuplicate(startMs: number, distance: number, stravaRows: StravaRow[]): boolean {
-    return stravaRows.some((r) => {
-        if (Math.abs(r.start - startMs) > TIME_WINDOW_MS) return false;
-        if (distance <= 0 && r.distance <= 0) return true;
-        const denom = Math.max(distance, r.distance, 1);
-        return Math.abs(distance - r.distance) / denom <= DISTANCE_TOLERANCE;
-    });
+function isDuplicateMatch(startMs: number, distance: number, row: StravaRow): boolean {
+    if (Math.abs(row.start - startMs) > TIME_WINDOW_MS) return false;
+    if (distance <= 0 && row.distance <= 0) return true;
+    const denom = Math.max(distance, row.distance, 1);
+    return Math.abs(distance - row.distance) / denom <= DISTANCE_TOLERANCE;
+}
+
+function getMatchingStravaRowIds(startMs: number, distance: number, stravaRows: StravaRow[]): string[] {
+    return stravaRows.filter((row) => isDuplicateMatch(startMs, distance, row)).map((row) => row.id);
 }
 
 /**
@@ -120,18 +122,20 @@ export async function syncGarminActivitiesForUser(
     if (minDate && maxDate) {
         const { data: existing } = await service
             .from('activities')
-            .select('start_date, distance')
+            .select('id, start_date, distance')
             .eq('user_id', userId)
             .eq('provider', 'strava')
             .gte('start_date', minDate)
             .lte('start_date', maxDate);
         stravaRows = (existing ?? []).map((r) => ({
+            id: String(r.id),
             start: Date.parse(r.start_date as string),
             distance: Number(r.distance) || 0,
         }));
     }
 
-    let skippedDuplicates = 0;
+    let replacedDuplicates = 0;
+    const stravaIdsToDelete = new Set<string>();
     const rows = [];
     for (const activity of activities) {
         const startIso = toIso(activity.startTimeGMT) || toIso(activity.startTimeLocal);
@@ -139,9 +143,10 @@ export async function syncGarminActivitiesForUser(
         const startMs = Date.parse(startIso);
         const distance = activity.distance || 0;
 
-        if (hasStravaDuplicate(startMs, distance, stravaRows)) {
-            skippedDuplicates += 1;
-            continue;
+        const matchingStravaIds = getMatchingStravaRowIds(startMs, distance, stravaRows);
+        if (matchingStravaIds.length > 0) {
+            matchingStravaIds.forEach((id) => stravaIdsToDelete.add(id));
+            replacedDuplicates += matchingStravaIds.length;
         }
 
         const duration = activity.duration || activity.elapsedDuration || 0;
@@ -176,14 +181,33 @@ export async function syncGarminActivitiesForUser(
         const { error } = await service.from('activities').upsert(rows, { onConflict: 'user_id,external_id' });
         if (error) {
             logger.error('garmin.sync.upsert_failed', { userId, error });
-            return { userId, fetched: activities.length, inserted: 0, skippedDuplicates, status: 'error', error: error.message };
+            return { userId, fetched: activities.length, inserted: 0, skippedDuplicates: replacedDuplicates, status: 'error', error: error.message };
         }
         inserted = rows.length;
     }
 
+    if (stravaIdsToDelete.size > 0) {
+        const { error: deleteError } = await service
+            .from('activities')
+            .delete()
+            .in('id', Array.from(stravaIdsToDelete));
+
+        if (deleteError) {
+            logger.error('garmin.sync.delete_conflicts_failed', { userId, error: deleteError.message });
+            return {
+                userId,
+                fetched: activities.length,
+                inserted,
+                skippedDuplicates: replacedDuplicates,
+                status: 'error',
+                error: deleteError.message,
+            };
+        }
+    }
+
     await touchLastSynced(service, userId, gc);
-    logger.info('garmin.sync.done', { userId, fetched: activities.length, inserted, skippedDuplicates });
-    return { userId, fetched: activities.length, inserted, skippedDuplicates, status: 'ok' };
+    logger.info('garmin.sync.done', { userId, fetched: activities.length, inserted, skippedDuplicates: replacedDuplicates });
+    return { userId, fetched: activities.length, inserted, skippedDuplicates: replacedDuplicates, status: 'ok' };
 }
 
 async function touchLastSynced(service: ServiceClient, userId: string, gc: ReturnType<typeof restoreSession>): Promise<void> {

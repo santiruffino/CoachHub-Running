@@ -48,10 +48,10 @@ export function DashboardCard({
 
 export function DashboardCardHeaderDots() {
     return (
-        <>
+        <div className="flex items-center gap-1.5">
             <div className="w-2 h-2 rounded-full bg-endurix-orange" />
             <div className="w-2 h-2 rounded-full bg-endurix-black dark:bg-white" />
             <div className="w-2 h-2 rounded-full bg-endurix-stone" />
-        </>
+        </div>
     );
 }

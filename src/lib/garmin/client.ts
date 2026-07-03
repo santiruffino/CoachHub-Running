@@ -75,7 +75,9 @@ export async function loginWithCredentials(
  * The underlying client refreshes the short-lived OAuth2 token on demand.
  */
 export function restoreSession(tokens: GarminStoredTokens): GarminConnect {
-    const gc = new GarminConnect();
+    // garmin-connect requires a credentials object at construction time even
+    // when we only want to reuse stored tokens.
+    const gc = new GarminConnect({ username: '', password: '' });
     gc.loadToken(tokens.oauth1, tokens.oauth2);
     return gc;
 }

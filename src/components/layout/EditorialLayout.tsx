@@ -114,8 +114,8 @@ export function GenderToggle({
                     className={cn(
                         'flex-1 py-2 px-3 text-sm rounded-md border transition-all duration-150 font-medium',
                         selected === opt.value
-                            ? 'bg-foreground text-background border-foreground'
-                            : 'bg-background text-muted-foreground border-border/40 hover:border-foreground/30 hover:text-foreground'
+                            ? 'bg-endurix-orange text-white border-endurix-orange shadow-sm'
+                            : 'bg-transparent text-muted-foreground border-border/40 hover:border-endurix-orange/30 hover:text-foreground dark:bg-white/5 dark:hover:bg-white/8'
                     )}
                 >
                     {opt.label}

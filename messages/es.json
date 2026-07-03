@@ -761,7 +761,21 @@
       "map": {
         "colorBy": "Colorear por",
         "pace": "Ritmo",
-        "heartRate": "Frecuencia cardíaca"
+        "heartRate": "Frecuencia cardíaca",
+        "start": "Inicio",
+        "finish": "Fin",
+        "slower": "Más lento",
+        "faster": "Más rápido",
+        "lower": "Menor",
+        "higher": "Mayor",
+        "hoverHint": "Pasá el cursor por la ruta para ver el detalle",
+        "tooltip": {
+          "distance": "Distancia",
+          "pace": "Ritmo",
+          "heartRate": "FC",
+          "altitude": "Altitud",
+          "grade": "Pendiente"
+        }
       },
       "tabs": {
         "analysis": "Análisis de Vueltas y Splits",

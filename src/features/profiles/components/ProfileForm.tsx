@@ -72,8 +72,8 @@ function TestSpeedInput({ formKey, register, setValue, watch }: TestSpeedInputPr
     return (
         <div className="flex flex-col gap-3">
             {/* Calculator Panel */}
-            <div className="flex flex-wrap items-center gap-3 bg-[#f8fafc] dark:bg-white/5 p-3 rounded border border-border/40">
-                <div className="flex items-center gap-2">
+            <div className="grid gap-3 bg-[#f8fafc] dark:bg-white/5 p-3 rounded border border-border/40 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end">
+                <div className="flex items-center gap-2 min-w-0">
                     <span className="text-xs font-semibold text-foreground/70">{t('calculator.distancePlaceholder')}:</span>
                     <Input 
                         type="number" 
@@ -81,20 +81,20 @@ function TestSpeedInput({ formKey, register, setValue, watch }: TestSpeedInputPr
                         placeholder={t('testSpeed.distancePlaceholder')}
                         value={dist}
                         onChange={(e) => setDist(e.target.value)}
-                        className="h-8 w-16 bg-background border-none px-2 text-xs"
+                        className="h-8 w-full min-w-0 bg-background border-none px-2 text-xs"
                     />
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 min-w-0">
                     <span className="text-xs font-semibold text-foreground/70">{t('calculator.timePlaceholder')}:</span>
                     <Input 
                         type="text" 
                         placeholder={t('testSpeed.timePlaceholder')}
                         value={timeStr}
                         onChange={(e) => setTimeStr(e.target.value)}
-                        className="h-8 w-20 bg-background border-none px-2 text-xs"
+                        className="h-8 w-full min-w-0 bg-background border-none px-2 text-xs"
                     />
                 </div>
-                <Button type="button" variant="outline" size="sm" onClick={calculate} className="h-8 text-xs ml-auto border-border/40">
+                <Button type="button" variant="orange" size="sm" onClick={calculate} className="h-8 w-full sm:w-auto text-xs shadow-sm">
                     {t('testSpeed.calculate')}
                 </Button>
             </div>

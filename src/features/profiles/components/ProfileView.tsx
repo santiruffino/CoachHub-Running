@@ -1,11 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ProfileDetails } from '@/interfaces/athlete';
 import { ProfileForm } from '@/features/profiles/components/ProfileForm';
 import { HeartRateZones } from '@/features/profiles/components/HeartRateZones';
-import { CareerProgressSummary } from '@/features/profiles/components/CareerProgressSummary';
 import { StravaStatusCard } from '@/features/strava/components/StravaStatusCard';
 import { useStravaAuth } from '@/features/strava/hooks/useStravaAuth';
 import { GarminStatusCard } from '@/features/garmin/components/GarminStatusCard';
@@ -15,6 +14,7 @@ import { SectionLayout, FieldGroup } from '@/components/layout/EditorialLayout';
 import { BackButton } from '@/components/ui/BackButton';
 import { useTranslations } from 'next-intl';
 import { User } from '@/interfaces/auth';
+import { garminService, type GarminDebugSection, type GarminDebugResponse } from '@/features/garmin/services/garmin.service';
 
 interface ProfileViewProps {
     initialProfile: ProfileDetails;
@@ -25,6 +25,11 @@ export function ProfileView({ initialProfile, user }: ProfileViewProps) {
     const t = useTranslations('profile.page');
     const tCommon = useTranslations('common');
     const [profile] = useState<ProfileDetails>(initialProfile);
+    const garminPilotEnabled = Boolean(profile.garmin_pilot_enabled);
+    const [debugSection, setDebugSection] = useState<GarminDebugSection>('status');
+    const [debugPayload, setDebugPayload] = useState<GarminDebugResponse | null>(null);
+    const [debugLoading, setDebugLoading] = useState(false);
+    const [debugError, setDebugError] = useState<string | null>(null);
 
     const {
         status: stravaStatus,
@@ -33,6 +38,50 @@ export function ProfileView({ initialProfile, user }: ProfileViewProps) {
         disconnect: disconnectStrava,
         sync: refreshStrava,
     } = useStravaAuth({ enabled: user?.role === 'ATHLETE' });
+
+    useEffect(() => {
+        if (!garminPilotEnabled || user?.role !== 'ATHLETE') return;
+
+        let cancelled = false;
+
+        const loadDebugInfo = async () => {
+            try {
+                setDebugLoading(true);
+                setDebugError(null);
+                const data = await garminService.getDebugInfo(debugSection);
+                if (!cancelled) {
+                    setDebugPayload(data);
+                }
+            } catch (error) {
+                if (!cancelled) {
+                    setDebugError(error instanceof Error ? error.message : 'No se pudo cargar el debug de Garmin');
+                }
+            } finally {
+                if (!cancelled) {
+                    setDebugLoading(false);
+                }
+            }
+        };
+
+        void loadDebugInfo();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [debugSection, garminPilotEnabled, user?.role]);
+
+    const refreshDebugInfo = async () => {
+        try {
+            setDebugLoading(true);
+            setDebugError(null);
+            const data = await garminService.getDebugInfo(debugSection);
+            setDebugPayload(data);
+        } catch (error) {
+            setDebugError(error instanceof Error ? error.message : 'No se pudo cargar el debug de Garmin');
+        } finally {
+            setDebugLoading(false);
+        }
+    };
 
     const initials = profile.firstName
         ? `${profile.firstName.charAt(0)}${profile.lastName?.charAt(0) ?? ''}`
@@ -77,16 +126,6 @@ export function ProfileView({ initialProfile, user }: ProfileViewProps) {
                         </div>
                     </div>
 
-                    {user?.role === 'ATHLETE' && (
-                        <SectionLayout
-                            tag={t('careerProgress.tag')}
-                            title={t('careerProgress.title')}
-                            description={t('careerProgress.description')}
-                        >
-                            <CareerProgressSummary athleteId={user.id} />
-                        </SectionLayout>
-                    )}
-
                     <ProfileForm profile={profile} />
 
                     {user?.role === 'ATHLETE' && (
@@ -95,15 +134,68 @@ export function ProfileView({ initialProfile, user }: ProfileViewProps) {
                             title={t('integrations.title')}
                             description={t('integrations.description')}
                         >
-                            <StravaStatusCard
-                                status={stravaStatus}
-                                loading={stravaLoading}
-                                onConnect={connectStrava}
-                                onDisconnect={disconnectStrava}
-                                onRefresh={refreshStrava}
-                            />
-                            {/* Renders only for pilot athletes (gated by status.available). */}
-                            <GarminStatusCard enabled={user?.role === 'ATHLETE'} />
+                            <FieldGroup className="overflow-hidden rounded-xl p-0 space-y-0 divide-y divide-endurix-black/10 dark:divide-border">
+                                <StravaStatusCard
+                                    status={stravaStatus}
+                                    loading={stravaLoading}
+                                    onConnect={connectStrava}
+                                    onDisconnect={disconnectStrava}
+                                    onRefresh={refreshStrava}
+                                />
+                                {/* Renders only for pilot athletes (gated by status.available). */}
+                                <GarminStatusCard enabled={user?.role === 'ATHLETE' && garminPilotEnabled} />
+                            </FieldGroup>
+                        </SectionLayout>
+                    )}
+
+                    {garminPilotEnabled && user?.role === 'ATHLETE' && (
+                        <SectionLayout
+                            tag="Garmin"
+                            title="Debug console"
+                            description="Select the Garmin slice you want to inspect."
+                        >
+                            <FieldGroup className="overflow-hidden rounded-xl p-0 space-y-0">
+                                <div className="flex items-center justify-between gap-3 border-b border-endurix-black/10 dark:border-border px-4 py-3">
+                                    <div>
+                                        <p
+                                            className="text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground"
+                                            style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                                        >
+                                            Inspect
+                                        </p>
+                                        <p className="text-xs text-muted-foreground mt-1">
+                                            Useful for checking the exact fields we receive from Garmin.
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <select
+                                            value={debugSection}
+                                            onChange={(e) => setDebugSection(e.target.value as GarminDebugSection)}
+                                            className="h-10 rounded-md border border-endurix-black/15 dark:border-border bg-background px-3 text-sm"
+                                        >
+                                            <option value="status">Connection status</option>
+                                            <option value="profile">getUserProfile()</option>
+                                            <option value="settings">getUserSettings()</option>
+                                        </select>
+                                        <Button variant="outline-brand" onClick={refreshDebugInfo} disabled={debugLoading}>
+                                            Refresh
+                                        </Button>
+                                    </div>
+                                </div>
+
+                                <div className="p-4 bg-muted/40 dark:bg-muted/20">
+                                    <pre
+                                        className="overflow-x-auto rounded-lg border border-endurix-black/10 dark:border-border bg-endurix-black/[0.03] dark:bg-black/30 p-4 text-[11px] leading-5 text-endurix-black/80 dark:text-muted-foreground"
+                                        style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}
+                                    >
+                                        {debugLoading
+                                            ? 'Loading Garmin debug...'
+                                            : debugError
+                                                ? debugError
+                                                : JSON.stringify(debugPayload, null, 2)}
+                                    </pre>
+                                </div>
+                            </FieldGroup>
                         </SectionLayout>
                     )}
 

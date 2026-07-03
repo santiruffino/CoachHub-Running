@@ -40,6 +40,11 @@ interface ActivityUpsertRow {
     updated_at: string;
 }
 
+interface GarminActivityRow {
+    start: number;
+    distance: number;
+}
+
 export interface SyncResult {
     inserted: number;
     updated: number;
@@ -51,6 +56,9 @@ export interface SyncOptions {
     days?: number;
     maxPages?: number;
 }
+
+const TIME_WINDOW_MS = 5 * 60 * 1000; // ±5 min
+const DISTANCE_TOLERANCE = 0.05; // ±5%
 
 // Strava free tier rate limit is app-wide (not per-athlete): 200 req/15min,
 // 2000/day. Leave headroom below the hard limit so manual /auth/sync calls
@@ -157,6 +165,13 @@ async function fetchStravaActivities(
     );
 }
 
+function isGarminDuplicate(startMs: number, distance: number, garminRow: GarminActivityRow): boolean {
+    if (Math.abs(garminRow.start - startMs) > TIME_WINDOW_MS) return false;
+    if (distance <= 0 && garminRow.distance <= 0) return true;
+    const denom = Math.max(distance, garminRow.distance, 1);
+    return Math.abs(distance - garminRow.distance) / denom <= DISTANCE_TOLERANCE;
+}
+
 /**
  * Upserts activities into the database in batches.
  */
@@ -169,7 +184,40 @@ async function upsertActivities(
         return { inserted: 0, updated: 0 };
     }
 
-    const externalIds = activities.map((a) => a.id.toString());
+    const startDates = activities
+        .map((activity) => Date.parse(activity.start_date))
+        .filter((value) => Number.isFinite(value));
+
+    let garminRows: GarminActivityRow[] = [];
+    if (startDates.length > 0) {
+        const minDate = new Date(Math.min(...startDates) - TIME_WINDOW_MS).toISOString();
+        const maxDate = new Date(Math.max(...startDates) + TIME_WINDOW_MS).toISOString();
+
+        const { data: existingGarminRows } = await supabase
+            .from('activities')
+            .select('start_date, distance')
+            .eq('user_id', userId)
+            .eq('provider', 'garmin')
+            .gte('start_date', minDate)
+            .lte('start_date', maxDate);
+
+        garminRows = (existingGarminRows ?? []).map((row) => ({
+            start: Date.parse(row.start_date as string),
+            distance: Number(row.distance) || 0,
+        }));
+    }
+
+    const prioritizedActivities = activities.filter((activity) => {
+        const startMs = Date.parse(activity.start_date);
+        const distance = activity.distance || 0;
+        return !garminRows.some((row) => isGarminDuplicate(startMs, distance, row));
+    });
+
+    if (prioritizedActivities.length === 0) {
+        return { inserted: 0, updated: 0 };
+    }
+
+    const externalIds = prioritizedActivities.map((a) => a.id.toString());
 
     // Check which activities already exist
     const { data: existingRows } = await supabase
@@ -192,7 +240,7 @@ async function upsertActivities(
         maxHR: athleteProfile?.max_hr,
     };
 
-    const upsertRows: ActivityUpsertRow[] = activities.map((activity) => {
+    const upsertRows: ActivityUpsertRow[] = prioritizedActivities.map((activity) => {
         const sufferScore = typeof activity.suffer_score === 'number' ? activity.suffer_score : null;
         const duration = activity.moving_time || activity.elapsed_time || 0;
         return {
@@ -237,8 +285,8 @@ async function upsertActivities(
         }
     }
 
-    const inserted = activities.filter((a) => !existingExternalIds.has(a.id.toString())).length;
-    const updated = activities.length - inserted;
+    const inserted = prioritizedActivities.filter((a) => !existingExternalIds.has(a.id.toString())).length;
+    const updated = prioritizedActivities.length - inserted;
 
     return { inserted, updated };
 }

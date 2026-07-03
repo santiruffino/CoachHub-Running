@@ -21,6 +21,15 @@ export interface GarminPushResponse {
     error?: string;
 }
 
+export type GarminDebugSection = 'status' | 'profile' | 'settings';
+
+export interface GarminDebugResponse {
+    section: GarminDebugSection;
+    available: boolean;
+    connected: boolean;
+    data: unknown;
+}
+
 export const garminService = {
     getStatus: async (): Promise<GarminStatus> => {
         const response = await api.get<GarminStatus>(`/v2/garmin/auth/status?t=${Date.now()}`);
@@ -32,6 +41,10 @@ export const garminService = {
     },
     disconnect: async (): Promise<void> => {
         await api.post('/v2/garmin/auth/disconnect');
+    },
+    getDebugInfo: async (section: GarminDebugSection): Promise<GarminDebugResponse> => {
+        const response = await api.get<GarminDebugResponse>(`/v2/garmin/debug?section=${section}&t=${Date.now()}`);
+        return response.data;
     },
     pushAssignment: async (assignmentId: string): Promise<GarminPushResponse> => {
         const response = await api.post<GarminPushResponse>(`/v2/garmin/workouts/${assignmentId}/push`);

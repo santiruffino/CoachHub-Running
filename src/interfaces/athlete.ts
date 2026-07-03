@@ -71,6 +71,7 @@ export interface GroupAthleteData {
 }
 
 export interface ProfileDetails extends User {
+    garmin_pilot_enabled?: boolean;
     coachProfile?: {
         bio: string;
         specialty: string;
