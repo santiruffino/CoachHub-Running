@@ -191,28 +191,37 @@ export default function AthleteDashboard({ user, initialData = null }: AthleteDa
         }
     }, [fetchData, initialData]);
 
-    useEffect(() => {
+    const fetchLoadMetrics = useCallback(async () => {
         if (!user) return;
-        let cancelled = false;
-        const load = async () => {
-            try {
-                setLoadMetricsLoading(true);
-                const res = await athletesService.getLoadMetrics(user.id, loadRange);
-                if (!cancelled) setLoadMetricsData(res.data);
-            } catch (error) {
-                appLogger.error('Failed to fetch load metrics:', error);
-            } finally {
-                if (!cancelled) {
-                    setLoadMetricsLoading(false);
-                    setIsSwitchingLoadRange(false);
-                }
-            }
-        };
-        void load();
-        return () => {
-            cancelled = true;
-        };
+        try {
+            setLoadMetricsLoading(true);
+            const res = await athletesService.getLoadMetrics(user.id, loadRange);
+            setLoadMetricsData(res.data);
+        } catch (error) {
+            appLogger.error('Failed to fetch load metrics:', error);
+        } finally {
+            setLoadMetricsLoading(false);
+            setIsSwitchingLoadRange(false);
+        }
     }, [user, loadRange]);
+
+    useEffect(() => {
+        void fetchLoadMetrics();
+    }, [fetchLoadMetrics]);
+
+    const backfillStatus = loadMetricsData?.meta.backfillStatus;
+    useEffect(() => {
+        if (backfillStatus !== 'queued' && backfillStatus !== 'running') return;
+
+        // The Strava backfill runs in the background (see /api/cron/strava-backfill),
+        // so poll until it finishes instead of leaving "Sincronizando..." stuck on
+        // screen after the job actually completes.
+        const interval = setInterval(() => {
+            void fetchLoadMetrics();
+        }, 10000);
+
+        return () => clearInterval(interval);
+    }, [backfillStatus, fetchLoadMetrics]);
 
     useEffect(() => {
         if (!user) return;

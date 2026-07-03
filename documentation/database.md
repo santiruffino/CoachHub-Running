@@ -53,8 +53,10 @@ The active tenant boundary is `team_id`.
 ## Notifications tables
 
 The notification system (see [notifications.md](./notifications.md)) uses three
-tables. They originally existed only in the live database; they are now backfilled
-in `20260702110000_notification_tables.sql` (idempotent, matches production).
+tables, defined by `20260628213203_create_notifications_table.sql`,
+`20260628225621_create_notification_preferences_and_push_subscriptions.sql`, and
+`20260630003820_add_alert_dedup_and_notification_digest_columns.sql` (the last adds
+`notifications.push_sent_at`).
 
 - `notifications` — `id`, `user_id`, `type`, `title`, `body`, `link`, `is_read`, `created_at`, `push_sent_at` (read state is the boolean `is_read`; rows inserted via service role)
 - `push_subscriptions` — `id`, `user_id`, `endpoint` (unique), `p256dh`, `auth`, `created_at`

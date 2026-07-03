@@ -111,10 +111,16 @@ Generate VAPID keys with `npx web-push generate-vapid-keys`.
 
 ## Schema
 
-The three tables originally existed only in the live Supabase database. They are
-now backfilled in migration
-[`supabase/migrations/20260702110000_notification_tables.sql`](../supabase/migrations/20260702110000_notification_tables.sql),
-which reproduces the production schema exactly and is idempotent (safe to re-run).
+The three tables are defined by migrations that already exist in the remote
+history and are now mirrored as local files:
+
+- `20260628213203_create_notifications_table.sql`
+- `20260628225621_create_notification_preferences_and_push_subscriptions.sql`
+- `20260630003820_add_alert_dedup_and_notification_digest_columns.sql` — adds
+  `notifications.push_sent_at` (the original create table did not include it).
+
+The `notifications` table is also added to the `supabase_realtime` publication, so
+the inbox can stream new rows to the client.
 
 Columns (as in production):
 

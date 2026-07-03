@@ -69,10 +69,12 @@ the same topic, the canonical one is marked and the other carries a pointer bann
 
 - **i18n** — single locale (`es`); many hardcoded strings remain
   ([i18n-audit.md](./i18n-audit.md)).
-
-Recently closed: the notification tables (`notifications`, `push_subscriptions`,
-`notification_preferences`), which previously existed only in the live DB, are now
-in migration `20260702110000_notification_tables.sql`.
+- **Migration divergence** — the local `supabase/migrations/` folder and the
+  remote Supabase migration history use different versioning schemes and have
+  diverged (remote history only tracks migrations from 2026-06-27). The
+  notification-table migrations were mirrored from the remote history; a full
+  `supabase db pull` reconciliation is still recommended. See
+  [database.md](./database.md).
 
 ## Conventions
 

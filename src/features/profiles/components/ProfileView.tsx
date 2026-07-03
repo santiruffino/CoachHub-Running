@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { ProfileDetails } from '@/interfaces/athlete';
 import { ProfileForm } from '@/features/profiles/components/ProfileForm';
 import { HeartRateZones } from '@/features/profiles/components/HeartRateZones';
@@ -25,7 +24,6 @@ interface ProfileViewProps {
 export function ProfileView({ initialProfile, user }: ProfileViewProps) {
     const t = useTranslations('profile.page');
     const tCommon = useTranslations('common');
-    const router = useRouter();
     const [profile] = useState<ProfileDetails>(initialProfile);
 
     const {

@@ -50,8 +50,8 @@
 ### Notifications and messaging
 
 - `coach_athlete_messages` (two-way coach↔athlete chat)
-- `notifications`, `push_subscriptions`, `notification_preferences` (migration
-  `20260702110000_notification_tables.sql`; see
+- `notifications`, `push_subscriptions`, `notification_preferences` (migrations
+  `20260628213203`, `20260628225621`, `20260630003820`; see
   [`documentation/notifications.md`](../documentation/notifications.md))
 
 ## Policy model

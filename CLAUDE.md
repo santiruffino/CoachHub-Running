@@ -72,9 +72,13 @@ Bootstrap the first admin/coach: `npx tsx scripts/create-admin.ts` (or
 ## Gotchas
 
 - The `notifications`, `push_subscriptions`, and `notification_preferences` tables
-  originally existed only in the live Supabase DB; they're now backfilled in
-  `supabase/migrations/20260702110000_notification_tables.sql` (idempotent). Note
-  notification read state is the boolean `is_read`, not a `read_at` timestamp.
+  are defined by migrations `20260628213203`, `20260628225621`, and `20260630003820`
+  (the last adds `push_sent_at`). Note notification read state is the boolean
+  `is_read`, not a `read_at` timestamp.
+- **Migration divergence**: the local `supabase/migrations/` folder and the remote
+  Supabase migration history use different versioning and have diverged (remote only
+  tracks from 2026-06-27). Don't assume a local file == a remote history entry.
+  Reconcile with `supabase db pull` before relying on `supabase db push`.
 - Vercel is on the **Hobby** plan → cron granularity is **daily only**
   (`vercel.json`). Cron routes require `Authorization: Bearer $CRON_SECRET`.
 - Two documentation folders exist and overlap — see `documentation/README.md` for

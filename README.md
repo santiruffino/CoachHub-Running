@@ -217,8 +217,14 @@ Apply latest Supabase migrations before running new settings/audit features:
 - includes `20260627000000_coach_athlete_messages.sql` — coach↔athlete chat storage
 - includes `20260627010000_rate_limit_buckets.sql` — DB-backed API rate limiting (`consume_rate_limit` RPC)
 - includes the `20260627021000`–`20260627024000` batch — RLS/`SECURITY DEFINER` hardening and a profile-update authorization fix
-- includes `20260702100000_activity_backfill_job_claim.sql` — atomic backfill job claiming for the Strava backfill cron
-- includes `20260702110000_notification_tables.sql` — backfills the `notifications`, `push_subscriptions`, and `notification_preferences` tables + RLS (idempotent; these previously existed only in the live DB)
+- includes `20260702170134_activity_backfill_job_claim.sql` — atomic backfill job claiming for the Strava backfill cron
+- includes `20260628213203_create_notifications_table.sql`, `20260628225621_create_notification_preferences_and_push_subscriptions.sql`, and `20260630003820_add_alert_dedup_and_notification_digest_columns.sql` — the notification system tables + RLS
+
+> ℹ️ **Local ↔ remote migration alignment.** The local `supabase/migrations/`
+> folder now matches the remote Supabase migration history for the tracked window
+> (2026-06-27 onward). If you need to repair an existing database, use
+> `supabase migration repair` to mark the corresponding versions as applied before
+> relying on `supabase db push`.
 
 ## Documentation map
 

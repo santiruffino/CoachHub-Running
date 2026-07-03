@@ -116,7 +116,7 @@ export default function LoginForm() {
                                 type="email"
                                 placeholder={t('emailPlaceholder')}
                                 variant="boxed"
-                                className="pl-10 h-11"
+                                className="pl-10 h-11 bg-white dark:bg-card"
                                 {...register('email')}
                             />
                         </div>
@@ -137,7 +137,7 @@ export default function LoginForm() {
                                     type="password"
                                     placeholder={t('passwordPlaceholder')}
                                     variant="boxed"
-                                    className="pl-10 h-11"
+                                    className="pl-10 h-11 bg-white dark:bg-card"
                                     {...register('password')}
                                 />
                             </div>
@@ -186,4 +186,3 @@ export default function LoginForm() {
         </Card>
     );
 }
-
