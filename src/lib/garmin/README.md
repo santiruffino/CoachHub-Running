@@ -2,8 +2,8 @@
 
 Pushes Endurix structured workouts to an athlete's Garmin Connect calendar and
 pulls their recent activities back. Garmin's official Training/Activity API is
-closed, so this uses the unofficial `garmin-connect` npm client (browser-SSO
-login + internal endpoints).
+closed, so this uses the unofficial `@flow-js/garmin-connect` npm client
+(browser-SSO login + internal endpoints).
 
 **This is a ToS-gray, best-effort integration gated behind an opt-in pilot flag.
 Treat it as such.**
@@ -26,24 +26,27 @@ Treat it as such.**
 
 ## Setup
 
-Set a 32-byte key (base64 or hex) used to encrypt Garmin session tokens at rest:
+The whole integration is behind a master feature flag. It is OFF unless BOTH:
+
+- `GARMIN_INTEGRATION_ENABLED=true` — explicit kill-switch, and
+- `GARMIN_TOKEN_ENC_KEY` — a 32-byte key (base64 or hex) to encrypt tokens at rest.
 
 ```bash
-# generate
+# generate the encryption key
 node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
-# then set GARMIN_TOKEN_ENC_KEY in the environment
 ```
 
-Without `GARMIN_TOKEN_ENC_KEY` the integration is inert (`isGarminConfigured()`
-returns false and all surfaces are hidden/skipped). The daily pull also needs
-`CRON_SECRET` (shared with the other crons).
+Set both in the environment (Vercel → Project → Settings → Environment
+Variables for prod/preview; `.env.local` for dev). With the flag off (or the key
+missing) `isGarminConfigured()` returns false and every surface is hidden and
+skipped. The daily pull also needs `CRON_SECRET` (shared with the other crons).
 
 Enable per-athlete during the pilot: `UPDATE profiles SET garmin_pilot_enabled =
 true WHERE id = '<uuid>';`
 
 ## Known limitations
 
-- **No MFA/2FA.** `garmin-connect@1.6.2` cannot complete a 2FA login; pilot
+- **No MFA/2FA.** `@flow-js/garmin-connect` cannot complete a 2FA login; pilot
   accounts must have 2FA disabled. A 2FA login surfaces as `GARMIN_MFA_UNSUPPORTED`.
 - **Login may be blocked from datacenter IPs** (Cloudflare). Validate in the
   pilot; fall back to a Python `garth` sidecar / egress proxy if blocked.

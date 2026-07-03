@@ -44,9 +44,18 @@ interface WorkoutSnapshot {
     blocks: WorkoutBlock[];
 }
 
-/** True when the Garmin integration is configured to run at all. */
+/**
+ * Master feature flag for the entire Garmin integration. The feature is off
+ * unless BOTH are true:
+ *   - GARMIN_INTEGRATION_ENABLED === 'true' (explicit kill-switch), and
+ *   - GARMIN_TOKEN_ENC_KEY is set (tokens can be encrypted).
+ *
+ * Every Garmin surface (API routes, cron, assign hook, and the UI via the
+ * status endpoint) flows through this, so flipping the flag hides and disables
+ * the whole feature. Per-athlete access is further gated by garmin_pilot_enabled.
+ */
 export function isGarminConfigured(): boolean {
-    return Boolean(process.env.GARMIN_TOKEN_ENC_KEY);
+    return process.env.GARMIN_INTEGRATION_ENABLED === 'true' && Boolean(process.env.GARMIN_TOKEN_ENC_KEY);
 }
 
 /**

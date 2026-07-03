@@ -6,7 +6,7 @@
  * official Training API, only this file (and client.ts's callers' auth) needs to
  * change — the translator, DB and UI stay the same.
  *
- * IMPORTANT LIMITATIONS (garmin-connect@1.6.2):
+ * IMPORTANT LIMITATIONS (@flow-js/garmin-connect):
  *  - No MFA/2FA support. `handleMFA` is a no-op; login throws if the account has
  *    two-factor enabled. Pilot athletes must disable 2FA on Garmin Connect.
  *  - Login is a browser-SSO emulation behind Cloudflare and may be blocked from
@@ -15,9 +15,8 @@
  * Must run in the Node.js runtime (not Edge) — the client needs full Node.
  */
 
-import { GarminConnect } from 'garmin-connect';
-import type { IActivity, IOauth1Token, IOauth2Token } from 'garmin-connect/dist/garmin/types';
-import type { IWorkoutDetail } from 'garmin-connect/dist/garmin/types';
+import { GarminConnect } from '@flow-js/garmin-connect';
+import type { IActivity, IOauth1Token, IOauth2Token, IWorkoutDetail } from '@flow-js/garmin-connect';
 import type { GarminWorkout } from './types';
 
 export interface GarminStoredTokens {
@@ -87,7 +86,7 @@ export function currentTokens(gc: GarminConnect): GarminStoredTokens {
 
 /** Upload a workout; returns Garmin's workout id. */
 export async function uploadWorkout(gc: GarminConnect, workout: GarminWorkout): Promise<string> {
-    const created = await gc.addWorkout(workout as unknown as IWorkoutDetail);
+    const created = await gc.createWorkout(workout as unknown as IWorkoutDetail);
     const id = created?.workoutId;
     if (id == null) {
         throw new Error('Garmin did not return a workout id');
@@ -95,19 +94,17 @@ export async function uploadWorkout(gc: GarminConnect, workout: GarminWorkout): 
     return String(id);
 }
 
-const GC_API = 'https://connectapi.garmin.com';
-
-/** Schedule an uploaded workout onto the athlete's calendar for a given day. */
+/**
+ * Schedule an uploaded workout onto the athlete's calendar for a given day.
+ * The client returns no schedule id, so we return null.
+ */
 export async function scheduleWorkout(
     gc: GarminConnect,
     workoutId: string,
     date: string, // YYYY-MM-DD
 ): Promise<string | null> {
-    const res = await gc.post<{ workoutScheduleId?: number | string }>(
-        `${GC_API}/workout-service/schedule/${workoutId}`,
-        { date },
-    );
-    return res?.workoutScheduleId != null ? String(res.workoutScheduleId) : null;
+    await gc.scheduleWorkout({ workoutId }, date);
+    return null;
 }
 
 /** Remove a previously uploaded workout (used on unassign / re-sync). */
