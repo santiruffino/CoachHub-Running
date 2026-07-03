@@ -26,23 +26,22 @@ Treat it as such.**
 
 ## Setup
 
-The whole integration is behind a master feature flag. It is OFF unless BOTH:
-
-- `GARMIN_INTEGRATION_ENABLED=true` — explicit kill-switch, and
-- `GARMIN_TOKEN_ENC_KEY` — a 32-byte key (base64 or hex) to encrypt tokens at rest.
+Required server config: `GARMIN_TOKEN_ENC_KEY` — a 32-byte key (base64 or hex)
+used to encrypt Garmin session tokens at rest.
 
 ```bash
 # generate the encryption key
 node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 ```
 
-Set both in the environment (Vercel → Project → Settings → Environment
-Variables for prod/preview; `.env.local` for dev). With the flag off (or the key
-missing) `isGarminConfigured()` returns false and every surface is hidden and
-skipped. The daily pull also needs `CRON_SECRET` (shared with the other crons).
+Set it in the environment (Vercel → Project → Settings → Environment Variables
+for prod/preview; `.env.local` for dev). Without it `isGarminConfigured()`
+returns false and Garmin calls are skipped (infra guard, not a feature flag).
+The daily pull also needs `CRON_SECRET` (shared with the other crons).
 
-Enable per-athlete during the pilot: `UPDATE profiles SET garmin_pilot_enabled =
-true WHERE id = '<uuid>';`
+**The single feature flag is per-athlete:** `profiles.garmin_pilot_enabled`.
+Enable a pilot athlete with `UPDATE profiles SET garmin_pilot_enabled = true
+WHERE id = '<uuid>';` — the UI and API stay hidden/closed for everyone else.
 
 ## Known limitations
 
