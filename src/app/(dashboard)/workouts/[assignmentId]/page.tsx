@@ -10,7 +10,7 @@ import { WorkoutBuilder } from '@/features/trainings/components/builder/WorkoutB
 import { WorkoutBlock } from '@/features/trainings/components/builder/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { User, Calendar, CheckCircle2, Trash2 } from 'lucide-react';
+import { User, Calendar, CheckCircle2, Trash2, Watch } from 'lucide-react';
 import { BackButton } from '@/components/ui/BackButton';
 import api from '@/lib/axios';
 import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
@@ -55,6 +55,7 @@ export default function WorkoutDetailsPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [deleting, setDeleting] = useState(false);
+    const [pushingGarmin, setPushingGarmin] = useState(false);
     const [editedBlocks, setEditedBlocks] = useState<WorkoutBlock[]>([]);
     const [editedExpectedRpe, setEditedExpectedRpe] = useState<number>(5);
     const [editedWorkoutName, setEditedWorkoutName] = useState('');
@@ -180,6 +181,25 @@ export default function WorkoutDetailsPage() {
             showAlert('error', t('deleteFailed'));
         } finally {
             setDeleting(false);
+        }
+    };
+
+    const handlePushToGarmin = async () => {
+        if (!assignment) return;
+        try {
+            setPushingGarmin(true);
+            await api.post(`/v2/garmin/workouts/${assignmentId}/push`);
+            showAlert('success', t('garminPushSuccess'));
+        } catch (error: unknown) {
+            appLogger.error('Failed to push workout to Garmin:', error);
+            const code = (error as { response?: { data?: { code?: string } } })?.response?.data?.code;
+            if (code === 'GARMIN_PUSH_SKIPPED') {
+                showAlert('warning', t('garminPushSkipped'));
+            } else {
+                showAlert('error', getApiErrorMessage(error, t('garminPushFailed')));
+            }
+        } finally {
+            setPushingGarmin(false);
         }
     };
 
@@ -344,6 +364,17 @@ export default function WorkoutDetailsPage() {
                         </div>
 
                         <div className="flex items-center gap-2 flex-wrap md:justify-end">
+                            <Button
+                                variant="ghost"
+                                onClick={handlePushToGarmin}
+                                disabled={pushingGarmin}
+                                className="h-10 px-4 bg-white/10 text-endurix-black/70 hover:text-endurix-black dark:text-muted-foreground dark:hover:text-foreground hover:bg-endurix-black/5 dark:hover:bg-white/10 uppercase tracking-widest text-xs font-bold"
+                                style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                            >
+                                <Watch className="w-4 h-4 mr-2" />
+                                {pushingGarmin ? t('sendingToGarmin') : t('sendToGarmin')}
+                            </Button>
+
                             <Button
                                 variant="ghost"
                                 onClick={confirmDelete}

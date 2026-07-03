@@ -107,11 +107,12 @@ describe('translateWorkout — target resolution', () => {
         expect(s.targetValueTwo).toBe(Math.round(50 + 0.8 * reserve));
     });
 
-    it('vam_zone → pace.zone with low speed < high speed in m/s', () => {
+    it('vam_zone → pace.zone with faster bound (higher m/s) in targetValueOne', () => {
+        // Matches Garmin's canonical ordering: one = faster, two = slower.
         const s = targetKey({ target: { type: 'vam_zone', min: 2, max: 2 } });
         expect(s.targetType.workoutTargetTypeKey).toBe('pace.zone');
-        expect(s.targetValueOne).toBeGreaterThan(0);
-        expect(s.targetValueTwo).toBeGreaterThan(s.targetValueOne!);
+        expect(s.targetValueTwo).toBeGreaterThan(0);
+        expect(s.targetValueOne).toBeGreaterThan(s.targetValueTwo!);
     });
 
     it('power_zone → power.zone in watts', () => {
@@ -145,6 +146,41 @@ describe('translateWorkout — target resolution', () => {
             profile: null,
         }).workoutSegments[0].workoutSteps[0] as GarminExecutableStep;
         expect(s.targetType.workoutTargetTypeKey).toBe('no.target');
+    });
+});
+
+describe('translateWorkout — matches Garmin real payload shape (Easy Run 10K)', () => {
+    // Mirrors a real Garmin workout: single running interval, 10 km by distance,
+    // pace.zone target with one=faster, two=slower.
+    const workout = translateWorkout({
+        name: 'Easy Run 10K',
+        type: TrainingType.RUNNING,
+        blocks: [
+            block({ type: 'interval', duration: { type: 'distance', value: 10000 }, target: { type: 'vam_zone', min: 2, max: 2 } }),
+        ],
+        profile,
+    });
+    const seg = workout.workoutSegments[0];
+    const step = seg.workoutSteps[0] as GarminExecutableStep;
+
+    it('has the running sportType with displayOrder on workout and segment', () => {
+        expect(workout.sportType).toEqual({ sportTypeId: 1, sportTypeKey: 'running', displayOrder: 1 });
+        expect(seg.sportType).toEqual({ sportTypeId: 1, sportTypeKey: 'running', displayOrder: 1 });
+        expect(seg.segmentOrder).toBe(1);
+    });
+
+    it('emits an interval ExecutableStepDTO with distance end condition of 10000 m', () => {
+        expect(step.type).toBe('ExecutableStepDTO');
+        expect(step.stepOrder).toBe(1);
+        expect(step.stepType).toEqual({ stepTypeId: 3, stepTypeKey: 'interval', displayOrder: 3 });
+        expect(step.endCondition).toEqual({ conditionTypeId: 3, conditionTypeKey: 'distance', displayOrder: 3, displayable: true });
+        expect(step.endConditionValue).toBe(10000);
+    });
+
+    it('emits a pace.zone target with one (faster) > two (slower), like Garmin', () => {
+        expect(step.targetType).toEqual({ workoutTargetTypeId: 6, workoutTargetTypeKey: 'pace.zone', displayOrder: 6 });
+        expect(step.targetValueOne).toBeGreaterThan(step.targetValueTwo!);
+        expect(step.targetValueTwo).toBeGreaterThan(0);
     });
 });
 

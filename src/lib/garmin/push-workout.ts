@@ -44,7 +44,11 @@ interface WorkoutSnapshot {
     blocks: WorkoutBlock[];
 }
 
-/** True when the Garmin integration is configured to run at all. */
+/**
+ * Whether the server has the config the Garmin integration requires (the token
+ * encryption key). This is an infrastructure guard, NOT a feature flag — the
+ * single feature flag is per-athlete: profiles.garmin_pilot_enabled.
+ */
 export function isGarminConfigured(): boolean {
     return Boolean(process.env.GARMIN_TOKEN_ENC_KEY);
 }

@@ -82,9 +82,12 @@ function buildExecutableStep(block: WorkoutBlock, profile: GarminAthleteProfile 
             targetValueTwo = resolved.highBpm;
             break;
         case 'pace':
+            // Garmin's canonical pace.zone stores the FASTER bound (higher m/s)
+            // in targetValueOne and the slower bound in targetValueTwo
+            // (e.g. Easy Run 10K → one=3.448, two=3.226).
             targetType = GARMIN_TARGET_TYPES['pace.zone'];
-            targetValueOne = resolved.lowSpeedMs;
-            targetValueTwo = resolved.highSpeedMs;
+            targetValueOne = resolved.highSpeedMs;
+            targetValueTwo = resolved.lowSpeedMs;
             break;
         case 'power':
             targetType = GARMIN_TARGET_TYPES['power.zone'];

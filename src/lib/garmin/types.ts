@@ -27,16 +27,20 @@ export type GarminSportKey =
 export interface GarminSportType {
     sportTypeId: number;
     sportTypeKey: GarminSportKey;
+    displayOrder: number;
 }
 
 export interface GarminStepType {
     stepTypeId: number;
     stepTypeKey: 'warmup' | 'cooldown' | 'interval' | 'recovery' | 'rest' | 'repeat' | 'other';
+    displayOrder: number;
 }
 
 export interface GarminEndCondition {
     conditionTypeId: number;
     conditionTypeKey: 'lap.button' | 'time' | 'distance' | 'iterations';
+    displayOrder: number;
+    displayable: boolean;
 }
 
 export interface GarminTargetType {
@@ -48,6 +52,7 @@ export interface GarminTargetType {
         | 'heart.rate.zone'
         | 'speed.zone'
         | 'pace.zone';
+    displayOrder: number;
 }
 
 export interface GarminExecutableStep {
@@ -97,35 +102,35 @@ export interface GarminWorkout {
  * ------------------------------------------------------------------ */
 
 export const GARMIN_SPORT_TYPES: Record<GarminSportKey, GarminSportType> = {
-    running: { sportTypeId: 1, sportTypeKey: 'running' },
-    cycling: { sportTypeId: 2, sportTypeKey: 'cycling' },
-    other: { sportTypeId: 3, sportTypeKey: 'other' },
-    swimming: { sportTypeId: 4, sportTypeKey: 'swimming' },
-    strength_training: { sportTypeId: 5, sportTypeKey: 'strength_training' },
+    running: { sportTypeId: 1, sportTypeKey: 'running', displayOrder: 1 },
+    cycling: { sportTypeId: 2, sportTypeKey: 'cycling', displayOrder: 2 },
+    other: { sportTypeId: 3, sportTypeKey: 'other', displayOrder: 3 },
+    swimming: { sportTypeId: 4, sportTypeKey: 'swimming', displayOrder: 4 },
+    strength_training: { sportTypeId: 5, sportTypeKey: 'strength_training', displayOrder: 5 },
 };
 
 export const GARMIN_STEP_TYPES: Record<GarminStepType['stepTypeKey'], GarminStepType> = {
-    warmup: { stepTypeId: 1, stepTypeKey: 'warmup' },
-    cooldown: { stepTypeId: 2, stepTypeKey: 'cooldown' },
-    interval: { stepTypeId: 3, stepTypeKey: 'interval' },
-    recovery: { stepTypeId: 4, stepTypeKey: 'recovery' },
-    rest: { stepTypeId: 5, stepTypeKey: 'rest' },
-    repeat: { stepTypeId: 6, stepTypeKey: 'repeat' },
-    other: { stepTypeId: 7, stepTypeKey: 'other' },
+    warmup: { stepTypeId: 1, stepTypeKey: 'warmup', displayOrder: 1 },
+    cooldown: { stepTypeId: 2, stepTypeKey: 'cooldown', displayOrder: 2 },
+    interval: { stepTypeId: 3, stepTypeKey: 'interval', displayOrder: 3 },
+    recovery: { stepTypeId: 4, stepTypeKey: 'recovery', displayOrder: 4 },
+    rest: { stepTypeId: 5, stepTypeKey: 'rest', displayOrder: 5 },
+    repeat: { stepTypeId: 6, stepTypeKey: 'repeat', displayOrder: 6 },
+    other: { stepTypeId: 7, stepTypeKey: 'other', displayOrder: 7 },
 };
 
 export const GARMIN_END_CONDITIONS: Record<GarminEndCondition['conditionTypeKey'], GarminEndCondition> = {
-    'lap.button': { conditionTypeId: 1, conditionTypeKey: 'lap.button' },
-    time: { conditionTypeId: 2, conditionTypeKey: 'time' },
-    distance: { conditionTypeId: 3, conditionTypeKey: 'distance' },
-    iterations: { conditionTypeId: 7, conditionTypeKey: 'iterations' },
+    'lap.button': { conditionTypeId: 1, conditionTypeKey: 'lap.button', displayOrder: 1, displayable: true },
+    time: { conditionTypeId: 2, conditionTypeKey: 'time', displayOrder: 2, displayable: true },
+    distance: { conditionTypeId: 3, conditionTypeKey: 'distance', displayOrder: 3, displayable: true },
+    iterations: { conditionTypeId: 7, conditionTypeKey: 'iterations', displayOrder: 7, displayable: false },
 };
 
 export const GARMIN_TARGET_TYPES: Record<GarminTargetType['workoutTargetTypeKey'], GarminTargetType> = {
-    'no.target': { workoutTargetTypeId: 1, workoutTargetTypeKey: 'no.target' },
-    'power.zone': { workoutTargetTypeId: 2, workoutTargetTypeKey: 'power.zone' },
-    'cadence.zone': { workoutTargetTypeId: 3, workoutTargetTypeKey: 'cadence.zone' },
-    'heart.rate.zone': { workoutTargetTypeId: 4, workoutTargetTypeKey: 'heart.rate.zone' },
-    'speed.zone': { workoutTargetTypeId: 5, workoutTargetTypeKey: 'speed.zone' },
-    'pace.zone': { workoutTargetTypeId: 6, workoutTargetTypeKey: 'pace.zone' },
+    'no.target': { workoutTargetTypeId: 1, workoutTargetTypeKey: 'no.target', displayOrder: 1 },
+    'power.zone': { workoutTargetTypeId: 2, workoutTargetTypeKey: 'power.zone', displayOrder: 2 },
+    'cadence.zone': { workoutTargetTypeId: 3, workoutTargetTypeKey: 'cadence.zone', displayOrder: 3 },
+    'heart.rate.zone': { workoutTargetTypeId: 4, workoutTargetTypeKey: 'heart.rate.zone', displayOrder: 4 },
+    'speed.zone': { workoutTargetTypeId: 5, workoutTargetTypeKey: 'speed.zone', displayOrder: 5 },
+    'pace.zone': { workoutTargetTypeId: 6, workoutTargetTypeKey: 'pace.zone', displayOrder: 6 },
 };
