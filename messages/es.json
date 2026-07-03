@@ -1228,7 +1228,12 @@
       "delete": "Eliminar",
       "deleteSuccess": "Entrenamiento eliminado correctamente.",
       "deleteFailed": "No se pudo eliminar el entrenamiento.",
-      "deleteAssignment": "Eliminar Entrenamiento"
+      "deleteAssignment": "Eliminar Entrenamiento",
+      "sendToGarmin": "Enviar a Garmin",
+      "sendingToGarmin": "Enviando a Garmin...",
+      "garminPushSuccess": "Entrenamiento enviado al Garmin del atleta.",
+      "garminPushSkipped": "El atleta no tiene Garmin conectado o no está en el piloto.",
+      "garminPushFailed": "No se pudo enviar el entrenamiento a Garmin."
     },
     "matchModal": {
       "errorLink": "No se pudo vincular la actividad",
