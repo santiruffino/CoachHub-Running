@@ -104,7 +104,7 @@ export function StravaStatusCard({ status, loading, onConnect, onDisconnect, onR
 
             {status.isConnected ? (
                 <div className="mt-5 flex flex-wrap gap-4 items-center">
-                    <Button variant="outline-brand" onClick={onDisconnect} disabled={loading} className="text-red-600 hover:text-red-700 dark:text-red-400 border-red-500/30">
+                    <Button variant="outline-brand" onClick={onDisconnect} disabled={loading} className="text-destructive hover:text-destructive border-destructive/30">
                         <Unplug className="mr-2 h-4 w-4" />
                         {t('disconnect')}
                     </Button>
@@ -124,7 +124,7 @@ export function StravaStatusCard({ status, loading, onConnect, onDisconnect, onR
                 </p>
             )}
             {status.backfillStatus === 'failed' && (
-                <p className="mt-4 text-sm text-red-600 dark:text-red-400">
+                <p className="mt-4 text-sm text-destructive">
                     {t('backfillFailed')}
                 </p>
             )}

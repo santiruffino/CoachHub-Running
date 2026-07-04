@@ -39,13 +39,11 @@ export default async function RacesPage() {
     ]);
 
     return (
-        <div className="p-0">
-            <RacesList 
-                initialRaces={racesRes.data || []} 
-                initialAthleteRaces={athleteRacesRes.data || []} 
-                isCoach={isCoach}
-                userId={user.id}
-            />
-        </div>
+        <RacesList
+            initialRaces={racesRes.data || []}
+            initialAthleteRaces={athleteRacesRes.data || []}
+            isCoach={isCoach}
+            userId={user.id}
+        />
     );
 }

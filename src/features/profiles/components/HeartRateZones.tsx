@@ -11,7 +11,7 @@ const ZONE_COLORS = [
     'bg-emerald-400',
     'bg-yellow-400',
     'bg-orange-400',
-    'bg-red-500',
+    'bg-destructive',
 ];
 
 const ZONE_LABELS = [
@@ -30,16 +30,6 @@ function formatZoneRange(zone: { min: number; max: number }, isLastZone: boolean
     }
 
     return `${zone.min}–${zone.max} bpm`;
-}
-
-function formatZoneNote(zone: { min: number; max: number }, isLastZone: boolean) {
-    const openEnded = isLastZone || zone.max <= 0 || zone.max < zone.min;
-
-    if (openEnded) {
-        return 'Sin tope superior';
-    }
-
-    return `${zone.max - zone.min + 1} bpm de ancho`;
 }
 
 export function HeartRateZones({ zones }: HeartRateZonesProps) {
@@ -79,7 +69,6 @@ export function HeartRateZones({ zones }: HeartRateZonesProps) {
                     const color = ZONE_COLORS[index] ?? 'bg-muted-foreground';
                     const label = ZONE_LABELS[index] ?? `Z${index + 1}`;
                     const range = formatZoneRange(zone, index === zones.zones.length - 1);
-                    const note = formatZoneNote(zone, index === zones.zones.length - 1);
 
                     return (
                         <div key={`${label}-${zone.min}-${zone.max}`} className="flex items-stretch gap-3 rounded-2xl border border-endurix-black/10 dark:border-border bg-white/80 dark:bg-card px-4 py-3">
@@ -94,9 +83,6 @@ export function HeartRateZones({ zones }: HeartRateZonesProps) {
                                             {range}
                                         </p>
                                     </div>
-                                    <span className="rounded-full bg-endurix-black/5 dark:bg-white/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                                        {note}
-                                    </span>
                                 </div>
                             </div>
                         </div>

@@ -2,12 +2,14 @@
 import { appLogger } from '@/lib/app-logger';
 
 import { useState, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, Plus, MapPin, Trophy, MoreHorizontal, Edit, Trash2, ArrowLeft } from 'lucide-react';
+import { Search, Plus, MapPin, Trophy, MoreHorizontal, Edit, Trash2 } from 'lucide-react';
+import { PageContainer } from '@/components/layout/PageContainer';
+import { PageHeader } from '@/components/layout/PageHeader';
+import { EmptyState } from '@/components/ui/EmptyState';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,7 +33,6 @@ interface RacesListProps {
 }
 
 export function RacesList({ initialRaces, initialAthleteRaces, isCoach, userId }: RacesListProps) {
-  const router = useRouter();
   const t = useTranslations('races');
 
   // State for Race Templates (Coach View)
@@ -99,22 +100,18 @@ export function RacesList({ initialRaces, initialAthleteRaces, isCoach, userId }
   // Coach View
   if (isCoach) {
     return (
-      <div className="p-4 sm:p-6 lg:p-8 space-y-8">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1
-              className="text-2xl sm:text-3xl font-bold text-endurix-black dark:text-foreground tracking-tight uppercase"
-              style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
-            >
-              {t('library.title')}
-            </h1>
-            <p className="text-muted-foreground mt-1">{t('library.subtitle')}</p>
-          </div>
-          <Button variant="orange" onClick={() => { setSelectedRace(null); setIsRaceDialogOpen(true); }} className="font-bold uppercase tracking-widest">
-            <Plus className="h-4 w-4 mr-2" />
-            {t('library.createTemplate')}
-          </Button>
-        </div>
+      <PageContainer className="space-y-8">
+        <PageHeader
+          className="mb-0"
+          title={t('library.title')}
+          description={t('library.subtitle')}
+          action={
+            <Button variant="orange" onClick={() => { setSelectedRace(null); setIsRaceDialogOpen(true); }} className="font-bold uppercase tracking-widest">
+              <Plus className="h-4 w-4 mr-2" />
+              {t('library.createTemplate')}
+            </Button>
+          }
+        />
 
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -128,17 +125,15 @@ export function RacesList({ initialRaces, initialAthleteRaces, isCoach, userId }
         </div>
 
         {filteredRaces.length === 0 ? (
-          <Card className="border-dashed border-2 border-endurix-black/15 dark:border-white/15 bg-endurix-black/5 dark:bg-white/5 py-20">
-            <CardContent className="flex flex-col items-center justify-center text-center">
-              <div className="bg-endurix-black/8 dark:bg-white/8 p-4 mb-4">
-                <Trophy className="h-8 w-8 text-muted-foreground" />
-              </div>
-              <p className="text-muted-foreground font-medium">{t('library.noRaces')}</p>
-              <Button variant="ghost" onClick={() => setIsRaceDialogOpen(true)} className="mt-4 text-endurix-orange font-bold uppercase tracking-wider text-xs">
+          <EmptyState
+            icon={Trophy}
+            title={t('library.noRaces')}
+            action={
+              <Button variant="ghost" onClick={() => setIsRaceDialogOpen(true)} className="text-endurix-orange font-bold uppercase tracking-wider text-xs">
                 {t('library.createFirstTemplate')}
               </Button>
-            </CardContent>
-          </Card>
+            }
+          />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredRaces.map((race) => (
@@ -171,7 +166,7 @@ export function RacesList({ initialRaces, initialAthleteRaces, isCoach, userId }
                         {t('library.edit')}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-red-600 focus:text-red-600" onClick={() => setDeleteId(race.id)}>
+                      <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setDeleteId(race.id)}>
                         <Trash2 className="h-4 w-4 mr-2" />
                         {t('library.delete')}
                       </DropdownMenuItem>
@@ -213,32 +208,19 @@ export function RacesList({ initialRaces, initialAthleteRaces, isCoach, userId }
           type="warning"
           loading={isDeleting}
         />
-      </div>
+      </PageContainer>
     );
   }
 
   // Athlete View
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-12 pb-20">
-      <div className="flex items-center gap-4 mb-2">
-        <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => router.back()}
-            className="h-8 w-8 text-muted-foreground hover:text-foreground"
-        >
-            <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div>
-          <h1
-            className="text-2xl sm:text-3xl font-bold text-endurix-black dark:text-foreground tracking-tight uppercase"
-            style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
-          >
-            {t('athlete.upcomingTitle')}
-          </h1>
-          <p className="text-muted-foreground mt-1">{t('athlete.manageSubtitle')}</p>
-        </div>
-      </div>
+    <PageContainer className="space-y-12 pb-20">
+      <PageHeader
+        className="mb-0"
+        backHref="/dashboard"
+        title={t('athlete.upcomingTitle')}
+        description={t('athlete.manageSubtitle')}
+      />
 
       {/* Active Races */}
       <div className="space-y-6">
@@ -251,12 +233,7 @@ export function RacesList({ initialRaces, initialAthleteRaces, isCoach, userId }
             </h2>
 
         {activeRaces.length === 0 ? (
-          <Card className="border-dashed border-2 border-endurix-black/15 dark:border-white/15 bg-endurix-black/5 dark:bg-white/5 py-12">
-            <CardContent className="flex flex-col items-center justify-center text-center">
-              <Trophy className="h-8 w-8 text-muted-foreground/40 mb-3" />
-              <p className="text-muted-foreground italic">{t('athlete.noRaces')}</p>
-            </CardContent>
-          </Card>
+          <EmptyState icon={Trophy} title={t('athlete.noRaces')} className="py-12" />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {activeRaces.map(race => (
@@ -302,6 +279,6 @@ export function RacesList({ initialRaces, initialAthleteRaces, isCoach, userId }
         race={selectedAthleteRace}
         onSuccess={fetchRaces}
       />
-    </div>
+    </PageContainer>
   );
 }

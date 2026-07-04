@@ -44,7 +44,7 @@ export function AlertDialog({
     const getIcon = () => {
         switch (type) {
             case 'error':
-                return <AlertCircle className="h-6 w-6 text-red-500" />;
+                return <AlertCircle className="h-6 w-6 text-destructive" />;
             case 'success':
                 return <CheckCircle className="h-6 w-6 text-green-500" />;
             case 'warning':
@@ -66,7 +66,7 @@ export function AlertDialog({
     const getBorderColor = () => {
         switch (type) {
             case 'error':
-                return 'border-l-4 border-l-red-500';
+                return 'border-l-4 border-l-destructive';
             case 'success':
                 return 'border-l-4 border-l-green-500';
             case 'warning':

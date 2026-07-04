@@ -9,7 +9,7 @@ const colorMap: Record<LabelColor, string> = {
     muted: 'text-endurix-black/50 dark:text-muted-foreground',
     default: 'text-endurix-black dark:text-foreground',
     primary: 'text-endurix-black/80 dark:text-foreground',
-    danger: 'text-red-600 dark:text-red-500',
+    danger: 'text-destructive',
     orange: 'text-endurix-orange',
 };
 

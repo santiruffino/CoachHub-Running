@@ -151,9 +151,9 @@ export function NewActivityFeedbackModal({
                         </Button>
                         <Button
                             type="button"
+                            variant="orange"
                             onClick={handleSubmit}
                             disabled={saving || !activity}
-                            className="bg-endurix-orange text-white hover:bg-brand-primary-dark"
                         >
                             {saving ? t('saving') : t('submit')}
                         </Button>

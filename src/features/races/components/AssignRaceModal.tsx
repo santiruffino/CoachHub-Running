@@ -254,7 +254,7 @@ export function AssignRaceModal({ open, onOpenChange, athleteId, onSuccess }: As
               placeholder={t('targetTimePlaceholder')}
               className="h-12"
             />
-            {targetTimeError && <p className="text-xs font-medium text-red-500">{targetTimeError}</p>}
+            {targetTimeError && <p className="text-xs font-medium text-destructive">{targetTimeError}</p>}
           </div>
 
           <div className="space-y-2">

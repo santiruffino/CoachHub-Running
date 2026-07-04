@@ -60,7 +60,7 @@ export function RepeatBlockCard({
                                     onUpdateGroupReps(groupId, newReps);
                                 }}
                                 onClick={(e) => e.stopPropagation()}
-                                className="w-14 text-sm px-2 py-1 rounded border border-purple-300 dark:border-purple-700 bg-white dark:bg-gray-800 text-center font-bold text-purple-600 dark:text-purple-400"
+                                className="w-14 text-sm px-2 py-1 rounded border border-purple-300 dark:border-purple-700 bg-white dark:bg-card text-center font-bold text-purple-600 dark:text-purple-400"
                             />
                             <span className="text-sm font-semibold text-purple-700 dark:text-purple-300">
                                 {t('times').toUpperCase()}
@@ -90,7 +90,7 @@ export function RepeatBlockCard({
                                     onRemoveGroup(groupId);
                                 }
                             }}
-                            className="text-gray-400 hover:text-red-500 p-1"
+                            className="text-muted-foreground hover:text-destructive p-1"
                         >
                             <Trash2 className="w-5 h-5" />
                         </button>
@@ -130,7 +130,7 @@ export function RepeatBlockCard({
 
             {/* Collapsed summary */}
             {collapsed && (
-                <div className="text-sm text-gray-600 dark:text-gray-400">
+                <div className="text-sm text-muted-foreground">
                     {t('stepCount', { count: blocks.length })} • {reps} {t('repeats', { reps: '' }).trim()}
                 </div>
             )}

@@ -80,23 +80,23 @@ export function RepeatBlockEditor({
     };
 
     return (
-        <div className="bg-gray-50 dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 overflow-hidden">
+        <div className="bg-muted dark:bg-slate-800 rounded-lg border border-border dark:border-slate-700 overflow-hidden">
             {/* Header */}
-            <div className="bg-gray-200 dark:bg-slate-700 p-4 flex items-center justify-between">
+            <div className="bg-muted dark:bg-slate-700 p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <Repeat className="w-5 h-5 text-[#FFCC00]" />
                     <div className="flex items-center gap-2">
-                        <span className="text-gray-900 dark:text-white font-semibold">{t('repeat')}</span>
+                        <span className="text-foreground dark:text-white font-semibold">{t('repeat')}</span>
                         <Input
                             type="number"
                             min="1"
                             value={reps}
                             onChange={(e) => updateReps(parseInt(e.target.value) || 1)}
-                            className="w-16 h-8 bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white text-center font-bold"
+                            className="w-16 h-8 bg-white dark:bg-slate-800 border-input dark:border-slate-600 text-foreground dark:text-white text-center font-bold"
                         />
-                        <span className="text-gray-900 dark:text-white font-semibold">{t('times')}</span>
+                        <span className="text-foreground dark:text-white font-semibold">{t('times')}</span>
                     </div>
-                    <span className="text-sm text-gray-600 dark:text-gray-400 ml-4">
+                    <span className="text-sm text-muted-foreground ml-4">
                         {t('totalForBlock')} <span className="text-[#FFCC00] font-semibold">{getTotalDistance()} {t('units.km')}</span>
                     </span>
                 </div>
@@ -114,7 +114,7 @@ export function RepeatBlockEditor({
                             thumbClassName="bg-white dark:bg-white"
                             className="focus-visible:ring-endurix-orange/30"
                         />
-                        <Label htmlFor={`skip-last-rest-${groupId}`} className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                        <Label htmlFor={`skip-last-rest-${groupId}`} className="text-sm text-foreground dark:text-muted-foreground cursor-pointer">
                             {t('skipLastRestRecovery')}
                         </Label>
                     </div>
@@ -126,7 +126,7 @@ export function RepeatBlockEditor({
                         variant="ghost"
                         size="sm"
                         onClick={() => setIsCollapsed(!isCollapsed)}
-                        className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-300 dark:hover:bg-slate-600"
+                        className="text-foreground dark:text-muted-foreground hover:text-foreground dark:hover:text-white hover:bg-muted dark:hover:bg-slate-600"
                     >
                         {isCollapsed ? (
                             <>
@@ -148,7 +148,7 @@ export function RepeatBlockEditor({
                             // Remove all blocks in this group
                             blocks.forEach(block => onRemove(block.id));
                         }}
-                        className="text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-gray-300 dark:hover:bg-slate-600"
+                        className="text-foreground dark:text-muted-foreground hover:text-destructive hover:bg-muted dark:hover:bg-slate-600"
                     >
                         {t('deleteBlock')}
                     </Button>
@@ -174,7 +174,7 @@ export function RepeatBlockEditor({
                     <Button
                         type="button"
                         variant="outline"
-                        className="w-full border-dashed border-gray-300 dark:border-slate-600 text-[#FFCC00] hover:text-[#FFD633] hover:bg-gray-100 dark:hover:bg-slate-700 hover:border-[#FFCC00]"
+                        className="w-full border-dashed border-input dark:border-slate-600 text-[#FFCC00] hover:text-[#FFD633] hover:bg-muted dark:hover:bg-slate-700 hover:border-[#FFCC00]"
                         onClick={onAddStep}
                     >
                         <Plus className="w-4 h-4 mr-2" />

@@ -140,19 +140,19 @@ export function WorkoutProfileChart({ blocks }: WorkoutProfileChartProps) {
     }, [chartData, t]);
 
     return (
-        <div className="bg-gray-50 dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-4 h-full">
+        <div className="bg-muted dark:bg-slate-800 rounded-lg border border-border dark:border-slate-700 p-4 h-full">
             <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                     {t('workoutProfile')}
                 </h3>
                 <div className="flex items-center gap-4 text-xs">
                     <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded bg-[#3B82F6]" />
-                        <span className="text-gray-600 dark:text-gray-400">{t('intensity').replace(' (%)', '')}</span>
+                        <span className="text-muted-foreground">{t('intensity').replace(' (%)', '')}</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded bg-[#10B981]" />
-                        <span className="text-gray-600 dark:text-gray-400">{t('labels.recovery')}</span>
+                        <span className="text-muted-foreground">{t('labels.recovery')}</span>
                     </div>
                 </div>
             </div>

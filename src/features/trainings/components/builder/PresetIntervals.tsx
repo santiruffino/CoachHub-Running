@@ -281,14 +281,14 @@ export function PresetIntervals({ onSelectPreset }: PresetIntervalsProps) {
                 />
             )}
 
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 shadow-sm">
+            <div className="bg-white dark:bg-card rounded-lg border border-border p-3 shadow-sm">
                 <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                    <h3 className="text-xs font-semibold text-foreground dark:text-muted-foreground">
                         {t('clickBlocksHint')}
                     </h3>
                     <button
                         type="button"
-                        className="w-4 h-4 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-gray-600 dark:text-gray-300 text-[10px] hover:bg-gray-400 dark:hover:bg-gray-500 transition"
+                        className="w-4 h-4 rounded-full bg-muted flex items-center justify-center text-muted-foreground text-[10px] hover:bg-muted transition"
                         title={t('clickPresetHint')}
                     >
                         ?
@@ -301,7 +301,7 @@ export function PresetIntervals({ onSelectPreset }: PresetIntervalsProps) {
                             key={pattern.id}
                             type="button"
                             onClick={() => handlePresetClick(pattern)}
-                            className="group flex flex-col items-center p-2 rounded-md border border-gray-200 dark:border-gray-700 hover:border-brand-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
+                            className="group flex flex-col items-center p-2 rounded-md border border-border hover:border-brand-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
                             title={pattern.description}
                         >
                             {/* Visual representation */}
@@ -316,7 +316,7 @@ export function PresetIntervals({ onSelectPreset }: PresetIntervalsProps) {
                             </div>
 
                             {/* Label */}
-                            <div className="text-center text-[10px] font-medium text-gray-700 dark:text-gray-300 leading-tight">
+                            <div className="text-center text-[10px] font-medium text-foreground dark:text-muted-foreground leading-tight">
                                 {pattern.name}
                             </div>
                         </button>

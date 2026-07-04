@@ -198,16 +198,32 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        const assignmentsByAthleteId = new Map(
+            (assignments || []).map((assignment) => [assignment.user_id, assignment])
+        );
+
         const notifiedAthleteIds = Array.from(athleteSourceMap.keys());
         await Promise.all(
             notifiedAthleteIds.map((athleteId) =>
-                createNotification({
-                    userId: athleteId,
-                    category: 'workout_assigned',
-                    title: workoutName || training.title,
-                    body: `Nuevo entrenamiento para el ${new Date(scheduledDate).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}`,
-                    link: `/dashboard?calendarDate=${scheduledDate.slice(0, 10)}`,
-                })
+                {
+                    const assignment = assignmentsByAthleteId.get(athleteId);
+                    if (!assignment) {
+                        logger.warn('assign_training.notification_missing_assignment', {
+                            userId: user!.id,
+                            athleteId,
+                            trainingId,
+                        });
+                        return Promise.resolve();
+                    }
+
+                    return createNotification({
+                        userId: athleteId,
+                        category: 'workout_assigned',
+                        title: workoutName || training.title,
+                        body: `Nuevo entrenamiento para el ${new Date(scheduledDate).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}`,
+                        link: `/workouts/${assignment.id}`,
+                    });
+                }
             )
         );
 

@@ -148,6 +148,7 @@ interface AssignWorkoutViewProps {
     initialGroups: Group[];
     initialTemplates: Training[];
     preselectedAthleteId: string | null;
+    initialScheduledDate?: string | null;
     initialTemplate: Training | null;
 }
 
@@ -156,6 +157,7 @@ export function AssignWorkoutView({
     initialGroups,
     initialTemplates,
     preselectedAthleteId,
+    initialScheduledDate,
     initialTemplate
 }: AssignWorkoutViewProps) {
     const router = useRouter();
@@ -171,7 +173,7 @@ export function AssignWorkoutView({
     const [blocks, setBlocks] = useState<WorkoutBlock[]>(initialTemplate?.blocks || []);
     const [selectedAthleteIds, setSelectedAthleteIds] = useState<string[]>(preselectedAthleteId ? [preselectedAthleteId] : []);
     const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
-    const [scheduledDate, setScheduledDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+    const [scheduledDate, setScheduledDate] = useState(initialScheduledDate || format(new Date(), 'yyyy-MM-dd'));
     const [expectedRpe, setExpectedRpe] = useState(initialTemplate?.expectedRpe || 5);
     const [workoutName, setWorkoutName] = useState('');
     const [saveAsTemplate, setSaveAsTemplate] = useState(false);
@@ -504,255 +506,260 @@ export function AssignWorkoutView({
             </div>
 
             <div className="flex-1 overflow-y-auto">
-                <div className="max-w-4xl mx-auto px-10 py-12 space-y-10">
-                    {/* Workout Summary Card */}
-                    <div className={`${CARD_CLS} p-6 lg:p-8`}>
-                        <p className={`${LABEL_CLS} mb-3 font-bold`} style={PLEX}>Resumen del entrenamiento</p>
-                        <h2 className="text-3xl lg:text-4xl font-bold text-endurix-black dark:text-foreground mb-5 uppercase tracking-tight" style={EXO}>
-                            {selectedTemplate ? selectedTemplate.title : (workoutName || tAssign('customProtocol'))}
-                        </h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                            <div className={ROW_CLS}>
-                                <CalendarDays className="w-4 h-4 text-endurix-orange" />
-                                <div>
-                                    <p className={`${LABEL_CLS}`} style={PLEX}>Fecha objetivo</p>
-                                    <p className="font-bold text-endurix-black dark:text-foreground">{format(new Date(`${scheduledDate}T00:00:00`), "EEEE dd/MM/yyyy", { locale: es })}</p>
-                                </div>
-                            </div>
-                            <div className={ROW_CLS}>
-                                <Users className="w-4 h-4 text-endurix-orange" />
-                                <div>
-                                    <p className={`${LABEL_CLS}`} style={PLEX}>Destinatarios</p>
-                                    <p className="font-bold text-endurix-black dark:text-foreground">{recipientsSummaryLabel}</p>
-                                </div>
-                            </div>
-                            <div className={ROW_CLS}>
-                                <Clock className="w-4 h-4 text-endurix-orange" />
-                                <div>
-                                    <p className={`${LABEL_CLS}`} style={PLEX}>Duración estimada</p>
-                                    <p className="font-bold text-endurix-black dark:text-foreground">~{estTimeMinutes} min</p>
-                                </div>
-                            </div>
-                            <div className={ROW_CLS}>
-                                <Gauge className="w-4 h-4 text-endurix-orange" />
-                                <div>
-                                    <p className={`${LABEL_CLS}`} style={PLEX}>RPE objetivo</p>
-                                    <p className="font-bold text-endurix-black dark:text-foreground">{expectedRpe}/10</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div className="max-w-6xl mx-auto px-6 lg:px-10 py-12 space-y-8">
+                    <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)] gap-6 items-start">
+                        {/* Assignment Form */}
+                        <div className={`${CARD_CLS} p-6 lg:p-8`}>
+                            <h2 className="text-2xl font-bold text-endurix-black dark:text-foreground mb-8 uppercase tracking-tight" style={EXO}>
+                                Planificación de la sesión
+                            </h2>
 
-                    {/* Block Breakdown */}
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                        <div className={`${CARD_CLS} p-4`}>
-                            <p className={`${LABEL_CLS}`} style={PLEX}>Bloques totales</p>
-                            <p className="text-2xl font-bold text-endurix-black dark:text-foreground mt-1" style={EXO}>{blocks.length}</p>
-                        </div>
-                        <div className={`${CARD_CLS} p-4`}>
-                            <p className={`${LABEL_CLS}`} style={PLEX}>Intervalos</p>
-                            <p className="text-2xl font-bold text-endurix-black dark:text-foreground mt-1" style={EXO}>{workoutSummary.byType.interval}</p>
-                        </div>
-                        <div className={`${CARD_CLS} p-4`}>
-                            <p className={`${LABEL_CLS}`} style={PLEX}>Recuperación + descanso</p>
-                            <p className="text-2xl font-bold text-endurix-black dark:text-foreground mt-1" style={EXO}>{workoutSummary.byType.recovery + workoutSummary.byType.rest}</p>
-                        </div>
-                        <div className={`${CARD_CLS} p-4`}>
-                            <p className={`${LABEL_CLS}`} style={PLEX}>Distancia planificada</p>
-                            <p className="text-2xl font-bold text-endurix-black dark:text-foreground mt-1" style={EXO}>
-                                {workoutSummary.totalDistanceMeters > 0
-                                    ? `${(workoutSummary.totalDistanceMeters / 1000).toFixed(1)} km`
-                                    : '—'}
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Block Details */}
-                    <div className={`${CARD_CLS} p-6`}>
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-bold text-endurix-black dark:text-foreground uppercase tracking-tight" style={EXO}>Desglose de bloques</h3>
-                            <span className={`${LABEL_CLS}`} style={PLEX}>Vista rápida</span>
-                        </div>
-                        {blocks.length === 0 ? (
-                            <p className="text-sm text-muted-foreground">Aun no hay bloques cargados en esta sesión.</p>
-                        ) : (
-                            <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-                                {blocks.map((block, index) => (
-                                    <div key={block.id || `${block.type}-${index}`} className="flex items-center justify-between px-3 py-2 bg-endurix-black/5 dark:bg-white/5 border border-endurix-black/10 dark:border-white/10">
-                                        <div className="min-w-0">
-                                            <p className="text-sm font-bold text-endurix-black dark:text-foreground truncate" style={EXO}>{index + 1}. {block.stepName || blockTypeLabel[block.type]}</p>
-                                            <p className="text-xs text-muted-foreground" style={PLEX}>{blockTypeLabel[block.type]}{block.group?.reps ? ` · x${block.group.reps}` : ''}</p>
-                                        </div>
-                                        <div className="text-right shrink-0 ml-4">
-                                            <p className="text-sm font-bold text-endurix-black dark:text-foreground" style={PLEX}>{formatBlockDuration(block)}</p>
-                                            <p className="text-xs text-muted-foreground" style={PLEX}>{formatBlockTarget(block)}</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Assignment Form */}
-                    <div className={`${CARD_CLS} p-6 lg:p-8`}>
-                        <h2 className="text-2xl font-bold text-endurix-black dark:text-foreground mb-8 uppercase tracking-tight" style={EXO}>
-                            Planificación de la sesión
-                        </h2>
-
-                        <div className="space-y-8">
-                            <div>
-                                <label className={`${LABEL_CLS} font-bold block mb-4`} style={PLEX}>
-                                    {tAssign('executionDate')} <span className="text-endurix-orange">*</span>
-                                </label>
-                                <input
-                                    type="date"
-                                    value={scheduledDate}
-                                    onChange={(e) => setScheduledDate(e.target.value)}
-                                    className="w-full bg-transparent border-0 border-b border-endurix-black/20 dark:border-white/20 px-0 py-2 text-xl font-bold text-endurix-black dark:text-foreground focus:ring-0 focus:border-endurix-orange transition-colors"
-                                    style={EXO}
-                                />
-                            </div>
-
-                            {isNew && (
+                            <div className="space-y-8">
                                 <div>
                                     <label className={`${LABEL_CLS} font-bold block mb-4`} style={PLEX}>
-                                        {tAssign('objectiveTitle')}
+                                        {tAssign('executionDate')} <span className="text-endurix-orange">*</span>
                                     </label>
                                     <input
-                                        type="text"
-                                        value={workoutName}
-                                        onChange={(e) => setWorkoutName(e.target.value)}
-                                        placeholder={tAssign('exampleLongRun')}
-                                        className="w-full bg-transparent border-0 border-b border-endurix-black/20 dark:border-white/20 px-0 py-2 text-lg font-medium text-endurix-black dark:text-foreground focus:ring-0 focus:border-endurix-orange placeholder-endurix-black/30 dark:placeholder:text-muted-foreground/50 transition-colors"
+                                        type="date"
+                                        value={scheduledDate}
+                                        onChange={(e) => setScheduledDate(e.target.value)}
+                                        className="w-full bg-transparent border-0 border-b border-endurix-black/20 dark:border-white/20 px-0 py-2 text-xl font-bold text-endurix-black dark:text-foreground focus:ring-0 focus:border-endurix-orange transition-colors"
+                                        style={EXO}
                                     />
                                 </div>
-                            )}
 
-                            {!isNew && (
-                                <div>
-                                    <label className={`${LABEL_CLS} font-bold block mb-4`} style={PLEX}>
-                                        {tAssign('assignmentNameOverride')}
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={workoutName}
-                                        onChange={(e) => setWorkoutName(e.target.value)}
-                                        placeholder={tAssign('overwritesTemplateName')}
-                                        className="w-full bg-transparent border-0 border-b border-endurix-black/20 dark:border-white/20 px-0 py-2 text-lg font-medium text-endurix-black dark:text-foreground focus:ring-0 focus:border-endurix-orange placeholder-endurix-black/30 dark:placeholder:text-muted-foreground/50 transition-colors"
-                                    />
-                                </div>
-                            )}
-
-                            {preselectedAthlete ? (
-                                <div>
-                                    <label className={`${LABEL_CLS} font-bold block mb-4`} style={PLEX}>
-                                        {tAssign('targetAthletes')}
-                                    </label>
-                                    <div className="flex items-center gap-3 border-b border-endurix-black/15 dark:border-white/15 pb-3">
-                                        <div className="w-9 h-9 bg-endurix-orange/15 flex items-center justify-center shrink-0">
-                                            <span className="text-sm font-bold text-endurix-orange" style={EXO}>{(preselectedAthlete.name || preselectedAthlete.email || '?').charAt(0).toUpperCase()}</span>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-bold text-endurix-black dark:text-foreground">{preselectedAthlete.name}</p>
-                                            <p className="text-xs text-muted-foreground" style={PLEX}>{preselectedAthlete.email}</p>
-                                        </div>
+                                {isNew && (
+                                    <div>
+                                        <label className={`${LABEL_CLS} font-bold block mb-4`} style={PLEX}>
+                                            {tAssign('objectiveTitle')}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={workoutName}
+                                            onChange={(e) => setWorkoutName(e.target.value)}
+                                            placeholder={tAssign('exampleLongRun')}
+                                            className="w-full bg-transparent border-0 border-b border-endurix-black/20 dark:border-white/20 px-0 py-2 text-lg font-medium text-endurix-black dark:text-foreground focus:ring-0 focus:border-endurix-orange placeholder-endurix-black/30 dark:placeholder:text-muted-foreground/50 transition-colors"
+                                        />
                                     </div>
-                                </div>
-                            ) : (
-                                <>
+                                )}
+
+                                {!isNew && (
+                                    <div>
+                                        <label className={`${LABEL_CLS} font-bold block mb-4`} style={PLEX}>
+                                            {tAssign('assignmentNameOverride')}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={workoutName}
+                                            onChange={(e) => setWorkoutName(e.target.value)}
+                                            placeholder={tAssign('overwritesTemplateName')}
+                                            className="w-full bg-transparent border-0 border-b border-endurix-black/20 dark:border-white/20 px-0 py-2 text-lg font-medium text-endurix-black dark:text-foreground focus:ring-0 focus:border-endurix-orange placeholder-endurix-black/30 dark:placeholder:text-muted-foreground/50 transition-colors"
+                                        />
+                                    </div>
+                                )}
+
+                                {preselectedAthlete ? (
                                     <div>
                                         <label className={`${LABEL_CLS} font-bold block mb-4`} style={PLEX}>
                                             {tAssign('targetAthletes')}
                                         </label>
-                                        <SearchableMultiSelect
-                                            items={athletes.map(a => ({ id: a.id, label: a.name, subLabel: a.email }))}
-                                            selectedIds={selectedAthleteIds}
-                                            onChange={setSelectedAthleteIds}
-                                            placeholder={tAssign('searchByNameOrEmail')}
-                                            noMatchesLabel={tAssign('noMatches')}
-                                        />
+                                        <div className="flex items-center gap-3 border-b border-endurix-black/15 dark:border-white/15 pb-3">
+                                            <div className="w-9 h-9 bg-endurix-orange/15 flex items-center justify-center shrink-0">
+                                                <span className="text-sm font-bold text-endurix-orange" style={EXO}>{(preselectedAthlete.name || preselectedAthlete.email || '?').charAt(0).toUpperCase()}</span>
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold text-endurix-black dark:text-foreground">{preselectedAthlete.name}</p>
+                                                <p className="text-xs text-muted-foreground" style={PLEX}>{preselectedAthlete.email}</p>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label className={`${LABEL_CLS} font-bold block mb-4`} style={PLEX}>
-                                            {tAssign('targetRunningTeams')}
-                                        </label>
-                                        <SearchableMultiSelect
-                                            items={groups.map(g => ({ id: g.id, label: g.name }))}
-                                            selectedIds={selectedGroupIds}
-                                            onChange={setSelectedGroupIds}
-                                            placeholder={tAssign('searchGroups')}
-                                            noMatchesLabel={tAssign('noMatches')}
-                                        />
-                                    </div>
-                                </>
-                            )}
+                                ) : (
+                                    <>
+                                        <div>
+                                            <label className={`${LABEL_CLS} font-bold block mb-4`} style={PLEX}>
+                                                {tAssign('targetAthletes')}
+                                            </label>
+                                            <SearchableMultiSelect
+                                                items={athletes.map(a => ({ id: a.id, label: a.name, subLabel: a.email }))}
+                                                selectedIds={selectedAthleteIds}
+                                                onChange={setSelectedAthleteIds}
+                                                placeholder={tAssign('searchByNameOrEmail')}
+                                                noMatchesLabel={tAssign('noMatches')}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className={`${LABEL_CLS} font-bold block mb-4`} style={PLEX}>
+                                                {tAssign('targetRunningTeams')}
+                                            </label>
+                                            <SearchableMultiSelect
+                                                items={groups.map(g => ({ id: g.id, label: g.name }))}
+                                                selectedIds={selectedGroupIds}
+                                                onChange={setSelectedGroupIds}
+                                                placeholder={tAssign('searchGroups')}
+                                                noMatchesLabel={tAssign('noMatches')}
+                                            />
+                                        </div>
+                                    </>
+                                )}
 
-                            <div>
-                                <label className={`${LABEL_CLS} font-bold flex items-center justify-between mb-4`} style={PLEX}>
-                                    {tAssign('globalTargetRpe')}
-                                    <span className="text-endurix-orange font-bold text-sm bg-endurix-orange/10 px-2 py-0.5 border border-endurix-orange/30" style={PLEX}>{expectedRpe}/10</span>
-                                </label>
-                                <Slider
-                                    value={[expectedRpe]}
-                                    min={1}
-                                    max={10}
-                                    step={1}
-                                    onValueChange={(val) => setExpectedRpe(val[0])}
-                                    className="my-6"
-                                />
-                                <div className="flex justify-between text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground uppercase tracking-widest" style={PLEX}>
-                                    <span>{tAssign('endurance')}</span>
-                                    <span>{tAssign('maxOutput')}</span>
+                                <div>
+                                    <label className={`${LABEL_CLS} font-bold flex items-center justify-between mb-4`} style={PLEX}>
+                                        {tAssign('globalTargetRpe')}
+                                        <span className="text-endurix-orange font-bold text-sm bg-endurix-orange/10 px-2 py-0.5 border border-endurix-orange/30" style={PLEX}>{expectedRpe}/10</span>
+                                    </label>
+                                    <Slider
+                                        value={[expectedRpe]}
+                                        min={1}
+                                        max={10}
+                                        step={1}
+                                        onValueChange={(val) => setExpectedRpe(val[0])}
+                                        className="my-6"
+                                    />
+                                    <div className="flex justify-between text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground uppercase tracking-widest" style={PLEX}>
+                                        <span>{tAssign('endurance')}</span>
+                                        <span>{tAssign('maxOutput')}</span>
+                                    </div>
+                                </div>
+
+                                {isNew && (
+                                    <div className="bg-endurix-black/5 dark:bg-white/5 p-6 border border-endurix-black/10 dark:border-white/10">
+                                        <label className="flex items-start gap-4 cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                checked={saveAsTemplate}
+                                                onChange={(e) => setSaveAsTemplate(e.target.checked)}
+                                                className="w-5 h-5 mt-0.5 accent-endurix-orange"
+                                            />
+                                            <div className="flex flex-col">
+                                                <span className="font-bold text-sm text-endurix-black dark:text-foreground mb-1 uppercase tracking-widest" style={EXO}>{tAssign('catalogStructure')}</span>
+                                                <p className="text-xs text-muted-foreground leading-relaxed">{tAssign('catalogStructureDesc')}</p>
+                                            </div>
+                                        </label>
+                                        {saveAsTemplate && (
+                                            <input
+                                                type="text"
+                                                value={templateTitle}
+                                                onChange={(e) => setTemplateTitle(e.target.value)}
+                                                placeholder={tAssign('enterLibraryTitle')}
+                                                className="mt-6 w-full bg-endurix-paper dark:bg-background border border-endurix-black/15 dark:border-white/15 px-4 py-3 text-sm font-medium text-endurix-black dark:text-foreground focus:outline-none focus:border-endurix-orange transition-colors"
+                                            />
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Workout Summary Card */}
+                        <div className={`${CARD_CLS} p-6 lg:p-8`}>
+                            <p className={`${LABEL_CLS} mb-3 font-bold`} style={PLEX}>Resumen del entrenamiento</p>
+                            <h2 className="text-3xl lg:text-4xl font-bold text-endurix-black dark:text-foreground mb-5 uppercase tracking-tight" style={EXO}>
+                                {selectedTemplate ? selectedTemplate.title : (workoutName || tAssign('customProtocol'))}
+                            </h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                                <div className={ROW_CLS}>
+                                    <CalendarDays className="w-4 h-4 text-endurix-orange" />
+                                    <div>
+                                        <p className={`${LABEL_CLS}`} style={PLEX}>Fecha objetivo</p>
+                                        <p className="font-bold text-endurix-black dark:text-foreground">{format(new Date(`${scheduledDate}T00:00:00`), "EEEE dd/MM/yyyy", { locale: es })}</p>
+                                    </div>
+                                </div>
+                                <div className={ROW_CLS}>
+                                    <Users className="w-4 h-4 text-endurix-orange" />
+                                    <div>
+                                        <p className={`${LABEL_CLS}`} style={PLEX}>Destinatarios</p>
+                                        <p className="font-bold text-endurix-black dark:text-foreground">{recipientsSummaryLabel}</p>
+                                    </div>
+                                </div>
+                                <div className={ROW_CLS}>
+                                    <Clock className="w-4 h-4 text-endurix-orange" />
+                                    <div>
+                                        <p className={`${LABEL_CLS}`} style={PLEX}>Duración estimada</p>
+                                        <p className="font-bold text-endurix-black dark:text-foreground">~{estTimeMinutes} min</p>
+                                    </div>
+                                </div>
+                                <div className={ROW_CLS}>
+                                    <Gauge className="w-4 h-4 text-endurix-orange" />
+                                    <div>
+                                        <p className={`${LABEL_CLS}`} style={PLEX}>RPE objetivo</p>
+                                        <p className="font-bold text-endurix-black dark:text-foreground">{expectedRpe}/10</p>
+                                    </div>
                                 </div>
                             </div>
-
-                            {isNew && (
-                                <div className="bg-endurix-black/5 dark:bg-white/5 p-6 border border-endurix-black/10 dark:border-white/10">
-                                    <label className="flex items-start gap-4 cursor-pointer">
-                                        <input
-                                            type="checkbox"
-                                            checked={saveAsTemplate}
-                                            onChange={(e) => setSaveAsTemplate(e.target.checked)}
-                                            className="w-5 h-5 mt-0.5 accent-endurix-orange"
-                                        />
-                                        <div className="flex flex-col">
-                                            <span className="font-bold text-sm text-endurix-black dark:text-foreground mb-1 uppercase tracking-widest" style={EXO}>{tAssign('catalogStructure')}</span>
-                                            <p className="text-xs text-muted-foreground leading-relaxed">{tAssign('catalogStructureDesc')}</p>
-                                        </div>
-                                    </label>
-                                    {saveAsTemplate && (
-                                        <input
-                                            type="text"
-                                            value={templateTitle}
-                                            onChange={(e) => setTemplateTitle(e.target.value)}
-                                            placeholder={tAssign('enterLibraryTitle')}
-                                            className="mt-6 w-full bg-endurix-paper dark:bg-background border border-endurix-black/15 dark:border-white/15 px-4 py-3 text-sm font-medium text-endurix-black dark:text-foreground focus:outline-none focus:border-endurix-orange transition-colors"
-                                        />
-                                    )}
-                                </div>
-                            )}
                         </div>
                     </div>
 
-                    {/* Action Buttons */}
-                    <div className="pt-4 pb-8 space-y-3">
-                        <div className="flex flex-col mb-4">
-                            <span className={`${LABEL_CLS} font-bold`} style={PLEX}>{tAssign('actionStatus')}</span>
-                            <span className="text-sm font-bold text-endurix-black dark:text-foreground mt-1" style={EXO}>
-                                {!scheduledDate ? tAssign('awaitingScheduling') :
-                                 !canConfirm ? tAssign('awaitingRecipients') :
-                                 tAssign('readyToDistribute')}
-                            </span>
+                    <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)] gap-6 items-start">
+                        {/* Block Details */}
+                        <div className={`${CARD_CLS} p-6`}>
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-lg font-bold text-endurix-black dark:text-foreground uppercase tracking-tight" style={EXO}>Desglose de bloques</h3>
+                                <span className={`${LABEL_CLS}`} style={PLEX}>Vista rápida</span>
+                            </div>
+                            {blocks.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">Aun no hay bloques cargados en esta sesión.</p>
+                            ) : (
+                                <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                                    {blocks.map((block, index) => (
+                                        <div key={block.id || `${block.type}-${index}`} className="flex items-center justify-between px-3 py-2 bg-endurix-black/5 dark:bg-white/5 border border-endurix-black/10 dark:border-white/10">
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-bold text-endurix-black dark:text-foreground truncate" style={EXO}>{index + 1}. {block.stepName || blockTypeLabel[block.type]}</p>
+                                                <p className="text-xs text-muted-foreground" style={PLEX}>{blockTypeLabel[block.type]}{block.group?.reps ? ` · x${block.group.reps}` : ''}</p>
+                                            </div>
+                                            <div className="text-right shrink-0 ml-4">
+                                                <p className="text-sm font-bold text-endurix-black dark:text-foreground" style={PLEX}>{formatBlockDuration(block)}</p>
+                                                <p className="text-xs text-muted-foreground" style={PLEX}>{formatBlockTarget(block)}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
-                        <Button
-                            variant="orange"
-                            onClick={handleAssign}
-                            disabled={loading || !canConfirm}
-                            className="w-full uppercase tracking-widest text-xs font-bold py-6"
-                        >
-                            {loading ? tAssign('transmittingData') : tAssign('commitAssignment')}
-                        </Button>
-                        <BackButton label={tAssign('cancel') || 'Cancelar'} showLabel className="w-full justify-center" variant="outline-brand" />
+
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className={`${CARD_CLS} p-4`}>
+                                    <p className={`${LABEL_CLS}`} style={PLEX}>Bloques totales</p>
+                                    <p className="text-2xl font-bold text-endurix-black dark:text-foreground mt-1" style={EXO}>{blocks.length}</p>
+                                </div>
+                                <div className={`${CARD_CLS} p-4`}>
+                                    <p className={`${LABEL_CLS}`} style={PLEX}>Intervalos</p>
+                                    <p className="text-2xl font-bold text-endurix-black dark:text-foreground mt-1" style={EXO}>{workoutSummary.byType.interval}</p>
+                                </div>
+                                <div className={`${CARD_CLS} p-4`}>
+                                    <p className={`${LABEL_CLS}`} style={PLEX}>Recuperación + descanso</p>
+                                    <p className="text-2xl font-bold text-endurix-black dark:text-foreground mt-1" style={EXO}>{workoutSummary.byType.recovery + workoutSummary.byType.rest}</p>
+                                </div>
+                                <div className={`${CARD_CLS} p-4`}>
+                                    <p className={`${LABEL_CLS}`} style={PLEX}>Distancia planificada</p>
+                                    <p className="text-2xl font-bold text-endurix-black dark:text-foreground mt-1" style={EXO}>
+                                        {workoutSummary.totalDistanceMeters > 0
+                                            ? `${(workoutSummary.totalDistanceMeters / 1000).toFixed(1)} km`
+                                            : '—'}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="space-y-3">
+                                <div className="flex flex-col mb-4">
+                                    <span className={`${LABEL_CLS} font-bold`} style={PLEX}>{tAssign('actionStatus')}</span>
+                                    <span className="text-sm font-bold text-endurix-black dark:text-foreground mt-1" style={EXO}>
+                                        {!scheduledDate ? tAssign('awaitingScheduling') :
+                                            !canConfirm ? tAssign('awaitingRecipients') :
+                                                tAssign('readyToDistribute')}
+                                    </span>
+                                </div>
+                                <Button
+                                    variant="orange"
+                                    onClick={handleAssign}
+                                    disabled={loading || !canConfirm}
+                                    className="w-full uppercase tracking-widest text-xs font-bold py-6"
+                                >
+                                    {loading ? tAssign('transmittingData') : tAssign('commitAssignment')}
+                                </Button>
+                                <BackButton label={tAssign('cancel') || 'Cancelar'} showLabel className="w-full justify-center" variant="outline-brand" />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

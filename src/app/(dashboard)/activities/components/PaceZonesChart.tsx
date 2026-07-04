@@ -109,7 +109,7 @@ export function PaceZonesChart({ laps, splits, isRunning }: PaceZonesChartProps)
     const totalTime = distribution.reduce((sum, d) => sum + d.time, 0);
 
     const zoneColors = [
-        'bg-red-500', // Z5 - Anaerobic
+        'bg-destructive', // Z5 - Anaerobic
         'bg-orange-500', // Z4 - Threshold
         'bg-yellow-500', // Z3 - Tempo
         'bg-green-500', // Z2 - Easy

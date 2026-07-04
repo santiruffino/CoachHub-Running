@@ -124,7 +124,7 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
                 )}
 
                 {error && (
-                    <div className="py-12 text-center text-red-600 dark:text-red-400">
+                    <div className="py-12 text-center text-destructive">
                         {error}
                     </div>
                 )}
@@ -213,7 +213,7 @@ export function WorkoutMatchModal({ isOpen, onClose, assignmentId, workoutTitle 
                                         variant="outline-brand"
                                         size="sm"
                                         onClick={handleUnlink}
-                                        className="text-red-600 hover:text-red-700 hover:bg-red-500/10 border-red-500/30 uppercase tracking-widest text-[10px]"
+                                        className="text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30 uppercase tracking-widest text-[10px]"
                                     >
                                         {t('unlinkActivity')}
                                     </Button>

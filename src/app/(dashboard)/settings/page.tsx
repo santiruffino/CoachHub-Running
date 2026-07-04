@@ -3,8 +3,8 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Bell, Shield, Users, UserCog } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
-import { SectionHeader } from '@/components/dashboard';
-import { BackButton } from '@/components/ui/BackButton';
+import { PageContainer } from '@/components/layout/PageContainer';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 export const dynamic = 'force-dynamic';
 
@@ -70,11 +70,9 @@ export default async function SettingsHubPage() {
     ];
 
     return (
-        <div className="max-w-4xl mx-auto space-y-8 pb-20 p-4 sm:p-6 lg:p-8">
-            <div className="mb-4">
-                <BackButton href="/dashboard" />
-            </div>
-            <SectionHeader
+        <PageContainer width="narrow" className="space-y-8 pb-20">
+            <PageHeader
+                backHref="/dashboard"
                 eyebrow={t('eyebrow')}
                 title={t('title')}
                 description={t('description')}
@@ -105,6 +103,6 @@ export default async function SettingsHubPage() {
                     );
                 })}
             </div>
-        </div>
+        </PageContainer>
     );
 }

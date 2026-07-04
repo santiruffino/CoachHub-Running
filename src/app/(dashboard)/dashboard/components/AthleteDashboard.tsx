@@ -14,12 +14,15 @@ import { StatCard, DashboardCard, DashboardCardHeaderDots, MonospaceLabel } from
 import { PerformanceTrendChart } from '@/components/dashboard/PerformanceTrendChart';
 import { LoadMetricsTrendChart } from '@/components/dashboard/LoadMetricsTrendChart';
 import { WeeklyLoadChart } from '@/components/dashboard/WeeklyLoadChart';
+import { StatCardSkeleton } from '@/components/dashboard/skeletons';
 import { CareerProgressSummary } from '@/features/profiles/components/CareerProgressSummary';
 import { CoachAthleteChat } from '@/components/dashboard/CoachAthleteChat';
 import { HeartRateZones } from '@/features/profiles/components/HeartRateZones';
 import { PaceZones } from '@/features/profiles/components/PaceZones';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 import { stravaService } from '@/features/strava/services/strava.service';
 import { racesService } from '@/features/races/services/races.service';
@@ -45,6 +48,19 @@ interface PerformancePoint {
     week: string;
     value: number;
 }
+
+type DashboardSection = 'overview' | 'fitness' | 'compliance' | 'chat' | 'zones';
+
+const DASHBOARD_TABS: Array<{ value: DashboardSection; label: string }> = [
+    { value: 'overview', label: 'Resumen' },
+    { value: 'fitness', label: 'Fitness' },
+    { value: 'compliance', label: 'Cumplimiento' },
+    { value: 'zones', label: 'Zonas' },
+    { value: 'chat', label: 'Chat' },
+];
+
+const TAB_TRIGGER_CLASS =
+    'flex-1 shrink-0 text-[9px] font-bold uppercase tracking-widest py-2 px-2 text-center text-endurix-black/60 dark:text-muted-foreground transition-colors hover:text-endurix-black dark:hover:text-foreground data-[state=active]:bg-endurix-orange data-[state=active]:text-white data-[state=active]:shadow-sm';
 
 const FEEDBACK_MODAL_SEEN_STORAGE_KEY = 'endurix.dashboard.athlete.feedbackModal.seenActivities';
 
@@ -100,6 +116,7 @@ export default function AthleteDashboard({ user, initialData = null }: AthleteDa
     const [isSwitchingLoadRange, setIsSwitchingLoadRange] = useState(false);
     const [weeklyLoadData, setWeeklyLoadData] = useState<WeeklyLoadResponse | null>(null);
     const [weeklyLoadLoading, setWeeklyLoadLoading] = useState(true);
+    const [activeSection, setActiveSection] = useState<DashboardSection>('overview');
 
     const calculatePerformanceTrend = useCallback((assignmentsData: TrainingAssignment[], activitiesData: Activity[]) => {
         const trend = [];
@@ -335,7 +352,7 @@ export default function AthleteDashboard({ user, initialData = null }: AthleteDa
         const riskKey = loadMetricsData?.current.risk || 'insufficientData';
         const riskClassName =
             riskKey === 'high'
-                ? 'bg-red-500/10 text-red-600 dark:text-red-300'
+                ? 'bg-destructive/10 text-destructive'
                 : riskKey === 'moderate'
                     ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300'
                     : riskKey === 'lowStimulus'
@@ -430,216 +447,221 @@ export default function AthleteDashboard({ user, initialData = null }: AthleteDa
                             <StatCard label={t('activities.detail.metrics.elevationGain')} value={weeklyStats.elevation} />
                             <StatCard label={t('athletes.detail.complianceRate')} value={weeklyStats.compliance} />
                         </div>
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                            {showLoadSkeleton ? (
-                                Array.from({ length: 4 }).map((_, idx) => (
-                                    <Skeleton
-                                        key={`fitness-skeleton-${idx}`}
-                                        className="h-[112px] border border-endurix-black/20 dark:border-white/20 bg-white dark:bg-white/5"
-                                    />
-                                ))
-                            ) : (
-                                <>
-                                    <StatCard
-                                        label={t('dashboard.fitness.fitnessCard')}
-                                        value={loadMetrics.ctl.toFixed(1)}
-                                    />
-                                    <StatCard
-                                        label={t('dashboard.fitness.fatigueCard')}
-                                        value={loadMetrics.atl.toFixed(1)}
-                                    />
-                                    <StatCard
-                                        label={t('dashboard.fitness.formCard')}
-                                        value={formatTsb(loadMetrics.tsb)}
-                                        chipColor={
-                                            loadMetrics.tsb > 5
-                                                ? 'green'
-                                                : loadMetrics.tsb < -5
-                                                    ? 'red'
-                                                    : 'orange'
-                                        }
-                                    />
-                                    <StatCard
-                                        label={t('dashboard.fitness.riskCard')}
-                                        value={loadMetrics.acwr.toFixed(2)}
-                                        chip={t(`dashboard.fitness.loadRisk.${loadMetrics.riskKey}`)}
-                                        chipColor={
-                                            loadMetrics.riskKey === 'high'
-                                                ? 'red'
-                                                : loadMetrics.riskKey === 'moderate'
-                                                    ? 'orange'
-                                                    : loadMetrics.riskKey === 'balanced'
-                                                        ? 'green'
-                                                        : 'neutral'
-                                        }
-                                    />
-                                </>
-                            )}
-                        </div>
                     </div>
                 </div>
 
-                <div className="w-full">
-                    <AthleteWeeklyCalendar
-                        athleteId={user.id}
-                        assignments={assignments}
-                        activities={activities}
-                        races={races}
-                    />
-                </div>
-
-                <DashboardCard
-                    headerLabel={t('dashboard.careerProgress.title')}
-                    headerAccessory={<DashboardCardHeaderDots />}
-                >
-                    <CareerProgressSummary athleteId={user.id} />
-                </DashboardCard>
-
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-                    <div className="lg:col-span-7">
-                        <DashboardCard
-                            headerLabel={t('dashboard.chat.title')}
-                            headerAccessory={<DashboardCardHeaderDots />}
-                            className="h-full"
-                        >
-                            <CoachAthleteChat athleteId={user.id} showHeader={false} />
-                        </DashboardCard>
-                    </div>
-
-                    <div className="lg:col-span-5">
-                        <NextRaces athleteRaces={races} />
-                    </div>
-                </div>
-
-                <DashboardCard
-                    headerLabel={t('dashboard.fitness.fitnessCard')}
-                    headerAccessory={<DashboardCardHeaderDots />}
-                    bodyClassName="p-0"
-                >
-                    <div className="px-6 pt-4 flex flex-wrap items-end justify-between gap-3">
-                        <div>
-                            <MonospaceLabel color="muted" size="sm" className="block mb-1">
-                                {t('dashboard.fitness.loadChartSubtitle')}
-                            </MonospaceLabel>
-                            <h3
-                                className="text-xl lg:text-2xl font-bold text-endurix-black dark:text-foreground uppercase tracking-tight"
-                                style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
-                            >
-                                {t('dashboard.fitness.loadChartTitle')}
-                            </h3>
-                        </div>
-                        <span
-                            className={`text-[10px] font-bold tracking-widest uppercase border px-2 py-0.5 ${loadMetrics.riskClassName}`}
-                            style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
-                        >
-                            {t(`dashboard.fitness.loadRisk.${loadMetrics.riskKey}`)}
-                        </span>
-                    </div>
-                    <div className="px-6 py-3 flex items-center justify-between gap-3 flex-wrap">
-                        <div className="flex items-center gap-2">
-                            {([7, 30, 90] as const).map((range) => (
-                                <Button
-                                    key={range}
-                                    type="button"
-                                    variant={loadRange === range ? 'orange' : 'outline-brand'}
-                                    size="xs"
-                                    className="uppercase tracking-widest"
-                                    onClick={() => handleLoadRangeChange(range)}
-                                    disabled={isSwitchingLoadRange}
-                                >
-                                    {range}D
-                                </Button>
+                <div className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border p-3">
+                    <Tabs value={activeSection} onValueChange={(value) => setActiveSection(value as DashboardSection)}>
+                        <TabsList className="flex h-auto w-full flex-nowrap gap-1 overflow-x-auto bg-endurix-black/8 p-1 dark:bg-white/8">
+                            {DASHBOARD_TABS.map((tab) => (
+                                <TabsTrigger key={tab.value} value={tab.value} className={TAB_TRIGGER_CLASS}>
+                                    {tab.label}
+                                </TabsTrigger>
                             ))}
-                        </div>
-                        <span
-                            className="text-[10px] text-muted-foreground tracking-widest uppercase"
-                            style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
-                        >
-                            {showLoadSkeleton
-                                ? t('dashboard.fitness.loadStatus.loading')
-                                : loadMetrics.backfillStatus === 'queued' || loadMetrics.backfillStatus === 'running'
-                                    ? t('dashboard.fitness.loadStatus.syncing')
-                                    : loadMetrics.partial
-                                        ? t('dashboard.fitness.loadStatus.partial', { days: loadMetrics.historyDaysAvailable })
-                                        : t('dashboard.fitness.loadStatus.ready')}
-                        </span>
-                    </div>
-                    <div className="px-2 pb-4">
-                        {showLoadSkeleton ? (
-                            <Skeleton className="h-72 w-full" />
-                        ) : (
-                            <LoadMetricsTrendChart data={loadTrendData} />
-                        )}
-                    </div>
-                </DashboardCard>
+                        </TabsList>
 
-                <DashboardCard
-                    headerLabel={t('dashboard.fitness.weeklyLoadChartTitle')}
-                    headerAccessory={<DashboardCardHeaderDots />}
-                    bodyClassName="p-0"
-                >
-                    <div className="px-6 pt-4">
-                        <MonospaceLabel color="muted" size="sm" className="block mb-1">
-                            {t('dashboard.fitness.weeklyLoadChartSubtitle')}
-                        </MonospaceLabel>
-                    </div>
-                    <div className="px-2 pb-4">
-                        {showWeeklyLoadSkeleton ? (
-                            <Skeleton className="h-72 w-full" />
-                        ) : (
-                            <WeeklyLoadChart data={weeklyLoadChartData} />
-                        )}
-                    </div>
-                    <p className="px-6 pb-4 text-[11px] text-endurix-black/50 dark:text-muted-foreground">
-                        {t('dashboard.fitness.weeklyLoadHrTssNote')}
-                    </p>
-                </DashboardCard>
+                        <TabsContent value="overview" className="mt-6 space-y-8">
+                            <div className="w-full">
+                                <AthleteWeeklyCalendar
+                                    athleteId={user.id}
+                                    assignments={assignments}
+                                    activities={activities}
+                                    races={races}
+                                />
+                            </div>
 
-                <DashboardCard
-                    headerLabel={t('dashboard.performanceTrend.title')}
-                    headerAccessory={<DashboardCardHeaderDots />}
-                    bodyClassName="p-0"
-                >
-                    <div className="px-6 pt-4">
-                        <h3
-                            className="text-xl lg:text-2xl font-bold text-endurix-black dark:text-foreground uppercase tracking-tight"
-                            style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
-                        >
-                            {t('athletes.detail.performanceAndZones')}
-                        </h3>
-                    </div>
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 lg:divide-x divide-endurix-black/8 dark:divide-border mt-4">
-                        <div className="p-6">
-                            <PerformanceTrendChart data={performanceData} />
-                        </div>
-                        <div className="p-6 space-y-8 divide-y divide-endurix-black/8 dark:divide-border">
-                            <div>
-                                <h4
-                                    className="mb-6 text-lg font-bold uppercase tracking-tight text-endurix-black dark:text-foreground"
-                                    style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                            <DashboardCard
+                                headerLabel={t('dashboard.careerProgress.title')}
+                                headerAccessory={<DashboardCardHeaderDots />}
+                            >
+                                <CareerProgressSummary athleteId={user.id} />
+                            </DashboardCard>
+
+                            <NextRaces athleteRaces={races} />
+                        </TabsContent>
+
+                        <TabsContent value="fitness" className="mt-6 space-y-8">
+                            <TooltipProvider delayDuration={150}>
+                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                    {showLoadSkeleton ? (
+                                        Array.from({ length: 4 }).map((_, idx) => (
+                                            <StatCardSkeleton
+                                                key={`fitness-skeleton-${idx}`}
+                                                className="min-h-[112px]"
+                                            />
+                                        ))
+                                    ) : (
+                                        <>
+                                            <StatCard
+                                                label="CTL"
+                                                value={loadMetrics.ctl.toFixed(1)}
+                                                tooltip={t('athletes.detail.metricTooltip.ctl')}
+                                            />
+                                            <StatCard
+                                                label="ATL"
+                                                value={loadMetrics.atl.toFixed(1)}
+                                                tooltip={t('athletes.detail.metricTooltip.atl')}
+                                            />
+                                            <StatCard
+                                                label="TSB"
+                                                value={formatTsb(loadMetrics.tsb)}
+                                                chipColor={
+                                                    loadMetrics.tsb > 5
+                                                        ? 'green'
+                                                        : loadMetrics.tsb < -5
+                                                            ? 'red'
+                                                            : 'orange'
+                                                }
+                                                tooltip={t('athletes.detail.metricTooltip.tsb')}
+                                            />
+                                            <StatCard
+                                                label="ACWR"
+                                                value={loadMetrics.acwr.toFixed(2)}
+                                                chip={t(`dashboard.fitness.loadRisk.${loadMetrics.riskKey}`)}
+                                                chipColor={
+                                                    loadMetrics.riskKey === 'high'
+                                                        ? 'red'
+                                                        : loadMetrics.riskKey === 'moderate'
+                                                            ? 'orange'
+                                                            : loadMetrics.riskKey === 'balanced'
+                                                                ? 'green'
+                                                                : 'neutral'
+                                                }
+                                                tooltip={t('athletes.detail.metricTooltip.acwr')}
+                                            />
+                                        </>
+                                    )}
+                                </div>
+                            </TooltipProvider>
+
+                            <DashboardCard
+                                headerLabel={t('dashboard.fitness.fitnessCard')}
+                                headerAccessory={<DashboardCardHeaderDots />}
+                                bodyClassName="p-0"
+                            >
+                                <div className="px-6 pt-4 flex flex-wrap items-end justify-between gap-3">
+                                    <div>
+                                        <MonospaceLabel color="muted" size="sm" className="block mb-1">
+                                            {t('dashboard.fitness.loadChartSubtitle')}
+                                        </MonospaceLabel>
+                                        <h3
+                                            className="text-xl lg:text-2xl font-bold text-endurix-black dark:text-foreground uppercase tracking-tight"
+                                            style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                                        >
+                                            {t('dashboard.fitness.loadChartTitle')}
+                                        </h3>
+                                    </div>
+                                    <span
+                                        className={`text-[10px] font-bold tracking-widest uppercase border px-2 py-0.5 ${loadMetrics.riskClassName}`}
+                                        style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                                    >
+                                        {t(`dashboard.fitness.loadRisk.${loadMetrics.riskKey}`)}
+                                    </span>
+                                </div>
+                                <div className="px-6 py-3 flex items-center justify-between gap-3 flex-wrap">
+                                    <div className="flex items-center gap-2">
+                                        {([7, 30, 90] as const).map((range) => (
+                                            <Button
+                                                key={range}
+                                                type="button"
+                                                variant={loadRange === range ? 'orange' : 'outline-brand'}
+                                                size="xs"
+                                                className="uppercase tracking-widest"
+                                                onClick={() => handleLoadRangeChange(range)}
+                                                disabled={isSwitchingLoadRange}
+                                            >
+                                                {range}D
+                                            </Button>
+                                        ))}
+                                    </div>
+                                    <span
+                                        className="text-[10px] text-muted-foreground tracking-widest uppercase"
+                                        style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+                                    >
+                                        {showLoadSkeleton
+                                            ? t('dashboard.fitness.loadStatus.loading')
+                                            : loadMetrics.backfillStatus === 'queued' || loadMetrics.backfillStatus === 'running'
+                                                ? t('dashboard.fitness.loadStatus.syncing')
+                                                : loadMetrics.partial
+                                                    ? t('dashboard.fitness.loadStatus.partial', { days: loadMetrics.historyDaysAvailable })
+                                                    : t('dashboard.fitness.loadStatus.ready')}
+                                    </span>
+                                </div>
+                                <div className="px-2 pb-4">
+                                    {showLoadSkeleton ? (
+                                        <Skeleton className="h-72 w-full" />
+                                    ) : (
+                                        <LoadMetricsTrendChart data={loadTrendData} />
+                                    )}
+                                </div>
+                            </DashboardCard>
+
+                            <DashboardCard
+                                headerLabel={t('dashboard.fitness.weeklyLoadChartTitle')}
+                                headerAccessory={<DashboardCardHeaderDots />}
+                                bodyClassName="p-0"
+                            >
+                                <div className="px-6 pt-4">
+                                    <MonospaceLabel color="muted" size="sm" className="block mb-1">
+                                        {t('dashboard.fitness.weeklyLoadChartSubtitle')}
+                                    </MonospaceLabel>
+                                </div>
+                                <div className="px-2 pb-4">
+                                    {showWeeklyLoadSkeleton ? (
+                                        <Skeleton className="h-72 w-full" />
+                                    ) : (
+                                        <WeeklyLoadChart data={weeklyLoadChartData} />
+                                    )}
+                                </div>
+                                <p className="px-6 pb-4 text-[11px] text-endurix-black/50 dark:text-muted-foreground">
+                                    {t('dashboard.fitness.weeklyLoadHrTssNote')}
+                                </p>
+                            </DashboardCard>
+                        </TabsContent>
+
+                        <TabsContent value="compliance" className="mt-6 space-y-8">
+                            <DashboardCard
+                              headerLabel={t('dashboard.performanceTrend.title')}
+                              headerAccessory={<DashboardCardHeaderDots />}
+                              bodyClassName="p-0"
+                            >
+                                <div className="p-6">
+                                    <PerformanceTrendChart data={performanceData} />
+                                </div>
+                            </DashboardCard>
+                        </TabsContent>
+
+                        <TabsContent value="zones" className="mt-6 space-y-8">
+                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                                <DashboardCard
+                                    headerLabel={t('dashboard.fitness.hrZonesTitle')}
+                                    headerAccessory={<DashboardCardHeaderDots />}
+                                    bodyClassName="p-6"
                                 >
-                                    {t('dashboard.fitness.hrZonesTitle')}
-                                </h4>
-                                {athleteDetails?.athleteProfile?.hrZones ? (
-                                    <HeartRateZones zones={athleteDetails.athleteProfile.hrZones} />
-                                ) : (
-                                    <p className="text-sm text-endurix-black/50 dark:text-muted-foreground">
-                                        {t('activities.detail.zones.noHrData')}
-                                    </p>
-                                )}
-                            </div>
-                            <div className="pt-6">
-                                <h4
-                                    className="mb-6 text-lg font-bold uppercase tracking-tight text-endurix-black dark:text-foreground"
-                                    style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+                                    {athleteDetails?.athleteProfile?.hrZones ? (
+                                        <HeartRateZones zones={athleteDetails.athleteProfile.hrZones} />
+                                    ) : (
+                                        <p className="text-sm text-endurix-black/50 dark:text-muted-foreground">
+                                            {t('activities.detail.zones.noHrData')}
+                                        </p>
+                                    )}
+                                </DashboardCard>
+
+                                <DashboardCard
+                                    headerLabel={t('dashboard.fitness.paceZonesTitle')}
+                                    headerAccessory={<DashboardCardHeaderDots />}
+                                    bodyClassName="p-6"
                                 >
-                                    {t('dashboard.fitness.paceZonesTitle')}
-                                </h4>
-                                <PaceZones vam={athleteDetails?.athleteProfile?.vam} />
+                                    <PaceZones vam={athleteDetails?.athleteProfile?.vam} />
+                                </DashboardCard>
                             </div>
-                        </div>
-                    </div>
-                </DashboardCard>
+                        </TabsContent>
+
+                        <TabsContent value="chat" className="mt-6 h-[calc(100vh-18rem)] min-h-[34rem]">
+                            <CoachAthleteChat athleteId={user.id} className="h-full" />
+                        </TabsContent>
+                    </Tabs>
+                </div>
 
                 <AssignRaceModal
                     open={isAssignRaceModalOpen}

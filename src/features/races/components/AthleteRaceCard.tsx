@@ -86,7 +86,7 @@ export function AthleteRaceCard({ race, isHistory, t, onRecordResult }: AthleteR
           </div>
           <span className={cn(
             'text-[10px] font-bold px-2 py-0.5 border uppercase tracking-wider',
-            race.priority === 'A' ? 'bg-red-500/10 text-red-500 border-red-500/30' :
+            race.priority === 'A' ? 'bg-destructive/10 text-destructive border-destructive/30' :
               race.priority === 'B' ? 'bg-amber-500/10 text-amber-500 border-amber-500/30' :
                 'bg-blue-500/10 text-blue-500 border-blue-500/30'
           )}

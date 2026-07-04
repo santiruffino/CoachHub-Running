@@ -49,7 +49,7 @@ export default function ForgotPasswordForm() {
         <Card className="w-full max-w-md bg-endurix-paper dark:bg-card border border-endurix-black/15 dark:border-border">
             <CardHeader className="border-b border-endurix-black/10 dark:border-border">
                 <div className="mb-4">
-                    <BackButton href="/login" />
+                    <BackButton href="/login" showLabel />
                 </div>
                 <CardTitle className="text-2xl uppercase tracking-tight" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{t('title')}</CardTitle>
                 <CardDescription>
@@ -58,7 +58,7 @@ export default function ForgotPasswordForm() {
             </CardHeader>
             <CardContent className="p-6">
                 {error && (
-                    <Alert variant="destructive" className="mb-4 bg-red-500/10 border-red-500/30">
+                    <Alert variant="destructive" className="mb-4 bg-destructive/10 border-destructive/30">
                         <AlertDescription>{error}</AlertDescription>
                     </Alert>
                 )}

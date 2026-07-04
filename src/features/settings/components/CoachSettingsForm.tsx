@@ -10,8 +10,8 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Info, Loader2, ShieldAlert, Link2, LayoutDashboard, CalendarDays, RefreshCw } from 'lucide-react';
-import { SectionHeader, DashboardCardHeaderDots } from '@/components/dashboard';
-import { BackButton } from '@/components/ui/BackButton';
+import { DashboardCardHeaderDots } from '@/components/dashboard';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -66,11 +66,9 @@ export function CoachSettingsForm({ initialSettings }: CoachSettingsFormProps) {
 
     return (
         <TooltipProvider delayDuration={150}>
-            <div className="max-w-4xl mx-auto space-y-8 pb-20">
-                <div className="mb-4">
-                    <BackButton href="/settings" />
-                </div>
-                <SectionHeader
+            <div className="space-y-8 pb-20">
+                <PageHeader
+                    backHref="/settings"
                     eyebrow={t('eyebrow')}
                     title={t('title')}
                     description={t('description')}

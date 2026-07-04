@@ -174,7 +174,7 @@ function ChangePasswordSection() {
                 </Alert>
             )}
             {err && (
-                <Alert variant="destructive" className="bg-red-500/10 border-red-500/30">
+                <Alert variant="destructive" className="bg-destructive/10 border-destructive/30">
                     <AlertDescription>{err}</AlertDescription>
                 </Alert>
             )}
@@ -255,7 +255,7 @@ export function ProfileForm({ profile }: { profile: ProfileDetails }) {
                 </Alert>
             )}
             {message === 'error' && (
-                <Alert variant="destructive" className="mb-6 bg-red-500/10 border-red-500/30">
+                <Alert variant="destructive" className="mb-6 bg-destructive/10 border-destructive/30">
                     <AlertDescription>{errorMessage || t('errorUpdate')}</AlertDescription>
                 </Alert>
             )}

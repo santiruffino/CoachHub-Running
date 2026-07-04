@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { AthletesList } from '@/features/users/components/AthletesList';
+import { PageContainer } from '@/components/layout/PageContainer';
 import { SupabaseClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
@@ -143,12 +144,12 @@ export default async function AthletesPage() {
   ]);
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8">
-      <AthletesList 
+    <PageContainer>
+      <AthletesList
         initialAthletes={athletes as any}
-        initialCoaches={coaches} 
-        isAdmin={profile.role === 'ADMIN'} 
+        initialCoaches={coaches}
+        isAdmin={profile.role === 'ADMIN'}
       />
-    </div>
+    </PageContainer>
   );
 }

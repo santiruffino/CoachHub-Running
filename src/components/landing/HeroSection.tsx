@@ -26,7 +26,7 @@ type ChipColor = 'orange' | 'green' | 'red' | 'neutral';
 const chipColorMap: Record<ChipColor, string> = {
   orange: 'text-endurix-orange border-endurix-orange/30',
   green: 'text-green-600 dark:text-green-500 border-green-500/30',
-  red: 'text-red-600 dark:text-red-500 border-red-500/30',
+  red: 'text-destructive border-destructive/30',
   neutral: 'text-endurix-black/60 dark:text-muted-foreground border-endurix-black/20 dark:border-border',
 };
 

@@ -101,7 +101,7 @@ function ElevationTooltip({ active, payload, t }: TooltipContentProps) {
   if (!active || !payload || payload.length === 0) return null;
 
   const point = payload[0].payload;
-  const elevationColor = point.elevation >= 0 ? 'text-green-500' : 'text-red-500';
+  const elevationColor = point.elevation >= 0 ? 'text-green-500' : 'text-destructive';
   const gradeCategory = point.gradeCategory;
   const gradeColor = gradeCategory ? GRADE_COLORS[gradeCategory]?.stroke : '#6b7280';
   const gradeLabel = gradeCategory ? t(`charts.gradeCategories.${gradeCategory}`) || GRADE_COLORS[gradeCategory]?.label : '—';

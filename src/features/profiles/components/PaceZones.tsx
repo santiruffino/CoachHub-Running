@@ -14,7 +14,7 @@ const ZONE_COLORS = [
     'bg-emerald-400',
     'bg-yellow-400',
     'bg-orange-400',
-    'bg-red-500',
+    'bg-destructive',
 ];
 
 const ZONE_PERCENTAGES = [5, 18, 40, 25, 12];

@@ -130,12 +130,12 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
     };
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5 shadow-sm h-full overflow-y-auto">
+        <div className="bg-white dark:bg-card rounded-lg border border-border p-5 shadow-sm h-full overflow-y-auto">
             <div className="flex items-center justify-between mb-5">
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{t('stepDetails')}</h3>
+                <h3 className="text-lg font-semibold text-foreground dark:text-muted-foreground">{t('stepDetails')}</h3>
                 <button
                     onClick={() => onRemove(block.id)}
-                    className="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors p-2 rounded-md hover:bg-red-50 dark:hover:bg-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="text-muted-foreground hover:text-destructive transition-colors p-2 rounded-md hover:bg-destructive/10 disabled:opacity-50 disabled:cursor-not-allowed"
                     title={t('removeStep')}
                     disabled={readOnly}
                 >
@@ -146,7 +146,7 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
             <div className="space-y-4">
                 {/* Step Name */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-foreground dark:text-muted-foreground mb-2">
                         {t('stepName')}
                     </label>
                     <input
@@ -154,20 +154,20 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
                         value={block.stepName || ''}
                         onChange={(e) => onUpdate(block.id, { stepName: e.target.value })}
                         placeholder={t(`labels.${block.type}`)}
-                        className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                        className="block w-full rounded-md border-input shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border bg-white dark:bg-muted text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-muted-foreground disabled:opacity-60 disabled:cursor-not-allowed"
                         disabled={readOnly}
                     />
                 </div>
 
                 {/* Type */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-foreground dark:text-muted-foreground mb-2">
                         {t('type')}
                     </label>
                     <select
                         value={block.type}
                         onChange={(e) => handleTypeChange(e.target.value as BlockType)}
-                        className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border font-medium bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed"
+                        className="block w-full rounded-md border-input shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border font-medium bg-white dark:bg-muted text-foreground dark:text-white disabled:opacity-60 disabled:cursor-not-allowed"
                         disabled={readOnly}
                     >
                         <option value="warmup">{t('labels.warmup')}</option>
@@ -180,7 +180,7 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
 
                 {/* Duration */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-foreground dark:text-muted-foreground mb-2">
                         {t('duration')}
                     </label>
                     <div className="grid grid-cols-2 gap-3">
@@ -210,7 +210,7 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
                                 setTimeInputError(false);
                             }}
                             placeholder={block.duration.type === 'time' ? t('durationInputPlaceholder') : '0'}
-                            className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-gray-900 dark:text-white dark:bg-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                            className="block w-full rounded-md border-input shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-foreground dark:text-white dark:bg-muted placeholder:text-muted-foreground dark:placeholder:text-muted-foreground"
                         />
 
                         <select
@@ -226,7 +226,7 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
                                     toggleDistanceUnit(value as 'm' | 'km');
                                 }
                             }}
-                            className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-gray-900 dark:text-white dark:bg-gray-700"
+                            className="block w-full rounded-md border-input shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-foreground dark:text-white dark:bg-muted"
                         >
                             <option value="m">{t('meters')}</option>
                             <option value="km">{t('kilometers')}</option>
@@ -242,7 +242,7 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
 
                 {/* Intensity (RPE) Slider */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-foreground dark:text-muted-foreground mb-2">
                         {t('intensity')}
                     </label>
                     <div className="space-y-2">
@@ -253,14 +253,14 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
                                 max="100"
                                 value={block.intensity || 50}
                                 onChange={(e) => onUpdate(block.id, { intensity: Number(e.target.value) })}
-                                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-brand-primary"
+                                className="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer dark:bg-muted accent-brand-primary"
                             />
-                            <span className="ml-3 text-sm font-semibold text-gray-900 dark:text-white w-12 text-right">
+                            <span className="ml-3 text-sm font-semibold text-foreground dark:text-white w-12 text-right">
                                 {block.intensity || 50}%
                             </span>
                         </div>
                         {/* Visual intensity bar */}
-                        <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                        <div className="h-2 bg-muted rounded-full overflow-hidden">
                             <div
                                 className="h-full transition-all"
                                 style={{ 
@@ -274,13 +274,13 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
 
                 {/* Target Type Selection */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-foreground dark:text-muted-foreground mb-2">
                         {t('paceSpeed')}
                     </label>
                     <select
                         value={block.target.type}
                         onChange={(e) => handleTargetTypeChange(e.target.value as TargetType)}
-                        className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-gray-900 dark:text-white dark:bg-gray-700 mb-3"
+                        className="block w-full rounded-md border-input shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-foreground dark:text-white dark:bg-muted mb-3"
                     >
                         <option value="vam_zone">{t('vamZone')}</option>
                         <option value="lthr">{t('lthr')}</option>
@@ -295,14 +295,14 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
                                 placeholder={t('lthrMinPlaceholder')}
                                 value={block.target.min}
                                 onChange={(e) => onUpdate(block.id, { target: { ...block.target, min: e.target.value } })}
-                                className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-gray-900 dark:text-white dark:bg-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                                className="block w-full rounded-md border-input shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-foreground dark:text-white dark:bg-muted placeholder:text-muted-foreground dark:placeholder:text-muted-foreground"
                             />
                             <input
                                 type="number"
                                 placeholder={t('lthrMaxPlaceholder')}
                                 value={block.target.max}
                                 onChange={(e) => onUpdate(block.id, { target: { ...block.target, max: e.target.value } })}
-                                className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-gray-900 dark:text-white dark:bg-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                                className="block w-full rounded-md border-input shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-foreground dark:text-white dark:bg-muted placeholder:text-muted-foreground dark:placeholder:text-muted-foreground"
                             />
                         </div>
                     )}
@@ -317,7 +317,7 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
                                 placeholder={t('rpeMinPlaceholder')}
                                 value={block.target.min}
                                 onChange={(e) => onUpdate(block.id, { target: { ...block.target, min: e.target.value } })}
-                                className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-gray-900 dark:text-white dark:bg-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                                className="block w-full rounded-md border-input shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-foreground dark:text-white dark:bg-muted placeholder:text-muted-foreground dark:placeholder:text-muted-foreground"
                             />
                             <input
                                 type="number"
@@ -326,7 +326,7 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
                                 placeholder={t('rpeMaxPlaceholder')}
                                 value={block.target.max}
                                 onChange={(e) => onUpdate(block.id, { target: { ...block.target, max: e.target.value } })}
-                                className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-gray-900 dark:text-white dark:bg-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                                className="block w-full rounded-md border-input shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-foreground dark:text-white dark:bg-muted placeholder:text-muted-foreground dark:placeholder:text-muted-foreground"
                             />
                         </div>
                     )}
@@ -343,7 +343,7 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
                                         max: e.target.value
                                     }
                                 })}
-                                className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-gray-900 dark:text-white dark:bg-gray-700"
+                                className="block w-full rounded-md border-input shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-foreground dark:text-white dark:bg-muted"
                             >
                                 {VAM_ZONES.map(z => (
                                     <option key={z.zone} value={z.zone}>
@@ -363,7 +363,7 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
                                     </p>
                                 </div>
                             ) : (
-                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                <p className="text-xs text-muted-foreground">
                                     💡 {t('assignToAthleteHint')}
                                 </p>
                             )}
@@ -373,14 +373,14 @@ export function BlockEditor({ block, onUpdate, onRemove, athleteId, readOnly = f
 
                 {/* Step Notes */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-foreground dark:text-muted-foreground mb-2">
                         {t('stepNotes')}
                     </label>
                     <textarea
                         rows={3}
                         value={block.notes || ''}
                         onChange={(e) => onUpdate(block.id, { notes: e.target.value })}
-                        className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-gray-900 dark:text-white dark:bg-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none"
+                        className="block w-full rounded-md border-input shadow-sm focus:border-brand-primary focus:ring-brand-primary text-sm p-2.5 border text-foreground dark:text-white dark:bg-muted placeholder:text-muted-foreground dark:placeholder:text-muted-foreground resize-none"
                         placeholder={t('notesPlaceholderStep')}
                     />
                 </div>

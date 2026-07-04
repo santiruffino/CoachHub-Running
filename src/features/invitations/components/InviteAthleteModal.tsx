@@ -184,7 +184,7 @@ export function InviteAthleteModal({ open, onClose }: InviteAthleteModalProps) {
                                         })}
                                     />
                                     {errors.email && (
-                                        <p className="text-sm text-red-500">{errors.email.message as string}</p>
+                                        <p className="text-sm text-destructive">{errors.email.message as string}</p>
                                     )}
                                 </div>
                                 <div className="flex justify-end gap-2 pt-2">
@@ -311,7 +311,7 @@ export function InviteAthleteModal({ open, onClose }: InviteAthleteModalProps) {
                         </div>
 
                         {bulkSummary.failed > 0 && (
-                            <div className="flex items-center gap-2 text-sm text-red-700 dark:text-red-400 bg-red-500/10 border border-red-500/30 p-3">
+                            <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 border border-destructive/30 p-3">
                                 <AlertCircle className="h-4 w-4" />
                                 <span className="font-mono text-xs uppercase tracking-wider">{tAthlete('bulk.summary.failed')}: {bulkSummary.failed}</span>
                             </div>

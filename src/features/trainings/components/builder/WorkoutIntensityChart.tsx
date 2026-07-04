@@ -245,7 +245,7 @@ export function WorkoutIntensityChart({ blocks, selectedId, onBlockClick, athlet
 
     if (blocks.length === 0) {
         return (
-            <div className="h-40 flex items-center justify-center text-muted-foreground bg-gray-50 dark:bg-slate-800 rounded-lg border border-dashed border-gray-300 dark:border-slate-700">
+            <div className="h-40 flex items-center justify-center text-muted-foreground bg-muted dark:bg-slate-800 rounded-lg border border-dashed border-input dark:border-slate-700">
                 {t('emptyProfile')}
             </div>
         );

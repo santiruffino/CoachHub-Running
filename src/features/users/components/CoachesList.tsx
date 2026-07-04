@@ -14,6 +14,7 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Search, Mail, Users, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { Input } from '@/components/ui/input';
 import { AlertDialog } from '@/components/ui/AlertDialog';
 import api from '@/lib/axios';
@@ -67,17 +68,15 @@ export function CoachesList({ initialCoaches }: CoachesListProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1
-          className="text-2xl sm:text-3xl font-bold text-endurix-black dark:text-foreground tracking-tight uppercase"
-          style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
-        >
-          {t('coaches.title')}
-        </h1>
-        <Button variant="orange" onClick={() => setIsInviteModalOpen(true)} className="uppercase tracking-widest">
+      <PageHeader
+        className="mb-0"
+        title={t('coaches.title')}
+        action={
+          <Button variant="orange" onClick={() => setIsInviteModalOpen(true)} className="uppercase tracking-widest">
             {t('coaches.inviteCoach')}
-        </Button>
-      </div>
+          </Button>
+        }
+      />
 
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -147,7 +146,7 @@ export function CoachesList({ initialCoaches }: CoachesListProps) {
                       </TableCell>
 
                       <TableCell className="text-right">
-                         <Button variant="ghost" className="text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => setDeleteId(coach.id)}>
+                         <Button variant="ghost" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => setDeleteId(coach.id)}>
                             <Trash2 className="h-4 w-4 mr-2" />
                             {t('coaches.deleteButton')}
                          </Button>

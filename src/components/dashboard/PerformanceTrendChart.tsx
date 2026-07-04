@@ -44,7 +44,7 @@ function resolveDotColor(value: number, target: number): string {
 function resolveStatusClasses(status: Status): string {
     if (status === 'good') return 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300';
     if (status === 'moderate') return 'bg-amber-500/10 text-amber-700 dark:text-amber-300';
-    return 'bg-red-500/10 text-red-700 dark:text-red-300';
+    return 'bg-destructive/10 text-destructive';
 }
 
 export function PerformanceTrendChart({
@@ -76,7 +76,7 @@ export function PerformanceTrendChart({
     trendDirection === 'up'
       ? 'text-emerald-600 dark:text-emerald-400'
       : trendDirection === 'down'
-        ? 'text-red-600 dark:text-red-400'
+        ? 'text-destructive'
         : 'text-foreground';
 
   return (
@@ -108,7 +108,7 @@ export function PerformanceTrendChart({
             </span>
             <div className="flex items-center gap-1.5">
               {trendDirection === 'up' && <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />}
-              {trendDirection === 'down' && <TrendingDown className="h-4 w-4 text-red-600 dark:text-red-400" />}
+              {trendDirection === 'down' && <TrendingDown className="h-4 w-4 text-destructive" />}
               {trendDirection === 'stable' && <Minus className="h-4 w-4 text-muted-foreground" />}
               <span
                 className={cn('text-2xl font-bold leading-none', trendColorClass)}

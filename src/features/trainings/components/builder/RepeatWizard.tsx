@@ -78,14 +78,14 @@ export function RepeatWizard({ onAdd, onClose }: RepeatWizardProps) {
                 <div className="p-6 space-y-6">
                     {/* Repetitions */}
                     <div className="flex items-center space-x-4">
-                        <label className="text-sm font-semibold text-gray-700">{t('repetitions')}:</label>
+                        <label className="text-sm font-semibold text-foreground">{t('repetitions')}:</label>
                         <input
                             type="number"
                             min="1"
                             max="50"
                             value={reps}
                             onChange={(e) => setReps(Number(e.target.value))}
-                            className="w-20 rounded-md border-gray-300 shadow-sm focus:border-brand-primary focus:ring-brand-primary p-2 border"
+                            className="w-20 rounded-md border-input shadow-sm focus:border-brand-primary focus:ring-brand-primary p-2 border"
                         />
                     </div>
 
@@ -96,12 +96,12 @@ export function RepeatWizard({ onAdd, onClose }: RepeatWizardProps) {
 
                             <div className="space-y-3">
                                 <div>
-                                    <label className="block text-xs text-gray-500 mb-1">{t('duration')}</label>
+                                    <label className="block text-xs text-muted-foreground mb-1">{t('duration')}</label>
                                     <div className="flex gap-2">
                                         <select
                                             value={activeDurationType}
                                             onChange={(e) => setActiveDurationType(e.target.value as DurationType)}
-                                            className="text-sm rounded border-gray-300 p-1.5 w-24"
+                                            className="text-sm rounded border-input p-1.5 w-24"
                                         >
                                             <option value="time">{t('time')}</option>
                                             <option value="distance">{t('kilometers')}</option>
@@ -110,18 +110,18 @@ export function RepeatWizard({ onAdd, onClose }: RepeatWizardProps) {
                                             type="number"
                                             value={activeDurationValue}
                                             onChange={(e) => setActiveDurationValue(Number(e.target.value))}
-                                            className="text-sm rounded border-gray-300 p-1.5 flex-1"
+                                            className="text-sm rounded border-input p-1.5 flex-1"
                                         />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs text-gray-500 mb-1">{t('target')}</label>
+                                    <label className="block text-xs text-muted-foreground mb-1">{t('target')}</label>
                                     <div className="flex gap-2 mb-2">
                                         <select
                                             value={activeTargetType}
                                             onChange={(e) => setActiveTargetType(e.target.value as TargetType)}
-                                            className="text-sm rounded border-gray-300 p-1.5 w-full"
+                                            className="text-sm rounded border-input p-1.5 w-full"
                                         >
                                             <option value="vam_zone">{t('vamZone')}</option>
                                             <option value="lthr">{t('lthr')}</option>
@@ -133,13 +133,13 @@ export function RepeatWizard({ onAdd, onClose }: RepeatWizardProps) {
                                             placeholder={t('placeholders.min')}
                                             value={activeTargetMin}
                                             onChange={(e) => setActiveTargetMin(e.target.value)}
-                                            className="text-sm rounded border-gray-300 p-1.5 w-1/2"
+                                            className="text-sm rounded border-input p-1.5 w-1/2"
                                         />
                                         <input
                                             placeholder={t('placeholders.max')}
                                             value={activeTargetMax}
                                             onChange={(e) => setActiveTargetMax(e.target.value)}
-                                            className="text-sm rounded border-gray-300 p-1.5 w-1/2"
+                                            className="text-sm rounded border-input p-1.5 w-1/2"
                                         />
                                     </div>
                                 </div>
@@ -152,12 +152,12 @@ export function RepeatWizard({ onAdd, onClose }: RepeatWizardProps) {
 
                             <div className="space-y-3">
                                 <div>
-                                    <label className="block text-xs text-gray-500 mb-1">{t('duration')}</label>
+                                    <label className="block text-xs text-muted-foreground mb-1">{t('duration')}</label>
                                     <div className="flex gap-2">
                                         <select
                                             value={recoveryDurationType}
                                             onChange={(e) => setRecoveryDurationType(e.target.value as DurationType)}
-                                            className="text-sm rounded border-gray-300 p-1.5 w-24"
+                                            className="text-sm rounded border-input p-1.5 w-24"
                                         >
                                             <option value="time">{t('time')}</option>
                                             <option value="distance">{t('kilometers')}</option>
@@ -166,18 +166,18 @@ export function RepeatWizard({ onAdd, onClose }: RepeatWizardProps) {
                                             type="number"
                                             value={recoveryDurationValue}
                                             onChange={(e) => setRecoveryDurationValue(Number(e.target.value))}
-                                            className="text-sm rounded border-gray-300 p-1.5 flex-1"
+                                            className="text-sm rounded border-input p-1.5 flex-1"
                                         />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs text-gray-500 mb-1">{t('target')}</label>
+                                    <label className="block text-xs text-muted-foreground mb-1">{t('target')}</label>
                                     <div className="flex gap-2 mb-2">
                                         <select
                                             value={recoveryTargetType}
                                             onChange={(e) => setRecoveryTargetType(e.target.value as TargetType)}
-                                            className="text-sm rounded border-gray-300 p-1.5 w-full"
+                                            className="text-sm rounded border-input p-1.5 w-full"
                                         >
                                             <option value="vam_zone">{t('vamZone')}</option>
                                             <option value="lthr">{t('lthr')}</option>
@@ -189,13 +189,13 @@ export function RepeatWizard({ onAdd, onClose }: RepeatWizardProps) {
                                             placeholder={t('placeholders.min')}
                                             value={recoveryTargetMin}
                                             onChange={(e) => setRecoveryTargetMin(e.target.value)}
-                                            className="text-sm rounded border-gray-300 p-1.5 w-1/2"
+                                            className="text-sm rounded border-input p-1.5 w-1/2"
                                         />
                                         <input
                                             placeholder={t('placeholders.max')}
                                             value={recoveryTargetMax}
                                             onChange={(e) => setRecoveryTargetMax(e.target.value)}
-                                            className="text-sm rounded border-gray-300 p-1.5 w-1/2"
+                                            className="text-sm rounded border-input p-1.5 w-1/2"
                                         />
                                     </div>
                                 </div>
@@ -204,10 +204,10 @@ export function RepeatWizard({ onAdd, onClose }: RepeatWizardProps) {
                     </div>
                 </div>
 
-                <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+                <div className="p-4 border-t border-border bg-muted flex justify-end gap-3">
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+                        className="px-4 py-2 text-sm font-medium text-foreground hover:text-foreground"
                     >
                         {t('common.cancel')}
                     </button>

@@ -24,6 +24,7 @@ import { HeartRateZones } from '@/features/profiles/components/HeartRateZones';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { VAM_LEVELS } from '@/features/profiles/constants/vam';
+import { PaceZones } from '@/features/profiles/components/PaceZones';
 import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
 import { useTranslations } from 'next-intl';
 import { AthleteWeeklyCalendar } from '@/components/dashboard/AthleteWeeklyCalendar';
@@ -34,13 +35,14 @@ import { normalizeActivityType } from '@/utils/activity-utils';
 
 const FONT_MONO = { fontFamily: 'var(--font-ibm-plex-mono, monospace)' } as const;
 
-type AthleteSection = 'training' | 'overview' | 'health' | 'racesNotes' | 'trend';
+type AthleteSection = 'training' | 'overview' | 'health' | 'performance' | 'racesNotes' | 'trend' | 'zones' | 'compliance';
 
-const ATHLETE_TABS: Array<{ value: AthleteSection; labelKey: 'trainingTab' | 'overviewTab' | 'healthTab' | 'racesNotesTab' | 'trendTab' }> = [
+const ATHLETE_TABS: Array<{ value: AthleteSection; labelKey?: 'trainingTab' | 'overviewTab' | 'healthTab' | 'racesNotesTab' | 'trendTab' | 'complianceTab' | 'zonesTab'; label?: string }> = [
     { value: 'training', labelKey: 'trainingTab' },
     { value: 'overview', labelKey: 'overviewTab' },
     { value: 'health', labelKey: 'healthTab' },
-    { value: 'trend', labelKey: 'trendTab' },
+    { value: 'zones', labelKey: 'zonesTab' },
+    { value: 'compliance', labelKey: 'complianceTab' },
     { value: 'racesNotes', labelKey: 'racesNotesTab' },
 ];
 
@@ -121,7 +123,7 @@ export function AthleteDetailsView({
         const riskKey = loadMetricsData?.current.risk || 'insufficientData';
         const riskClassName =
             riskKey === 'high'
-                ? 'bg-red-500/10 text-red-600 dark:text-red-300'
+                ? 'bg-destructive/10 text-destructive'
                 : riskKey === 'moderate'
                     ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300'
                     : riskKey === 'lowStimulus'
@@ -306,8 +308,8 @@ export function AthleteDetailsView({
 
     return (
         <div className="space-y-6 pb-20">
-            <div className="flex items-center gap-2">
-                <BackButton />
+            <div className="mb-2">
+                <BackButton href="/athletes" showLabel />
             </div>
 
             <div className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border p-5 md:p-6">
@@ -396,7 +398,7 @@ export function AthleteDetailsView({
                     </div>
 
                     <Tabs value={activeSection} onValueChange={(value) => setActiveSection(value as AthleteSection)}>
-                        <TabsList className="w-full h-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1 bg-endurix-black/8 dark:bg-white/8 p-1 border border-endurix-black/10 dark:border-border">
+                        <TabsList className="w-full h-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-1 bg-endurix-black/8 dark:bg-white/8 p-1 border border-endurix-black/10 dark:border-border">
                             {ATHLETE_TABS.map((tab) => (
                                 <TabsTrigger
                                     key={tab.value}
@@ -404,7 +406,7 @@ export function AthleteDetailsView({
                                     className={TAB_TRIGGER_CLASS}
                                     style={FONT_MONO}
                                 >
-                                    {tAthlete(tab.labelKey)}
+                                    {tab.label ?? tAthlete(tab.labelKey!)}
                                 </TabsTrigger>
                             ))}
                         </TabsList>
@@ -608,17 +610,31 @@ export function AthleteDetailsView({
                             <div className="px-5 py-4 border-t border-endurix-black/10 dark:border-border">
                                 <LoadMetricsTrendChart data={loadTrendData} />
                             </div>
-                            <div className="px-5 pb-5">
-                                {athlete.athleteProfile?.hrZones ? (
-                                    <div className="bg-endurix-black/5 dark:bg-white/5 p-4">
-                                        <HeartRateZones zones={athlete.athleteProfile.hrZones} />
-                                    </div>
-                                ) : (
-                                    <p className="text-sm text-muted-foreground">{tAthlete('noHrZones')}</p>
-                                )}
-                            </div>
                         </>
                     )}
+                </div>
+            )}
+
+            {activeSection === 'performance' && (
+                <div className="space-y-6">
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                        <div className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border overflow-hidden p-6">
+                            <SectionHeader
+                                title="Zonas de frecuencia cardiaca"
+                                size="sm"
+                            />
+                            <HeartRateZones zones={athlete.athleteProfile?.hrZones} />
+                        </div>
+
+                        <div className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border overflow-hidden p-6">
+                            <SectionHeader
+                                eyebrow="VAM"
+                                title="Zonas de ritmo"
+                                size="sm"
+                            />
+                            <PaceZones vam={athlete.athleteProfile?.vam} />
+                        </div>
+                    </div>
                 </div>
             )}
 

@@ -103,7 +103,7 @@ export function EditAthleteModal({ athlete, open, onClose, onSuccess, isAdmin, c
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
           {error && (
-            <div className="bg-red-50 text-red-500 p-3 rounded-md text-sm border border-red-100">
+            <div className="bg-destructive/10 text-destructive p-3 rounded-md text-sm border border-destructive/20">
               {error}
             </div>
           )}

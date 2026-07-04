@@ -46,11 +46,11 @@ export function BlockList({
 
     const getTagColor = (type: BlockType) => {
         const colors = {
-            warmup: 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300',
+            warmup: 'bg-muted text-muted-foreground',
             interval: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
             recovery: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300',
-            cooldown: 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300',
-            rest: 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+            cooldown: 'bg-muted text-muted-foreground',
+            rest: 'bg-muted text-muted-foreground'
         };
         return colors[type];
     };
@@ -131,17 +131,17 @@ export function BlockList({
                 "p-3 rounded-md cursor-pointer transition-all mb-2 border-l-4 group",
                 selectedId === block.id
                     ? "bg-blue-50 dark:bg-blue-900/20 border-l-blue-500 shadow-md"
-                    : "bg-white dark:bg-gray-800 border-l-gray-300 dark:border-l-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700/50 shadow-sm"
+                    : "bg-white dark:bg-card border-l-input hover:bg-muted/50 shadow-sm"
             )}
         >
             <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3 flex-1 min-w-0">
-                    <GripVertical className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                    <GripVertical className="w-4 h-4 text-muted-foreground flex-shrink-0" />
 
                     <div className="flex-1 min-w-0">
                         {/* Step name with tag */}
                         <div className="flex items-center gap-2 mb-1">
-                            <span className="font-semibold text-sm text-gray-900 dark:text-gray-100">
+                            <span className="font-semibold text-sm text-foreground">
                                 {getDisplayName(block)}
                             </span>
                             <span className={clsx(
@@ -153,7 +153,7 @@ export function BlockList({
                         </div>
 
                         {/* Info line: duration, target, intensity */}
-                        <div className="flex items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
                             <span className="font-medium">{formatDuration(block)}</span>
                             {formatTarget(block) && (
                                 <>
@@ -175,7 +175,7 @@ export function BlockList({
 
                 <button
                     onClick={(e) => { e.stopPropagation(); onRemove(block.id); }}
-                    className="p-1.5 text-gray-400 hover:text-red-500 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                    className="p-1.5 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
                     title={t('removeStep')}
                 >
                     <Trash2 className="w-4 h-4" />
@@ -188,7 +188,7 @@ export function BlockList({
     const renderContent = () => {
         if (blocks.length === 0) {
             return (
-                <div className="text-center py-10 text-gray-400 dark:text-gray-500 text-sm">
+                <div className="text-center py-10 text-muted-foreground text-sm">
                     {t('noStepsAdded')}
                 </div>
             );
@@ -262,7 +262,7 @@ export function BlockList({
                                     const idsToRemove = groupBlocks.map(b => b.block.id);
                                     onRemoveMultiple(idsToRemove);
                                 }}
-                                className="p-1.5 text-purple-500 hover:text-red-500 dark:text-purple-400 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                                className="p-1.5 text-purple-500 hover:text-destructive dark:text-purple-400 dark:hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
                                 title={t('deleteBlock')}
                             >
                                 <X className="w-4 h-4" />
@@ -270,7 +270,7 @@ export function BlockList({
                         </div>
 
                         {isExpanded && (
-                            <div className="p-3 pt-2 bg-white dark:bg-gray-900">
+                            <div className="p-3 pt-2 bg-white dark:bg-background">
                                 {groupBlocks.map(({ block }) => renderBlockItem(block))}
 
                                 {/* Add Step to Block button */}

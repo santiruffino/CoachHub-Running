@@ -132,7 +132,7 @@ export function WorkoutSummary({ blocks, workoutRPE, onClose, title }: WorkoutSu
                             <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                                 {totals.distance} {t('units.km')}
                             </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                            <div className="text-sm text-muted-foreground mt-1">
                                 {t('totalDistance')}
                             </div>
                         </div>
@@ -140,7 +140,7 @@ export function WorkoutSummary({ blocks, workoutRPE, onClose, title }: WorkoutSu
                             <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                                 {totals.time} {t('units.min')}
                             </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                            <div className="text-sm text-muted-foreground mt-1">
                                 {t('estimatedTime')}
                             </div>
                         </div>
@@ -148,7 +148,7 @@ export function WorkoutSummary({ blocks, workoutRPE, onClose, title }: WorkoutSu
                             <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                                 {totals.avgIntensity}%
                             </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                            <div className="text-sm text-muted-foreground mt-1">
                                 {t('avgIntensity')}
                             </div>
                         </div>
@@ -157,7 +157,7 @@ export function WorkoutSummary({ blocks, workoutRPE, onClose, title }: WorkoutSu
                     {/* Expected RPE (if set) */}
                     {workoutRPE !== undefined && (
                         <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
-                            <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            <div className="text-sm font-medium text-foreground dark:text-muted-foreground mb-1">
                                 {t('expectedRpe')}
                             </div>
                             <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">
@@ -168,22 +168,22 @@ export function WorkoutSummary({ blocks, workoutRPE, onClose, title }: WorkoutSu
 
                     {/* Description */}
                     <div>
-                        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
+                        <h3 className="text-sm font-semibold text-foreground dark:text-muted-foreground mb-2 uppercase tracking-wider">
                             {t('workoutDescription')}
                         </h3>
-                        <p className="text-gray-800 dark:text-gray-200 leading-relaxed bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+                        <p className="text-foreground dark:text-muted-foreground leading-relaxed bg-muted dark:bg-background p-4 rounded-lg">
                             {generateDescription()}
                         </p>
                     </div>
 
                     {/* Step Count */}
-                    <div className="text-sm text-gray-600 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700 pt-4">
+                    <div className="text-sm text-muted-foreground border-t border-border pt-4">
                         {t('totalSteps')} <span className="font-semibold">{blocks.length}</span>
                     </div>
                 </div>
 
                 {/* Footer */}
-                <div className="p-5 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                <div className="p-5 border-t border-border bg-muted dark:bg-background">
                     <button
                         onClick={onClose}
                         className="w-full py-2.5 bg-brand-primary hover:bg-brand-primary-dark text-white font-medium rounded-lg transition-colors"

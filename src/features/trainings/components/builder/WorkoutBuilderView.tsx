@@ -108,7 +108,7 @@ export function WorkoutBuilderView({ initialWorkout, athleteId }: WorkoutBuilder
     const canProceedToStep2 = blocks.length > 0;
 
     return (
-        <div className="h-[calc(100vh-theme(spacing.16))] w-full overflow-hidden bg-background dark:bg-background font-inter flex flex-col relative">
+        <div className="h-[calc(100vh-theme(spacing.16))] w-full overflow-hidden bg-background font-inter flex flex-col relative">
             {/* Main Content */}
             <div className="flex-1 overflow-hidden relative">
                 {currentStep === 1 ? (
@@ -119,9 +119,10 @@ export function WorkoutBuilderView({ initialWorkout, athleteId }: WorkoutBuilder
                         trainingType={activityType}
                         footerContent={
                             <Button
+                                variant="orange"
                                 onClick={() => setCurrentStep(2)}
                                 disabled={!canProceedToStep2}
-                                className="w-full bg-endurix-orange hover:bg-brand-primary-dark text-white uppercase tracking-wider text-xs font-semibold py-4 rounded transition-colors"
+                                className="w-full uppercase tracking-wider text-xs font-semibold py-4 rounded transition-colors"
                             >
                                 {t('nextStep')}
                                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -227,9 +228,10 @@ export function WorkoutBuilderView({ initialWorkout, athleteId }: WorkoutBuilder
                                     {/* Action Buttons */}
                                     <div className="space-y-3">
                                         <Button
+                                            variant="orange"
                                             onClick={handleSave}
                                             disabled={saving || !workoutTitle.trim() || blocks.length === 0}
-                                            className="w-full bg-endurix-orange hover:bg-brand-primary-dark text-white uppercase tracking-widest text-xs font-bold py-5 transition-colors"
+                                            className="w-full uppercase tracking-widest text-xs font-bold py-5 transition-colors"
                                         >
                                             {saving ? t('saving') : t('finalizeWorkout')}
                                         </Button>

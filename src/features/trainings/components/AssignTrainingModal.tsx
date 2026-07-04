@@ -306,7 +306,7 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                             <p className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={FIELD_LABEL_STYLE}>{t('workoutNameHint')}</p>
                         </div>
 
-                        {error && <p className="text-sm text-red-600 dark:text-red-400 font-medium">{error}</p>}
+                        {error && <p className="text-sm text-destructive font-medium">{error}</p>}
                     </div>
                     <DialogFooter className="mt-6 border-t border-endurix-black/10 dark:border-border pt-4">
                         <Button variant="outline-brand" onClick={onClose} className="uppercase tracking-widest text-[10px]">{t('cancel')}</Button>
@@ -414,7 +414,7 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                                 </div>
                             )}
 
-                            {error && <p className="text-sm text-red-600 dark:text-red-400 font-medium">{error}</p>}
+                            {error && <p className="text-sm text-destructive font-medium">{error}</p>}
                         </div>
                         <DialogFooter className="mt-4 border-t border-endurix-black/10 dark:border-border pt-4">
                             <Button variant="outline-brand" onClick={() => setCurrentStep('source')} className="uppercase tracking-widest text-[10px]">{t('back')}</Button>
@@ -452,7 +452,7 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                             <div className="border border-endurix-black/15 dark:border-white/15 flex-1 min-h-[400px] overflow-hidden bg-endurix-paper dark:bg-card">
                                 <WorkoutBuilder initialBlocks={editedBlocks} onChange={setEditedBlocks} athleteId={athleteId} />
                             </div>
-                            {error && <p className="text-sm text-red-600 dark:text-red-400 font-medium">{error}</p>}
+                            {error && <p className="text-sm text-destructive font-medium">{error}</p>}
                         </div>
                         <DialogFooter className="mt-4 border-t border-endurix-black/10 dark:border-border pt-4">
                             <Button variant="outline-brand" onClick={() => setCurrentStep('source')} className="uppercase tracking-widest text-[10px]">{t('back')}</Button>
@@ -617,7 +617,7 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                                 </div>
                             )}
 
-                            {error && <p className="text-sm text-red-600 dark:text-red-400 font-medium">{error}</p>}
+                            {error && <p className="text-sm text-destructive font-medium">{error}</p>}
 
                             <DialogFooter className="mt-4 border-t border-endurix-black/10 dark:border-border pt-4">
                                 <Button variant="outline-brand" onClick={onClose} className="uppercase tracking-widest text-[10px]">{t('cancel')}</Button>

@@ -115,7 +115,7 @@ export function InviteCoachModal({ open, onClose }: InviteCoachModalProps) {
                                 />
                             </div>
                             {errors.email && (
-                                <p className="text-sm text-red-500">{errors.email.message as string}</p>
+                                <p className="text-sm text-destructive">{errors.email.message as string}</p>
                             )}
                         </div>
 

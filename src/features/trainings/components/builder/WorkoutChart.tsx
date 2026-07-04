@@ -178,7 +178,7 @@ export function WorkoutChart({ blocks, selectedId, onBlockClick }: WorkoutChartP
 
     if (!option) {
         return (
-            <div className="h-full flex items-center justify-center text-gray-400 dark:text-gray-500 text-sm">
+            <div className="h-full flex items-center justify-center text-muted-foreground text-sm">
                 {t('startBuildingWorkout')}
             </div>
         );

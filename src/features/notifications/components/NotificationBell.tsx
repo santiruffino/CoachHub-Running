@@ -134,7 +134,7 @@ export function NotificationBell() {
         if (items.length === 0) return null;
         return (
             <div key={label}>
-                <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                <DropdownMenuLabel className="px-4 pt-3 pb-2 text-[10px] uppercase tracking-widest text-muted-foreground">
                     {label}
                 </DropdownMenuLabel>
                 {items.map((notification) => {
@@ -143,12 +143,12 @@ export function NotificationBell() {
                         <DropdownMenuItem
                             key={notification.id}
                             onClick={() => void handleSelect(notification)}
-                            className={`flex items-start gap-2.5 ${!notification.is_read ? 'bg-endurix-orange/5' : ''}`}
+                            className={`mx-2 flex items-start gap-3 rounded-lg px-3 py-3 ${!notification.is_read ? 'bg-endurix-orange/5' : ''}`}
                         >
                             <Icon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-endurix-orange" />
                             <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                                 <div className="flex w-full items-center justify-between gap-2">
-                                    <span className="text-sm font-medium">{notification.title}</span>
+                                    <span className="min-w-0 truncate text-sm font-medium">{notification.title}</span>
                                     {!notification.is_read && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-endurix-orange" />}
                                 </div>
                                 {notification.body && (
@@ -164,24 +164,24 @@ export function NotificationBell() {
     };
 
     return (
-        <DropdownMenu>
-            <DropdownMenuTrigger className="relative flex h-9 w-9 items-center justify-center rounded-full text-endurix-black/70 hover:bg-endurix-black/5 dark:text-muted-foreground dark:hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-                <Bell className="h-4 w-4" />
+            <DropdownMenu>
+                <DropdownMenuTrigger className="relative flex h-9 w-9 items-center justify-center rounded-full text-endurix-black/70 hover:bg-endurix-black/5 dark:text-muted-foreground dark:hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                    <Bell className="h-4 w-4" />
                 {unreadCount > 0 && (
                     <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-endurix-orange px-1 text-[9px] font-bold text-white">
                         {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                 )}
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80">
-                <div className="flex items-center justify-between px-2 py-1.5">
-                    <DropdownMenuLabel className="p-0 text-sm font-semibold">{t('title')}</DropdownMenuLabel>
-                    <div className="flex items-center gap-3">
+                </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-[22rem] max-w-[calc(100vw-1rem)] p-0 overflow-hidden sm:w-[26rem]">
+                <div className="flex items-start justify-between gap-3 border-b border-endurix-black/8 dark:border-border bg-endurix-paper/80 dark:bg-muted/50 px-4 py-3">
+                    <DropdownMenuLabel className="p-0 text-sm font-semibold leading-none">{t('title')}</DropdownMenuLabel>
+                    <div className="flex items-center gap-3 shrink-0">
                         {unreadCount > 0 && (
                             <button
                                 type="button"
                                 onClick={() => void handleMarkAllRead()}
-                                className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-widest text-endurix-orange hover:underline"
+                                className="flex items-center gap-1 whitespace-nowrap text-[10px] font-medium uppercase tracking-widest text-endurix-orange hover:underline"
                             >
                                 <CheckCheck className="h-3 w-3" />
                                 {t('markAllRead')}
@@ -198,17 +198,19 @@ export function NotificationBell() {
                     </div>
                 </div>
                 <DropdownMenuSeparator />
-                {loading ? (
-                    <p className="px-2 py-4 text-center text-sm text-muted-foreground">{t('loading')}</p>
-                ) : notifications.length === 0 ? (
-                    <p className="px-2 py-4 text-center text-sm text-muted-foreground">{t('empty')}</p>
-                ) : (
-                    <>
-                        {renderGroup(t('groups.today'), groups.today)}
-                        {renderGroup(t('groups.thisWeek'), groups.thisWeek)}
-                        {renderGroup(t('groups.older'), groups.older)}
-                    </>
-                )}
+                <div className="max-h-[32rem] overflow-y-auto pb-2">
+                    {loading ? (
+                        <p className="px-4 py-5 text-center text-sm text-muted-foreground">{t('loading')}</p>
+                    ) : notifications.length === 0 ? (
+                        <p className="px-4 py-5 text-center text-sm text-muted-foreground">{t('empty')}</p>
+                    ) : (
+                        <>
+                            {renderGroup(t('groups.today'), groups.today)}
+                            {renderGroup(t('groups.thisWeek'), groups.thisWeek)}
+                            {renderGroup(t('groups.older'), groups.older)}
+                        </>
+                    )}
+                </div>
             </DropdownMenuContent>
         </DropdownMenu>
     );

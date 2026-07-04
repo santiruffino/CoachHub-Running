@@ -6,6 +6,8 @@ import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react';
 import { Training } from '@/interfaces/training';
 import { trainingsService } from '@/features/trainings/services/trainings.service';
 import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/layout/PageHeader';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { Input } from '@/components/ui/input';
 import { AssignTrainingModal } from '@/features/trainings/components/AssignTrainingModal';
 import { WorkoutSummary } from '@/features/trainings/components/builder/WorkoutSummary';
@@ -74,23 +76,18 @@ export function TrainingsList({ initialTrainings }: TrainingsListProps) {
     );
 
     return (
-        <div className="container mx-auto">
-            <div className="flex items-center justify-between mb-8">
-                <div>
-                    <h1
-                        className="text-2xl sm:text-3xl font-bold text-endurix-black dark:text-foreground tracking-tight uppercase"
-                        style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
-                    >
-                        {t('title')}
-                    </h1>
-                </div>
-                <Link href="/workouts/builder">
-                    <Button variant="orange" size="sm" className="sm:size-default uppercase tracking-widest">
-                        <Plus className="h-4 w-4 sm:mr-2" />
-                        <span className="hidden sm:inline">{t('createTraining')}</span>
-                    </Button>
-                </Link>
-            </div>
+        <div>
+            <PageHeader
+                title={t('title')}
+                action={
+                    <Link href="/workouts/builder">
+                        <Button variant="orange" size="sm" className="sm:size-default uppercase tracking-widest">
+                            <Plus className="h-4 w-4 sm:mr-2" />
+                            <span className="hidden sm:inline">{t('createTraining')}</span>
+                        </Button>
+                    </Link>
+                }
+            />
 
             <div className="mb-8">
                 <div className="relative max-w-md">
@@ -107,9 +104,7 @@ export function TrainingsList({ initialTrainings }: TrainingsListProps) {
             </div>
 
             {filteredTrainings.length === 0 ? (
-                <div className="text-center py-20 bg-endurix-black/5 dark:bg-white/5 border border-dashed border-endurix-black/15 dark:border-white/15">
-                    <p className="text-muted-foreground">{t('noTrainings')}</p>
-                </div>
+                <EmptyState title={t('noTrainings')} />
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredTrainings.map((training) => (
@@ -166,7 +161,7 @@ export function TrainingsList({ initialTrainings }: TrainingsListProps) {
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-8 w-8 text-red-500 hover:bg-red-50"
+                                        className="h-8 w-8 text-destructive hover:bg-destructive/10"
                                         onClick={() => handleDelete(training.id, training.title)}
                                     >
                                         <Trash2 className="w-4 h-4" />

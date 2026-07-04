@@ -100,7 +100,7 @@ export function HeartRateZonesChart({ laps, splits, zones, zoneNames }: HeartRat
         'bg-green-500',
         'bg-yellow-500',
         'bg-orange-500',
-        'bg-red-500',
+        'bg-destructive',
     ];
 
     if (totalTime === 0) {

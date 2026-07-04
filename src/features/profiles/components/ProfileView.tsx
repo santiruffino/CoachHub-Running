@@ -97,8 +97,8 @@ export function ProfileView({ initialProfile, user }: ProfileViewProps) {
             <div className="flex-1 overflow-y-auto pb-28">
                 <div className="max-w-6xl mx-auto px-6 md:px-10 pt-8">
 
-                    <div className="flex items-center gap-2 mb-2">
-                        <BackButton />
+                    <div className="mb-4">
+                        <BackButton showLabel />
                     </div>
                     <div className="flex items-center gap-5 mb-8">
                         <Avatar className="h-14 w-14 shrink-0">

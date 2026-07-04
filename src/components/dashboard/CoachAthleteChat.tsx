@@ -131,15 +131,15 @@ export function CoachAthleteChat({ athleteId, showHeader = true, className = '' 
     if (error && !thread) {
         return (
             <div className={`rounded-2xl border border-endurix-black/10 dark:border-border bg-endurix-paper dark:bg-card p-5 ${className}`}>
-                <p className="text-sm font-medium text-red-600 dark:text-red-300">{error}</p>
+                <p className="text-sm font-medium text-destructive">{error}</p>
             </div>
         );
     }
 
     return (
-        <div className={`flex min-h-[24rem] flex-col gap-4 ${className}`}>
+        <div className={`flex min-h-[24rem] min-h-0 flex-col gap-4 ${className}`}>
             {showHeader && (
-                <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center justify-between gap-3">
                     <div className="space-y-1">
                         <div className="flex items-center gap-2">
                             <MessageSquareText className="h-4 w-4 text-endurix-orange" />
@@ -152,14 +152,14 @@ export function CoachAthleteChat({ athleteId, showHeader = true, className = '' 
                         </p>
                     </div>
 
-                    <Button variant="outline-brand" size="sm" type="button" onClick={() => void loadThread(true)} disabled={refreshing || loading} className="uppercase tracking-widest text-[10px]">
+                    <Button variant="outline-brand" size="sm" type="button" onClick={() => void loadThread(true)} disabled={refreshing || loading} className="shrink-0 uppercase tracking-widest text-[10px]">
                         {refreshing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCcw className="h-4 w-4" />}
                         <span className="hidden sm:inline">{refreshing ? t('refreshing') : t('refresh')}</span>
                     </Button>
                 </div>
             )}
 
-            <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-endurix-black/10 dark:border-border bg-endurix-paper dark:bg-card">
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-endurix-black/10 dark:border-border bg-endurix-paper/70 dark:bg-card">
                 <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-4 sm:p-5">
                     {thread?.messages.length ? (
                         thread.messages.map((message) => {
@@ -171,11 +171,11 @@ export function CoachAthleteChat({ athleteId, showHeader = true, className = '' 
                                             <span>{isMine ? t('you') : message.senderName}</span>
                                             <span>{formatMessageTime(message.createdAt)}</span>
                                         </div>
-                                        <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">
+                                        <p className="whitespace-pre-wrap text-sm leading-relaxed">
                                             {message.body}
                                         </p>
                                         {isMine && message.readAt && (
-                                            <p className="mt-2 text-[10px] uppercase tracking-widest opacity-80">
+                                            <p className="text-[10px] uppercase tracking-widest opacity-80">
                                                 {t('read')}
                                             </p>
                                         )}
@@ -184,12 +184,12 @@ export function CoachAthleteChat({ athleteId, showHeader = true, className = '' 
                             );
                         })
                     ) : (
-                        <div className="flex h-full min-h-[12rem] items-center justify-center rounded-2xl border border-dashed border-endurix-black/10 dark:border-border bg-white/40 dark:bg-white/5 p-6 text-center">
+                        <div className="flex h-full min-h-[12rem] items-center justify-center p-6 text-center text-muted-foreground">
                             <div className="space-y-2">
                                 <p className="text-sm font-semibold uppercase tracking-widest text-endurix-black dark:text-foreground">
                                     {t('emptyTitle')}
                                 </p>
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-sm">
                                     {otherParticipantName ? t('emptyWithName', { name: otherParticipantName }) : t('emptyState')}
                                 </p>
                             </div>
@@ -198,34 +198,32 @@ export function CoachAthleteChat({ athleteId, showHeader = true, className = '' 
                 </div>
 
                 {error && thread && (
-                    <div className="border-t border-endurix-black/10 dark:border-border px-4 py-3 text-sm text-red-600 dark:text-red-300">
+                    <div className="border-t border-endurix-black/10 dark:border-border px-4 py-3 text-sm text-destructive">
                         {error}
                     </div>
                 )}
 
                 <div className="border-t border-endurix-black/10 dark:border-border p-4 sm:p-5">
-                    <div className="rounded-3xl border border-endurix-black/10 dark:border-border bg-gradient-to-b from-white to-endurix-paper/70 dark:from-card dark:to-card p-3 sm:p-4 shadow-sm">
-                        <Textarea
-                            value={draft}
-                            onChange={(event) => setDraft(event.target.value)}
-                            placeholder={t('placeholder')}
-                            className="min-h-32 resize-none rounded-2xl border border-endurix-black/10 bg-white/95 px-4 py-3 text-sm leading-relaxed shadow-inner placeholder:text-muted-foreground/60 focus-visible:border-endurix-orange focus-visible:ring-2 focus-visible:ring-endurix-orange/20 dark:bg-background"
-                        />
-                        <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                            <p className="max-w-[22rem] text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                                {t('threadHint')}
-                            </p>
-                            <Button
-                                type="button"
-                                variant="orange"
-                                onClick={() => void handleSend()}
-                                disabled={sending || !draft.trim()}
-                                className="h-11 w-full rounded-full px-5 uppercase tracking-[0.22em] text-[10px] shadow-sm transition-transform hover:-translate-y-0.5 hover:shadow-md disabled:translate-y-0 disabled:shadow-none sm:w-auto"
-                            >
-                                {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 shrink-0" />}
-                                <span>{sending ? t('sending') : t('send')}</span>
-                            </Button>
-                        </div>
+                    <Textarea
+                        value={draft}
+                        onChange={(event) => setDraft(event.target.value)}
+                        placeholder={t('placeholder')}
+                        className="min-h-32 resize-none rounded-2xl border border-endurix-black/10 bg-white/95 px-4 py-3 text-sm leading-relaxed shadow-inner placeholder:text-muted-foreground/60 focus-visible:border-endurix-orange focus-visible:ring-2 focus-visible:ring-endurix-orange/20 dark:bg-background"
+                    />
+                    <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                        <p className="max-w-[22rem] text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                            {t('threadHint')}
+                        </p>
+                        <Button
+                            type="button"
+                            variant="orange"
+                            onClick={() => void handleSend()}
+                            disabled={sending || !draft.trim()}
+                            className="h-11 w-full rounded-full px-5 uppercase tracking-[0.22em] text-[10px] shadow-sm transition-transform hover:-translate-y-0.5 hover:shadow-md disabled:translate-y-0 disabled:shadow-none sm:w-auto"
+                        >
+                            {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 shrink-0" />}
+                            <span>{sending ? t('sending') : t('send')}</span>
+                        </Button>
                     </div>
                 </div>
             </div>

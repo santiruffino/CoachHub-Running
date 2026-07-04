@@ -71,7 +71,7 @@ export function GarminStatusCard({ enabled, className }: { enabled: boolean; cla
                         variant="outline-brand"
                         onClick={disconnect}
                         disabled={loading}
-                        className="text-red-600 hover:text-red-700 dark:text-red-400 border-red-500/30"
+                        className="text-destructive hover:text-destructive border-destructive/30"
                     >
                         <Unplug className="mr-2 h-4 w-4" />
                         Desconectar

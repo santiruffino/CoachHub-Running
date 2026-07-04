@@ -56,39 +56,3 @@ export function BackButton({
         </Button>
     );
 }
-
-export function BackButtonWithLabel({ 
-    href, 
-    label, 
-    className = '',
-    onClick,
-    variant = 'ghost'
-}: BackButtonProps) {
-    const router = useRouter();
-    const t = useTranslations('common');
-    
-    const handleClick = () => {
-        if (onClick) {
-            onClick();
-        } else if (href) {
-            router.push(href);
-        } else {
-            router.back();
-        }
-    };
-
-    const defaultLabel = t('navigateBack') || 'Volver';
-    const buttonVariant = variant === 'outline-brand' ? 'outline' : variant;
-
-    return (
-        <Button
-            variant={buttonVariant}
-            onClick={handleClick}
-            className={`flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors p-0 hover:bg-transparent tracking-widest uppercase text-xs font-semibold ${className}`}
-            style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
-        >
-            <ArrowLeft className="w-4 h-4" />
-            <span>{label || defaultLabel}</span>
-        </Button>
-    );
-}

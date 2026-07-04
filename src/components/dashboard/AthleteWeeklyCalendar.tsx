@@ -85,7 +85,11 @@ export function AthleteWeeklyCalendar({ weekStart, athleteId, assignments, activ
         fallbackDate: weekStart,
     });
     const targetAthleteId = athleteId || assignments[0]?.athlete?.id || assignments[0]?.user?.id || null;
-    const addWorkoutHref = targetAthleteId ? `/workouts/assign?athleteId=${encodeURIComponent(targetAthleteId)}` : '/workouts/assign';
+    const addWorkoutHref = (date: string) => (
+        targetAthleteId
+            ? `/workouts/assign?athleteId=${encodeURIComponent(targetAthleteId)}&date=${date}`
+            : `/workouts/assign?date=${date}`
+    );
 
     return (
         <div className="space-y-4">
@@ -276,7 +280,7 @@ export function AthleteWeeklyCalendar({ weekStart, athleteId, assignments, activ
                                                         {t('calendar.restDay')}
                                                     </MonospaceLabel>
                                                     <Button asChild size="sm" variant="outline" className="h-6 min-w-16 px-3 rounded-sm border-endurix-orange/30 text-endurix-orange hover:bg-endurix-orange/10">
-                                                        <Link href={addWorkoutHref} aria-label={t('common.addWorkout')} title={t('common.addWorkout')}>
+                                                        <Link href={addWorkoutHref(dayStr)} aria-label={t('common.addWorkout')} title={t('common.addWorkout')}>
                                                             <Plus className="h-3.5 w-3.5" />
                                                         </Link>
                                                     </Button>
@@ -312,7 +316,7 @@ export function AthleteWeeklyCalendar({ weekStart, athleteId, assignments, activ
                                                         {t('calendar.restDay')}
                                                     </MonospaceLabel>
                                                     <Button asChild size="sm" variant="outline" className="h-6 min-w-16 px-3 rounded-sm border-endurix-orange/30 text-endurix-orange hover:bg-endurix-orange/10">
-                                                        <Link href={addWorkoutHref} aria-label={t('common.addWorkout')} title={t('common.addWorkout')}>
+                                                        <Link href={addWorkoutHref(dayStr)} aria-label={t('common.addWorkout')} title={t('common.addWorkout')}>
                                                             <Plus className="h-3.5 w-3.5" />
                                                         </Link>
                                                     </Button>

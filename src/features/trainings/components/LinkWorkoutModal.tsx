@@ -98,7 +98,7 @@ export function LinkWorkoutModal({ isOpen, onClose, activityId, activityTitle, o
                 </DialogHeader>
 
                 {error && (
-                    <div className="p-3 bg-red-500/10 text-red-700 dark:text-red-400 border border-red-500/30 text-sm">
+                    <div className="p-3 bg-destructive/10 text-destructive border border-destructive/30 text-sm">
                         {error}
                     </div>
                 )}
@@ -159,7 +159,7 @@ export function LinkWorkoutModal({ isOpen, onClose, activityId, activityTitle, o
                                                     variant="outline-brand"
                                                     onClick={() => handleUnlink(assignment.id)}
                                                     disabled={actionLoading === assignment.id}
-                                                    className="text-red-600 hover:text-red-700 border-red-500/30 hover:bg-red-500/10 uppercase tracking-widest text-[10px]"
+                                                    className="text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/10 uppercase tracking-widest text-[10px]"
                                                 >
                                                     {actionLoading === assignment.id ? t('unlinking') : t('unlink')}
                                                 </Button>

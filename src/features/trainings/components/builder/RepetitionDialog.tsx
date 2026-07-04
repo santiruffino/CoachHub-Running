@@ -38,12 +38,12 @@ export function RepetitionDialog({ patternName, onConfirm, onCancel }: Repetitio
 
                 {/* Content */}
                 <div className="p-6">
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                        {t('addingPattern')} <span className="font-semibold text-gray-900 dark:text-white">{patternName}</span>
+                    <p className="text-sm text-muted-foreground mb-4">
+                        {t('addingPattern')} <span className="font-semibold text-foreground dark:text-white">{patternName}</span>
                     </p>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block text-sm font-medium text-foreground dark:text-muted-foreground mb-2">
                             {t('numberOfRepetitions')}
                         </label>
                         <input
@@ -52,7 +52,7 @@ export function RepetitionDialog({ patternName, onConfirm, onCancel }: Repetitio
                             max="50"
                             value={reps}
                             onChange={(e) => setReps(Number(e.target.value))}
-                            className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-primary focus:ring-brand-primary text-lg p-3 border text-gray-900 dark:text-white dark:bg-gray-700"
+                            className="block w-full rounded-md border-input shadow-sm focus:border-brand-primary focus:ring-brand-primary text-lg p-3 border text-foreground dark:text-white dark:bg-muted"
                             autoFocus
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
@@ -64,10 +64,10 @@ export function RepetitionDialog({ patternName, onConfirm, onCancel }: Repetitio
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex justify-end gap-3">
+                <div className="p-4 border-t border-border bg-muted dark:bg-background flex justify-end gap-3">
                     <button
                         onClick={onCancel}
-                        className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+                        className="px-4 py-2 text-sm font-medium text-foreground dark:text-muted-foreground hover:text-foreground dark:hover:text-white transition-colors"
                     >
                         {t('common.cancel')}
                     </button>

@@ -562,7 +562,7 @@ export default function CoachDashboardNew({ user }: CoachDashboardNewProps) {
                                                                 type="button"
                                                                 onClick={() => dismissRosterAlerts([item.primaryAlert])}
                                                                 disabled={pendingRosterAlertIds.has(item.primaryAlert.id)}
-                                                                className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-endurix-black/10 dark:border-border bg-endurix-paper dark:bg-muted text-endurix-black/50 dark:text-muted-foreground hover:text-red-600 dark:hover:text-red-400 hover:bg-endurix-black/5 dark:hover:bg-white/10 transition-colors disabled:opacity-40"
+                                                                className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-endurix-black/10 dark:border-border bg-endurix-paper dark:bg-muted text-endurix-black/50 dark:text-muted-foreground hover:text-destructive dark:hover:text-destructive hover:bg-endurix-black/5 dark:hover:bg-white/10 transition-colors disabled:opacity-40"
                                                                 title={t('dashboard.alerts.markAsRead')}
                                                                 aria-label={t('dashboard.alerts.markAsRead')}
                                                             >
@@ -634,7 +634,7 @@ export default function CoachDashboardNew({ user }: CoachDashboardNewProps) {
                                                                             type="button"
                                                                             onClick={() => dismissRosterAlerts([alert])}
                                                                             disabled={pendingRosterAlertIds.has(alert.id)}
-                                                                            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-endurix-black/10 dark:border-border bg-endurix-paper dark:bg-muted text-endurix-black/50 dark:text-muted-foreground hover:text-red-600 dark:hover:text-red-400 hover:bg-endurix-black/5 dark:hover:bg-white/10 transition-colors disabled:opacity-40"
+                                                                            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-endurix-black/10 dark:border-border bg-endurix-paper dark:bg-muted text-endurix-black/50 dark:text-muted-foreground hover:text-destructive dark:hover:text-destructive hover:bg-endurix-black/5 dark:hover:bg-white/10 transition-colors disabled:opacity-40"
                                                                             title={t('dashboard.alerts.markAsRead')}
                                                                             aria-label={t('dashboard.alerts.markAsRead')}
                                                                         >
@@ -755,7 +755,7 @@ function getEntityHref(alert: DashboardAlertItem): string {
 function getRiskBand(priority?: 'P1' | 'P2' | 'P3' | 'P4'): RiskBand {
     switch (priority) {
         case 'P1':
-            return { labelKey: 'dashboard.risk.critical', barClass: 'bg-red-500', textClass: 'text-red-600 dark:text-red-500' };
+            return { labelKey: 'dashboard.risk.critical', barClass: 'bg-destructive', textClass: 'text-destructive' };
         case 'P2':
             return { labelKey: 'dashboard.risk.atRisk', barClass: 'bg-endurix-orange', textClass: 'text-endurix-orange' };
         case 'P3':

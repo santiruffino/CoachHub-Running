@@ -72,7 +72,7 @@ export default function CoachOnboardingForm() {
     <div className="min-h-screen bg-endurix-paper dark:bg-background px-4 py-10">
       <div className="max-w-3xl mx-auto space-y-6">
         <div className="mb-4">
-          <BackButton href="/dashboard" />
+          <BackButton href="/dashboard" showLabel />
         </div>
         <Card className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border">
           <CardHeader className="border-b border-endurix-black/10 dark:border-border">
@@ -123,7 +123,7 @@ export default function CoachOnboardingForm() {
               />
             </div>
 
-            {error ? <p className="text-sm text-red-600 dark:text-red-400">{error}</p> : null}
+            {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
             <div className="flex justify-end">
               <Button

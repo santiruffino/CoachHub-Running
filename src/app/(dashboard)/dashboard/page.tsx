@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 
 async function getAthleteDashboardData(supabase: SupabaseClient, user: User) {
     const [detailsRes, activitiesRes, calendarRes, racesRes] = await Promise.allSettled([
-        supabase.from('profiles').select('*, athlete_profile:athlete_profiles(*)').eq('id', user.id).single(),
+        supabase.from('profiles').select('*, athleteProfile:athlete_profiles(*)').eq('id', user.id).single(),
         supabase.from('activities').select('*').eq('user_id', user.id).order('start_date', { ascending: false }).limit(20),
         supabase.from('training_assignments').select(`
             *,
@@ -36,8 +36,29 @@ async function getAthleteDashboardData(supabase: SupabaseClient, user: User) {
             hasFeedback: feedbackSet.has(a.id)
         }));
     }
+    const detailsData = detailsRes.status === 'fulfilled' ? detailsRes.value.data : null;
+    const mappedDetails = detailsData ? {
+        ...detailsData,
+        athleteProfile: detailsData.athleteProfile ? {
+            id: detailsData.athleteProfile.id,
+            dob: detailsData.athleteProfile.dob,
+            height: detailsData.athleteProfile.height,
+            weight: detailsData.athleteProfile.weight,
+            injuries: detailsData.athleteProfile.injuries,
+            coachNotes: detailsData.athleteProfile.coach_notes,
+            restHR: detailsData.athleteProfile.rest_hr,
+            maxHR: detailsData.athleteProfile.max_hr,
+            lthr: detailsData.athleteProfile.lthr,
+            hrZones: detailsData.athleteProfile.hr_zones,
+            vam: detailsData.athleteProfile.vam,
+            uan: detailsData.athleteProfile.uan,
+            created_at: detailsData.athleteProfile.created_at,
+            updated_at: detailsData.athleteProfile.updated_at,
+        } : null,
+    } : null;
+
     return {
-        details: detailsRes.status === 'fulfilled' ? detailsRes.value.data as NonNullable<React.ComponentProps<typeof AthleteDashboard>['initialData']>['details'] : null,
+        details: mappedDetails as NonNullable<React.ComponentProps<typeof AthleteDashboard>['initialData']>['details'],
         activities,
         assignments: calendarRes.status === 'fulfilled' ? calendarRes.value.data || [] : [],
         races: racesRes.status === 'fulfilled' ? racesRes.value.data || [] : []

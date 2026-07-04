@@ -577,7 +577,7 @@ export function StepEditor({
                     variant="ghost"
                     size="sm"
                     onClick={onRemove}
-                    className="text-xs font-semibold text-[#8b9bb4] hover:text-red-500 hover:bg-transparent uppercase tracking-wider p-0"
+                    className="text-xs font-semibold text-[#8b9bb4] hover:text-destructive hover:bg-transparent uppercase tracking-wider p-0"
                 >
                     <X className="w-3 h-3 mr-1" />
                     {t('removeStep')}

@@ -4,6 +4,7 @@ import { appLogger } from '@/lib/app-logger';
 import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -173,22 +174,16 @@ export function AthletesList({ initialAthletes, initialCoaches, isAdmin }: Athle
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1
-            className="text-2xl sm:text-3xl font-bold text-endurix-black dark:text-foreground tracking-tight uppercase"
-            style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
-          >
-            {t('title')} {isAdmin && ` (${tDashboard('admin.globalScope')})`}
-          </h1>
-        </div>
-        <div className="flex items-center gap-2">
+      <PageHeader
+        className="mb-0"
+        title={`${t('title')}${isAdmin ? ` (${tDashboard('admin.globalScope')})` : ''}`}
+        action={
           <Button variant="orange" onClick={() => setInviteModalOpen(true)} size="sm" className="uppercase tracking-widest">
             <UserPlus className="h-4 w-4 sm:mr-2" />
             <span className="hidden sm:inline">{t('addAthlete')}</span>
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       <InviteAthleteModal
         open={inviteModalOpen}
@@ -322,7 +317,7 @@ export function AthletesList({ initialAthletes, initialCoaches, isAdmin }: Athle
                         <Edit className="mr-2 h-4 w-4" /> {t('edit')}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-red-600 focus:text-red-600" onClick={() => setDeleteId(athlete.id)}>
+                      <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setDeleteId(athlete.id)}>
                         <Trash2 className="mr-2 h-4 w-4" /> {t('delete')}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -458,7 +453,7 @@ export function AthletesList({ initialAthletes, initialCoaches, isAdmin }: Athle
                               {t('edit')}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-red-600 focus:text-red-600" onClick={() => setDeleteId(athlete.id)}>
+                            <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setDeleteId(athlete.id)}>
                               {t('delete')}
                             </DropdownMenuItem>
                           </DropdownMenuContent>

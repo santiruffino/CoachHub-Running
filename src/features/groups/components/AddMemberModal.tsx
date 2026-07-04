@@ -69,10 +69,10 @@ export function AddMemberModal({ groupId, currentMemberIds, open, onClose, onAdd
                 ) : (
                     <div className="py-4">
                         {athletes.length === 0 ? (
-                            <p className="text-center text-gray-500">{t('groups.detail.noAvailableAthletes')}</p>
+                            <p className="text-center text-muted-foreground">{t('groups.detail.noAvailableAthletes')}</p>
                         ) : (
                             <div className="space-y-4">
-                                <label className="text-sm font-medium text-gray-700">{t('groups.detail.selectAthlete')}</label>
+                                <label className="text-sm font-medium text-foreground">{t('groups.detail.selectAthlete')}</label>
                                 <select
                                     className="w-full border rounded p-2"
                                     value={selectedId}

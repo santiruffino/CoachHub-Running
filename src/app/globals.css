@@ -1,6 +1,22 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* iOS safe area support for PWA standalone mode */
+:root {
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Dashboard scroll area: compensates for BottomNav + iOS home indicator */
+.dashboard-main-scroll {
+  padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+}
+@media (min-width: 768px) {
+  .dashboard-main-scroll {
+    padding-bottom: 0;
+  }
+}
+
 @layer base {
   :root {
     /* Base colors - Light mode (Performance Curator) */

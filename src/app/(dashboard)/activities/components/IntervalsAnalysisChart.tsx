@@ -248,11 +248,11 @@ export function IntervalsAnalysisChart({
             onClick={() => setShowHr((current) => !current)}
             aria-pressed={showHr}
             className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 transition-all ${showHr
-              ? 'border-red-500/30 bg-red-500/15 text-red-700 dark:text-red-300'
-              : 'border-dashed border-red-500/25 bg-transparent text-red-600/60 hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-700 dark:text-red-400/60 dark:hover:text-red-300'
+              ? 'border-destructive/30 bg-destructive/15 text-destructive'
+              : 'border-dashed border-destructive/25 bg-transparent text-destructive/60 hover:border-destructive/40 hover:bg-destructive/10 hover:text-destructive/60 dark:hover:text-destructive'
             }`}
           >
-            <span className="w-2 h-2 rounded-full bg-red-500"/>
+            <span className="w-2 h-2 rounded-full bg-destructive"/>
             {t('table.avgHr')}{!showHr ? ' +' : ' ×'}
           </button>
 

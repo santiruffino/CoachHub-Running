@@ -243,7 +243,7 @@ export default function WorkoutDetailsPage() {
         return (
              <div className="flex items-center justify-center h-[calc(100vh-theme(spacing.16))] w-[calc(100%+2rem)] md:w-[calc(100%+4rem)] -mx-4 md:-mx-8 -my-4 md:-my-8 bg-endurix-paper dark:bg-background">
                 <div className="max-w-md text-center">
-                    <p className="text-red-600 dark:text-red-400 font-semibold mb-6">{error}</p>
+                    <p className="text-destructive font-semibold mb-6">{error}</p>
 <BackButton label={t('navigateBack')} showLabel />
                 </div>
             </div>
@@ -344,8 +344,8 @@ export default function WorkoutDetailsPage() {
                 </div>
 
                 {error && (
-                    <div className="flex min-w-full items-center gap-3 rounded-2xl border border-red-500/20 bg-red-500/10 dark:bg-red-500/15 text-red-700 dark:text-red-400 p-4 text-sm font-semibold">
-                        <div className="w-9 h-9 rounded-xl bg-red-500/15 flex items-center justify-center shrink-0">
+                    <div className="flex min-w-full items-center gap-3 rounded-2xl border border-destructive/20 bg-destructive/10 dark:bg-destructive/15 text-destructive p-4 text-sm font-semibold">
+                        <div className="w-9 h-9 rounded-xl bg-destructive/15 flex items-center justify-center shrink-0">
                             <Trash2 className="w-4 h-4" />
                         </div>
                         <div className="min-w-0">{error}</div>
@@ -379,7 +379,7 @@ export default function WorkoutDetailsPage() {
                                 variant="ghost"
                                 onClick={confirmDelete}
                                 disabled={deleting}
-                                className="h-10 px-4 bg-white/10 text-red-600 hover:text-red-700 hover:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/15 uppercase tracking-widest text-xs font-bold"
+                                className="h-10 px-4 bg-white/10 text-destructive hover:text-destructive hover:bg-destructive/10 dark:text-destructive dark:hover:bg-destructive/15 uppercase tracking-widest text-xs font-bold"
                                 style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
                             >
                                 <Trash2 className="w-4 h-4 mr-2" />
@@ -388,9 +388,10 @@ export default function WorkoutDetailsPage() {
 
                             {hasChanges && (
                                 <Button
+                                    variant="orange"
                                     onClick={confirmSave}
                                     disabled={saving}
-                                    className="h-10 px-5 bg-endurix-orange text-white hover:bg-endurix-orange/90 uppercase tracking-widest text-xs font-bold"
+                                    className="h-10 px-5 uppercase tracking-widest text-xs font-bold"
                                     style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
                                 >
                                     {saving ? t('synchronizing') : t('commitSave')}

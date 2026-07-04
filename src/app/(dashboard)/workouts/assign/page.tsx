@@ -12,6 +12,7 @@ export default async function AssignWorkoutPage({
     const resolvedParams = await searchParams;
     const athleteId = typeof resolvedParams.athleteId === 'string' ? resolvedParams.athleteId : null;
     const templateId = typeof resolvedParams.templateId === 'string' ? resolvedParams.templateId : null;
+    const initialScheduledDate = typeof resolvedParams.date === 'string' ? resolvedParams.date : null;
 
     const supabase = await createClient();
 
@@ -41,6 +42,7 @@ export default async function AssignWorkoutPage({
                 initialGroups={(groupsRes.data || []) as any}
                 initialTemplates={(templatesRes.data || []) as any}
                 preselectedAthleteId={athleteId}
+                initialScheduledDate={initialScheduledDate}
                 initialTemplate={singleTemplateRes.data as any}
             />
         </div>

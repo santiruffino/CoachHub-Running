@@ -14,6 +14,8 @@ import { racesService } from '@/features/races/services/races.service';
 import { Race } from '@/interfaces/race';
 import { Loader2, Trophy } from 'lucide-react';
 import { BackButton } from '@/components/ui/BackButton';
+import { PageContainer } from '@/components/layout/PageContainer';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { useTranslations } from 'next-intl';
 
 export default function CreateGroupPage() {
@@ -89,17 +91,12 @@ export default function CreateGroupPage() {
     };
 
     return (
-        <div className="max-w-2xl mx-auto p-4 sm:p-6 lg:p-8 lg:pt-0">
-            <div className="flex items-center gap-4 mb-8">
-                <BackButton href="/groups" />
-                <div>
-                    <h1
-                        className="text-2xl sm:text-3xl font-bold uppercase tracking-tight text-endurix-black dark:text-foreground"
-                        style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
-                    >{t('createGroup')}</h1>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground mt-1" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>{tForm('subtitle')}</p>
-                </div>
-            </div>
+        <PageContainer width="narrow">
+            <PageHeader
+                backHref="/groups"
+                eyebrow={tForm('subtitle')}
+                title={t('createGroup')}
+            />
 
             <form onSubmit={handleSubmit} className="space-y-8">
                 <div className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border p-6 sm:p-8 space-y-6">
@@ -272,6 +269,6 @@ export default function CreateGroupPage() {
                     </Button>
                 </div>
             </form>
-        </div>
+        </PageContainer>
     );
 }

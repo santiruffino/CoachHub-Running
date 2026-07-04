@@ -68,7 +68,7 @@ export default function PasswordChangeForm() {
             </CardHeader>
             <CardContent className="p-6">
                 {error && (
-                    <Alert variant="destructive" className="mb-4 bg-red-500/10 border-red-500/30">
+                    <Alert variant="destructive" className="mb-4 bg-destructive/10 border-destructive/30">
                         <AlertDescription>{error}</AlertDescription>
                     </Alert>
                 )}

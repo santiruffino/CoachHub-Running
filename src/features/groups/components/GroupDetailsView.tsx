@@ -148,9 +148,11 @@ export function GroupDetailsView({ id, initialGroup, initialAthletes, initialAss
   return (
     <div className="space-y-6">
       {/* Header with Back Button and Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <BackButton href="/groups" />
+      <div>
+        <div className="mb-4">
+          <BackButton href="/groups" showLabel />
+        </div>
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
             <h1
               className="text-2xl sm:text-3xl font-bold text-endurix-black dark:text-foreground tracking-tight uppercase"
@@ -173,11 +175,11 @@ export function GroupDetailsView({ id, initialGroup, initialAthletes, initialAss
               </div>
             )}
           </div>
+          <Button variant="outline-brand" size="sm" onClick={() => setIsEditModalOpen(true)} className="uppercase tracking-widest">
+            <Settings className="h-4 w-4 mr-2" />
+            {tGroupDetail('editGroup')}
+          </Button>
         </div>
-        <Button variant="outline-brand" size="sm" onClick={() => setIsEditModalOpen(true)} className="uppercase tracking-widest">
-          <Settings className="h-4 w-4 mr-2" />
-          {tGroupDetail('editGroup')}
-        </Button>
       </div>
 
       <Card>
@@ -263,7 +265,7 @@ export function GroupDetailsView({ id, initialGroup, initialAthletes, initialAss
                                 </Link>
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-red-600 focus:text-red-600" onClick={() => handleRemoveMember(athlete.id)}>
+                              <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleRemoveMember(athlete.id)}>
                                 <Trash2 className="mr-2 h-4 w-4" /> {t('groups.detail.remove')}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -370,7 +372,7 @@ export function GroupDetailsView({ id, initialGroup, initialAthletes, initialAss
                                     </Link>
                                   </DropdownMenuItem>
                                   <DropdownMenuSeparator />
-                                  <DropdownMenuItem className="text-red-600 focus:text-red-600" onClick={() => handleRemoveMember(athlete.id)}>
+                                  <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleRemoveMember(athlete.id)}>
                                     {t('groups.detail.remove')}
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>

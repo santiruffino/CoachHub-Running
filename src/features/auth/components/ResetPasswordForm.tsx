@@ -120,15 +120,15 @@ export default function ResetPasswordForm() {
 
     if (!hasSession) {
         return (
-            <Card className="w-full max-w-md bg-endurix-paper dark:bg-card border border-red-500/30">
-                <CardHeader className="border-b border-red-500/30">
+            <Card className="w-full max-w-md bg-endurix-paper dark:bg-card border border-destructive/30">
+                <CardHeader className="border-b border-destructive/30">
                     <div className="mb-4">
-                        <BackButton href="/login" />
+                        <BackButton href="/login" showLabel />
                     </div>
-                    <CardTitle className="text-xl text-red-600 dark:text-red-400 uppercase tracking-tight" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{t('invalidTitle')}</CardTitle>
+                    <CardTitle className="text-xl text-destructive uppercase tracking-tight" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{t('invalidTitle')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 p-6">
-                    <Alert variant="destructive" className="bg-red-500/10 border-red-500/30">
+                    <Alert variant="destructive" className="bg-destructive/10 border-destructive/30">
                         <AlertDescription>
                             {t('invalidDescription')}
                         </AlertDescription>
@@ -152,7 +152,7 @@ export default function ResetPasswordForm() {
             </CardHeader>
             <CardContent className="p-6">
                 {error && (
-                    <Alert variant="destructive" className="mb-4 bg-red-500/10 border-red-500/30">
+                    <Alert variant="destructive" className="mb-4 bg-destructive/10 border-destructive/30">
                         <AlertDescription>{error}</AlertDescription>
                     </Alert>
                 )}

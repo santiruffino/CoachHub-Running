@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { CoachesList } from '@/features/users/components/CoachesList';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 export const dynamic = 'force-dynamic';
 
@@ -57,8 +58,8 @@ export default async function CoachesPage() {
     }));
 
     return (
-        <div className="p-4 sm:p-6 lg:p-8">
+        <PageContainer>
             <CoachesList initialCoaches={coachesWithStats} />
-        </div>
+        </PageContainer>
     );
 }

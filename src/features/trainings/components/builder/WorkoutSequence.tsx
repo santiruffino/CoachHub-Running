@@ -280,7 +280,7 @@ export function WorkoutSequence({
                                                     <div className="absolute left-0 top-0 bottom-0 w-1" style={{ backgroundColor: getBlockColorClass(block.type) }} />
                                                     <div className="flex items-center w-full px-4 text-left">
                                                         <div className="w-8 shrink-0 flex items-center justify-center">
-                                                            <GripVertical className="text-gray-300 dark:text-gray-600 w-4 h-4 cursor-grab" />
+                                                            <GripVertical className="text-muted-foreground w-4 h-4 cursor-grab" />
                                                         </div>
                                                         <div className="grid grid-cols-4 w-full items-start gap-4">
                                                             <div className="flex flex-col">
@@ -365,7 +365,7 @@ export function WorkoutSequence({
                                 <div className="absolute left-0 top-0 bottom-0 w-1" style={{ backgroundColor: getBlockColorClass(block.type) }} />
                                 <div className="flex items-center w-full px-4 text-left">
                                     <div className="w-8 shrink-0 flex items-center justify-center">
-                                        <GripVertical className="text-gray-300 dark:text-gray-600 w-4 h-4 cursor-grab" />
+                                        <GripVertical className="text-muted-foreground w-4 h-4 cursor-grab" />
                                     </div>
                                     <div className="grid grid-cols-4 w-full items-start gap-4">
                                         <div className="flex flex-col">

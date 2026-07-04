@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { CoachSettingsForm } from '@/features/settings/components/CoachSettingsForm';
+import { PageContainer } from '@/components/layout/PageContainer';
 import { CoachSettings } from '@/features/settings/types';
 import { normalizeCoachSettings } from '@/lib/settings/defaults';
 
@@ -43,8 +44,8 @@ export default async function CoachSettingsPage() {
     });
 
     return (
-        <div className="p-4 sm:p-6 lg:p-8">
+        <PageContainer width="narrow">
             <CoachSettingsForm initialSettings={initialSettings} />
-        </div>
+        </PageContainer>
     );
 }

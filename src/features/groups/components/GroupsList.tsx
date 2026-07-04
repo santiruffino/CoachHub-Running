@@ -7,6 +7,7 @@ import { Group } from '@/interfaces/group';
 import { groupsService } from '@/features/groups/services/groups.service';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { Input } from '@/components/ui/input';
 import { Plus, Users, Timer, Calendar, ChevronRight, Edit2, UserPlus, Check, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -171,22 +172,18 @@ export function GroupsList({ initialGroups }: GroupsListProps) {
 
     return (
         <div className="space-y-8 sm:space-y-10">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1
-                        className="text-2xl sm:text-3xl font-bold text-endurix-black dark:text-foreground tracking-tight uppercase"
-                        style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
-                    >
-                        {t('title')}
-                    </h1>
-                </div>
-                <Button variant="orange" size="sm" className="sm:size-default uppercase tracking-widest" asChild>
-                    <Link href="/groups/new">
-                        <Plus className="h-4 w-4 sm:mr-2" />
-                        <span className="hidden sm:inline">{t('createGroup')}</span>
-                    </Link>
-                </Button>
-            </div>
+            <PageHeader
+                className="mb-0"
+                title={t('title')}
+                action={
+                    <Button variant="orange" size="sm" className="sm:size-default uppercase tracking-widest" asChild>
+                        <Link href="/groups/new">
+                            <Plus className="h-4 w-4 sm:mr-2" />
+                            <span className="hidden sm:inline">{t('createGroup')}</span>
+                        </Link>
+                    </Button>
+                }
+            />
 
             <div className="space-y-12">
                 {/* Active Groups Section */}

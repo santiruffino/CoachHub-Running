@@ -51,20 +51,20 @@ function CallbackContent() {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen">
                 <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
-                <p className="mt-4 text-gray-600">{t('verifyingSession')}</p>
+                <p className="mt-4 text-muted-foreground">{t('verifyingSession')}</p>
             </div>
         );
     }
 
     if (displayError) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen text-red-500">
+            <div className="flex flex-col items-center justify-center min-h-screen text-destructive">
                 <div className="bg-white p-8 rounded-lg shadow-md flex flex-col items-center">
                     <h1 className="text-xl font-bold mb-2">{t('connectionFailed')}</h1>
-                    <p className="text-gray-600 mb-4">{displayError}</p>
+                    <p className="text-muted-foreground mb-4">{displayError}</p>
                     <button
                         onClick={() => router.push('/profile')}
-                        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded text-gray-800 transition-colors"
+                        className="px-4 py-2 bg-muted hover:bg-muted/70 rounded text-foreground transition-colors"
                     >
                         {t('returnToProfile')}
                     </button>
@@ -76,7 +76,7 @@ function CallbackContent() {
     return (
         <div className="flex flex-col items-center justify-center min-h-screen">
             <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
-            <p className="mt-4 text-gray-600">{t('connecting')}</p>
+            <p className="mt-4 text-muted-foreground">{t('connecting')}</p>
         </div>
     );
 }

@@ -30,7 +30,7 @@ export default async function AthleteDetailPage({ params }: { params: Promise<{ 
     // Parallel fetch initial data
     const [currentProfileRes, detailsRes, activitiesRes, calendarRes, racesRes] = await Promise.allSettled([
         serviceSupabase.from('profiles').select('role').eq('id', user.id).single(),
-        serviceSupabase.from('profiles').select('*, athlete_profile:athlete_profiles(*)').eq('id', id).single(),
+        serviceSupabase.from('profiles').select('*, athleteProfile:athlete_profiles(*)').eq('id', id).single(),
         serviceSupabase.from('activities').select('*').eq('user_id', id).order('start_date', { ascending: false }).limit(50),
         serviceSupabase.from('training_assignments').select(`
             *,
@@ -56,12 +56,21 @@ export default async function AthleteDetailPage({ params }: { params: Promise<{ 
     // Map to camelCase as expected by client component
     const mappedAthlete: AthleteDetails = {
         ...athlete,
-        athleteProfile: athlete.athlete_profile ? {
-            ...athlete.athlete_profile,
-            coachNotes: athlete.athlete_profile.coach_notes,
-            restHR: athlete.athlete_profile.rest_hr,
-            maxHR: athlete.athlete_profile.max_hr,
-            hrZones: athlete.athlete_profile.hr_zones
+        athleteProfile: athlete.athleteProfile ? {
+            id: athlete.athleteProfile.id,
+            dob: athlete.athleteProfile.dob,
+            height: athlete.athleteProfile.height,
+            weight: athlete.athleteProfile.weight,
+            injuries: athlete.athleteProfile.injuries,
+            coachNotes: athlete.athleteProfile.coach_notes,
+            restHR: athlete.athleteProfile.rest_hr,
+            maxHR: athlete.athleteProfile.max_hr,
+            lthr: athlete.athleteProfile.lthr,
+            hrZones: athlete.athleteProfile.hr_zones,
+            vam: athlete.athleteProfile.vam,
+            uan: athlete.athleteProfile.uan,
+            created_at: athlete.athleteProfile.created_at,
+            updated_at: athlete.athleteProfile.updated_at,
         } : null
     } as AthleteDetails;
 

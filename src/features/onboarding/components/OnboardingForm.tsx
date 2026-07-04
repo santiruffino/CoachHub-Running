@@ -134,7 +134,7 @@ export default function OnboardingForm() {
                 <div className="max-w-4xl mx-auto px-6 md:px-10 pt-12">
                     {/* Back button */}
                     <div className="mb-6">
-                        <BackButton href="/dashboard" />
+                        <BackButton href="/dashboard" showLabel />
                     </div>
                     {/* Page header */}
                     <div className="mb-6">
@@ -150,7 +150,7 @@ export default function OnboardingForm() {
                     </div>
 
                     {error && (
-                        <Alert variant="destructive" className="mb-6 bg-red-500/10 border-red-500/30">
+                        <Alert variant="destructive" className="mb-6 bg-destructive/10 border-destructive/30">
                             <AlertDescription>{error}</AlertDescription>
                         </Alert>
                     )}

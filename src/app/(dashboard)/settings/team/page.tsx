@@ -4,6 +4,7 @@ import { TeamSettingsForm } from '@/features/settings/components/TeamSettingsFor
 import { TeamSettings } from '@/features/settings/types';
 import { TeamInviteLinksCard } from '@/features/settings/components/TeamInviteLinksCard';
 import { normalizeTeamSettings } from '@/lib/settings/defaults';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,9 +46,9 @@ export default async function TeamSettingsPage() {
     });
 
     return (
-        <div className="p-4 sm:p-6 lg:p-8 space-y-6">
+        <PageContainer width="full" className="space-y-6">
             <TeamSettingsForm initialSettings={initialSettings} />
             <TeamInviteLinksCard />
-        </div>
+        </PageContainer>
     );
 }

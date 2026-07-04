@@ -93,7 +93,7 @@ export default function LoginForm() {
             </CardHeader>
             <CardContent className="space-y-6 pb-8">
                 {error && (
-                    <Alert variant="destructive" className="bg-red-500/10 border-red-500/30 animate-in fade-in slide-in-from-top-1">
+                    <Alert variant="destructive" className="bg-destructive/10 border-destructive/30 animate-in fade-in slide-in-from-top-1">
                         <AlertDescription>{error}</AlertDescription>
                     </Alert>
                 )}

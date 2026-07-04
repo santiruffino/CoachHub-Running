@@ -111,7 +111,7 @@ export function RecordRaceResultModal({ open, onOpenChange, race, onSuccess }: R
               style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
               required
             />
-            {timeError && <p className="text-xs font-medium text-red-500">{timeError}</p>}
+            {timeError && <p className="text-xs font-medium text-destructive">{timeError}</p>}
           </div>
 
           <div className="space-y-2">

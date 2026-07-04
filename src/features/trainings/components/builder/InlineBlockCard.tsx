@@ -144,9 +144,9 @@ export function InlineBlockCard({
 
     return (
         <div
-            className={`relative flex bg-white dark:bg-gray-800 rounded-lg border transition-all duration-200 ${isSelected
+            className={`relative flex bg-white dark:bg-card rounded-lg border transition-all duration-200 ${isSelected
                 ? 'border-brand-primary shadow-md scale-[1.01]'
-                : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm'
+                : 'border-border hover:border-input hover:shadow-sm'
                 } ${indented ? 'ml-8' : ''}`}
             onClick={() => onSelect?.(block.id)}
         >
@@ -162,7 +162,7 @@ export function InlineBlockCard({
                     {/* Drag handle */}
                     {!readOnly && dragHandleProps && (
                         <button
-                            className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                            className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-muted-foreground transition-colors"
                             {...dragHandleProps}
                         >
                             <GripVertical className="w-4 h-4" />
@@ -181,7 +181,7 @@ export function InlineBlockCard({
                     </span>
 
                     {/* Step name */}
-                    <span className="flex-1 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    <span className="flex-1 text-sm font-semibold text-foreground">
                         {block.stepName || t(`labels.${block.type}`)}
                     </span>
 
@@ -191,7 +191,7 @@ export function InlineBlockCard({
                             e.stopPropagation();
                             setExpanded(!expanded);
                         }}
-                        className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 p-1"
+                        className="text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground p-1"
                     >
                         {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                     </button>
@@ -203,7 +203,7 @@ export function InlineBlockCard({
                                 e.stopPropagation();
                                 onRemove(block.id);
                             }}
-                            className="text-gray-400 hover:text-red-500 p-1"
+                            className="text-muted-foreground hover:text-destructive p-1"
                         >
                             <Trash2 className="w-4 h-4" />
                         </button>
@@ -212,23 +212,23 @@ export function InlineBlockCard({
 
                 {/* Compact metrics display */}
                 <div className="mt-2 flex flex-wrap gap-3 text-xs">
-                    <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-gray-700 dark:text-gray-300 font-medium">
+                    <span className="px-2 py-1 bg-muted rounded text-foreground dark:text-muted-foreground font-medium">
                         {getDurationDisplay()}
                     </span>
-                    <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-gray-700 dark:text-gray-300">
+                    <span className="px-2 py-1 bg-muted rounded text-foreground dark:text-muted-foreground">
                         {getTargetDisplay()}
                     </span>
-                    <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-gray-700 dark:text-gray-300">
+                    <span className="px-2 py-1 bg-muted rounded text-foreground dark:text-muted-foreground">
                         {block.type === 'rest' ? t('labels.restWithHint') : `${t('intensity').replace(' (%)', '')} ${block.intensity || 50}%`}
                     </span>
                 </div>
 
                 {/* Expanded editor */}
                 {expanded && !readOnly && (
-                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 space-y-3">
+                    <div className="mt-4 pt-4 border-t border-border space-y-3">
                         {/* Step Name */}
                         <div>
-                            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                            <label className="block text-xs font-medium text-muted-foreground mb-1">
                                 {t('stepName')}
                             </label>
                             <input
@@ -240,13 +240,13 @@ export function InlineBlockCard({
                                 }}
                                 onClick={(e) => e.stopPropagation()}
                                 placeholder={t(`labels.${block.type}`)}
-                                className="w-full text-sm px-2 py-1.5 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-brand-primary focus:ring-1 focus:ring-brand-primary"
+                                className="w-full text-sm px-2 py-1.5 rounded border border-input bg-white dark:bg-background text-foreground dark:text-white focus:border-brand-primary focus:ring-1 focus:ring-brand-primary"
                             />
                         </div>
 
                         {/* Type */}
                         <div>
-                            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                            <label className="block text-xs font-medium text-muted-foreground mb-1">
                                 {t('type')}
                             </label>
                             <select
@@ -256,7 +256,7 @@ export function InlineBlockCard({
                                     onUpdate(block.id, { type: e.target.value as BlockType });
                                 }}
                                 onClick={(e) => e.stopPropagation()}
-                                className="w-full text-sm px-2 py-1.5 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                                className="w-full text-sm px-2 py-1.5 rounded border border-input bg-white dark:bg-background text-foreground dark:text-white"
                             >
                                 <option value="warmup">{t('labels.warmup')}</option>
                                 <option value="interval">{t('labels.interval')}</option>
@@ -268,7 +268,7 @@ export function InlineBlockCard({
 
                         {/* Duration */}
                         <div>
-                            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                            <label className="block text-xs font-medium text-muted-foreground mb-1">
                                 {t('duration')}
                             </label>
                             <div className="grid grid-cols-2 gap-2">
@@ -281,7 +281,7 @@ export function InlineBlockCard({
                                     }}
                                     onClick={(e) => e.stopPropagation()}
                                     placeholder={block.duration.type === 'time' ? "min:sec" : "0"}
-                                    className="w-full text-sm px-2 py-1.5 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                                    className="w-full text-sm px-2 py-1.5 rounded border border-input bg-white dark:bg-background text-foreground dark:text-white"
                                 />
                                 <select
                                     value={block.duration.type === 'distance' ? (block.duration.unit || 'm') : block.duration.type}
@@ -300,7 +300,7 @@ export function InlineBlockCard({
                                         }
                                     }}
                                     onClick={(e) => e.stopPropagation()}
-                                    className="w-full text-sm px-2 py-1.5 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                                    className="w-full text-sm px-2 py-1.5 rounded border border-input bg-white dark:bg-background text-foreground dark:text-white"
                                 >
                                     <option value="m">{t('meters')}</option>
                                     <option value="km">{t('kilometers')}</option>
@@ -311,7 +311,7 @@ export function InlineBlockCard({
 
                         {/* Intensity */}
                         <div>
-                            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                            <label className="block text-xs font-medium text-muted-foreground mb-1">
                                 {t('intensity')}
                             </label>
                             <div className="flex items-center gap-2">
@@ -325,9 +325,9 @@ export function InlineBlockCard({
                                         onUpdate(block.id, { intensity: Number(e.target.value) });
                                     }}
                                     onClick={(e) => e.stopPropagation()}
-                                    className="flex-1 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-brand-primary"
+                                    className="flex-1 h-1.5 bg-muted rounded-lg appearance-none cursor-pointer dark:bg-muted accent-brand-primary"
                                 />
-                                <span className="text-sm font-semibold text-gray-900 dark:text-white w-12 text-right">
+                                <span className="text-sm font-semibold text-foreground dark:text-white w-12 text-right">
                                     {block.intensity || 50}%
                                 </span>
                             </div>
@@ -335,7 +335,7 @@ export function InlineBlockCard({
 
                         {/* Target Type */}
                         <div>
-                            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                            <label className="block text-xs font-medium text-muted-foreground mb-1">
                                 {t('target')}
                             </label>
                             <select
@@ -345,7 +345,7 @@ export function InlineBlockCard({
                                     onUpdate(block.id, { target: { type: e.target.value as TargetType, min: '', max: '' } });
                                 }}
                                 onClick={(e) => e.stopPropagation()}
-                                className="w-full text-sm px-2 py-1.5 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white mb-2"
+                                className="w-full text-sm px-2 py-1.5 rounded border border-input bg-white dark:bg-background text-foreground dark:text-white mb-2"
                             >
                                 <option value="vam_zone">{t('vamZone')}</option>
                                 <option value="lthr">{t('lthr')}</option>
@@ -361,7 +361,7 @@ export function InlineBlockCard({
                                         onUpdate(block.id, { target: { ...block.target, min: e.target.value, max: e.target.value } });
                                     }}
                                     onClick={(e) => e.stopPropagation()}
-                                    className="w-full text-sm px-2 py-1.5 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                                    className="w-full text-sm px-2 py-1.5 rounded border border-input bg-white dark:bg-background text-foreground dark:text-white"
                                 >
                                     {VAM_ZONES.map(z => (
                                         <option key={z.zone} value={z.zone}>
@@ -383,7 +383,7 @@ export function InlineBlockCard({
                                             onUpdate(block.id, { target: { ...block.target, min: e.target.value } });
                                         }}
                                         onClick={(e) => e.stopPropagation()}
-                                        className="w-full text-sm px-2 py-1.5 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                                        className="w-full text-sm px-2 py-1.5 rounded border border-input bg-white dark:bg-background text-foreground dark:text-white"
                                     />
                                     <input
                                         type="number"
@@ -394,7 +394,7 @@ export function InlineBlockCard({
                                             onUpdate(block.id, { target: { ...block.target, max: e.target.value } });
                                         }}
                                         onClick={(e) => e.stopPropagation()}
-                                        className="w-full text-sm px-2 py-1.5 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                                        className="w-full text-sm px-2 py-1.5 rounded border border-input bg-white dark:bg-background text-foreground dark:text-white"
                                     />
                                 </div>
                             )}
@@ -408,7 +408,7 @@ export function InlineBlockCard({
                                         onUpdate(block.id, { target: { ...block.target, min: e.target.value, max: e.target.value } });
                                     }}
                                     onClick={(e) => e.stopPropagation()}
-                                    className="w-full text-sm px-2 py-1.5 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                                    className="w-full text-sm px-2 py-1.5 rounded border border-input bg-white dark:bg-background text-foreground dark:text-white"
                                 >
                                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
                                         <option key={n} value={n}>RPE {n}</option>
@@ -419,7 +419,7 @@ export function InlineBlockCard({
 
                         {/* Notes */}
                         <div>
-                            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                            <label className="block text-xs font-medium text-muted-foreground mb-1">
                                 {t('notes')}
                             </label>
                             <textarea
@@ -431,7 +431,7 @@ export function InlineBlockCard({
                                 }}
                                 onClick={(e) => e.stopPropagation()}
                                 placeholder={t('notesPlaceholderStep')}
-                                className="w-full text-sm px-2 py-1.5 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white resize-none"
+                                className="w-full text-sm px-2 py-1.5 rounded border border-input bg-white dark:bg-background text-foreground dark:text-white resize-none"
                             />
                         </div>
                     </div>
