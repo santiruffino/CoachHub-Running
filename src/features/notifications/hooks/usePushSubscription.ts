@@ -26,6 +26,25 @@ export function usePushSubscription() {
                 return;
             }
 
+            // The service worker caches /_next/static/ assets cache-first, which breaks
+            // Turbopack HMR in dev (chunk hashes change on every rebuild → ChunkLoadError).
+            // Only run it in production; in dev, tear down any SW/caches left over from a
+            // previous run so the local environment self-heals.
+            if (process.env.NODE_ENV !== 'production') {
+                try {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    await Promise.all(registrations.map((registration) => registration.unregister()));
+                    if ('caches' in window) {
+                        const keys = await caches.keys();
+                        await Promise.all(keys.map((key) => caches.delete(key)));
+                    }
+                } catch (err) {
+                    appLogger.error('Failed to tear down service worker in development:', err);
+                }
+                setLoading(false);
+                return;
+            }
+
             try {
                 const registration = await navigator.serviceWorker.register('/sw.js');
                 const existingSubscription = await registration.pushManager.getSubscription();

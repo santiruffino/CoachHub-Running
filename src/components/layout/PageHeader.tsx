@@ -59,7 +59,7 @@ export function PageHeader({
                     <BackButton href={backHref} onClick={onBack} label={backLabel} showLabel />
                 </div>
             )}
-            <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
                     {eyebrow && (
                         <span
@@ -71,7 +71,7 @@ export function PageHeader({
                     )}
                     <h1
                         className={cn(
-                            'font-bold uppercase leading-[1.05] tracking-tight text-endurix-black dark:text-foreground',
+                            'font-bold uppercase tracking-tight text-endurix-black dark:text-foreground',
                             titleSizeMap[size],
                         )}
                         style={FONT_DISPLAY}

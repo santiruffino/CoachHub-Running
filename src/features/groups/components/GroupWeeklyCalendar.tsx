@@ -1,17 +1,17 @@
 'use client';
 
-import { format, isSameDay, isSameMonth } from 'date-fns';
+import { addDays, addMonths, format, isSameDay, isSameMonth, startOfMonth, startOfWeek } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { TrainingAssignment } from '@/interfaces/training';
-import { Users, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Loader2, Users, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { CalendarDayColumn } from '@/components/calendar/CalendarDayColumn';
 import { CalendarRestDayPlaceholder } from '@/components/calendar/CalendarRestDayPlaceholder';
-import { useCalendarView } from '@/components/calendar/useCalendarView';
+import { CALENDAR_WEEK_START, useCalendarView, type CalendarView } from '@/components/calendar/useCalendarView';
 
 interface GroupWeeklyCalendarProps {
     groupId: string;
@@ -79,9 +79,46 @@ function GroupWorkoutCard({
 }
 
 export function GroupWeeklyCalendar({ groupId, assignments }: GroupWeeklyCalendarProps) {
-    void groupId;
     const t = useTranslations();
-    const { view, anchorDate, visibleDays, monthLabel, weekLabel, updateCalendar, navigate, goToday } = useCalendarView();
+    const { view, anchorDate, updateCalendar } = useCalendarView();
+
+    const [calendarView, setCalendarView] = useState<CalendarView>(view);
+    const [calendarAnchorDate, setCalendarAnchorDate] = useState(anchorDate);
+    const [isSwitchingView, setIsSwitchingView] = useState(false);
+
+    useEffect(() => {
+        setCalendarView(view);
+        setCalendarAnchorDate(anchorDate);
+        setIsSwitchingView(false);
+    }, [view, anchorDate]);
+
+    const visibleStart = calendarView === 'month'
+        ? startOfWeek(startOfMonth(calendarAnchorDate), CALENDAR_WEEK_START)
+        : startOfWeek(calendarAnchorDate, CALENDAR_WEEK_START);
+
+    const visibleDays = useMemo(
+        () => Array.from({ length: calendarView === 'month' ? 42 : 7 }, (_, index) => addDays(visibleStart, index)),
+        [calendarView, visibleStart],
+    );
+
+    const monthLabel = format(calendarAnchorDate, 'MMMM yyyy', { locale: es });
+    const weekLabel = `${format(visibleStart, 'd MMM', { locale: es })} - ${format(addDays(visibleStart, 6), 'd MMM yyyy', { locale: es })}`;
+
+    const handleUpdateCalendar = (nextView: CalendarView, nextDate: Date) => {
+        setIsSwitchingView(true);
+        setCalendarView(nextView);
+        setCalendarAnchorDate(nextDate);
+        updateCalendar(nextView, nextDate);
+    };
+
+    const handleNavigate = (direction: number) => {
+        const nextDate = calendarView === 'month' ? addMonths(calendarAnchorDate, direction) : addDays(calendarAnchorDate, direction * 7);
+        handleUpdateCalendar(calendarView, nextDate);
+    };
+
+    const handleToday = () => handleUpdateCalendar(calendarView, new Date());
+
+    const addWorkoutHref = (date: string) => `/workouts/assign?groupId=${encodeURIComponent(groupId)}&date=${date}`;
 
     // Aggregate assignments by day and source_group_id/training_id
     const aggregatedAssignments = useMemo(() => {
@@ -114,18 +151,18 @@ export function GroupWeeklyCalendar({ groupId, assignments }: GroupWeeklyCalenda
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between bg-endurix-black/5 dark:bg-white/5 p-2 border border-endurix-black/10 dark:border-border flex-wrap gap-2">
+            <div className="flex items-center justify-between gap-3 bg-endurix-black/5 dark:bg-white/5 p-2 border border-endurix-black/10 dark:border-border flex-wrap">
                 <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="h-8 w-8">
+                    <Button variant="ghost" size="icon" onClick={() => handleNavigate(-1)} className="h-8 w-8 border border-endurix-black/10 dark:border-border">
                         <ChevronLeft className="h-4 w-4" />
                     </Button>
                     <span
-                        className="text-xs font-bold uppercase tracking-widest text-muted-foreground min-w-[200px] text-center"
+                        className="text-xs font-bold uppercase tracking-widest text-endurix-black dark:text-foreground min-w-[220px] text-center"
                         style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
                     >
-                        {view === 'month' ? monthLabel : weekLabel}
+                        {calendarView === 'month' ? monthLabel : weekLabel}
                     </span>
-                    <Button variant="ghost" size="icon" onClick={() => navigate(1)} className="h-8 w-8">
+                    <Button variant="ghost" size="icon" onClick={() => handleNavigate(1)} className="h-8 w-8 border border-endurix-black/10 dark:border-border">
                         <ChevronRight className="h-4 w-4" />
                     </Button>
                 </div>
@@ -133,32 +170,36 @@ export function GroupWeeklyCalendar({ groupId, assignments }: GroupWeeklyCalenda
                     <div className="inline-flex border border-endurix-black/10 dark:border-border overflow-hidden">
                         <button
                             type="button"
-                            onClick={() => updateCalendar('week', anchorDate)}
-                            className={cn('h-8 px-3 text-[10px] font-bold uppercase tracking-widest', view === 'week' ? 'bg-endurix-orange text-white' : 'bg-transparent text-muted-foreground')}
+                            onClick={() => handleUpdateCalendar('week', calendarAnchorDate)}
+                            disabled={isSwitchingView}
+                            className={cn('h-8 px-3 text-[10px] font-bold uppercase tracking-widest inline-flex items-center gap-1 disabled:opacity-70', calendarView === 'week' ? 'bg-endurix-orange text-white' : 'bg-transparent text-muted-foreground')}
                             style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
                         >
-                            Week
+                            {isSwitchingView && calendarView === 'week' && <Loader2 className="h-3 w-3 animate-spin" />}
+                            {t('calendar.week')}
                         </button>
                         <button
                             type="button"
-                            onClick={() => updateCalendar('month', anchorDate)}
-                            className={cn('h-8 px-3 text-[10px] font-bold uppercase tracking-widest border-l border-endurix-black/10 dark:border-border', view === 'month' ? 'bg-endurix-orange text-white' : 'bg-transparent text-muted-foreground')}
+                            onClick={() => handleUpdateCalendar('month', calendarAnchorDate)}
+                            disabled={isSwitchingView}
+                            className={cn('h-8 px-3 text-[10px] font-bold uppercase tracking-widest border-l border-endurix-black/10 dark:border-border inline-flex items-center gap-1 disabled:opacity-70', calendarView === 'month' ? 'bg-endurix-orange text-white' : 'bg-transparent text-muted-foreground')}
                             style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
                         >
-                            Month
+                            {isSwitchingView && calendarView === 'month' && <Loader2 className="h-3 w-3 animate-spin" />}
+                            {t('calendar.month')}
                         </button>
                     </div>
-                    <Button variant="outline-brand" size="sm" onClick={goToday} className="h-8 text-[10px] font-bold uppercase tracking-wider">
+                    <Button variant="outline-brand" size="sm" onClick={handleToday} className="h-8 text-[10px] font-bold uppercase tracking-wider">
                         {t('common.today')}
                     </Button>
                 </div>
             </div>
 
             <div className="w-full overflow-x-auto pb-4">
-                    <div className={cn('min-w-[1024px]', view === 'month' ? 'space-y-2' : 'grid grid-cols-7 gap-4')}>
-                    {view === 'month' && (
+                <div className="min-w-[1024px]">
+                    {calendarView === 'month' && (
                         <div className="grid grid-cols-7 gap-px bg-endurix-black/10 dark:bg-border">
-                            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((label) => (
+                            {Array.from({ length: 7 }, (_, index) => format(new Date(2024, 0, 1 + index), 'EEE', { locale: es })).map((label) => (
                                 <div key={label} className="bg-endurix-paper dark:bg-card px-2 py-1 text-[9px] font-bold uppercase tracking-widest text-muted-foreground text-center" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                                     {label}
                                 </div>
@@ -166,10 +207,10 @@ export function GroupWeeklyCalendar({ groupId, assignments }: GroupWeeklyCalenda
                         </div>
                     )}
 
-                    <div className={view === 'month' ? 'grid grid-cols-7 gap-px bg-endurix-black/10 dark:bg-border' : 'grid grid-cols-7 gap-4'}>
+                    <div className={calendarView === 'month' ? 'grid grid-cols-7 gap-px bg-endurix-black/10 dark:bg-border' : 'grid grid-cols-7 gap-4'}>
                         {visibleDays.map((day) => {
                             const isToday = isSameDay(day, new Date());
-                            const isCurrentMonth = view === 'month' ? isSameMonth(day, anchorDate) : true;
+                            const isCurrentMonth = calendarView === 'month' ? isSameMonth(day, calendarAnchorDate) : true;
                             const dayStr = format(day, 'yyyy-MM-dd');
                             const dayWorkouts = aggregatedAssignments[dayStr] || [];
 
@@ -183,7 +224,7 @@ export function GroupWeeklyCalendar({ groupId, assignments }: GroupWeeklyCalenda
                                     </span>
                                     <span
                                         className={cn(
-                                            view === 'month' ? 'text-lg font-medium leading-none' : 'text-xl font-medium leading-none',
+                                            calendarView === 'month' ? 'text-lg font-medium leading-none' : 'text-xl font-medium leading-none',
                                             isToday ? 'text-endurix-orange' : 'text-foreground',
                                         )}
                                         style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
@@ -199,7 +240,16 @@ export function GroupWeeklyCalendar({ groupId, assignments }: GroupWeeklyCalenda
                                         <CalendarRestDayPlaceholder
                                             className="min-h-[92px] border border-dashed border-endurix-black/15 dark:border-white/15 flex flex-col gap-2 items-center justify-center bg-transparent opacity-50"
                                             iconClassName="w-4 h-4 text-muted-foreground/30"
-                                            label={<span className="text-[9px] text-muted-foreground font-semibold uppercase tracking-widest">{t('calendar.restDay')}</span>}
+                                            label={
+                                                <div className="flex flex-col items-center gap-2">
+                                                    <span className="text-[9px] text-muted-foreground font-semibold uppercase tracking-widest">{t('calendar.restDay')}</span>
+                                                    <Button asChild size="sm" variant="outline" className="h-6 min-w-16 px-3 rounded-sm border-endurix-orange/30 text-endurix-orange hover:bg-endurix-orange/10">
+                                                        <Link href={addWorkoutHref(dayStr)} aria-label={t('common.addWorkout')} title={t('common.addWorkout')}>
+                                                            <Plus className="h-3.5 w-3.5" />
+                                                        </Link>
+                                                    </Button>
+                                                </div>
+                                            }
                                         />
                                     ) : (
                                         <>
@@ -229,7 +279,16 @@ export function GroupWeeklyCalendar({ groupId, assignments }: GroupWeeklyCalenda
                                         <CalendarRestDayPlaceholder
                                             className="h-32 mt-6 border border-dashed border-endurix-black/15 dark:border-white/15 flex flex-col gap-2 items-center justify-center bg-transparent opacity-50"
                                             iconClassName="w-4 h-4 text-muted-foreground/30"
-                                            label={<span className="text-[9px] text-muted-foreground font-semibold uppercase tracking-widest">{t('calendar.restDay')}</span>}
+                                            label={
+                                                <div className="flex flex-col items-center gap-2">
+                                                    <span className="text-[9px] text-muted-foreground font-semibold uppercase tracking-widest">{t('calendar.restDay')}</span>
+                                                    <Button asChild size="sm" variant="outline" className="h-6 min-w-16 px-3 rounded-sm border-endurix-orange/30 text-endurix-orange hover:bg-endurix-orange/10">
+                                                        <Link href={addWorkoutHref(dayStr)} aria-label={t('common.addWorkout')} title={t('common.addWorkout')}>
+                                                            <Plus className="h-3.5 w-3.5" />
+                                                        </Link>
+                                                    </Button>
+                                                </div>
+                                            }
                                         />
                                     ) : (
                                         dayWorkouts.map(({ assignment, count }) => (
@@ -249,12 +308,12 @@ export function GroupWeeklyCalendar({ groupId, assignments }: GroupWeeklyCalenda
                                     key={day.toISOString()}
                                     className={cn(
                                         'flex flex-col gap-3 p-3 transition-colors min-h-[400px] border-l-2',
-                                        view === 'month'
+                                        calendarView === 'month'
                                             ? 'bg-endurix-paper dark:bg-card min-h-[165px] border-l-0 border'
                                             : isToday ? 'bg-endurix-black/5 dark:bg-white/5 border-l-endurix-orange' : 'bg-transparent border-l-transparent',
                                     )}
-                                    style={view === 'month' && !isCurrentMonth ? { opacity: 0.45 } : undefined}
-                                    view={view}
+                                    style={calendarView === 'month' && !isCurrentMonth ? { opacity: 0.45 } : undefined}
+                                    view={calendarView}
                                     header={header}
                                     monthContent={monthContent}
                                     weekContent={weekContent}

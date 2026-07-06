@@ -122,6 +122,8 @@ interface CoachDashboardNewProps {
 export default function CoachDashboardNew({ user }: CoachDashboardNewProps) {
     const [data, setData] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const hasLoadedRef = useRef(false);
     const [scope, setScope] = useState<'mine' | 'team'>('mine');
     const scopeHydratedRef = useRef(false);
     const [expandedRosterKeys, setExpandedRosterKeys] = useState<Set<string>>(new Set());
@@ -184,14 +186,23 @@ export default function CoachDashboardNew({ user }: CoachDashboardNewProps) {
     }
 
     const fetchDashboard = useCallback(async () => {
+        // Only show the full-page skeleton on the very first load. Subsequent
+        // fetches (e.g. switching the scope toggle) refresh in place so the
+        // header + scope toggle stay visible instead of being unmounted.
         try {
-            setLoading(true);
+            if (hasLoadedRef.current) {
+                setRefreshing(true);
+            } else {
+                setLoading(true);
+            }
             const res = await api.get('/v2/dashboard/coach', { params: { scope } });
             setData(res.data as DashboardData);
+            hasLoadedRef.current = true;
         } catch (error) {
             appLogger.error('Failed to fetch new dashboard data', error);
         } finally {
             setLoading(false);
+            setRefreshing(false);
         }
     }, [scope]);
 
@@ -440,6 +451,11 @@ export default function CoachDashboardNew({ user }: CoachDashboardNewProps) {
                     </div>
                 </div>
 
+                {/* Content (refreshes in place on scope switch; header stays mounted) */}
+                <div
+                    aria-busy={refreshing}
+                    className={`transition-opacity duration-200 ${refreshing ? 'opacity-60' : 'opacity-100'}`}
+                >
                 {/* Stats Grid */}
                 <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
                     <StatCard
@@ -733,6 +749,7 @@ export default function CoachDashboardNew({ user }: CoachDashboardNewProps) {
                         <NextRaces />
                     </div>
                 </section>
+                </div>
             </div>
         </div>
     );

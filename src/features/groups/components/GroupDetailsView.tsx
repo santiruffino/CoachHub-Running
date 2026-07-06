@@ -7,9 +7,10 @@ import { GroupDetails } from '@/interfaces/group';
 import { groupsService } from '@/features/groups/services/groups.service';
 import { AddMemberModal } from '@/features/groups/components/AddMemberModal';
 import { EditGroupModal } from '@/features/groups/components/EditGroupModal';
-import { AssignTrainingModal } from '@/features/trainings/components/AssignTrainingModal';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PageHeader } from '@/components/layout/PageHeader';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { SectionHeader } from '@/components/dashboard';
 import {
   Table,
   TableBody,
@@ -31,7 +32,6 @@ import {
   Calendar,
   Trophy,
 } from 'lucide-react';
-import { BackButton } from '@/components/ui/BackButton';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -82,7 +82,6 @@ export function GroupDetailsView({ id, initialGroup, initialAthletes, initialAss
   const [groupAssignments, setGroupAssignments] = useState<TrainingAssignment[]>(initialAssignments);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
 
   const fetchGroupData = useCallback(async () => {
     try {
@@ -147,46 +146,38 @@ export function GroupDetailsView({ id, initialGroup, initialAthletes, initialAss
 
   return (
     <div className="space-y-6">
-      {/* Header with Back Button and Actions */}
-      <div>
-        <div className="mb-4">
-          <BackButton href="/groups" showLabel />
-        </div>
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div>
-            <h1
-              className="text-2xl sm:text-3xl font-bold text-endurix-black dark:text-foreground tracking-tight uppercase"
-              style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
-            >
-              {group.name}
-            </h1>
-            {group.group_type === 'RACE' && (
-              <div className="flex items-center gap-3 mt-1">
-                <Badge className="bg-endurix-orange/10 text-endurix-orange border border-endurix-orange/30">
-                  <Trophy className="h-3 w-3 mr-1" />
-                  {group.race_name}
-                </Badge>
-                {group.race_date && (
-                  <span className="text-xs text-muted-foreground flex items-center">
-                    <Calendar className="h-3 w-3 mr-1" />
-                    {new Date(group.race_date).toLocaleDateString(locale)}
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-          <Button variant="outline-brand" size="sm" onClick={() => setIsEditModalOpen(true)} className="uppercase tracking-widest">
+      <PageHeader
+        className="mb-0"
+        backHref="/groups"
+        title={group.name}
+        description={group.description || undefined}
+        action={
+          <Button
+            variant="outline-brand"
+            size="xs"
+            onClick={() => setIsEditModalOpen(true)}
+            className="h-8 shrink-0 whitespace-nowrap uppercase tracking-widest"
+          >
             <Settings className="h-4 w-4 mr-2" />
             {tGroupDetail('editGroup')}
           </Button>
-        </div>
-      </div>
+        }
+      />
 
-      <Card>
-        <CardContent className="p-6">
-          <p className="text-muted-foreground">{group.description || t('trainings.assign.noDescription')}</p>
-        </CardContent>
-      </Card>
+      {group.group_type === 'RACE' && (
+        <div className="flex flex-wrap items-center gap-3">
+          <Badge className="bg-endurix-orange/10 text-endurix-orange border border-endurix-orange/30">
+            <Trophy className="h-3 w-3 mr-1" />
+            {group.race_name}
+          </Badge>
+          {group.race_date && (
+            <span className="text-xs text-muted-foreground flex items-center">
+              <Calendar className="h-3 w-3 mr-1" />
+              {new Date(group.race_date).toLocaleDateString(locale)}
+            </span>
+          )}
+        </div>
+      )}
 
       <Tabs defaultValue="members" className="w-full">
         <TabsList className="bg-endurix-black/8 dark:bg-white/8 p-1 mb-6 border border-endurix-black/10 dark:border-border">
@@ -206,29 +197,28 @@ export function GroupDetailsView({ id, initialGroup, initialAthletes, initialAss
 
         <TabsContent value="members" className="space-y-6">
           <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>{t('groups.detail.membersCount', { count: groupAthletes.length })}</CardTitle>
-                <div className="flex gap-2">
-                  <Button variant="outline-brand" size="sm" onClick={() => setIsAssignModalOpen(true)} className="uppercase tracking-widest text-[10px]">
-                    <Plus className="h-4 w-4 mr-2" />
-                    {t('groups.detail.assignWorkout')}
-                  </Button>
-                  <Button variant="orange" size="sm" onClick={() => setIsAddModalOpen(true)} className="uppercase tracking-widest text-[10px]">
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    {t('groups.detail.addMember')}
-                  </Button>
-                </div>
-              </div>
+            <CardHeader className="border-b border-endurix-black/10 dark:border-border">
+              <SectionHeader
+                eyebrow={t('groups.athletes')}
+                title={t('groups.detail.membersCount', { count: groupAthletes.length })}
+                action={
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Button asChild variant="outline-brand" size="xs" className="h-8 shrink-0 whitespace-nowrap uppercase tracking-widest text-[10px]">
+                      <Link href={`/workouts/assign?groupId=${id}`}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        {t('groups.detail.assignWorkout')}
+                      </Link>
+                    </Button>
+                    <Button variant="orange" size="xs" onClick={() => setIsAddModalOpen(true)} className="h-8 shrink-0 whitespace-nowrap uppercase tracking-widest text-[10px]">
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      {t('groups.detail.addMember')}
+                    </Button>
+                  </div>
+                }
+                className="mb-0"
+              />
             </CardHeader>
             <CardContent className="p-0 sm:p-6 sm:pt-0">
-              <AssignTrainingModal
-                groupId={group.id}
-                isOpen={isAssignModalOpen}
-                onClose={() => setIsAssignModalOpen(false)}
-                onSuccess={fetchGroupData}
-              />
-
               {/* Mobile Cards View */}
               <div className="lg:hidden space-y-3 p-4">
                 {groupAthletes.length === 0 ? (
@@ -391,14 +381,12 @@ export function GroupDetailsView({ id, initialGroup, initialAthletes, initialAss
 
         <TabsContent value="calendar" className="space-y-6">
           <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>{tGroupDetail('groupPlanning')}</CardTitle>
-                <Button variant="orange" size="sm" onClick={() => setIsAssignModalOpen(true)} className="uppercase tracking-widest text-[10px]">
-                  <Plus className="h-4 w-4 mr-2" />
-                  {tGroupDetail('scheduleTraining')}
-                </Button>
-              </div>
+            <CardHeader className="border-b border-endurix-black/10 dark:border-border">
+              <SectionHeader
+                eyebrow={t('nav.trainings')}
+                title={tGroupDetail('groupPlanning')}
+                className="mb-0"
+              />
             </CardHeader>
             <CardContent>
               <GroupWeeklyCalendar groupId={group.id} assignments={groupAssignments} />

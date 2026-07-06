@@ -148,6 +148,7 @@ interface AssignWorkoutViewProps {
     initialGroups: Group[];
     initialTemplates: Training[];
     preselectedAthleteId: string | null;
+    preselectedGroupId: string | null;
     initialScheduledDate?: string | null;
     initialTemplate: Training | null;
 }
@@ -157,6 +158,7 @@ export function AssignWorkoutView({
     initialGroups,
     initialTemplates,
     preselectedAthleteId,
+    preselectedGroupId,
     initialScheduledDate,
     initialTemplate
 }: AssignWorkoutViewProps) {
@@ -172,7 +174,7 @@ export function AssignWorkoutView({
     const [templates] = useState<Training[]>(initialTemplates);
     const [blocks, setBlocks] = useState<WorkoutBlock[]>(initialTemplate?.blocks || []);
     const [selectedAthleteIds, setSelectedAthleteIds] = useState<string[]>(preselectedAthleteId ? [preselectedAthleteId] : []);
-    const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
+    const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>(preselectedGroupId ? [preselectedGroupId] : []);
     const [scheduledDate, setScheduledDate] = useState(initialScheduledDate || format(new Date(), 'yyyy-MM-dd'));
     const [expectedRpe, setExpectedRpe] = useState(initialTemplate?.expectedRpe || 5);
     const [workoutName, setWorkoutName] = useState('');

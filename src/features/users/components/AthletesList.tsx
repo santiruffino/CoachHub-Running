@@ -177,12 +177,6 @@ export function AthletesList({ initialAthletes, initialCoaches, isAdmin }: Athle
       <PageHeader
         className="mb-0"
         title={`${t('title')}${isAdmin ? ` (${tDashboard('admin.globalScope')})` : ''}`}
-        action={
-          <Button variant="orange" onClick={() => setInviteModalOpen(true)} size="sm" className="uppercase tracking-widest">
-            <UserPlus className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">{t('addAthlete')}</span>
-          </Button>
-        }
       />
 
       <InviteAthleteModal
@@ -209,7 +203,7 @@ export function AthletesList({ initialAthletes, initialCoaches, isAdmin }: Athle
         loading={isDeleting}
       />
 
-      <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
+      <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center">
         <div className="relative max-w-md w-full sm:w-auto flex-1">
           <Search className="absolute left-0 top-1/2 ml-2 -translate-y-1/2 h-4 w-4 text-endurix-black/40 dark:text-muted-foreground" />
           <Input
@@ -270,6 +264,17 @@ export function AthletesList({ initialAthletes, initialCoaches, isAdmin }: Athle
             </SelectContent>
           </Select>
         )}
+
+        <Button
+          type="button"
+          variant="orange"
+          onClick={() => setInviteModalOpen(true)}
+          size="sm"
+          className="w-full shrink-0 whitespace-nowrap uppercase tracking-widest lg:ml-auto lg:w-auto"
+        >
+          <UserPlus className="h-4 w-4 sm:mr-2" />
+          <span className="hidden sm:inline">{t('addAthlete')}</span>
+        </Button>
       </div>
 
       {/* Mobile Cards View */}
