@@ -3,6 +3,7 @@ import { createServiceRoleClient } from '@/lib/supabase/server';
 import { createNotification } from '@/lib/notifications/create-notification';
 import { createRequestLogger, withRequestId } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
+import { secureCompare } from '@/lib/api/secure-compare';
 
 const REMINDER_DAYS_OUT = 7;
 
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
   const authHeader = request.headers.get('authorization');
 
-  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+  if (!cronSecret || !secureCompare(authHeader, `Bearer ${cronSecret}`)) {
     logger.warn('races_approaching.unauthorized');
     return respond(apiError('AUTH_UNAUTHORIZED'), { status: 401 });
   }

@@ -4,11 +4,13 @@ import { buildRateLimitKey, consumeRateLimit, getClientIpFromHeaders } from '@/l
 import { apiError } from '@/lib/api/error-response';
 import { loginSchema, validateBody } from '@/lib/validation/schemas';
 import { reportApiError } from '@/lib/api/report-error';
+import { createRequestLogger } from '@/lib/logger';
 
 const LOGIN_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 const LOGIN_RATE_LIMIT_MAX_REQUESTS = 5;
 
 export async function POST(request: NextRequest) {
+  const { requestId, logger } = createRequestLogger('/api/auth/login', request);
   try {
     const clientIp = getClientIpFromHeaders(request.headers);
     const rateLimitKey = buildRateLimitKey('/api/auth/login', clientIp, null);
@@ -59,8 +61,9 @@ export async function POST(request: NextRequest) {
     });
 
     if (error) {
+      logger.warn('login.auth_failed', { message: error.message });
       return NextResponse.json(
-        { error: error.message },
+        apiError('AUTH_INVALID_CREDENTIALS', 'Invalid email or password'),
         { status: 401, headers }
       );
     }
@@ -73,8 +76,9 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (profileError) {
+      logger.error('login.profile_fetch_failed', { error: profileError });
       return NextResponse.json(
-        { error: 'Failed to fetch user profile' },
+        apiError('PROFILE_FETCH_FAILED', 'Failed to fetch user profile'),
         { status: 500, headers }
       );
     }
@@ -91,10 +95,7 @@ export async function POST(request: NextRequest) {
       token: data.session?.access_token, // For backward compatibility
     }, { headers });
   } catch (error: unknown) {
-    reportApiError(error, { route: '/api/auth/login', method: 'POST' });
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Internal server error' },
-      { status: 500 }
-    );
+    reportApiError(error, { route: '/api/auth/login', method: 'POST', requestId, logger });
+    return NextResponse.json(apiError('INTERNAL_SERVER_ERROR'), { status: 500 });
   }
 }

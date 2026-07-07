@@ -32,6 +32,7 @@ Scheduled handlers under `src/app/api/cron/**` (auth: `Authorization: Bearer $CR
 - `GET /api/cron/notifications-digest?window=daily|weekly` — batched push digests
 - `GET /api/cron/races-approaching` — 7-day race reminders
 - `GET /api/cron/strava-backfill` — drains queued activity backfill jobs
+- `GET /api/cron/garmin-backfill` — daily pull of recent activities for pilot Garmin connections
 
 Schedules and design notes: [observability.md](./observability.md). Notification
 fan-out: [notifications.md](./notifications.md).
@@ -159,6 +160,59 @@ OAuth state is now signed + expiring + user-bound (state cookie includes HMAC si
 - Compliance calculations delegated to `evaluate-compliance`
 
 Webhook flow is hardened with stricter payload / content-type checks, body-size guardrails, subscription id verification, and route-level throttling.
+
+## Garmin backend pipeline (pilot)
+
+Garmin Connect is an **opt-in pilot integration**, unofficial (no public Garmin
+API — uses the `garmin-connect` client library that emulates the browser SSO
+login). It is invisible to everyone outside the pilot.
+
+- Gate: `profiles.garmin_pilot_enabled` — checked via `isGarminPilotEnabled()`
+  (`src/lib/garmin/pilot.ts`) on every Garmin UI surface and API route.
+- Connect (stores encrypted session tokens, never the password):
+  `POST /api/v2/garmin/auth/connect` — `ATHLETE` only, requires explicit
+  `consent`, rate-limited to 5 attempts / 10 min.
+- Status / disconnect: `/api/v2/garmin/auth/status`, `/api/v2/garmin/auth/disconnect`.
+- Push a training assignment as a Garmin workout:
+  `POST /api/v2/garmin/workouts/[assignmentId]/push` — see `src/lib/garmin/push-workout.ts`.
+- Daily backfill: `GET /api/cron/garmin-backfill` — iterates active
+  `garmin_connections`, oldest-synced-first, capped at 40 connections / run
+  (Vercel Hobby `maxDuration`). See `src/lib/garmin/sync-activities.ts`.
+
+**Token encryption.** Unlike Strava tokens (read-only scope, plaintext,
+RLS-protected), Garmin tokens grant full account access and are encrypted at
+rest with AES-256-GCM (`src/lib/garmin/crypto.ts`). Requires env var
+`GARMIN_TOKEN_ENC_KEY` (32 bytes, base64 or hex) — the connect/backfill routes
+throw if it's unset.
+
+### Shared `activities` table and cross-provider dedup
+
+Garmin and Strava activities live in the **same** `activities` table,
+distinguished by a `provider` column (`'strava' | 'garmin'`, migration
+`20260703120200_activities_provider.sql`). Garmin rows use
+`external_id = 'garmin:<activityId>'`.
+
+**Garmin is the priority source.** If `syncGarminActivitiesForUser()` finds a
+Strava-sourced activity at (roughly) the same start time and distance as an
+incoming Garmin activity, it deletes the Strava row and **repoints** any
+`training_assignments.strava_activity_id` that referenced it at the new Garmin
+activity id — this preserves matching-engine links made by the Strava webhook
+even after the Strava copy is superseded. Do not delete `activities` rows
+matched this way without also repointing `training_assignments`
+(`strava_activity_id` is `ON DELETE SET NULL`) and being aware
+`matching_log.activity_id` is `ON DELETE CASCADE`.
+
+The matching engine (auto-linking an activity to a `training_assignment`)
+**only runs in the `process-strava-activity` Edge Function** — Garmin sync
+does not match assignments on its own. A Garmin-first activity only gets
+matched once/if a corresponding Strava copy passes through the webhook first;
+the daily Garmin backfill then reconciles the duplicate without losing the
+link (see above).
+
+**Any code that bulk-deletes a user's activities by provider** (Strava
+disconnect, Strava deauthorization webhook) **must filter `provider='strava'`**
+— it must not delete Garmin-provider rows just because `external_id IS NOT NULL`
+is also true for Garmin rows.
 
 ## API hardening contract
 

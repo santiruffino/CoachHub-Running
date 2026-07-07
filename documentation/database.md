@@ -30,11 +30,12 @@ The active tenant boundary is `team_id`.
 - `athlete_groups`
 - `trainings`
 - `training_assignments`
-- `activities` (internal UUID + external Strava id; **`load_score`, `suffer_score`**, `avg_hr`, `max_hr`, `average_speed`, `max_speed`, `metadata` JSONB)
+- `activities` (internal UUID + external id; **shared by both providers** — `provider` column (`'strava' | 'garmin'`, default `'strava'`), `external_id` is `'garmin:<id>'` for Garmin rows; **`load_score`, `suffer_score`**, `avg_hr`, `max_hr`, `average_speed`, `max_speed`, `metadata` JSONB. Garmin is treated as the priority source on conflict — see [backend.md](./backend.md#garmin-backend-pipeline-pilot))
 - `activity_streams` (cached streams, 7-day retention)
 - `activity_compliance` (compliance_score, is_violation, violation_details)
 - `activity_backfill_jobs` (async load recomputation, 90-day retention)
-- `strava_connections` (OAuth tokens)
+- `strava_connections` (OAuth tokens, plaintext, RLS-protected)
+- `garmin_connections` (opt-in pilot — `oauth1_token`/`oauth2_token` **encrypted at rest** with AES-256-GCM, `status` (`active`|`needs_reauth`), `last_synced_at`; see [backend.md](./backend.md#garmin-backend-pipeline-pilot))
 - `activity_feedback` (RPE, sensations, comment)
 - `races`, `athlete_races`
 - `invitations`

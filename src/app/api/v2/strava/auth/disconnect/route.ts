@@ -28,6 +28,7 @@ export async function POST(request: NextRequest) {
             .from('activities')
             .delete()
             .eq('user_id', user!.id)
+            .eq('provider', 'strava')
             .not('external_id', 'is', null);
 
         if (activitiesError) {

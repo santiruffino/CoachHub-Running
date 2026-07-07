@@ -105,6 +105,7 @@ export async function POST(
       .update({
         strava_activity_id: bestCandidate.activity_id,
         compliance_status: 'completed',
+        completed: true,
         link_status: 'manually_linked',
         updated_at: new Date().toISOString(),
       })

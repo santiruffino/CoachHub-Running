@@ -3,6 +3,7 @@ import { createServiceRoleClient } from '@/lib/supabase/server';
 import { createRequestLogger, withRequestId } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
 import { syncStravaActivities } from '@/lib/strava/sync-activities';
+import { secureCompare } from '@/lib/api/secure-compare';
 
 export const maxDuration = 60;
 
@@ -91,7 +92,7 @@ export async function GET(request: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
   const authHeader = request.headers.get('authorization');
 
-  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+  if (!cronSecret || !secureCompare(authHeader, `Bearer ${cronSecret}`)) {
     logger.warn('strava_backfill_cron.unauthorized');
     return respond(apiError('AUTH_UNAUTHORIZED'), { status: 401 });
   }

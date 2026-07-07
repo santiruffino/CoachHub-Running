@@ -96,6 +96,10 @@ STRAVA_WEBHOOK_SHARED_SECRET=
 STRAVA_WEBHOOK_RATE_LIMIT_WINDOW_MS=60000
 STRAVA_WEBHOOK_RATE_LIMIT_MAX_REQUESTS=60
 
+# Garmin (opt-in pilot, gated by profiles.garmin_pilot_enabled)
+# 32 bytes, base64 or hex — encrypts stored Garmin session tokens at rest.
+GARMIN_TOKEN_ENC_KEY=
+
 # Logging
 LOG_LEVEL=debug
 

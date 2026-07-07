@@ -4,6 +4,7 @@ import { createRequestLogger, withRequestId } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
 import { isGarminConfigured } from '@/lib/garmin/push-workout';
 import { syncGarminActivitiesForUser } from '@/lib/garmin/sync-activities';
+import { secureCompare } from '@/lib/api/secure-compare';
 
 // Node runtime: the Garmin client needs full Node. Bounded to Vercel's limit.
 export const runtime = 'nodejs';
@@ -24,7 +25,7 @@ export async function GET(request: NextRequest) {
 
     const cronSecret = process.env.CRON_SECRET;
     const authHeader = request.headers.get('authorization');
-    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+    if (!cronSecret || !secureCompare(authHeader, `Bearer ${cronSecret}`)) {
         logger.warn('garmin_backfill_cron.unauthorized');
         return respond(apiError('AUTH_UNAUTHORIZED'), { status: 401 });
     }
@@ -51,7 +52,7 @@ export async function GET(request: NextRequest) {
 
         let processed = 0;
         let inserted = 0;
-        let duplicates = 0;
+        let replacedDuplicates = 0;
         let reauth = 0;
         let errors = 0;
 
@@ -64,13 +65,13 @@ export async function GET(request: NextRequest) {
             );
             processed += 1;
             inserted += result.inserted;
-            duplicates += result.skippedDuplicates;
+            replacedDuplicates += result.replacedDuplicates;
             if (result.status === 'needs_reauth') reauth += 1;
             if (result.status === 'error') errors += 1;
         }
 
-        logger.info('garmin_backfill_cron.completed', { processed, inserted, duplicates, reauth, errors });
-        return respond({ success: true, processed, inserted, duplicates, reauth, errors });
+        logger.info('garmin_backfill_cron.completed', { processed, inserted, replacedDuplicates, reauth, errors });
+        return respond({ success: true, processed, inserted, replacedDuplicates, reauth, errors });
     } catch (err) {
         logger.error('garmin_backfill_cron.unhandled', { error: String(err) });
         return respond(apiError('INTERNAL_SERVER_ERROR'), { status: 500 });

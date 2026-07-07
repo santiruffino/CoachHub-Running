@@ -113,6 +113,7 @@ Deno.serve(async (req) => {
           .from('activities')
           .delete()
           .eq('user_id', userId)
+          .eq('provider', 'strava')
           .not('external_id', 'is', null)
 
         if (deleteActivitiesError) throw deleteActivitiesError
@@ -248,7 +249,14 @@ Deno.serve(async (req) => {
       const sufferScore = typeof activity.suffer_score === 'number' ? activity.suffer_score : null
       const loadScore = estimateLoadScore(activity)
 
-      // 4. Persist to activities table
+      // 4. Persist to activities table.
+      // Note: the matching engine below only runs on this Strava path (Garmin sync does
+      // not match assignments), so we intentionally do NOT skip persisting here even if
+      // the athlete also has a Garmin connection. If a Garmin copy of this same workout
+      // shows up later, the daily garmin-backfill job deletes this Strava row and
+      // repoints any training_assignments that reference it at the Garmin activity
+      // (see syncGarminActivitiesForUser in src/lib/garmin/sync-activities.ts), so the
+      // match made here survives the provider swap.
       const { data: upsertData, error: insertError } = await supabase
         .from('activities')
         .upsert({
@@ -382,6 +390,7 @@ Deno.serve(async (req) => {
                 .update({
                   strava_activity_id: upsertData.id,
                   compliance_status: 'completed',
+                  completed: true,
                   link_status: 'auto_linked',
                   updated_at: new Date().toISOString()
                 })

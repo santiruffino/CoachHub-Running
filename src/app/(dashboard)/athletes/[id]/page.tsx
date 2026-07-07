@@ -24,12 +24,13 @@ export default async function AthleteDetailPage({ params }: { params: Promise<{ 
     }
 
     // Use service role client to bypass RLS for cross-user reads (coach viewing athlete data).
-    // Auth is already verified above; access control is enforced at the API route level.
+    // Auth is verified above; team-scoped authorization is enforced below before any data
+    // is handed to the client (self, or COACH/ADMIN sharing the athlete's team_id).
     const serviceSupabase = createServiceRoleClient();
 
     // Parallel fetch initial data
     const [currentProfileRes, detailsRes, activitiesRes, calendarRes, racesRes] = await Promise.allSettled([
-        serviceSupabase.from('profiles').select('role').eq('id', user.id).single(),
+        serviceSupabase.from('profiles').select('role, team_id').eq('id', user.id).single(),
         serviceSupabase.from('profiles').select('*, athleteProfile:athlete_profiles(*)').eq('id', id).single(),
         serviceSupabase.from('activities').select('*').eq('user_id', id).order('start_date', { ascending: false }).limit(50),
         serviceSupabase.from('training_assignments').select(`
@@ -47,11 +48,24 @@ export default async function AthleteDetailPage({ params }: { params: Promise<{ 
     }
 
     const currentProfileRole = currentProfileRes.status === 'fulfilled' ? currentProfileRes.value.data?.role : null;
+    const currentProfileTeamId = currentProfileRes.status === 'fulfilled' ? currentProfileRes.value.data?.team_id : null;
     const athlete = detailsRes.value.data;
+
+    // Same team-scoped authorization as GET /api/v2/users/[id]/details: self, or
+    // COACH/ADMIN whose team_id matches the target athlete's team_id.
+    const isSelf = user.id === id;
+    const isSameTeamStaff =
+        (currentProfileRole === 'COACH' || currentProfileRole === 'ADMIN') &&
+        Boolean(currentProfileTeamId) &&
+        currentProfileTeamId === athlete.team_id;
+
+    if (!isSelf && !isSameTeamStaff) {
+        redirect('/athletes');
+    }
     const activities = activitiesRes.status === 'fulfilled' ? activitiesRes.value.data || [] : [];
     const assignments = calendarRes.status === 'fulfilled' ? calendarRes.value.data || [] : [];
     const races = racesRes.status === 'fulfilled' ? racesRes.value.data || [] : [];
-    const canAccessChat = user.id === id || currentProfileRole === 'COACH' || currentProfileRole === 'ADMIN';
+    const canAccessChat = isSelf || isSameTeamStaff;
 
     // Map to camelCase as expected by client component
     const mappedAthlete: AthleteDetails = {

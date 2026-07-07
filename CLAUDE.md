@@ -60,7 +60,8 @@ Bootstrap the first admin/coach: `npx tsx scripts/create-admin.ts` (or
 - **Service role**: `createServiceRoleClient()` (env `SUPABASE_SECRET_KEY`) bypasses
   RLS — only use it *after* an explicit authorization check, never client-side.
 - **Activity identity**: v2 activity routes are **UUID-first** (`activities.id`);
-  `activities.external_id` maps to Strava.
+  `activities.external_id` maps to Strava or Garmin (`activities.provider`,
+  see Gotchas below).
 - **Error shape**: v2 routes return `apiError()` → `{ success:false, code, error, message }`.
 - **Logging**: `createRequestLogger(route, request)` → structured JSON with
   auto-redaction of secrets. Use dotted event names. Don't `console.log`.
@@ -83,6 +84,15 @@ Bootstrap the first admin/coach: `npx tsx scripts/create-admin.ts` (or
   (`vercel.json`). Cron routes require `Authorization: Bearer $CRON_SECRET`.
 - Two documentation folders exist and overlap — see `documentation/README.md` for
   the map and which file is canonical for each topic.
+- **Garmin is an opt-in pilot** (gated by `profiles.garmin_pilot_enabled`) that
+  shares the `activities` table with Strava, distinguished by `provider`
+  (`'strava' | 'garmin'`). Garmin is treated as the priority source: on overlap
+  the Strava row is deleted and any `training_assignments` referencing it are
+  repointed at the Garmin row first (`syncGarminActivitiesForUser` in
+  `src/lib/garmin/sync-activities.ts`). Any code that bulk-deletes a user's
+  activities (Strava disconnect, Strava deauth webhook) must filter
+  `provider='strava'` — don't rely on `external_id IS NOT NULL` alone, Garmin
+  rows have it set too. See `documentation/backend.md#garmin-backend-pipeline-pilot`.
 
 ## Documentation
 

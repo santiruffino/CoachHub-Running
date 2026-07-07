@@ -5,6 +5,7 @@ import { evaluateAthleteAlerts, AthleteAlertType } from '@/lib/alerts/evaluate-a
 import { createNotification, NotificationCategory } from '@/lib/notifications/create-notification';
 import { createRequestLogger, withRequestId } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
+import { secureCompare } from '@/lib/api/secure-compare';
 
 const ALERT_TYPE_TO_CATEGORY: Record<AthleteAlertType, NotificationCategory> = {
   RPE_MISMATCH: 'rpe_mismatch',
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest) {
     const sharedSecret = process.env.STRAVA_WEBHOOK_SHARED_SECRET;
     const providedSecret = request.headers.get('x-webhook-secret');
 
-    if (!sharedSecret || providedSecret !== sharedSecret) {
+    if (!sharedSecret || !secureCompare(providedSecret, sharedSecret)) {
       logger.warn('evaluate_alerts.unauthorized');
       return respond(apiError('AUTH_UNAUTHORIZED'), { status: 401 });
     }

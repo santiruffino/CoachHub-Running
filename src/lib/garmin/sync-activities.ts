@@ -33,7 +33,7 @@ export interface GarminSyncResult {
     userId: string;
     fetched: number;
     inserted: number;
-    skippedDuplicates: number;
+    replacedDuplicates: number;
     status: 'ok' | 'needs_reauth' | 'error';
     error?: string;
 }
@@ -93,16 +93,16 @@ export async function syncGarminActivitiesForUser(
                 .update({ status: 'needs_reauth', updated_at: new Date().toISOString() })
                 .eq('user_id', userId);
             logger.warn('garmin.sync.needs_reauth', { userId });
-            return { userId, fetched: 0, inserted: 0, skippedDuplicates: 0, status: 'needs_reauth', error: message };
+            return { userId, fetched: 0, inserted: 0, replacedDuplicates: 0, status: 'needs_reauth', error: message };
         }
         logger.error('garmin.sync.fetch_failed', { userId, error: message });
         Sentry.captureException(error, { tags: { feature: 'garmin.sync' } });
-        return { userId, fetched: 0, inserted: 0, skippedDuplicates: 0, status: 'error', error: message };
+        return { userId, fetched: 0, inserted: 0, replacedDuplicates: 0, status: 'error', error: message };
     }
 
     if (!activities.length) {
         await touchLastSynced(service, userId, gc);
-        return { userId, fetched: 0, inserted: 0, skippedDuplicates: 0, status: 'ok' };
+        return { userId, fetched: 0, inserted: 0, replacedDuplicates: 0, status: 'ok' };
     }
 
     // Load athlete profile once for load estimation.
@@ -135,17 +135,21 @@ export async function syncGarminActivitiesForUser(
     }
 
     let replacedDuplicates = 0;
-    const stravaIdsToDelete = new Set<string>();
+    // Per-Garmin-activity list of Strava ids it replaces, keyed by external_id
+    // (not a flat set) so each Garmin row can be matched back to its own
+    // replacement targets once we know the Garmin rows' real ids.
+    const stravaMatchesByExternalId = new Map<string, string[]>();
     const rows = [];
     for (const activity of activities) {
         const startIso = toIso(activity.startTimeGMT) || toIso(activity.startTimeLocal);
         if (!startIso) continue;
         const startMs = Date.parse(startIso);
         const distance = activity.distance || 0;
+        const externalId = `garmin:${activity.activityId}`;
 
         const matchingStravaIds = getMatchingStravaRowIds(startMs, distance, stravaRows);
         if (matchingStravaIds.length > 0) {
-            matchingStravaIds.forEach((id) => stravaIdsToDelete.add(id));
+            stravaMatchesByExternalId.set(externalId, matchingStravaIds);
             replacedDuplicates += matchingStravaIds.length;
         }
 
@@ -153,7 +157,7 @@ export async function syncGarminActivitiesForUser(
         rows.push({
             user_id: userId,
             provider: 'garmin',
-            external_id: `garmin:${activity.activityId}`,
+            external_id: externalId,
             title: activity.activityName,
             type: activity.activityType?.typeKey ?? 'other',
             distance,
@@ -177,13 +181,51 @@ export async function syncGarminActivitiesForUser(
     }
 
     let inserted = 0;
+    let upsertedRows: { id: string; external_id: string }[] = [];
     if (rows.length) {
-        const { error } = await service.from('activities').upsert(rows, { onConflict: 'user_id,external_id' });
+        const { data, error } = await service
+            .from('activities')
+            .upsert(rows, { onConflict: 'user_id,external_id' })
+            .select('id, external_id');
         if (error) {
             logger.error('garmin.sync.upsert_failed', { userId, error });
-            return { userId, fetched: activities.length, inserted: 0, skippedDuplicates: replacedDuplicates, status: 'error', error: error.message };
+            return { userId, fetched: activities.length, inserted: 0, replacedDuplicates, status: 'error', error: error.message };
         }
         inserted = rows.length;
+        upsertedRows = (data ?? []) as { id: string; external_id: string }[];
+    }
+
+    // Before deleting the superseded Strava rows, repoint any training_assignments
+    // that reference them at the new Garmin activity, so a previously matched/completed
+    // assignment doesn't get its strava_activity_id nulled out (ON DELETE SET NULL) or
+    // silently flip back to unlinked once the old Strava row is gone.
+    const stravaIdsToDelete = new Set<string>();
+    if (stravaMatchesByExternalId.size > 0 && upsertedRows.length > 0) {
+        const garminIdByExternalId = new Map(upsertedRows.map((r) => [r.external_id, r.id]));
+
+        for (const [externalId, matchingStravaIds] of stravaMatchesByExternalId) {
+            matchingStravaIds.forEach((id) => stravaIdsToDelete.add(id));
+
+            const garminId = garminIdByExternalId.get(externalId);
+            if (!garminId) continue;
+
+            const { error: relinkError } = await service
+                .from('training_assignments')
+                .update({ strava_activity_id: garminId, updated_at: new Date().toISOString() })
+                .in('strava_activity_id', matchingStravaIds);
+
+            if (relinkError) {
+                logger.error('garmin.sync.relink_assignments_failed', { userId, error: relinkError.message, externalId });
+                return {
+                    userId,
+                    fetched: activities.length,
+                    inserted,
+                    replacedDuplicates,
+                    status: 'error',
+                    error: relinkError.message,
+                };
+            }
+        }
     }
 
     if (stravaIdsToDelete.size > 0) {
@@ -198,7 +240,7 @@ export async function syncGarminActivitiesForUser(
                 userId,
                 fetched: activities.length,
                 inserted,
-                skippedDuplicates: replacedDuplicates,
+                replacedDuplicates,
                 status: 'error',
                 error: deleteError.message,
             };
@@ -206,8 +248,8 @@ export async function syncGarminActivitiesForUser(
     }
 
     await touchLastSynced(service, userId, gc);
-    logger.info('garmin.sync.done', { userId, fetched: activities.length, inserted, skippedDuplicates: replacedDuplicates });
-    return { userId, fetched: activities.length, inserted, skippedDuplicates: replacedDuplicates, status: 'ok' };
+    logger.info('garmin.sync.done', { userId, fetched: activities.length, inserted, replacedDuplicates });
+    return { userId, fetched: activities.length, inserted, replacedDuplicates, status: 'ok' };
 }
 
 async function touchLastSynced(service: ServiceClient, userId: string, gc: ReturnType<typeof restoreSession>): Promise<void> {

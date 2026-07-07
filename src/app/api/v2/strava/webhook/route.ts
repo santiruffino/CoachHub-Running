@@ -4,6 +4,7 @@ import * as Sentry from '@sentry/nextjs';
 import { createRequestLogger, withRequestId } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
 import { buildRateLimitKey, consumeRateLimit, getClientIpFromHeaders } from '@/lib/api/rate-limit';
+import { secureCompare } from '@/lib/api/secure-compare';
 
 interface StravaWebhookPayload {
   subscription_id?: number | string;
@@ -49,7 +50,7 @@ export async function GET(req: NextRequest) {
     return new NextResponse('Forbidden', withRequestId({ status: 403 }, requestId));
   }
 
-  if (mode === 'subscribe' && token === verifyToken && challenge) {
+  if (mode === 'subscribe' && secureCompare(token, verifyToken) && challenge) {
     logger.info('strava_webhook.handshake_accepted');
     return NextResponse.json({ 'hub.challenge': challenge }, withRequestId({ status: 200 }, requestId));
   }
@@ -124,7 +125,7 @@ export async function POST(req: NextRequest) {
       return respond(apiError('WEBHOOK_CONFIGURATION_ERROR'), { status: 500 });
     }
     const incomingSubId = payload.subscription_id?.toString();
-    if (incomingSubId !== expectedSubId) {
+    if (!secureCompare(incomingSubId, expectedSubId)) {
       logger.warn('strava_webhook.invalid_subscription_id');
       return respond(apiError('INVALID_SUBSCRIPTION_ID'), { status: 401 });
     }
