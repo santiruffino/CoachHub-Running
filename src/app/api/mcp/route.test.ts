@@ -23,9 +23,9 @@ vi.mock('@/lib/mcp/server', () => ({
 }));
 
 vi.mock('@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js', () => ({
-  WebStandardStreamableHTTPServerTransport: vi.fn().mockImplementation(() => ({
-    handleRequest: mockHandleRequest,
-  })),
+  WebStandardStreamableHTTPServerTransport: vi.fn().mockImplementation(function () {
+    return { handleRequest: mockHandleRequest };
+  }),
 }));
 
 vi.mock('@/lib/supabase/api-helpers', () => ({
