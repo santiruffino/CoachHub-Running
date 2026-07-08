@@ -50,7 +50,7 @@ export function WeeklyLoadChart({ data }: WeeklyLoadChartProps) {
             width={38}
           />
           <Tooltip
-            formatter={(value: number | undefined, name: string | undefined) => [Number(value ?? 0).toFixed(0), name ?? '']}
+            formatter={(value, name) => [Number(value ?? 0).toFixed(0), String(name ?? '')]}
             contentStyle={{
               backgroundColor: 'hsl(var(--card))',
               border: '1px solid hsl(var(--border))',
