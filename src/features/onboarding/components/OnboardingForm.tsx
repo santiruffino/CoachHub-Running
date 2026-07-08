@@ -116,7 +116,7 @@ export default function OnboardingForm() {
 
     if (authLoading || !user) {
         return (
-            <div className="w-full max-w-4xl mx-auto px-6 py-12 space-y-10">
+            <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-12 space-y-10">
                 <Skeleton className="h-10 w-56" />
                 <Skeleton className="h-5 w-80" />
                 <div className="space-y-4 pt-4">
@@ -131,7 +131,7 @@ export default function OnboardingForm() {
     return (
         <div className="min-h-screen flex flex-col">
             <div className="flex-1 overflow-y-auto pb-28">
-                <div className="max-w-4xl mx-auto px-6 md:px-10 pt-12">
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-10 pt-8 sm:pt-12">
                     {/* Back button */}
                     <div className="mb-6">
                         <BackButton href="/dashboard" showLabel />
@@ -141,7 +141,7 @@ export default function OnboardingForm() {
                         <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-endurix-orange mb-3" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                             {t('tag')}
                         </p>
-                        <h1 className="text-3xl md:text-4xl font-light text-endurix-black dark:text-foreground mb-2 uppercase tracking-tight" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>
+                        <h1 className="text-2xl sm:text-3xl md:text-4xl font-light text-endurix-black dark:text-foreground mb-2 uppercase tracking-tight" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>
                             {t('title')}
                         </h1>
                         <p className="text-sm text-muted-foreground max-w-md">
@@ -313,7 +313,7 @@ export default function OnboardingForm() {
 
             {/* ── Sticky bottom action bar ── */}
             <div className="fixed bottom-0 inset-x-0 bg-endurix-paper/95 dark:bg-background/95 backdrop-blur-md border-t border-endurix-black/10 dark:border-border z-50">
-                <div className="max-w-4xl mx-auto px-6 md:px-10 py-4 flex items-center justify-between">
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-10 py-4 flex items-center justify-between">
                     <p className="text-xs text-muted-foreground hidden sm:block">
                         {t('footer')}
                     </p>

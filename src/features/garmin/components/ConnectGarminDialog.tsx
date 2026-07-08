@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, ShieldAlert } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface ConnectGarminDialogProps {
     open: boolean;
@@ -16,12 +17,8 @@ interface ConnectGarminDialogProps {
     error: string | null;
 }
 
-/**
- * Credential + consent form for the (unofficial) Garmin connection. Makes the
- * trade-offs explicit: unofficial integration, credentials used once, 2FA
- * unsupported.
- */
 export function ConnectGarminDialog({ open, onOpenChange, onSubmit, connecting, error }: ConnectGarminDialogProps) {
+    const t = useTranslations('garmin');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [consent, setConsent] = useState(false);
@@ -43,36 +40,33 @@ export function ConnectGarminDialog({ open, onOpenChange, onSubmit, connecting, 
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-md">
                 <DialogHeader>
-                    <DialogTitle>Conectar Garmin</DialogTitle>
+                    <DialogTitle>{t('dialogTitle')}</DialogTitle>
                     <DialogDescription>
-                        Enviá tus entrenamientos de Endurix directo al calendario de tu Garmin.
+                        {t('description')}
                     </DialogDescription>
                 </DialogHeader>
 
                 <Alert className="border-amber-500/30 bg-amber-500/10">
                     <ShieldAlert className="h-4 w-4" />
                     <AlertDescription className="text-xs leading-relaxed">
-                        Esta es una integración <strong>no oficial</strong>. Usamos tus credenciales de
-                        Garmin una sola vez para iniciar sesión y guardamos de forma cifrada únicamente
-                        los tokens de sesión (nunca tu contraseña). Podés desconectarla cuando quieras.
-                        La cuenta <strong>no debe tener 2FA activado</strong> (no está soportado).
+                        {t.rich('disclaimer', { strong: (chunks) => <strong>{chunks}</strong> })}
                     </AlertDescription>
                 </Alert>
 
                 <div className="flex flex-col gap-3 py-1">
                     <div className="flex flex-col gap-1.5">
-                        <Label htmlFor="garmin-email">Email de Garmin</Label>
+                        <Label htmlFor="garmin-email">{t('emailLabel')}</Label>
                         <Input
                             id="garmin-email"
                             type="email"
                             autoComplete="off"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
-                            placeholder="tu@email.com"
+                            placeholder={t('emailPlaceholder')}
                         />
                     </div>
                     <div className="flex flex-col gap-1.5">
-                        <Label htmlFor="garmin-password">Contraseña de Garmin</Label>
+                        <Label htmlFor="garmin-password">{t('passwordLabel')}</Label>
                         <Input
                             id="garmin-password"
                             type="password"
@@ -88,10 +82,7 @@ export function ConnectGarminDialog({ open, onOpenChange, onSubmit, connecting, 
                             checked={consent}
                             onChange={(e) => setConsent(e.target.checked)}
                         />
-                        <span>
-                            Entiendo que es una integración no oficial y autorizo a Endurix a conectarse a
-                            mi cuenta de Garmin para enviar y leer entrenamientos.
-                        </span>
+                        <span>{t('consentText')}</span>
                     </label>
                 </div>
 
@@ -104,10 +95,10 @@ export function ConnectGarminDialog({ open, onOpenChange, onSubmit, connecting, 
 
                 <DialogFooter>
                     <Button variant="outline" onClick={() => onOpenChange(false)} disabled={connecting}>
-                        Cancelar
+                        {t('cancel')}
                     </Button>
                     <Button onClick={handleSubmit} disabled={!canSubmit}>
-                        {connecting ? 'Conectando…' : 'Conectar'}
+                        {connecting ? t('connecting') : t('connect')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

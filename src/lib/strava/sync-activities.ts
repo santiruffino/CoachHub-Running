@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { consumeRateLimit } from '@/lib/api/rate-limit';
 import { estimateLoadFromActivity, type LoadProfileInput } from '@/lib/training/load';
+import { notifyActivitySync } from '@/lib/notifications/activity-sync';
 
 interface StravaActivity {
     id: number;
@@ -321,6 +322,8 @@ export async function syncStravaActivities(
 
     // Upsert into database
     const { inserted, updated } = await upsertActivities(supabase, userId, activities);
+
+    await notifyActivitySync(userId, inserted);
 
     // Calculate pages used (approximate)
     const pages = Math.ceil(activities.length / 200) || 1;

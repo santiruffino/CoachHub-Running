@@ -11,6 +11,7 @@ import * as Sentry from '@sentry/nextjs';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { createLogger } from '@/lib/logger';
 import { estimateLoadFromActivity } from '@/lib/training/load';
+import { notifyActivitySync } from '@/lib/notifications/activity-sync';
 import {
     GarminAuthError,
     currentTokens,
@@ -246,6 +247,8 @@ export async function syncGarminActivitiesForUser(
             };
         }
     }
+
+    await notifyActivitySync(userId, inserted);
 
     await touchLastSynced(service, userId, gc);
     logger.info('garmin.sync.done', { userId, fetched: activities.length, inserted, replacedDuplicates });

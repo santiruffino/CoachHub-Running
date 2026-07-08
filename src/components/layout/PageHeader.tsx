@@ -29,7 +29,7 @@ export interface PageHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const titleSizeMap = {
     md: 'text-2xl sm:text-3xl',
-    lg: 'text-4xl lg:text-5xl',
+    lg: 'text-2xl sm:text-4xl lg:text-5xl',
 } as const;
 
 /**

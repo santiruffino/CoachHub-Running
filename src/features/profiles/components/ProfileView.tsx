@@ -24,6 +24,7 @@ interface ProfileViewProps {
 export function ProfileView({ initialProfile, user }: ProfileViewProps) {
     const t = useTranslations('profile.page');
     const tCommon = useTranslations('common');
+    const tGarmin = useTranslations('garmin');
     const [profile] = useState<ProfileDetails>(initialProfile);
     const garminPilotEnabled = Boolean(profile.garmin_pilot_enabled);
     const [debugSection, setDebugSection] = useState<GarminDebugSection>('status');
@@ -54,7 +55,7 @@ export function ProfileView({ initialProfile, user }: ProfileViewProps) {
                 }
             } catch (error) {
                 if (!cancelled) {
-                    setDebugError(error instanceof Error ? error.message : 'No se pudo cargar el debug de Garmin');
+                    setDebugError(error instanceof Error ? error.message : tGarmin('debugLoadError'));
                 }
             } finally {
                 if (!cancelled) {
@@ -77,7 +78,7 @@ export function ProfileView({ initialProfile, user }: ProfileViewProps) {
             const data = await garminService.getDebugInfo(debugSection);
             setDebugPayload(data);
         } catch (error) {
-            setDebugError(error instanceof Error ? error.message : 'No se pudo cargar el debug de Garmin');
+            setDebugError(error instanceof Error ? error.message : tGarmin('debugLoadError'));
         } finally {
             setDebugLoading(false);
         }
@@ -95,7 +96,7 @@ export function ProfileView({ initialProfile, user }: ProfileViewProps) {
     return (
         <div className="flex flex-col">
             <div className="flex-1 overflow-y-auto pb-28">
-                <div className="max-w-6xl mx-auto px-6 md:px-10 pt-8">
+                <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-10 pt-6 sm:pt-8">
 
                     <div className="mb-4">
                         <BackButton showLabel />
@@ -155,7 +156,7 @@ export function ProfileView({ initialProfile, user }: ProfileViewProps) {
                             description="Select the Garmin slice you want to inspect."
                         >
                             <FieldGroup className="overflow-hidden rounded-xl p-0 space-y-0">
-                                <div className="flex items-center justify-between gap-3 border-b border-endurix-black/10 dark:border-border px-4 py-3">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-endurix-black/10 dark:border-border px-4 py-3">
                                     <div>
                                         <p
                                             className="text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground"
@@ -225,7 +226,7 @@ export function ProfileView({ initialProfile, user }: ProfileViewProps) {
             </div>
 
             <div className="fixed bottom-16 md:bottom-0 inset-x-0 bg-endurix-paper/90 dark:bg-background/90 backdrop-blur-md border-t border-endurix-black/10 dark:border-border z-40">
-                <div className="max-w-6xl mx-auto px-6 md:px-10 py-4 flex items-center justify-between">
+                <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-10 py-4 flex items-center justify-between">
                     <p className="text-xs text-muted-foreground hidden sm:block">
                         {t('saveHint')}
                     </p>

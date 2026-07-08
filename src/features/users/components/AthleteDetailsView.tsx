@@ -326,7 +326,7 @@ export function AthleteDetailsView({
                         </div>
                         <div>
                             <h1
-                                className="text-3xl font-medium text-endurix-black dark:text-foreground tracking-tight uppercase"
+                                className="text-xl sm:text-3xl font-medium text-endurix-black dark:text-foreground tracking-tight uppercase"
                                 style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
                             >
                                 {athlete.name || athlete.email}
@@ -424,7 +424,7 @@ export function AthleteDetailsView({
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 divide-x divide-y lg:divide-y-0 divide-endurix-black/10 dark:divide-white/10">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 divide-x divide-y sm:divide-y-0 divide-endurix-black/10 dark:divide-white/10">
                             {[
                                 { label: t("athletes.detail.height"), value: athlete.athleteProfile?.height, unit: tUnits('cm') },
                                 { label: t("athletes.detail.weight"), value: athlete.athleteProfile?.weight, unit: tUnits('kg') },
@@ -620,7 +620,7 @@ export function AthleteDetailsView({
                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                         <div className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border overflow-hidden p-6">
                             <SectionHeader
-                                title="Zonas de frecuencia cardiaca"
+                                title={tAthlete('hrZonesTitle')}
                                 size="sm"
                             />
                             <HeartRateZones zones={athlete.athleteProfile?.hrZones} />
@@ -629,7 +629,7 @@ export function AthleteDetailsView({
                         <div className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border overflow-hidden p-6">
                             <SectionHeader
                                 eyebrow="VAM"
-                                title="Zonas de ritmo"
+                                title={tAthlete('paceZonesTitle')}
                                 size="sm"
                             />
                             <PaceZones vam={athlete.athleteProfile?.vam} />

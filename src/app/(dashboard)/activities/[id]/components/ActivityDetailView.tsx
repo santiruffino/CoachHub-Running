@@ -1,7 +1,7 @@
 'use client';
 import { appLogger } from '@/lib/app-logger';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslations, useFormatter } from 'next-intl';
 import api from '@/lib/axios';
 import { Slider } from '@/components/ui/slider';
@@ -17,7 +17,9 @@ import {
 import { ZoneComplianceCard } from '@/app/(dashboard)/activities/components/ZoneComplianceCard';
 import { ActivityChartsTabs } from '@/app/(dashboard)/activities/components/ActivityChartsTabs';
 import { HrZonesPieChart } from '@/app/(dashboard)/activities/components/HrZonesPieChart';
-import { flattenWorkout, matchLapsToWorkout, MatchedLap, RawBlock } from '@/features/trainings/utils/workoutMatcher';
+import { flattenWorkout, matchLapsToWorkout, MatchedLap, RawBlock, FlatStep } from '@/features/trainings/utils/workoutMatcher';
+import { computeExecutionSummary } from '@/features/trainings/utils/executionSummary';
+import { ExecutionSummaryCard } from '@/app/(dashboard)/activities/[id]/components/ExecutionSummaryCard';
 import { LinkWorkoutModal } from '@/features/trainings/components/LinkWorkoutModal';
 import { ActivityDetail } from '@/interfaces/activity';
 import type { HeartRateZones } from '@/interfaces/athlete';
@@ -45,6 +47,7 @@ interface WorkoutAssignment {
     };
     training?: {
         type?: string;
+        blocks?: RawBlock[];
     };
 }
 
@@ -76,6 +79,7 @@ export function ActivityDetailView({
     const [feedbackSaving, setFeedbackSaving] = useState(false);
 
     const [matchedLaps, setMatchedLaps] = useState<MatchedLap[]>([]);
+    const [flatSteps, setFlatSteps] = useState<FlatStep[]>([]);
     const [workoutAssignment, setWorkoutAssignment] = useState<WorkoutAssignment | null>(null);
     const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
     const { alertState, showAlert, closeAlert } = useAlertDialog();
@@ -83,33 +87,37 @@ export function ActivityDetailView({
     const internalId = activity._internalId || id;
     const isAthlete = activity._viewerIsOwner || false;
 
-    // Fetch full activity from API if laps are missing (Strava data with laps)
+    // Fetch full activity from Strava when laps or best efforts are missing.
+    // best_efforts powers the athlete PR celebration; it's Strava-only (Garmin
+    // activities simply won't have it, and the fetch degrades silently).
     useEffect(() => {
-        if (activity.laps && activity.laps.length > 0) return;
+        const hasLaps = !!(activity.laps && activity.laps.length > 0);
+        const hasBestEfforts = activity.best_efforts !== undefined;
+        if (hasLaps && hasBestEfforts) return;
 
         const fetchFullActivity = async () => {
             try {
                 const response = await api.get(`/v2/activities/${internalId}`);
                 const fullActivity = response.data;
-                if (fullActivity?.laps && fullActivity.laps.length > 0) {
-                    setActivity(prev => ({
-                        ...prev,
-                        laps: fullActivity.laps,
-                        splits_metric: fullActivity.splits_metric ?? prev.splits_metric,
-                        splits_standard: fullActivity.splits_standard ?? prev.splits_standard,
-                    }));
-                }
+                setActivity(prev => ({
+                    ...prev,
+                    laps: (fullActivity?.laps && fullActivity.laps.length > 0) ? fullActivity.laps : prev.laps,
+                    splits_metric: fullActivity?.splits_metric ?? prev.splits_metric,
+                    splits_standard: fullActivity?.splits_standard ?? prev.splits_standard,
+                    // Coerce to [] so we don't re-fetch forever when Strava returns none.
+                    best_efforts: fullActivity?.best_efforts ?? prev.best_efforts ?? [],
+                }));
             } catch (error) {
                 appLogger.error('Failed to fetch full activity:', error);
             }
         };
 
         fetchFullActivity();
-    }, [internalId, activity.laps]);
+    }, [internalId, activity.laps, activity.best_efforts]);
 
     // Workout matching logic
     useEffect(() => {
-        if (!activity || !activity.laps || activity.laps.length === 0) return;
+        if (!activity) return;
 
         const activityDate = activity.start_date.split('T')[0];
         const matchingAssignment = initialAssignments.find((a: WorkoutAssignment) => {
@@ -120,18 +128,35 @@ export function ActivityDetailView({
             return dateValue?.split('T')[0] === activityDate;
         });
 
-        if (matchingAssignment?.workout?.blocks) {
-            setWorkoutAssignment(matchingAssignment);
-            const flatSteps = flattenWorkout(matchingAssignment.workout.blocks);
+        setWorkoutAssignment(matchingAssignment ?? null);
+
+        // Blocks live on `training.blocks` from the page query; older shapes used
+        // `workout.blocks`. Support both so the match (and the intervals tab) works.
+        const blocks = matchingAssignment?.workout?.blocks ?? matchingAssignment?.training?.blocks;
+        if (matchingAssignment && blocks && activity.laps && activity.laps.length > 0) {
+            const steps = flattenWorkout(blocks);
             const matched = matchLapsToWorkout(
                 activity.laps,
-                flatSteps,
+                steps,
                 activity.sport_type,
                 matchingAssignment.training?.type || 'RUNNING'
             );
+            setFlatSteps(steps);
             setMatchedLaps(matched);
+            return;
         }
+
+        setFlatSteps([]);
+        setMatchedLaps([]);
     }, [activity, initialAssignments]);
+
+    const executionSummary = useMemo(() => computeExecutionSummary({
+        laps: activity.laps,
+        matchedLaps,
+        flatSteps,
+        bestEfforts: activity.best_efforts,
+        sessionType: workoutAssignment?.training?.type,
+    }), [activity.laps, activity.best_efforts, matchedLaps, flatSteps, workoutAssignment]);
 
     const handleSaveFeedback = async () => {
         try {
@@ -250,8 +275,8 @@ export function ActivityDetailView({
         <div className="min-h-screen bg-endurix-paper dark:bg-background">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-5">
                 {/* Header */}
-                <div className="flex items-start justify-between">
-                    <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                    <div className="space-y-4 min-w-0">
                         <div className="flex items-center gap-3">
                             <BackButton label={t('actions.goBack')} showLabel />
                             <div className="w-10 h-10 bg-endurix-orange flex items-center justify-center">
@@ -267,7 +292,7 @@ export function ActivityDetailView({
                         </div>
 
                         <h1
-                            className="font-bold text-endurix-black dark:text-foreground text-4xl lg:text-5xl xl:text-6xl leading-[1.05] tracking-tight uppercase"
+                            className="font-bold text-endurix-black dark:text-foreground text-2xl sm:text-3xl lg:text-5xl xl:text-6xl leading-[1.05] tracking-tight uppercase"
                             style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
                         >
                             {activity.name}
@@ -328,7 +353,7 @@ export function ActivityDetailView({
                 {/* Metrics + Compliance */}
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-5 items-stretch">
                     <article className="border border-endurix-black/12 dark:border-border bg-white dark:bg-card p-4">
-                        <div className="grid w-full grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="grid w-full grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
                             {!isWeightTraining(activity.sport_type) && (
                                 <div className="text-left">
                                     <span
@@ -339,7 +364,7 @@ export function ActivityDetailView({
                                     </span>
                                     <div className="flex items-baseline gap-1.5 mt-2">
                                         <span
-                                            className="text-4xl font-bold text-endurix-black dark:text-foreground leading-none"
+                                            className="text-2xl sm:text-4xl font-bold text-endurix-black dark:text-foreground leading-none"
                                             style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
                                         >
                                             {distanceKm}
@@ -364,7 +389,7 @@ export function ActivityDetailView({
                                     </span>
                                     <div className="flex items-baseline gap-1.5 mt-2">
                                         <span
-                                            className="text-4xl font-bold text-endurix-black dark:text-foreground leading-none"
+                                            className="text-2xl sm:text-4xl font-bold text-endurix-black dark:text-foreground leading-none"
                                             style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
                                         >
                                             {isRunning(activity.sport_type) ? avgPace : formatSpeed(activity.average_speed)}
@@ -388,7 +413,7 @@ export function ActivityDetailView({
                                 </span>
                                 <div className="mt-2">
                                     <span
-                                        className="text-4xl font-bold text-endurix-black dark:text-foreground leading-none"
+                                        className="text-2xl sm:text-4xl font-bold text-endurix-black dark:text-foreground leading-none"
                                         style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
                                     >
                                         {formatTime(activity.moving_time)}
@@ -406,7 +431,7 @@ export function ActivityDetailView({
                                     </span>
                                     <div className="flex items-baseline gap-1.5 mt-2">
                                         <span
-                                            className="text-4xl font-bold text-endurix-black dark:text-foreground leading-none"
+                                            className="text-2xl sm:text-4xl font-bold text-endurix-black dark:text-foreground leading-none"
                                             style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
                                         >
                                             +{activity.total_elevation_gain.toFixed(0)}
@@ -431,7 +456,7 @@ export function ActivityDetailView({
                                     </span>
                                     <div className="flex items-baseline gap-1.5 mt-2">
                                         <span
-                                            className="text-4xl font-bold text-endurix-black dark:text-foreground leading-none"
+                                            className="text-2xl sm:text-4xl font-bold text-endurix-black dark:text-foreground leading-none"
                                             style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
                                         >
                                             {activity.average_heartrate.toFixed(0)}
@@ -455,6 +480,11 @@ export function ActivityDetailView({
                     )}
                 </div>
 
+                {/* Execution summary — athlete-facing, always-positive read of the run */}
+                {isAthlete && isRunning(activity.sport_type) && executionSummary.hasContent && (
+                    <ExecutionSummaryCard summary={executionSummary} t={t} />
+                )}
+
                 {/* Feedback */}
                 <article className="border border-endurix-black/12 dark:border-border bg-white dark:bg-card">
                     <div className="px-4 py-2.5 bg-endurix-paper dark:bg-muted border-b border-endurix-black/8 dark:border-border">
@@ -467,7 +497,7 @@ export function ActivityDetailView({
                     </div>
                     <div className="p-6">
                         {isAthlete ? (
-                            <div className="flex flex-col sm:flex-row gap-6">
+                            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
                                 <div className="flex-1">
                                     <Label
                                         htmlFor="rpe"
@@ -606,7 +636,7 @@ export function ActivityDetailView({
                 {/* Heart Rate Zones - Always visible */}
                 {!isWeightTraining(activity.sport_type) && activity.average_heartrate && heartrateZones?.zones && (
                     <article className="border border-endurix-black/12 dark:border-border bg-white dark:bg-card">
-                        <div className="px-4 py-2.5 bg-endurix-paper dark:bg-muted border-b border-endurix-black/8 dark:border-border flex items-center justify-between">
+                        <div className="px-4 py-2.5 bg-endurix-paper dark:bg-muted border-b border-endurix-black/8 dark:border-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                             <span
                                 className="text-[9px] text-endurix-black/60 dark:text-muted-foreground tracking-widest"
                                 style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}

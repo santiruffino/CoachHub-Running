@@ -1,6 +1,7 @@
 'use client';
 
 import { HeartRateZones as HeartRateZonesType } from '@/interfaces/athlete';
+import { useTranslations } from 'next-intl';
 
 interface HeartRateZonesProps {
     zones: HeartRateZonesType | null | undefined;
@@ -14,13 +15,7 @@ const ZONE_COLORS = [
     'bg-destructive',
 ];
 
-const ZONE_LABELS = [
-    'Z1 — Recuperación',
-    'Z2 — Resistencia',
-    'Z3 — Aeróbico',
-    'Z4 — Umbral',
-    'Z5 — Máximo',
-];
+const ZONE_LABEL_KEYS = ['z1', 'z2', 'z3', 'z4', 'z5'] as const;
 
 function formatZoneRange(zone: { min: number; max: number }, isLastZone: boolean) {
     const openEnded = isLastZone || zone.max <= 0 || zone.max < zone.min;
@@ -33,14 +28,16 @@ function formatZoneRange(zone: { min: number; max: number }, isLastZone: boolean
 }
 
 export function HeartRateZones({ zones }: HeartRateZonesProps) {
+    const t = useTranslations('profile.hrZones');
+
     if (!zones || !zones.zones || zones.zones.length === 0) {
         return (
             <div className="rounded-2xl border border-dashed border-endurix-black/10 dark:border-border bg-white/50 dark:bg-white/5 p-4">
                 <p className="text-sm font-medium text-endurix-black dark:text-foreground">
-                    No hay zonas de FC configuradas.
+                    {t('empty')}
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                    Añade tu FC máxima y de reposo para generarlas desde Strava.
+                    {t('emptyHelp')}
                 </p>
             </div>
         );
@@ -52,14 +49,14 @@ export function HeartRateZones({ zones }: HeartRateZonesProps) {
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                         <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                            Zonas de frecuencia cardíaca
+                            {t('title')}
                         </p>
                         <p className="mt-1 text-sm text-endurix-black dark:text-foreground">
-                            {zones.custom_zones ? 'Usando zonas personalizadas de Strava.' : 'Usando las zonas estándar de Strava.'}
+                            {zones.custom_zones ? t('customSource') : t('standardSource')}
                         </p>
                     </div>
                     <span className="rounded-full border border-endurix-black/10 dark:border-border bg-white/70 dark:bg-card px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                        {zones.zones.length} zonas
+                        {t('zoneCount', { count: zones.zones.length })}
                     </span>
                 </div>
             </div>
@@ -67,7 +64,8 @@ export function HeartRateZones({ zones }: HeartRateZonesProps) {
             <div className="space-y-2">
                 {zones.zones.map((zone, index) => {
                     const color = ZONE_COLORS[index] ?? 'bg-muted-foreground';
-                    const label = ZONE_LABELS[index] ?? `Z${index + 1}`;
+                    const labelKey = ZONE_LABEL_KEYS[index];
+                    const label = labelKey ? t(`labels.${labelKey}`) : `Z${index + 1}`;
                     const range = formatZoneRange(zone, index === zones.zones.length - 1);
 
                     return (

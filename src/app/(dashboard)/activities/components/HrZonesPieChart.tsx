@@ -293,8 +293,8 @@ export function HrZonesPieChart({ laps, splits, zones, zoneNames, averageHr, tot
         </div>
       </div>
 
-      <div className="flex items-center gap-8">
-        <div className="h-[280px] w-[280px] shrink-0">
+      <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-8">
+        <div className="h-[220px] w-[220px] sm:h-[280px] sm:w-[280px] shrink-0">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie

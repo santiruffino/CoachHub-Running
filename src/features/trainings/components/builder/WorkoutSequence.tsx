@@ -67,7 +67,7 @@ export function WorkoutSequence({
             return `${t('vamZone')} ${block.target.min}`;
         }
         if (block.target.type === 'power_zone') {
-            return `Zona ${block.target.min} (Potencia)`;
+            return t(`powerZones.${block.target.min}`);
         }
         if (block.target.type === 'ftp_percent') {
             const min = block.target.min;
@@ -202,8 +202,8 @@ export function WorkoutSequence({
 
                         if (isGroupSelected) {
                             return (
-                                <div key={item.groupId} className="flex gap-6 relative ml-12">
-                                    <div className="w-12 text-xs font-semibold text-[#8b9bb4] absolute -left-[72px] top-6 text-right">
+                                <div key={item.groupId} className="flex gap-3 sm:gap-6 relative ml-0 sm:ml-12">
+                                    <div className="hidden sm:block w-12 text-xs font-semibold text-[#8b9bb4] absolute -left-[72px] top-6 text-right">
                                         {currentStartTimeStr}
                                     </div>
                                     <div className="flex-1">
@@ -225,8 +225,8 @@ export function WorkoutSequence({
                         }
 
                         return (
-                            <div key={item.groupId} className="flex gap-6 relative ml-12">
-                                <div className="w-12 text-xs font-semibold text-[#8b9bb4] absolute -left-[72px] top-6 text-right">
+                            <div key={item.groupId} className="flex gap-3 sm:gap-6 relative ml-0 sm:ml-12">
+                                <div className="hidden sm:block w-12 text-xs font-semibold text-[#8b9bb4] absolute -left-[72px] top-6 text-right">
                                     {currentStartTimeStr}
                                 </div>
 
@@ -282,7 +282,7 @@ export function WorkoutSequence({
                                                         <div className="w-8 shrink-0 flex items-center justify-center">
                                                             <GripVertical className="text-muted-foreground w-4 h-4 cursor-grab" />
                                                         </div>
-                                                        <div className="grid grid-cols-4 w-full items-start gap-4">
+                                                        <div className="grid grid-cols-2 sm:grid-cols-4 w-full items-start gap-2 sm:gap-4">
                                                             <div className="flex flex-col">
                                                                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#8b9bb4] mb-1">{t('stage')}</span>
                                                                 <span className="text-sm font-semibold whitespace-nowrap" style={{ color: getBlockColorClass(block.type) }}>{block.stepName || getBlockLabel(block.type)}</span>
@@ -295,7 +295,7 @@ export function WorkoutSequence({
                                                                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#8b9bb4] mb-1">{t('target')}</span>
                                                                 <span className="text-sm font-semibold text-[#2b3437] dark:text-[#f8f9fa]">{getBlockIntensity(block)}</span>
                                                             </div>
-                                                            <div className="flex flex-col text-right items-end justify-start h-full pr-4">
+                                                            <div className="flex flex-col sm:text-right sm:items-end justify-start h-full sm:pr-4">
                                                                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#8b9bb4] mb-1">{t('notes')}</span>
                                                                 <span className="text-xs text-[#8b9bb4] italic truncate max-w-[120px]">{block.notes || '—'}</span>
                                                             </div>
@@ -319,8 +319,8 @@ export function WorkoutSequence({
 
                     if (isSelected) {
                         return (
-                            <div key={block.id} className="flex gap-6 relative ml-12">
-                                <div className="w-12 text-xs font-semibold text-[#8b9bb4] absolute -left-[72px] top-6 text-right">
+                            <div key={block.id} className="flex gap-3 sm:gap-6 relative ml-0 sm:ml-12">
+                                <div className="hidden sm:block w-12 text-xs font-semibold text-[#8b9bb4] absolute -left-[72px] top-6 text-right">
                                     {currentStartTimeStr}
                                 </div>
                                 <div className="flex-1 w-full">
@@ -348,8 +348,8 @@ export function WorkoutSequence({
                             };
 
                             return (
-                        <div key={block.id} className="flex gap-6 items-center relative ml-12 group">
-                            <div className="w-12 text-xs font-semibold text-[#8b9bb4] absolute -left-[72px] text-right">
+                        <div key={block.id} className="flex gap-3 sm:gap-6 items-center relative ml-0 sm:ml-12 group">
+                            <div className="hidden sm:block w-12 text-xs font-semibold text-[#8b9bb4] absolute -left-[72px] text-right">
                                 {currentStartTimeStr}
                             </div>
 
@@ -367,7 +367,7 @@ export function WorkoutSequence({
                                     <div className="w-8 shrink-0 flex items-center justify-center">
                                         <GripVertical className="text-muted-foreground w-4 h-4 cursor-grab" />
                                     </div>
-                                    <div className="grid grid-cols-4 w-full items-start gap-4">
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 w-full items-start gap-2 sm:gap-4">
                                         <div className="flex flex-col">
                                             <span className="text-[10px] font-bold uppercase tracking-wider text-[#8b9bb4] mb-1">{t('stage')}</span>
                                             <span className="text-sm font-semibold whitespace-nowrap" style={{ color: getBlockColorClass(block.type) }}>{block.stepName || getBlockLabel(block.type)}</span>
@@ -380,7 +380,7 @@ export function WorkoutSequence({
                                             <span className="text-[10px] font-bold uppercase tracking-wider text-[#8b9bb4] mb-1">{t('target')}</span>
                                             <span className="text-sm font-semibold text-[#2b3437] dark:text-[#f8f9fa]">{getBlockIntensity(block)}</span>
                                         </div>
-                                        <div className="flex flex-col text-right items-end justify-start h-full pr-4">
+                                        <div className="flex flex-col sm:text-right sm:items-end justify-start h-full sm:pr-4">
                                             <span className="text-[10px] font-bold uppercase tracking-wider text-[#8b9bb4] mb-1">{t('notes')}</span>
                                             <span className="text-xs text-[#8b9bb4] italic truncate max-w-[120px]">{block.notes || '—'}</span>
                                         </div>

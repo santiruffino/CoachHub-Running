@@ -37,7 +37,7 @@ export function AddMemberModal({ groupId, currentMemberIds, open, onClose, onAdd
                     const available = (res.data as AthleteOption[]).filter((athlete) => !currentMemberIds.includes(athlete.id));
                     setAthletes(available);
                 })
-                .catch(console.error)
+                .catch((error) => appLogger.error('Failed to load available athletes', error))
                 .finally(() => setLoading(false));
         }
     }, [open, currentMemberIds]);

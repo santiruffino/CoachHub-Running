@@ -222,7 +222,7 @@ export function InviteAthleteModal({ open, onClose }: InviteAthleteModalProps) {
                             {bulkEmails.length > 0 && (
                                 <div className="flex items-center gap-2 text-sm text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 p-2">
                                     <Check className="h-4 w-4" />
-                                    <span className="font-mono text-xs uppercase tracking-wider">{bulkEmails.length} correos detectados</span>
+                                    <span className="font-mono text-xs uppercase tracking-wider">{tAthlete('emailsDetected', { count: bulkEmails.length })}</span>
                                 </div>
                             )}
 

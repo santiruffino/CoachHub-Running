@@ -208,19 +208,19 @@ export function StepEditor({
 
     return (
         <div
-            className="bg-white dark:bg-[#1a232c] rounded shadow-[0_4px_12px_rgba(43,52,55,0.04)] p-6 relative overflow-visible mt-2 mb-4 border-l-[3px]"
+            className="bg-white dark:bg-[#1a232c] rounded shadow-[0_4px_12px_rgba(43,52,55,0.04)] p-3 sm:p-6 relative overflow-visible mt-2 mb-4 border-l-[3px]"
             style={{ borderLeftColor: BLOCK_COLORS[step.type as keyof typeof BLOCK_COLORS] || '#abb3b7' }}
         >
-            <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-4">
-                    <div className="flex items-center justify-center w-6 h-6 rounded-full bg-[#f1f4f6] dark:bg-white/5 text-[#8b9bb4] font-semibold text-[10px]">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6 sm:mb-8">
+                <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                    <div className="flex items-center justify-center w-6 h-6 rounded-full bg-[#f1f4f6] dark:bg-white/5 text-[#8b9bb4] font-semibold text-[10px] shrink-0">
                         {stepNumber}
                     </div>
                     <Input
                         value={step.stepName || ''}
                         onChange={(e) => onUpdate({ stepName: e.target.value })}
                         placeholder={t('stepName')}
-                        className="bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-2 py-1 text-[#2b3437] dark:text-[#f8f9fa] font-semibold text-xl w-64 rounded-t-md focus:ring-0 focus:border-[#4e6073] transition-colors"
+                        className="bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-2 py-1 text-[#2b3437] dark:text-[#f8f9fa] font-semibold text-lg sm:text-xl w-full sm:w-64 rounded-t-md focus:ring-0 focus:border-[#4e6073] transition-colors"
                     />
                 </div>
                 <div className="flex items-center gap-3">
@@ -265,7 +265,7 @@ export function StepEditor({
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
                 {/* Duration */}
                 <div className="min-w-0">
                     <Label className="text-[10px] font-semibold text-[#8b9bb4] tracking-wider uppercase mb-3 block">
@@ -483,13 +483,9 @@ export function StepEditor({
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="1">Zona 1 (Recuperación)</SelectItem>
-                                    <SelectItem value="2">Zona 2 (Resistencia)</SelectItem>
-                                    <SelectItem value="3">Zona 3 (Tempo)</SelectItem>
-                                    <SelectItem value="4">Zona 4 (Umbral)</SelectItem>
-                                    <SelectItem value="5">Zona 5 (VO2 Max)</SelectItem>
-                                    <SelectItem value="6">Zona 6 (Anaeróbico)</SelectItem>
-                                    <SelectItem value="7">Zona 7 (Neuromuscular)</SelectItem>
+                                    {['1', '2', '3', '4', '5', '6', '7'].map((z) => (
+                                        <SelectItem key={z} value={z}>{t(`powerZones.${z}`)}</SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
                         )}
@@ -538,7 +534,7 @@ export function StepEditor({
                                 onUpdate({ target: { type: value, min: defaults.min, max: defaults.max } });
                             }}
                         >
-                            <SelectTrigger className="w-[140px] shrink-0 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-2 rounded-t-md focus:ring-0 text-[#2b3437] dark:text-[#f8f9fa] text-sm font-semibold transition-colors truncate">
+                            <SelectTrigger className="w-full sm:w-[140px] shrink-0 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-2 rounded-t-md focus:ring-0 text-[#2b3437] dark:text-[#f8f9fa] text-sm font-semibold transition-colors truncate">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>

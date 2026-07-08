@@ -60,6 +60,13 @@ const nextConfig: NextConfig = {
 const intlConfig = withNextIntl(nextConfig);
 
 export default withSentryConfig(intlConfig, {
+  // @sentry/nextjs v10 removed the top-level `disableServer/ClientWebpackPlugin`
+  // options. Their only effect here was skipping source-map work in development
+  // (in production NODE_ENV is 'production', so they were always false). The v10
+  // equivalent that preserves that exact behavior is `sourcemaps.disable`.
+  sourcemaps: {
+    disable: process.env.NODE_ENV === 'development',
+  },
   // For all available options, see:
   // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 

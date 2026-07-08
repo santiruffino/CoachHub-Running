@@ -6,6 +6,7 @@ import { ArrowRight, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { LocaleSwitcher } from '@/components/ui/LocaleSwitcher';
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -51,8 +52,9 @@ export function Navbar() {
             ))}
           </div>
 
-          {/* Desktop CTA & Theme Toggle */}
+          {/* Desktop CTA & Theme/Locale Toggle */}
           <div className="hidden md:flex items-center gap-4">
+            <LocaleSwitcher />
             <ThemeToggle />
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
               <Link
@@ -65,8 +67,9 @@ export function Navbar() {
             </motion.div>
           </div>
 
-          {/* Mobile Theme Toggle & Menu button */}
+          {/* Mobile Theme/Locale Toggle & Menu button */}
           <div className="md:hidden flex items-center gap-2">
+            <LocaleSwitcher />
             <ThemeToggle />
             <button
               className="text-endurix-black dark:text-foreground p-1"

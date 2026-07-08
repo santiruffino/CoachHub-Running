@@ -68,7 +68,7 @@ export function RoadmapSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-80px' }}
           transition={{ duration: 0.6 }}
-          className="mb-16 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6"
+          className="mb-8 sm:mb-12 lg:mb-16 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 sm:gap-6"
         >
           <div>
             <span
@@ -78,7 +78,7 @@ export function RoadmapSection() {
               {t('eyebrow')}
             </span>
             <h2
-              className="font-bold text-endurix-black dark:text-foreground text-4xl lg:text-5xl xl:text-6xl leading-[1.05] tracking-tight uppercase"
+              className="font-bold text-endurix-black dark:text-foreground text-2xl sm:text-4xl lg:text-5xl xl:text-6xl leading-[1.05] tracking-tight uppercase"
               style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
             >
               {t('title1')}
@@ -103,7 +103,7 @@ export function RoadmapSection() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: '-60px' }}
-          className="grid md:grid-cols-3 gap-6"
+          className="grid md:grid-cols-3 gap-4 sm:gap-6"
         >
           {roadmapItems.map((item, index) => (
             <motion.div
@@ -113,7 +113,7 @@ export function RoadmapSection() {
               whileHover={{ y: -8, transition: { duration: 0.25 } }}
               className="group"
             >
-              <div className="border border-endurix-black/12 dark:border-border p-7 h-full flex flex-col bg-white dark:bg-card hover:border-endurix-orange/40 dark:hover:border-endurix-orange/40 hover:shadow-[0_16px_48px_rgba(255,104,0,0.08)] transition-all duration-300 relative overflow-hidden">
+              <div className="border border-endurix-black/12 dark:border-border p-5 sm:p-7 h-full flex flex-col bg-white dark:bg-card hover:border-endurix-orange/40 dark:hover:border-endurix-orange/40 hover:shadow-[0_16px_48px_rgba(255,104,0,0.08)] transition-all duration-300 relative overflow-hidden">
                 {/* Hover orange corner accent */}
                 <div className="absolute top-0 right-0 w-0 h-0 group-hover:w-16 group-hover:h-16 bg-endurix-orange/5 transition-all duration-500 origin-top-right" />
 

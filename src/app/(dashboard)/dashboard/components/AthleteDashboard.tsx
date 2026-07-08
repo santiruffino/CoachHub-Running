@@ -51,13 +51,7 @@ interface PerformancePoint {
 
 type DashboardSection = 'overview' | 'fitness' | 'compliance' | 'chat' | 'zones';
 
-const DASHBOARD_TABS: Array<{ value: DashboardSection; label: string }> = [
-    { value: 'overview', label: 'Resumen' },
-    { value: 'fitness', label: 'Fitness' },
-    { value: 'compliance', label: 'Cumplimiento' },
-    { value: 'zones', label: 'Zonas' },
-    { value: 'chat', label: 'Chat' },
-];
+const DASHBOARD_TAB_VALUES: DashboardSection[] = ['overview', 'fitness', 'compliance', 'zones', 'chat'];
 
 const TAB_TRIGGER_CLASS =
     'flex-1 shrink-0 text-[9px] font-bold uppercase tracking-widest py-2 px-2 text-center text-endurix-black/60 dark:text-muted-foreground transition-colors hover:text-endurix-black dark:hover:text-foreground data-[state=active]:bg-endurix-orange data-[state=active]:text-white data-[state=active]:shadow-sm';
@@ -453,9 +447,9 @@ export default function AthleteDashboard({ user, initialData = null }: AthleteDa
                 <div className="bg-endurix-paper dark:bg-card border border-endurix-black/10 dark:border-border p-3">
                     <Tabs value={activeSection} onValueChange={(value) => setActiveSection(value as DashboardSection)}>
                         <TabsList className="flex h-auto w-full flex-nowrap gap-1 overflow-x-auto bg-endurix-black/8 p-1 dark:bg-white/8">
-                            {DASHBOARD_TABS.map((tab) => (
-                                <TabsTrigger key={tab.value} value={tab.value} className={TAB_TRIGGER_CLASS}>
-                                    {tab.label}
+                            {DASHBOARD_TAB_VALUES.map((tab) => (
+                                <TabsTrigger key={tab} value={tab} className={TAB_TRIGGER_CLASS}>
+                                    {t(`dashboard.athlete.tabs.${tab}`)}
                                 </TabsTrigger>
                             ))}
                         </TabsList>

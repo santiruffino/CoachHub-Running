@@ -131,7 +131,7 @@ export function WorkoutBuilderView({ initialWorkout, athleteId }: WorkoutBuilder
                     />
                 ) : (
                     <div className="h-full overflow-y-auto bg-[#f8f9fa] dark:bg-[#0a0f14]">
-                        <div className="max-w-7xl mx-auto px-6 py-8">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
                             <div className="flex items-center justify-between mb-8">
                                 <BackButton onClick={() => setCurrentStep(1)} label={t('backToBuilder')} showLabel />
                             </div>

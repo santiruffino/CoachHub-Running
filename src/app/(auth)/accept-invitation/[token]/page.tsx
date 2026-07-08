@@ -111,7 +111,7 @@ export default function AcceptInvitationPage() {
 
     if (valid === null) {
         return (
-            <div className="flex min-h-screen items-center justify-center">
+            <div className="flex min-h-screen items-center justify-center px-4">
                 <Card className="w-full max-w-md">
                     <CardContent className="pt-6">
                         <p className="text-center">{t('loading')}</p>
@@ -123,7 +123,7 @@ export default function AcceptInvitationPage() {
 
     if (valid === false) {
         return (
-            <div className="flex min-h-screen items-center justify-center">
+            <div className="flex min-h-screen items-center justify-center px-4">
                 <Card className="w-full max-w-md">
                     <CardContent className="pt-6">
                         <Alert variant="destructive">
@@ -144,7 +144,7 @@ export default function AcceptInvitationPage() {
     }
 
     return (
-        <div className="flex min-h-screen items-center justify-center">
+        <div className="flex min-h-screen items-center justify-center px-4">
             <Card className="w-full max-w-md">
                 <CardHeader>
                     <CardTitle className="text-2xl text-center">{t('title')}</CardTitle>

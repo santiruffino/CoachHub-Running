@@ -10,10 +10,9 @@ import { Athlete } from '@/interfaces/athlete';
 import { Group } from '@/interfaces/group';
 import { Button } from '@/components/ui/button';
 import { trainingsService } from '@/features/trainings/services/trainings.service';
-import { ArrowRight, Search, Check, Sparkles, LayoutTemplate, Clock, X, CalendarDays, Users, Gauge } from 'lucide-react';
+import { ArrowRight, Search, Check, Sparkles, LayoutTemplate, X } from 'lucide-react';
 import { BackButton } from '@/components/ui/BackButton';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
 import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
@@ -24,7 +23,6 @@ const PLEX = { fontFamily: 'var(--font-plex-mono, monospace)' } as const;
 const EXO = { fontFamily: 'var(--font-exo-2, sans-serif)' } as const;
 const LABEL_CLS = 'text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground';
 const CARD_CLS = 'bg-endurix-paper dark:bg-card border border-endurix-black/15 dark:border-white/15';
-const ROW_CLS = 'flex items-center gap-3 p-4 bg-endurix-black/5 dark:bg-white/5 border border-endurix-black/10 dark:border-white/10';
 
 // Custom Searchable Dropdown for Performance Curator aesthetic
 function SearchableMultiSelect({
@@ -143,6 +141,54 @@ function SearchableMultiSelect({
     );
 }
 
+// Step progress indicator shared across the whole assign flow
+function AssignFlowStepper({ current }: { current: 0 | 1 | 2 }) {
+    const tAssign = useTranslations('trainings.assign');
+    const steps = [tAssign('stepSource'), tAssign('stepBuild'), tAssign('stepAssign')];
+
+    return (
+        <div className="flex items-center gap-2 shrink-0">
+            {steps.map((label, i) => {
+                const isActive = i === current;
+                const isDone = i < current;
+                return (
+                    <div key={label} className="flex items-center gap-2">
+                        <span
+                            className={cn(
+                                'flex items-center justify-center w-6 h-6 text-[11px] font-bold border transition-colors',
+                                isActive
+                                    ? 'bg-endurix-orange text-white border-endurix-orange'
+                                    : isDone
+                                        ? 'bg-endurix-orange/15 text-endurix-orange border-endurix-orange/40'
+                                        : 'bg-transparent text-endurix-black/40 dark:text-muted-foreground border-endurix-black/20 dark:border-white/20'
+                            )}
+                            style={PLEX}
+                        >
+                            {isDone ? <Check className="w-3 h-3" /> : i + 1}
+                        </span>
+                        <span
+                            className={cn(
+                                'hidden md:inline text-[10px] font-bold uppercase tracking-widest transition-colors',
+                                isActive
+                                    ? 'text-endurix-black dark:text-foreground'
+                                    : isDone
+                                        ? 'text-endurix-orange'
+                                        : 'text-endurix-black/40 dark:text-muted-foreground'
+                            )}
+                            style={PLEX}
+                        >
+                            {label}
+                        </span>
+                        {i < steps.length - 1 && (
+                            <div className={cn('w-6 h-px mx-1', isDone ? 'bg-endurix-orange/40' : 'bg-endurix-black/15 dark:bg-white/15')} />
+                        )}
+                    </div>
+                );
+            })}
+        </div>
+    );
+}
+
 interface AssignWorkoutViewProps {
     initialAthletes: Athlete[];
     initialGroups: Group[];
@@ -240,73 +286,12 @@ export function AssignWorkoutView({
         }
     };
 
-    const estTimeMinutes = useMemo(() => {
-        let total = 0;
-        blocks.forEach(b => {
-             const mult = b.group?.reps || 1;
-             if (b.duration.type === 'time') total += b.duration.value * mult;
-             else if (b.duration.type === 'distance') total += (b.duration.value / 1000) * 300 * mult;
-        });
-        return Math.round(total / 60);
-    }, [blocks]);
-
-    const workoutSummary = useMemo(() => {
-        const byType: Record<WorkoutBlock['type'], number> = {
-            warmup: 0,
-            interval: 0,
-            recovery: 0,
-            rest: 0,
-            cooldown: 0,
-        };
-
-        let totalDistanceMeters = 0;
-        let totalTimeSeconds = 0;
-
-        for (const block of blocks) {
-            const reps = block.group?.reps || 1;
-            byType[block.type] += reps;
-
-            if (block.duration.type === 'distance') {
-                const rawDistance = block.duration.value;
-                const distanceMeters = block.duration.unit === 'km' ? rawDistance * 1000 : rawDistance;
-                totalDistanceMeters += distanceMeters * reps;
-            }
-
-            if (block.duration.type === 'time') {
-                totalTimeSeconds += block.duration.value * reps;
-            }
-        }
-
-        return {
-            byType,
-            totalDistanceMeters,
-            totalTimeSeconds,
-            totalRecipients: selectedAthleteIds.length + selectedGroupIds.length,
-        };
-    }, [blocks, selectedAthleteIds.length, selectedGroupIds.length]);
-
-    const recipientsSummaryLabel = useMemo(() => {
-        const hasSingleAthlete = selectedAthleteIds.length === 1 && selectedGroupIds.length === 0;
-        if (hasSingleAthlete) {
-            const athlete = athletes.find((a) => a.id === selectedAthleteIds[0]);
-            return athlete?.name || '1 atleta seleccionado';
-        }
-
-        const hasSingleGroup = selectedGroupIds.length === 1 && selectedAthleteIds.length === 0;
-        if (hasSingleGroup) {
-            const group = groups.find((g) => g.id === selectedGroupIds[0]);
-            return group?.name || '1 grupo seleccionado';
-        }
-
-        return `${workoutSummary.totalRecipients} seleccionados`;
-    }, [selectedAthleteIds, selectedGroupIds, athletes, groups, workoutSummary.totalRecipients]);
-
     const blockTypeLabel: Record<WorkoutBlock['type'], string> = {
-        warmup: 'Calentamiento',
-        interval: 'Intervalo',
-        recovery: 'Recuperación',
-        rest: 'Descanso',
-        cooldown: 'Vuelta a la calma',
+        warmup: tAssign('blockTypes.warmup'),
+        interval: tAssign('blockTypes.interval'),
+        recovery: tAssign('blockTypes.recovery'),
+        rest: tAssign('blockTypes.rest'),
+        cooldown: tAssign('blockTypes.cooldown'),
     };
 
     const formatBlockDuration = (block: WorkoutBlock) => {
@@ -359,31 +344,34 @@ export function AssignWorkoutView({
     if (step === 'select-source') {
         return (
              <div className="bg-endurix-paper dark:bg-background flex flex-col">
-                <div className="flex-none p-12">
-                    <BackButton label={tAssign('navigateBack')} showLabel className="mb-8" />
-                    <h1 className="text-4xl lg:text-5xl font-bold text-endurix-black dark:text-foreground mt-12 mb-4 uppercase tracking-tight" style={EXO}>
+                <div className="flex-none p-4 sm:p-8 lg:p-12">
+                    <div className="flex items-center justify-between gap-4 mb-8">
+                        <BackButton label={tAssign('navigateBack')} showLabel />
+                        <AssignFlowStepper current={0} />
+                    </div>
+                    <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold text-endurix-black dark:text-foreground mt-6 sm:mt-12 mb-4 uppercase tracking-tight" style={EXO}>
                         {tAssign('pageTitle')}
                     </h1>
-                    <p className="text-muted-foreground text-lg max-w-lg leading-relaxed">
+                    <p className="text-muted-foreground text-base sm:text-lg max-w-lg leading-relaxed">
                         {tAssign('pageSubtitle')}
                     </p>
                 </div>
 
-                <div className="flex-1 flex px-12 pb-12 gap-6 mt-8">
+                <div className="flex-1 flex flex-col sm:flex-row px-4 sm:px-8 lg:px-12 pb-8 lg:pb-12 gap-4 sm:gap-6 mt-4 sm:mt-8">
                     <button
                         type="button"
                         onClick={() => {
                             setWorkoutSource('template');
                             setStep('select-template');
                         }}
-                        className={`flex-1 ${CARD_CLS} hover:border-endurix-orange p-12 text-left group transition-all relative overflow-hidden`}
+                        className={`flex-1 ${CARD_CLS} hover:border-endurix-orange p-6 sm:p-8 lg:p-12 text-left group transition-all relative overflow-hidden`}
                     >
                         <div className="relative z-10 flex flex-col h-full justify-between">
-                            <div className="w-16 h-16 bg-endurix-orange/10 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
-                                <LayoutTemplate className="w-8 h-8 text-endurix-orange" />
+                            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-endurix-orange/10 flex items-center justify-center mb-4 sm:mb-8 group-hover:scale-110 transition-transform">
+                                <LayoutTemplate className="w-6 h-6 sm:w-8 sm:h-8 text-endurix-orange" />
                             </div>
                             <div>
-                                <h2 className="text-3xl font-bold text-endurix-black dark:text-foreground tracking-tight mb-2 uppercase" style={EXO}>{tAssign('fromLibrary')}</h2>
+                                <h2 className="text-xl sm:text-3xl font-bold text-endurix-black dark:text-foreground tracking-tight mb-2 uppercase" style={EXO}>{tAssign('fromLibrary')}</h2>
                                 <p className="text-muted-foreground font-medium leading-relaxed">
                                     {tAssign('fromLibraryDesc')}
                                 </p>
@@ -397,14 +385,14 @@ export function AssignWorkoutView({
                             setWorkoutSource('new');
                             setStep('build');
                         }}
-                        className={`flex-1 ${CARD_CLS} hover:border-endurix-orange p-12 text-left group transition-all relative overflow-hidden`}
+                        className={`flex-1 ${CARD_CLS} hover:border-endurix-orange p-6 sm:p-8 lg:p-12 text-left group transition-all relative overflow-hidden`}
                     >
                         <div className="relative z-10 flex flex-col h-full justify-between">
-                            <div className="w-16 h-16 bg-endurix-black/8 dark:bg-white/8 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
-                                <Sparkles className="w-8 h-8 text-endurix-orange" />
+                            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-endurix-black/8 dark:bg-white/8 flex items-center justify-center mb-4 sm:mb-8 group-hover:scale-110 transition-transform">
+                                <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-endurix-orange" />
                             </div>
                             <div>
-                                <h2 className="text-3xl font-bold text-endurix-black dark:text-foreground tracking-tight mb-2 uppercase" style={EXO}>{tAssign('blankSlate')}</h2>
+                                <h2 className="text-xl sm:text-3xl font-bold text-endurix-black dark:text-foreground tracking-tight mb-2 uppercase" style={EXO}>{tAssign('blankSlate')}</h2>
                                 <p className="text-muted-foreground font-medium leading-relaxed">
                                     {tAssign('blankSlateDesc')}
                                 </p>
@@ -419,14 +407,17 @@ export function AssignWorkoutView({
     if (step === 'select-template') {
         return (
             <div className="bg-endurix-paper dark:bg-background flex flex-col h-[calc(100vh-64px)] overflow-hidden">
-                <div className="p-10 lg:p-12 border-b border-endurix-black/10 dark:border-white/10 shrink-0">
-                    <BackButton onClick={() => setStep('select-source')} label={tAssign('backToPhase1')} showLabel className="mb-8" />
-                    <h1 className="text-4xl font-bold text-endurix-black dark:text-foreground tracking-tight mb-2 uppercase" style={EXO}>
+                <div className="p-4 sm:p-8 lg:p-12 border-b border-endurix-black/10 dark:border-white/10 shrink-0">
+                    <div className="flex items-center justify-between gap-4 mb-8">
+                        <BackButton onClick={() => setStep('select-source')} label={tAssign('navigateBack')} showLabel />
+                        <AssignFlowStepper current={1} />
+                    </div>
+                    <h1 className="text-2xl sm:text-4xl font-bold text-endurix-black dark:text-foreground tracking-tight mb-2 uppercase" style={EXO}>
                         {tAssign('templateMatrix')}
                     </h1>
                     <p className="text-muted-foreground">{tAssign('templateMatrixSubtitle')}</p>
                 </div>
-                <div className="flex-1 overflow-y-auto p-10 lg:p-12">
+                <div className="flex-1 overflow-y-auto p-4 sm:p-8 lg:p-12">
                     <div className="space-y-3">
                         {templates.map((template) => (
                             <button
@@ -467,10 +458,10 @@ export function AssignWorkoutView({
     if (step === 'build') {
         return (
             <div className="bg-endurix-paper dark:bg-background flex flex-col h-[calc(100vh-64px)] overflow-hidden">
-                <div className="p-5 px-10 border-b border-endurix-black/10 dark:border-white/10 flex items-center shrink-0">
-                    <BackButton onClick={() => setStep('select-source')} label={tAssign('restart')} showLabel />
-                    <div className="ml-auto text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase" style={PLEX}>
-                        {tAssign('editorPhase')}
+                <div className="p-4 sm:p-5 px-4 sm:px-10 border-b border-endurix-black/10 dark:border-white/10 flex items-center gap-4 shrink-0">
+                    <BackButton onClick={() => setStep('select-source')} label={tAssign('navigateBack')} showLabel />
+                    <div className="ml-auto">
+                        <AssignFlowStepper current={1} />
                     </div>
                 </div>
                 <div className="flex-1 overflow-hidden">
@@ -500,20 +491,20 @@ export function AssignWorkoutView({
 
     return (
         <div className="bg-endurix-paper dark:bg-background flex flex-col h-[calc(100vh-64px)] overflow-hidden">
-            <div className="p-5 px-10 border-b border-endurix-black/10 dark:border-white/10 flex items-center shrink-0">
+            <div className="p-4 sm:p-5 px-4 sm:px-10 border-b border-endurix-black/10 dark:border-white/10 flex items-center gap-4 shrink-0">
                 <BackButton onClick={handleBack} label={tAssign('back')} showLabel />
-                <div className="ml-auto text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase" style={PLEX}>
-                    {tAssign('editorPhase')}
+                <div className="ml-auto">
+                    <AssignFlowStepper current={2} />
                 </div>
             </div>
 
             <div className="flex-1 overflow-y-auto">
                 <div className="max-w-6xl mx-auto px-6 lg:px-10 py-12 space-y-8">
-                    <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)] gap-6 items-start">
+                    <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)] gap-6 items-start">
                         {/* Assignment Form */}
                         <div className={`${CARD_CLS} p-6 lg:p-8`}>
                             <h2 className="text-2xl font-bold text-endurix-black dark:text-foreground mb-8 uppercase tracking-tight" style={EXO}>
-                                Planificación de la sesión
+                                {tAssign('sessionPlanning')}
                             </h2>
 
                             <div className="space-y-8">
@@ -651,94 +642,31 @@ export function AssignWorkoutView({
                             </div>
                         </div>
 
-                        {/* Workout Summary Card */}
-                        <div className={`${CARD_CLS} p-6 lg:p-8`}>
-                            <p className={`${LABEL_CLS} mb-3 font-bold`} style={PLEX}>Resumen del entrenamiento</p>
-                            <h2 className="text-3xl lg:text-4xl font-bold text-endurix-black dark:text-foreground mb-5 uppercase tracking-tight" style={EXO}>
-                                {selectedTemplate ? selectedTemplate.title : (workoutName || tAssign('customProtocol'))}
-                            </h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                                <div className={ROW_CLS}>
-                                    <CalendarDays className="w-4 h-4 text-endurix-orange" />
-                                    <div>
-                                        <p className={`${LABEL_CLS}`} style={PLEX}>Fecha objetivo</p>
-                                        <p className="font-bold text-endurix-black dark:text-foreground">{format(new Date(`${scheduledDate}T00:00:00`), "EEEE dd/MM/yyyy", { locale: es })}</p>
-                                    </div>
-                                </div>
-                                <div className={ROW_CLS}>
-                                    <Users className="w-4 h-4 text-endurix-orange" />
-                                    <div>
-                                        <p className={`${LABEL_CLS}`} style={PLEX}>Destinatarios</p>
-                                        <p className="font-bold text-endurix-black dark:text-foreground">{recipientsSummaryLabel}</p>
-                                    </div>
-                                </div>
-                                <div className={ROW_CLS}>
-                                    <Clock className="w-4 h-4 text-endurix-orange" />
-                                    <div>
-                                        <p className={`${LABEL_CLS}`} style={PLEX}>Duración estimada</p>
-                                        <p className="font-bold text-endurix-black dark:text-foreground">~{estTimeMinutes} min</p>
-                                    </div>
-                                </div>
-                                <div className={ROW_CLS}>
-                                    <Gauge className="w-4 h-4 text-endurix-orange" />
-                                    <div>
-                                        <p className={`${LABEL_CLS}`} style={PLEX}>RPE objetivo</p>
-                                        <p className="font-bold text-endurix-black dark:text-foreground">{expectedRpe}/10</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)] gap-6 items-start">
-                        {/* Block Details */}
-                        <div className={`${CARD_CLS} p-6`}>
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-lg font-bold text-endurix-black dark:text-foreground uppercase tracking-tight" style={EXO}>Desglose de bloques</h3>
-                                <span className={`${LABEL_CLS}`} style={PLEX}>Vista rápida</span>
-                            </div>
-                            {blocks.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">Aun no hay bloques cargados en esta sesión.</p>
-                            ) : (
-                                <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-                                    {blocks.map((block, index) => (
-                                        <div key={block.id || `${block.type}-${index}`} className="flex items-center justify-between px-3 py-2 bg-endurix-black/5 dark:bg-white/5 border border-endurix-black/10 dark:border-white/10">
-                                            <div className="min-w-0">
-                                                <p className="text-sm font-bold text-endurix-black dark:text-foreground truncate" style={EXO}>{index + 1}. {block.stepName || blockTypeLabel[block.type]}</p>
-                                                <p className="text-xs text-muted-foreground" style={PLEX}>{blockTypeLabel[block.type]}{block.group?.reps ? ` · x${block.group.reps}` : ''}</p>
-                                            </div>
-                                            <div className="text-right shrink-0 ml-4">
-                                                <p className="text-sm font-bold text-endurix-black dark:text-foreground" style={PLEX}>{formatBlockDuration(block)}</p>
-                                                <p className="text-xs text-muted-foreground" style={PLEX}>{formatBlockTarget(block)}</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
+                        {/* Block Details — right column */}
                         <div className="space-y-6">
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className={`${CARD_CLS} p-4`}>
-                                    <p className={`${LABEL_CLS}`} style={PLEX}>Bloques totales</p>
-                                    <p className="text-2xl font-bold text-endurix-black dark:text-foreground mt-1" style={EXO}>{blocks.length}</p>
+                            <div className={`${CARD_CLS} p-6`}>
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-lg font-bold text-endurix-black dark:text-foreground uppercase tracking-tight" style={EXO}>{tAssign('blockBreakdown')}</h3>
+                                    <span className={`${LABEL_CLS}`} style={PLEX}>{tAssign('blockBreakdownQuickView')}</span>
                                 </div>
-                                <div className={`${CARD_CLS} p-4`}>
-                                    <p className={`${LABEL_CLS}`} style={PLEX}>Intervalos</p>
-                                    <p className="text-2xl font-bold text-endurix-black dark:text-foreground mt-1" style={EXO}>{workoutSummary.byType.interval}</p>
-                                </div>
-                                <div className={`${CARD_CLS} p-4`}>
-                                    <p className={`${LABEL_CLS}`} style={PLEX}>Recuperación + descanso</p>
-                                    <p className="text-2xl font-bold text-endurix-black dark:text-foreground mt-1" style={EXO}>{workoutSummary.byType.recovery + workoutSummary.byType.rest}</p>
-                                </div>
-                                <div className={`${CARD_CLS} p-4`}>
-                                    <p className={`${LABEL_CLS}`} style={PLEX}>Distancia planificada</p>
-                                    <p className="text-2xl font-bold text-endurix-black dark:text-foreground mt-1" style={EXO}>
-                                        {workoutSummary.totalDistanceMeters > 0
-                                            ? `${(workoutSummary.totalDistanceMeters / 1000).toFixed(1)} km`
-                                            : '—'}
-                                    </p>
-                                </div>
+                                {blocks.length === 0 ? (
+                                    <p className="text-sm text-muted-foreground">{tAssign('blockBreakdownEmpty')}</p>
+                                ) : (
+                                    <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                                        {blocks.map((block, index) => (
+                                            <div key={block.id || `${block.type}-${index}`} className="flex items-center justify-between px-3 py-2 bg-endurix-black/5 dark:bg-white/5 border border-endurix-black/10 dark:border-white/10">
+                                                <div className="min-w-0">
+                                                    <p className="text-sm font-bold text-endurix-black dark:text-foreground truncate" style={EXO}>{index + 1}. {block.stepName || blockTypeLabel[block.type]}</p>
+                                                    <p className="text-xs text-muted-foreground" style={PLEX}>{blockTypeLabel[block.type]}{block.group?.reps ? ` · x${block.group.reps}` : ''}</p>
+                                                </div>
+                                                <div className="text-right shrink-0 ml-4">
+                                                    <p className="text-sm font-bold text-endurix-black dark:text-foreground" style={PLEX}>{formatBlockDuration(block)}</p>
+                                                    <p className="text-xs text-muted-foreground" style={PLEX}>{formatBlockTarget(block)}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Action Buttons */}

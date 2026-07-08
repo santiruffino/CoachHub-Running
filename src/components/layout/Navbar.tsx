@@ -6,6 +6,7 @@ import { Settings, LogOut, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { LocaleSwitcher } from '@/components/ui/LocaleSwitcher';
 import { NotificationBell } from '@/features/notifications/components/NotificationBell';
 import {
     DropdownMenu,
@@ -90,6 +91,7 @@ export function Navbar() {
 
                     <div className="flex items-center gap-2">
                         <NotificationBell />
+                        <LocaleSwitcher />
                         <ThemeToggle />
                         <DropdownMenu>
                             <DropdownMenuTrigger className="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">

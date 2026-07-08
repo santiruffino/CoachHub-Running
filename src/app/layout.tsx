@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import "./globals.css";
 import { Providers } from "./providers";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages } from "next-intl/server";
+import { getLocale, getMessages } from "next-intl/server";
 import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import { getServerUser } from "@/features/auth/services/auth.server";
 
@@ -58,11 +58,12 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
   const messages = await getMessages();
   const initialUser = await getServerUser();
 
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body
         className={`${inter.variable} ${manrope.variable} ${exo2.variable} ${ibmPlexMono.variable} font-sans antialiased`}
       >

@@ -88,6 +88,11 @@ export function ActivityChartsTabs({
 
   const hasLaps = activity.laps && activity.laps.length > 0;
   const hasSplits = activity.splits_metric || activity.splits_standard;
+  // The splits table below only renders per-kilometer (metric) splits, so gate it
+  // on splits_metric specifically. hasSplits also covers splits_standard, which
+  // would let an activity with only imperial splits reach the table and crash.
+  const metricSplits = activity.splits_metric ?? [];
+  const hasMetricSplits = metricSplits.length > 0;
   const hasHR = activity.average_heartrate && heartrateZones?.zones;
   const isWeight = isWeightTraining(activity.sport_type);
   const isRun = isRunning(activity.sport_type);
@@ -186,7 +191,7 @@ export function ActivityChartsTabs({
               </div>
             )}
 
-            {!hasLaps && hasSplits && (
+            {!hasLaps && hasMetricSplits && (
               <div className="overflow-x-auto border border-endurix-black/12 dark:border-border bg-white dark:bg-card">
                 <table className="w-full text-left">
                   <thead className="border-b border-endurix-black/10 dark:border-border bg-endurix-paper dark:bg-muted text-[10px] uppercase tracking-[0.14em] text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
@@ -195,20 +200,20 @@ export function ActivityChartsTabs({
                       <th className="px-4 py-3">{t('table.time')}</th>
                       <th className="px-4 py-3">{t('table.distance')}</th>
                       <th className="px-4 py-3">{t('table.avgPace')}</th>
-                      {!!activity.splits_metric![0]?.average_heartrate && (
+                      {!!metricSplits[0]?.average_heartrate && (
                         <th className="px-4 py-3">{t('table.avgHr')}</th>
                       )}
                       <th className="px-4 py-3">{t('table.elevGain')}</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {activity.splits_metric!.map((split) => (
+                    {metricSplits.map((split) => (
                       <tr key={split.split} className="border-b border-endurix-black/8 dark:border-border text-sm">
                         <td className="px-4 py-3 font-medium">{split.split}</td>
                         <td className="px-4 py-3">{formatTime(split.moving_time)}</td>
                         <td className="px-4 py-3">{(split.distance / 1000).toFixed(2)} {t('metrics.units.km')}</td>
                         <td className="px-4 py-3">{formatPace(split.average_speed)}</td>
-                        {!!activity.splits_metric![0]?.average_heartrate && (
+                        {!!metricSplits[0]?.average_heartrate && (
                           <td className="px-4 py-3">
                             {split.average_heartrate ? (
                               <span className={`px-2 py-1 font-medium ${getHRZoneColor(split.average_heartrate)}`}>

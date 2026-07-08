@@ -258,7 +258,7 @@ export default function WorkoutDetailsPage() {
     const leftSidebarContent = (
         <div className="p-4 lg:p-5">
             <div className="flex flex-wrap gap-3 items-stretch">
-                <div className="flex min-w-[240px] flex-1 items-center gap-3 rounded-2xl border border-endurix-black/10 dark:border-white/10 bg-white/70 dark:bg-white/5 p-4">
+                <div className="flex min-w-0 sm:min-w-[240px] flex-1 items-center gap-3 rounded-2xl border border-endurix-black/10 dark:border-white/10 bg-white/70 dark:bg-white/5 p-4">
                     <div className="w-10 h-10 rounded-xl bg-endurix-orange/10 flex items-center justify-center text-endurix-orange shrink-0">
                         <Calendar className="w-5 h-5" />
                     </div>
@@ -270,7 +270,7 @@ export default function WorkoutDetailsPage() {
                     </div>
                 </div>
 
-                <div className="flex min-w-[240px] flex-1 items-center gap-3 rounded-2xl border border-endurix-black/10 dark:border-white/10 bg-white/70 dark:bg-white/5 p-4">
+                <div className="flex min-w-0 sm:min-w-[240px] flex-1 items-center gap-3 rounded-2xl border border-endurix-black/10 dark:border-white/10 bg-white/70 dark:bg-white/5 p-4">
                     <div className="w-10 h-10 rounded-xl bg-endurix-black/8 dark:bg-white/8 flex items-center justify-center text-endurix-orange shrink-0">
                         <User className="w-5 h-5" />
                     </div>
@@ -283,8 +283,8 @@ export default function WorkoutDetailsPage() {
                 </div>
 
                 {assignment.canEdit && !assignment.completed && (
-                    <div className="flex min-w-[360px] flex-[2] items-center gap-3 rounded-2xl border border-endurix-orange/20 bg-endurix-orange/5 p-4">
-                        <div className="min-w-[180px] flex-1">
+                    <div className="flex min-w-0 sm:min-w-[360px] flex-[2] items-center gap-3 rounded-2xl border border-endurix-orange/20 bg-endurix-orange/5 p-4">
+                        <div className="min-w-0 sm:min-w-[180px] flex-1">
                             <label className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase mb-2 block" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                                 {t('workoutName')}
                             </label>
@@ -296,7 +296,7 @@ export default function WorkoutDetailsPage() {
                             />
                         </div>
 
-                        <div className="min-w-[180px] flex-1">
+                        <div className="min-w-0 sm:min-w-[180px] flex-1">
                             <label className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase mb-2 block" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                                 {t('scheduledDate')}
                             </label>
@@ -314,7 +314,7 @@ export default function WorkoutDetailsPage() {
                     </div>
                 )}
 
-                <div className="flex min-w-[280px] flex-1 items-center gap-3 rounded-2xl border border-endurix-black/10 dark:border-white/10 bg-white/70 dark:bg-white/5 p-4">
+                <div className="flex min-w-0 sm:min-w-[280px] flex-1 items-center gap-3 rounded-2xl border border-endurix-black/10 dark:border-white/10 bg-white/70 dark:bg-white/5 p-4">
                     <div className="min-w-0 flex-1">
                         <label className="text-[10px] font-bold text-endurix-black/50 dark:text-muted-foreground tracking-widest uppercase mb-2 block flex items-center justify-between" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
                             {t('targetRpeConstraint')}

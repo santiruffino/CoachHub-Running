@@ -106,7 +106,7 @@ export function WishlistSection() {
             className="py-24 lg:py-36 bg-endurix-paper dark:bg-background overflow-hidden"
         >
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="grid lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+                <div className="grid lg:grid-cols-12 gap-8 lg:gap-16 items-start">
                     {/* Left — Pitch */}
                     <motion.div
                         initial={{ opacity: 0, y: 24 }}
@@ -123,7 +123,7 @@ export function WishlistSection() {
                         </span>
 
                         <h2
-                            className="font-bold text-endurix-black dark:text-foreground text-4xl lg:text-5xl xl:text-6xl leading-[1.05] tracking-tight uppercase"
+                            className="font-bold text-endurix-black dark:text-foreground text-2xl sm:text-4xl lg:text-5xl xl:text-6xl leading-[1.05] tracking-tight uppercase"
                             style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
                         >
                             {t('title1')}
@@ -196,7 +196,7 @@ export function WishlistSection() {
                         transition={{ duration: 0.7, delay: 0.15, ease: easeOut }}
                         className="lg:col-span-7"
                     >
-                        <div className="relative bg-white dark:bg-card border border-endurix-black/15 dark:border-white/10 p-8 lg:p-10 shadow-sm dark:shadow-[0_24px_60px_-20px_rgba(0,0,0,0.6)]">
+                        <div className="relative bg-white dark:bg-card border border-endurix-black/15 dark:border-white/10 p-5 sm:p-8 lg:p-10 shadow-sm dark:shadow-[0_24px_60px_-20px_rgba(0,0,0,0.6)]">
                             {/* Orange corner mark */}
                             <div className="absolute top-0 left-0 w-12 h-1 bg-endurix-orange" />
 
@@ -272,7 +272,7 @@ export function WishlistSection() {
                                         />
                                     </div>
 
-                                    <div className="grid sm:grid-cols-2 gap-6">
+                                    <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
                                         {/* Role */}
                                         <div>
                                             <label

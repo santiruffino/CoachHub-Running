@@ -21,7 +21,7 @@ export default async function PrivacyPage() {
             </header>
 
             {/* Content */}
-            <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+            <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-16 lg:py-24">
                 {/* Title block */}
                 <div className="mb-12 pb-8 border-b border-endurix-black/10 dark:border-border">
                     <span
@@ -31,7 +31,7 @@ export default async function PrivacyPage() {
                         LEGAL · {t('lastUpdated').toUpperCase()}
                     </span>
                     <h1
-                        className="font-bold text-endurix-black dark:text-foreground text-4xl lg:text-5xl leading-[1.05] tracking-tight uppercase"
+                        className="font-bold text-endurix-black dark:text-foreground text-2xl sm:text-3xl lg:text-4xl xl:text-5xl leading-[1.05] tracking-tight uppercase"
                         style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
                     >
                         {t('title')}
@@ -120,6 +120,53 @@ export default async function PrivacyPage() {
                                     t('sections.integrations.strava.items.attribution'),
                                 ]}
                             />
+                        </PrivacySubSection>
+
+                        <PrivacySubSection title={t('sections.integrations.garmin.title')}>
+                            <PrivacyParagraph>{t('sections.integrations.garmin.intro')}</PrivacyParagraph>
+                            <PrivacyList
+                                items={[
+                                    t('sections.integrations.garmin.items.consent'),
+                                    t('sections.integrations.garmin.items.scope'),
+                                    t('sections.integrations.garmin.items.withdrawal'),
+                                    t('sections.integrations.garmin.items.deletion'),
+                                    t('sections.integrations.garmin.items.priority'),
+                                    t('sections.integrations.garmin.items.attribution'),
+                                ]}
+                            />
+                        </PrivacySubSection>
+                    </PrivacySection>
+
+                    {/* AI and Automated Processing */}
+                    <PrivacySection title={t('sections.ai.title')}>
+                        <PrivacyParagraph>{t('sections.ai.p1')}</PrivacyParagraph>
+
+                        <PrivacySubSection title={t('sections.ai.analysis.title')}>
+                            <PrivacyParagraph>{t('sections.ai.analysis.text')}</PrivacyParagraph>
+                        </PrivacySubSection>
+
+                        <PrivacySubSection title={t('sections.ai.mcp.title')}>
+                            <PrivacyParagraph>{t('sections.ai.mcp.text')}</PrivacyParagraph>
+                            <PrivacyList
+                                items={[
+                                    t('sections.ai.mcp.items.scope'),
+                                    t('sections.ai.mcp.items.noExpansion'),
+                                    t('sections.ai.mcp.items.noStorage'),
+                                    t('sections.ai.mcp.items.noThirdParty'),
+                                ]}
+                            />
+                        </PrivacySubSection>
+
+                        <PrivacySubSection title={t('sections.ai.decisions.title')}>
+                            <PrivacyParagraph>{t('sections.ai.decisions.text')}</PrivacyParagraph>
+                        </PrivacySubSection>
+
+                        <PrivacySubSection title={t('sections.ai.providers.title')}>
+                            <PrivacyParagraph>{t('sections.ai.providers.text')}</PrivacyParagraph>
+                        </PrivacySubSection>
+
+                        <PrivacySubSection title={t('sections.ai.optOut.title')}>
+                            <PrivacyParagraph>{t('sections.ai.optOut.text')}</PrivacyParagraph>
                         </PrivacySubSection>
                     </PrivacySection>
 
@@ -222,7 +269,7 @@ export default async function PrivacyPage() {
 
 function PrivacySection({ title, children }: { title: string; children: React.ReactNode }) {
     return (
-        <section className="border-l-2 border-endurix-orange pl-6 space-y-4">
+        <section className="border-l-2 border-endurix-orange pl-3 sm:pl-6 space-y-4">
             <h2
                 className="text-2xl lg:text-3xl font-bold uppercase tracking-tight text-endurix-black dark:text-foreground"
                 style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}

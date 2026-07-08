@@ -1,0 +1,2974 @@
+{
+  "nav": {
+    "brand": "Endurix",
+    "userFallback": "User",
+    "dashboard": "Dashboard",
+    "athletes": "Athletes",
+    "coaches": "Coaches",
+    "groups": "Groups",
+    "trainings": "Workouts",
+    "races": "Races",
+    "progress": "Progress",
+    "profile": "Profile",
+    "settings": "Settings",
+    "auditLogs": "Audit",
+    "logout": "Log out",
+    "athleteManagement": "Athlete Management",
+    "coachSettings": "Coach Settings",
+    "teamSettings": "Team Settings"
+  },
+  "settings": {
+    "hub": {
+      "eyebrow": "Settings",
+      "title": "Configuration",
+      "description": "Everything you can customize in Endurix, all in one place.",
+      "tiles": {
+        "notifications": {
+          "title": "Notifications",
+          "description": "Messages, assigned workouts, and other events — in-app and push."
+        },
+        "coach": {
+          "title": "Coach",
+          "description": "Alert thresholds and default models for your tracking."
+        },
+        "team": {
+          "title": "Team",
+          "description": "General team settings and shared thresholds."
+        },
+        "auditLogs": {
+          "title": "Audit",
+          "description": "History of administrative actions."
+        }
+      }
+    },
+    "notifications": {
+      "eyebrow": "Settings",
+      "title": "Notifications",
+      "description": "Choose how you want to be notified about messages, assigned workouts, and other events."
+    },
+    "coach": {
+      "eyebrow": "Settings",
+      "title": "Coach",
+      "description": "Set your own thresholds and preferences for tracking.",
+      "save": "Save Preferences",
+      "saving": "Saving...",
+      "alertsCard": {
+        "title": "Alert Thresholds",
+        "rpeMismatch": {
+          "label": "RPE Deviation",
+          "help": "Alert if the difference between planned and actual RPE exceeds this value."
+        },
+        "lowCompliance": {
+          "label": "Minimum Compliance (%)",
+          "help": "Alert if overall compliance falls below this percentage."
+        },
+        "matchingThreshold": {
+          "label": "Matching Tolerance (%)",
+          "help": "Adjust the margin used by the engine to match laps to the plan."
+        }
+      },
+      "loadRiskCard": {
+        "title": "Load Risk",
+        "intro": "ACWR and TSB are calculated from each athlete's activity history. Hover over each icon to see what it means and when it triggers an alert.",
+        "whatDoesMean": "What does {label} mean"
+      },
+      "loadRisk": {
+        "highAcwr": {
+          "label": "High ACWR",
+          "explanation": "ACWR (Acute:Chronic Workload Ratio) compares the load from the last 7 days with the average over the past 4–6 weeks. If an athlete's ACWR exceeds this number, a High Risk alert is triggered: they are training well above what their body has been tolerating, which increases injury risk. Typical reference: 1.5."
+        },
+        "moderateAcwr": {
+          "label": "Moderate ACWR",
+          "explanation": "Same calculation as High ACWR, but with a lower threshold. If the ACWR exceeds this number (without reaching the High threshold), it is marked as Moderate Risk: an early signal that load has ramped up quickly. Typical reference: 1.3."
+        },
+        "lowStimulusAcwr": {
+          "label": "Low ACWR",
+          "explanation": "If the ACWR falls below this number, it is marked as Low Stimulus: the athlete is training well below their usual load (risk of fitness loss, not injury). Typical reference: 0.8."
+        },
+        "highTsb": {
+          "label": "High TSB",
+          "explanation": "TSB (Training Stress Balance / 'Form') is the difference between accumulated fitness (CTL) and the athlete's recent fatigue (ATL). It is a negative number when there is fatigue. If TSB drops below this value (e.g., -30), a High Risk alert is triggered due to excessive accumulated fatigue."
+        },
+        "moderateTsb": {
+          "label": "Moderate TSB",
+          "explanation": "Same concept as High TSB, with a less strict threshold. If TSB drops below this value (e.g., -15) without reaching the High threshold, it is marked as Moderate Risk."
+        },
+        "lowStimulusTsb": {
+          "label": "Low TSB",
+          "explanation": "If TSB rises above this value (e.g., +25), it is marked as Low Stimulus: the athlete is very rested and/or has low recent load, which may indicate they are not training enough to keep progressing."
+        }
+      },
+      "workoutMatchingCard": {
+        "title": "Workout Matching",
+        "autoLink": {
+          "label": "Auto-link",
+          "help": "If enabled, the engine links Strava activities to the plan automatically. If disabled, each match is held for manual review before being confirmed."
+        }
+      },
+      "dashboardCard": {
+        "title": "Dashboard Defaults",
+        "priorityFirst": {
+          "label": "Priority alert",
+          "help": "This alert card always appears first on the athlete dashboard.",
+          "options": {
+            "load_risk": "Load risk",
+            "compliance": "Compliance",
+            "rpe_mismatch": "RPE deviation"
+          }
+        }
+      },
+      "planningCard": {
+        "title": "Planning Defaults",
+        "defaultRpe": {
+          "label": "Default expected RPE",
+          "help": "Suggested initial RPE when creating a new workout with no defined effort."
+        },
+        "restDaysPerWeek": {
+          "label": "Rest days per week"
+        },
+        "weekStartsOn": {
+          "label": "Week starts on",
+          "monday": "Monday",
+          "sunday": "Sunday"
+        }
+      },
+      "stravaCard": {
+        "title": "Strava Sync",
+        "autoMatch": {
+          "label": "Auto matching",
+          "help": "If enabled, Strava activities are linked to the plan without confirmation. Otherwise, they are held for review."
+        },
+        "duplicateHandling": {
+          "label": "Duplicate activities",
+          "help": "What to do when an activity has already been imported.",
+          "options": {
+            "skip": "Skip (do not import)",
+            "flag": "Flag for review",
+            "replace": "Replace existing"
+          }
+        }
+      }
+    },
+    "team": {
+      "eyebrow": "Settings",
+      "title": "Team Settings",
+      "description": "Customize the name, colors, and models for your entire organization.",
+      "save": "Save Changes",
+      "saving": "Saving...",
+      "brandingCard": {
+        "title": "Brand & Branding",
+        "teamName": {
+          "label": "Team name"
+        },
+        "primaryColor": {
+          "label": "Primary color (Hex)"
+        },
+        "logoUrl": {
+          "label": "Logo URL",
+          "placeholder": "https://example.com/logo.png"
+        }
+      },
+      "alertsCard": {
+        "title": "Alert Thresholds",
+        "rpeMismatch": {
+          "label": "RPE Deviation",
+          "help": "Alert if the difference between planned and actual RPE exceeds this value."
+        },
+        "lowCompliance": {
+          "label": "Low Compliance (%)",
+          "help": "Alert if overall compliance falls below this percentage."
+        }
+      },
+      "algorithmsCard": {
+        "title": "Algorithms",
+        "workoutMatcherModel": {
+          "label": "Matching Engine"
+        },
+        "complianceModel": {
+          "label": "Compliance Engine"
+        }
+      },
+      "limits": {
+        "title": "Team Limits",
+        "maxAthletes": {
+          "label": "Max athletes",
+          "placeholder": "No limit",
+          "help": "Leave empty for no limit. Used for plan-based pricing control."
+        }
+      }
+    },
+    "auditLogs": {
+      "eyebrow": "Audit",
+      "title": "Audit Logs",
+      "description": "Immutable history of critical administrative actions.",
+      "filtersTitle": "Filters",
+      "filterPlaceholder": "Filter by action (e.g., group.updated)",
+      "eventsTitle": "Events ({count})",
+      "loading": "Loading...",
+      "empty": "No audit events found.",
+      "previous": "Previous",
+      "next": "Next",
+      "table": {
+        "time": "Time",
+        "action": "Action",
+        "actor": "Actor",
+        "target": "Target",
+        "metadata": "Metadata"
+      }
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "loading": "Loading notifications...",
+    "empty": "You don't have any notifications yet.",
+    "markAllRead": "Mark all as read",
+    "preferencesLink": "Notification preferences",
+    "groups": {
+      "today": "Today",
+      "thisWeek": "This week",
+      "older": "Older"
+    },
+    "preferences": {
+      "devicePushTitle": "Push notifications on this device",
+      "devicePushDescription": "Receive alerts even when you don't have the app open in this browser.",
+      "devicePushUnsupported": "This browser does not support push notifications.",
+      "comingSoon": "Coming soon",
+      "table": {
+        "category": "Event type",
+        "inApp": "In-app",
+        "push": "Push",
+        "frequency": "Frequency",
+        "email": "Email"
+      },
+      "categories": {
+        "chat_message": "Chat messages",
+        "workout_assigned": "Assigned workouts",
+        "race_reminder": "Race reminders",
+        "system": "System notifications",
+        "rpe_mismatch": "Unexpected RPE alerts",
+        "low_compliance": "Low compliance alerts",
+        "training_load": "Training load alerts"
+      },
+      "frequencies": {
+        "immediate": "Immediate",
+        "daily": "Daily digest",
+        "weekly": "Weekly digest"
+      }
+    },
+    "toastAction": "View"
+  },
+  "dashboard": {
+    "title": "Coach Dashboard",
+    "admin": {
+      "title": "Admin Dashboard",
+      "welcome": "Welcome, Super Coach. Global platform overview.",
+      "metrics": {
+        "totalAthletes": "Total Athletes",
+        "totalGroups": "Teams / Groups",
+        "activeCoaches": "Active Coaches"
+      },
+      "globalScope": "Global",
+      "activityEyebrow": "Activity",
+      "coachesCardHeader": "Coaches",
+      "coachesActivity": "Coaches & Activity",
+      "noName": "No name",
+      "athletesCount": "{count} Athletes",
+      "noActivity": "No activity",
+      "noCoaches": "No coaches registered yet."
+    },
+    "athlete": {
+      "defaultName": "Athlete",
+      "tabs": {
+        "overview": "Overview",
+        "fitness": "Fitness",
+        "compliance": "Compliance",
+        "zones": "Zones",
+        "chat": "Chat"
+      }
+    },
+    "messages": {
+      "hi": "Hi, {name}"
+    },
+    "careerProgress": {
+      "title": "Career Progress"
+    },
+    "fitness": {
+      "fitnessCard": "Fitness (CTL)",
+      "fatigueCard": "Fatigue (ATL)",
+      "formCard": "Form (TSB)",
+      "riskCard": "Risk (ACWR)",
+      "loadChartTitle": "Form Status",
+      "loadChartSubtitle": "Chronic load, acute load, and balance",
+      "paceZonesTitle": "Pace Zones",
+      "paceZonesEmpty": "Complete your VAM in your profile to see your personalized pace zones.",
+      "paceZonesEmptyLink": "Open profile",
+      "paceZonesVamLabel": "VAM",
+      "paceZonesVamUnit": "min/km",
+      "hrZonesTitle": "Heart Rate Zones",
+      "loadRisk": {
+        "insufficientData": "No data",
+        "high": "High Risk",
+        "moderate": "Moderate Risk",
+        "balanced": "Balanced",
+        "lowStimulus": "Low Stimulus"
+      },
+      "loadStatus": {
+        "loading": "Loading load metrics...",
+        "syncing": "Syncing Strava history (90 days)...",
+        "partial": "Partial history ({days} days).",
+        "ready": "Load metrics updated"
+      },
+      "weeklyLoadChartTitle": "Weekly Load",
+      "weeklyLoadChartSubtitle": "Km, minutes, and TSS over the last 8 weeks",
+      "weeklyLoadHrTssNote": "TSS calculated using heart rate when data is available; otherwise estimated by duration/pace."
+    },
+    "athleteFeedbackModal": {
+      "title": "Feedback on your new activity",
+      "description": "Fill it out now so your coach has fresh context from the session.",
+      "rpeLabel": "RPE (1-10)",
+      "sensationsLabel": "Feel (1-10)",
+      "commentsLabel": "Comment (optional)",
+      "commentsPlaceholder": "E.g., legs felt heavy at the end, but good pace control.",
+      "later": "Later",
+      "submit": "Submit feedback",
+      "saving": "Saving...",
+      "scale": {
+        "veryLow": "Very low",
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High",
+        "veryHigh": "Very high"
+      },
+      "highlights": {
+        "newPr": "New personal record at {distance}!",
+        "newPrEasy": "Personal record at {distance}, on an easy session",
+        "topEffort": "Top {rank} all-time at {distance}",
+        "negativeSplit": "Negative split: you closed {delta}s/km faster",
+        "consistentReps": "{count} very even reps, great pace control",
+        "allRepsDone": "You completed all {planned} planned reps",
+        "someRepsDone": "You did {done} of {planned} reps"
+      }
+    },
+    "metrics": {
+      "activeAthletes": "Active Athletes",
+      "completedToday": "Completed today",
+      "actionNeeded": "Action Needed",
+      "totalGroups": "Total Groups",
+      "rpeFailed": "RPE Failed",
+      "rpeFailed_subtitle": "Last 48h",
+      "missingWorkouts": "Athletes without workouts",
+      "missingWorkouts_subtitle": "No workouts next week",
+      "lowCompliance": "Non-compliance",
+      "lowCompliance_subtitle": "Athletes with <50% execution"
+    },
+    "alerts": {
+      "title": "Important Alerts",
+      "markAsRead": "Mark as read",
+      "resolve": "Resolve",
+      "snooze": "Snooze 24h",
+      "noAlerts": "No critical alerts at this time",
+      "thisWeek": "this week",
+      "nextWeek": "next week",
+      "hoursAgo": "{hours}h ago",
+      "daysAgo": "{days}d ago",
+      "new": "New",
+      "leftComment": "Left a comment on \"{activityName}\"",
+      "rpeCheck": "Check RPE",
+      "rpeReport": "Interval session reported as RPE {actual} (target: {expected}). \"{workoutType}\"",
+      "rpeDetails": "Expected RPE: {expected} → Actual RPE: {actual}. Difference: {diff} points.",
+      "complianceMessage": "Only {rate}% compliance this week ({completed}/{total} workouts)",
+      "complianceDetails": "{name} completed {completed} of {total} assigned workouts this week.",
+      "complianceLow": "Low compliance",
+      "groupNoWorkouts": "The group has no planned workouts ({count} athletes)",
+      "athleteNoWorkouts": "No planned workouts",
+      "athletesCompliance": "Athletes compliance",
+      "noCurrentAlerts": "No current alerts",
+      "groupStatus": "Group status",
+      "myAthletes": "My athletes",
+      "teamView": "Team",
+      "recentActivity": "Recent Activity",
+      "noRecentActivity": "No recent activity",
+      "nextRaces": "Upcoming Races",
+      "noNextRaces": "No upcoming races scheduled"
+    },
+    "matching": {
+      "eyebrow": "Matching",
+      "title": "Match Review"
+    },
+    "alertTypes": {
+      "rpe_mismatch": "RPE target missed",
+      "new_feedback": "New comment",
+      "low_compliance": "Low compliance",
+      "missing_workout": "No workouts",
+      "zone_violation": "Zone deviation",
+      "training_load": "Load alert"
+    },
+    "risk": {
+      "critical": "Critical",
+      "atRisk": "At risk",
+      "monitor": "Monitor",
+      "stable": "Stable"
+    },
+    "groupStatus": {
+      "activeAthletes": "{count, plural, =1 {1 Active Athlete} other {# Active Athletes}}",
+      "compliance": "COMPLIANCE",
+      "high": "HIGH",
+      "attentionNeeded": "ATTENTION NEEDED",
+      "optimal": "OPTIMAL",
+      "critical": "Critical",
+      "eyebrow": "Groups",
+      "noData": "No group data available"
+    },
+    "priorityRoster": {
+      "eyebrow": "Athlete intelligence",
+      "title": "Priority roster",
+      "operational": "Operational",
+      "ctl": "CTL",
+      "tsb": "TSB",
+      "columns": {
+        "athlete": "Athlete",
+        "program": "Program",
+        "load": "Load",
+        "fitness": "Fitness",
+        "risk": "Risk"
+      }
+    },
+    "recentActivity": {
+      "eyebrow": "Timeline"
+    },
+    "planSubtitle": "{groupName} - {timeframe}",
+    "alertActions": {
+      "markRead": "OK",
+      "snooze": "Snooze 24h",
+      "resolve": "Resolve",
+      "reply": "Reply",
+      "adjustPlan": "Adjust plan",
+      "viewComment": "View comment",
+      "flagReview": "Flag for review",
+      "recommended": {
+        "contactNowAdjustLoad": "Contact the athlete today and adjust the immediate load",
+        "reviewAndAdjustWeek": "Review the week and adjust upcoming workouts",
+        "monitorAndCheckIn": "Monitor and request a check-in in 24–48h",
+        "logAndMonitor": "Log context and continue tracking"
+      }
+    },
+    "groups": {
+      "title": "Group status",
+      "noGroups": "No groups found"
+    },
+    "coachNotes": {
+      "title": "Coach Notes",
+      "placeholder": "Add observations about the athlete's progression...",
+      "lastEdited": "Last edited: {date} {time}",
+      "save": "Save Note",
+      "saving": "Saving..."
+    },
+    "chat": {
+      "eyebrow": "MESSAGES",
+      "title": "Coach-athlete chat",
+      "subtitle": "Keep the conversation in sync between coach and athlete.",
+      "subtitleWithName": "Conversation with {name}",
+      "loading": "Loading messages...",
+      "refresh": "Refresh",
+      "refreshing": "Refreshing...",
+      "emptyTitle": "No messages",
+      "emptyState": "Send the first message to start the conversation.",
+      "emptyWithName": "Send the first message to {name}.",
+      "placeholder": "Write a message...",
+      "threadHint": "Messages are saved automatically in this thread.",
+      "send": "Send",
+      "sending": "Sending...",
+      "you": "You",
+      "read": "Read",
+      "loadError": "Could not load the chat.",
+      "sendError": "Could not send the message."
+    },
+    "performanceTrend": {
+      "title": "Compliance Trend"
+    },
+    "trainingTypes": {
+      "RUNNING": "Running",
+      "STRENGTH": "Strength",
+      "CYCLING": "Cycling",
+      "SWIMMING": "Swimming",
+      "OTHER": "Other",
+      "default": "Workout"
+    },
+    "weekLabel": "Wk {n}"
+  },
+  "testDashboard": {
+    "status": {
+      "optimalShort": "OPTIMAL",
+      "optimal": "OPTIMAL",
+      "stable": "STABLE",
+      "alert": "ALERT",
+      "monitor": "MONITOR"
+    },
+    "metrics": {
+      "activeAthletes": "ACTIVE ATHLETES",
+      "weeklyLoad": "WEEKLY LOAD",
+      "compliance": "COMPLIANCE",
+      "activeAlerts": "ACTIVE ALERTS"
+    },
+    "sections": {
+      "weeklySummary": "WEEKLY SUMMARY",
+      "weekOverWeek": "14% vs previous week",
+      "athletes": "ATHLETES",
+      "alerts": "ALERTS"
+    },
+    "actions": {
+      "viewFullAnalysis": "VIEW FULL ANALYSIS",
+      "viewAll": "VIEW ALL"
+    },
+    "table": {
+      "athlete": "ATHLETE",
+      "sport": "SPORT",
+      "tss": "TSS",
+      "form": "FORM",
+      "status": "STATUS"
+    },
+    "units": {
+      "tss": "TSS"
+    },
+    "chart": {
+      "load": "Load"
+    }
+  },
+  "athletes": {
+    "title": "Athletes",
+    "addAthlete": "Add Athlete",
+    "searchPlaceholder": "Search athletes by name or sport...",
+    "noAthletes": "No athletes found",
+    "viewProfile": "View Profile",
+    "assignWorkout": "Assign Workout",
+    "deleteTitle": "Delete athlete?",
+    "deleteMessage": "This action cannot be undone. The athlete's record will be permanently removed from the system.",
+    "deleteConfirm": "Yes, Delete",
+    "deleteFailed": "Failed to delete the athlete",
+    "edit": "Edit",
+    "delete": "Delete",
+    "filters": {
+      "level": "Level",
+      "group": "Group",
+      "coach": "Coach",
+      "allLevels": "All Levels",
+      "allGroups": "All Groups",
+      "allCoaches": "All Coaches"
+    },
+    "table": {
+      "athlete": "Athlete",
+      "sport": "Sport",
+      "level": "Level",
+      "groups": "Groups",
+      "trainings": "Workouts",
+      "planned": "Planned",
+      "compliance": "Compliance",
+      "actions": "Actions"
+    },
+    "levels": {
+      "elite": "Elite",
+      "advanced": "Advanced",
+      "intermediate": "Intermediate",
+      "beginner": "Beginner"
+    },
+    "sports": {
+      "running": "Running"
+    },
+    "detail": {
+      "notFound": "Athlete not found",
+      "assignTraining": "Assign workout",
+      "height": "Height",
+      "weight": "Weight",
+      "restHR": "Resting HR",
+      "maxHR": "Max HR",
+      "lthr": "Lactate Threshold HR",
+      "testVAM": "VAM Test",
+      "assignLevel": "Assign level",
+      "testUAN": "UAN Test",
+      "totalTrainings": "Total Workouts",
+      "completed": "Completed",
+      "thisWeek": "This Week",
+      "complianceRate": "Compliance Rate",
+      "updated": "updated",
+      "weeklyVolume": "Weekly Volume",
+      "weeklyTime": "Weekly Time",
+      "plannedCompleted": "Planned and Completed",
+      "scheduleFor": "Schedule for {date}",
+      "noTrainingScheduled": "No workout planned or completed.",
+      "statusCompleted": "Completed",
+      "statusPlanned": "Planned",
+      "deleteAssignmentConfirm": "Are you sure you want to delete this assignment?",
+      "deleteAssignmentTitle": "Delete assignment",
+      "deleteAssignmentButton": "Delete",
+      "deleteAssignmentError": "Failed to delete the assignment. Please try again.",
+      "updateVAMError": "Failed to update VAM. Please try again.",
+      "recentActivity": "Recent Activity",
+      "noRecentActivity": "No recent activity",
+      "week": "Wk {n}",
+      "coachNotesTitle": "Private notes",
+      "chatWithCoach": "Chat with coach",
+      "performanceAndZones": "Performance and Zones",
+      "performanceTrend": "Compliance Trend",
+      "loadMonitoringTitle": "Load Monitoring",
+      "loadMonitoringSubtitle": "Internal load status and fatigue risk",
+      "overviewTab": "Overview",
+      "complianceTab": "Compliance",
+      "trainingTab": "Training",
+      "healthTab": "Health & Load",
+      "zonesTab": "Zones",
+      "racesNotesTab": "Notes & Chat",
+      "trendTab": "Trend",
+      "athleteProfileTitle": "Athlete profile",
+      "athleteProfileSubtitle": "Physiological data and benchmark tests",
+      "showDetails": "Show details",
+      "hideDetails": "Hide details",
+      "trainingComplianceTrend": "Compliance trend",
+      "complianceStats": {
+        "average": "Average",
+        "trend": "Trend",
+        "status": "Status",
+        "statusLabel": {
+          "good": "Good",
+          "moderate": "Moderate",
+          "low": "Low"
+        },
+        "targetLabel": "Target"
+      },
+      "complianceTabSubtitle": "Compliance over the last 6 weeks",
+      "nextRace": "Next race",
+      "daysShort": "days",
+      "showAdvancedMetrics": "Show advanced metrics",
+      "hideAdvancedMetrics": "Hide advanced metrics",
+      "hrZonesTitle": "Heart rate zones",
+      "paceZonesTitle": "Pace zones",
+      "noHrZones": "No heart rate zones loaded.",
+      "todayLoad": "Today's Load",
+      "last7DaysAvg": "7-day avg",
+      "loadPoints": "pts",
+      "loadRisk": {
+        "insufficientData": "Insufficient Data",
+        "high": "High Risk",
+        "moderate": "Moderate Risk",
+        "balanced": "Balanced",
+        "lowStimulus": "Low Stimulus"
+      },
+      "loadRiskHint": "Quick reference: TSB {tsb}, ATL {atl}, CTL {ctl}, ACWR {acwr}. A very negative TSB usually indicates fatigue accumulation; ACWR > 1.3 may indicate a sharp load increase.",
+      "loadStatus": {
+        "loading": "Loading load metrics...",
+        "syncing": "Syncing Strava history (90 days)...",
+        "partial": "Partial history ({days} days).",
+        "ready": "Load metrics updated"
+      },
+      "metricTooltip": {
+        "ctl": "CTL (Chronic Training Load): long-term load average. Represents accumulated fitness.",
+        "atl": "ATL (Acute Training Load): recent load average. Represents short-term fatigue.",
+        "tsb": "TSB (Training Stress Balance): difference between CTL and ATL. Negative values usually indicate higher fatigue.",
+        "acwr": "ACWR (Acute:Chronic Workload Ratio): ratio between recent load and chronic baseline. Sharp changes raise the risk.",
+        "todayLoad": "Today's load: accumulated stress for the current day.",
+        "last7DaysAvg": "Average load over the last 7 days to provide context for the recent trend."
+      }
+    },
+    "editModal": {
+      "title": "Edit athlete",
+      "nameLabel": "Name",
+      "namePlaceholder": "Full name",
+      "emailReadonlyLabel": "Email (read-only)",
+      "assignedCoachLabel": "Assigned coach",
+      "selectCoachPlaceholder": "Select a coach",
+      "noCoach": "No coach",
+      "saving": "Saving...",
+      "saveChanges": "Save changes",
+      "updateError": "Could not update the athlete"
+    }
+  },
+  "activities": {
+    "detail": {
+      "common": {
+        "selectAll": "Select all",
+        "clear": "Clear",
+        "edit": "Edit",
+        "cancel": "Cancel",
+        "close": "Close",
+        "selected": "{count} selected",
+        "selectVisibleLaps": "Select visible laps"
+      },
+      "loadingChart": "Loading chart...",
+      "errorLoad": "Error loading the activity",
+      "errorSaveFeedback": "Error saving feedback. Please try again.",
+      "rpe": {
+        "notRated": "Not rated",
+        "veryEasy": "Very easy",
+        "easy": "Easy",
+        "moderate": "Moderate",
+        "hard": "Hard",
+        "maximumEffort": "Maximum effort"
+      },
+      "notFound": {
+        "title": "Activity not found",
+        "description": "The activity you're looking for doesn't exist."
+      },
+      "actions": {
+        "goBack": "Go Back",
+        "share": "Share",
+        "analysis": "Analysis",
+        "download": "Download",
+        "report": "Report",
+        "editLink": "Edit Link",
+        "linkWorkout": "Link Workout"
+      },
+      "metrics": {
+        "avgHr": "AVG HR",
+        "bpm": "BPM",
+        "generalWorkout": "GENERAL WORKOUT",
+        "sufferScore": "SUFFER SCORE",
+        "distance": "Distance",
+        "avgPace": "Avg Pace",
+        "avgSpeed": "Avg Speed",
+        "duration": "Total Duration",
+        "elevationGain": "Elevation Gain",
+        "avgHrLabel": "AVG BPM",
+        "maxHrLabel": "MAX",
+        "units": {
+          "km": "km",
+          "mi": "mi",
+          "m": "m",
+          "bpm": "bpm",
+          "spm": "spm",
+          "kmh": "km/h",
+          "perKm": "/km"
+        }
+      },
+      "executionSummary": {
+        "title": "EXECUTION SUMMARY",
+        "tiles": {
+          "reps": "REPS",
+          "consistency": "CONSISTENCY",
+          "split": "SPLIT",
+          "records": "BEST MARKS"
+        },
+        "consistency": {
+          "high": "Very consistent",
+          "medium": "Consistent",
+          "low": "With variation"
+        },
+        "split": {
+          "negative": "Negative",
+          "even": "Even",
+          "positive": "Positive"
+        },
+        "highlights": {
+          "newPr": "New personal record at {distance}!",
+          "newPrEasy": "Personal record at {distance}, and on an easy session",
+          "topEffort": "Top {rank} all-time at {distance}",
+          "negativeSplit": "Negative split: you closed {delta}s/km faster",
+          "consistentReps": "{count} very consistent reps, great pace control",
+          "allRepsDone": "You completed all {planned} planned reps",
+          "someRepsDone": "You did {done} of {planned} reps",
+          "positiveSplitTip": "Next time try starting easier to finish stronger"
+        }
+      },
+      "charts": {
+        "terrain": "Terrain",
+        "elevationProfile": "Elevation Profile",
+        "hrPerformance": "Heart Rate Performance",
+        "liveTracking": "Live Tracking Data",
+        "map": "Map",
+        "intensityDistribution": "Intensity Distribution",
+        "intervalsAnalysis": "Intervals Analysis",
+        "pace": "Pace",
+        "speed": "Speed",
+        "heartRate": "Heart Rate",
+        "distance": "Distance",
+        "efficiency": "Efficiency",
+        "warmup": "Warm-Up",
+        "active": "Main",
+        "recovery": "Recovery",
+        "minPerKm": "min/km",
+        "kmh": "km/h",
+        "bpm": "bpm",
+        "lap": "Lap",
+        "time": "Time",
+        "share": "Percentage",
+        "range": "Range",
+        "totalTime": "Total time",
+        "km": "km",
+        "grade": "Grade",
+        "slope": "Slope",
+        "elevation": "Elevation",
+        "cumulative": "Cumulative",
+        "totalElevationGain": "Total: +{value} m",
+        "noHrSamples": "No heart rate samples were found in laps or splits.",
+        "gradeCategories": {
+          "steepDownhill": "Steep Downhill",
+          "downhill": "Downhill",
+          "flat": "Flat",
+          "uphill": "Uphill",
+          "steepUphill": "Steep Uphill"
+        },
+        "noSplitData": "No split data available",
+        "noHrData": "No heart rate data available.",
+        "paceVsHr": "Pace vs Heart Rate"
+      },
+      "map": {
+        "colorBy": "Color by",
+        "pace": "Pace",
+        "heartRate": "Heart Rate",
+        "start": "Start",
+        "finish": "Finish",
+        "slower": "Slower",
+        "faster": "Faster",
+        "lower": "Lower",
+        "higher": "Higher",
+        "hoverHint": "Hover over the route to see details",
+        "tooltip": {
+          "distance": "Distance",
+          "pace": "Pace",
+          "heartRate": "HR",
+          "altitude": "Altitude",
+          "grade": "Grade"
+        }
+      },
+      "tabs": {
+        "analysis": "Lap and Split Analysis",
+        "autoLaps": "Auto Laps",
+        "kmSplits": "KM Splits"
+      },
+      "table": {
+        "lap": "Lap",
+        "time": "Time",
+        "distance": "Distance",
+        "avgPace": "Avg Pace",
+        "avgHr": "Avg HR",
+        "cadence": "Cadence",
+        "elevGain": "Elev. Gain",
+        "split": "Split",
+        "pace": "Pace",
+        "elevation": "Elevation",
+        "zone": "Zone"
+      },
+      "legend": {
+        "hrZones": "Heart Rate Zones Reference"
+      },
+      "zones": {
+        "hrTitle": "Heart Rate Zones",
+        "hrZonesTitle": "Heart Rate Zones",
+        "paceTitle": "Pace Zones",
+        "noHrData": "No heart rate data available for this activity.",
+        "noPaceData": "No pace data available for this activity.",
+        "charts": {
+          "time": "Time",
+          "share": "Percentage",
+          "range": "Range",
+          "totalTime": "Total time",
+          "bpm": "bpm",
+          "noHrSamples": "No heart rate samples were found in laps or splits."
+        },
+        "short": {
+          "z1": "Z1",
+          "z2": "Z2",
+          "z3": "Z3",
+          "z4": "Z4",
+          "z5": "Z5"
+        },
+        "names": {
+          "z1": "Z1 - Recovery",
+          "z2_hr": "Z2 - Endurance",
+          "z2_pace": "Z2 - Easy",
+          "z3": "Z3 - Tempo",
+          "z4": "Z4 - Threshold",
+          "z5_hr": "Z5 - VO2 Max",
+          "z5_pace": "Z5 - Anaerobic"
+        }
+      },
+      "dynamics": {
+        "title": "Activity Dynamics",
+        "loading": "Loading activity data...",
+        "xAxis": "X Axis",
+        "detail": "Detail",
+        "laps": "Laps",
+        "lap": "Lap",
+        "types": {
+          "time": "Time",
+          "distance": "Distance"
+        },
+        "resolutions": {
+          "low": "Low",
+          "medium": "Medium",
+          "high": "High"
+        },
+        "visibility": {
+          "show": "Show",
+          "hide": "Hide"
+        },
+        "metrics": {
+          "pace": "Pace",
+          "gap": "GAP",
+          "heartRate": "Heart Rate",
+          "cadence": "Cadence",
+          "elevation": "Elevation",
+          "grade": "Grade",
+          "lapBoundaries": "Lap Boundaries",
+          "minPerKm": "min/km",
+          "elevationGain": "Elev. Gain"
+        }
+      },
+      "lapFilters": {
+        "all": "All",
+        "warmup": "Warm-Up",
+        "active": "Active",
+        "recovery": "Recovery",
+        "cooldown": "Cool-Down",
+        "unmatched": "Unassigned"
+      },
+      "compliance": {
+        "title": "Intensity Compliance",
+        "compliantTitle": "Workout Compliant",
+        "violationTitle": "Intensity Deviation",
+        "compliantDesc": "The athlete stayed within the intensity zones prescribed by the coach.",
+        "violationDesc": "Significant time above planned intensity zones was detected.",
+        "targetZone": "Target Zone",
+        "targetZones": "Target Zones",
+        "otherZones": "Other Zones"
+      },
+      "segments": {
+        "title": "Segment Efforts",
+        "time": "Time",
+        "pace": "Pace",
+        "distanceArea": "Distance and Area",
+        "generalEffort": "General Effort"
+      },
+      "feedback": {
+        "title": "Activity Feedback",
+        "rpeLabel": "Rate of Perceived Exertion (RPE)",
+        "notesLabel": "Athlete Notes",
+        "placeholder": "How did you feel during this workout? Notes for your coach...",
+        "saving": "Saving...",
+        "update": "Update Feedback",
+        "save": "Save Feedback",
+        "coachViewRpe": "Rate of Perceived Exertion (RPE)",
+        "noExertion": "No exertion was recorded.",
+        "noNotes": "The athlete did not provide notes."
+      },
+      "workout": {
+        "warmup": "Warm-Up",
+        "active": "Active",
+        "rest": "Rest",
+        "recovery": "Recovery",
+        "cooldown": "Cool-Down"
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome",
+      "emailLabel": "Email",
+      "emailPlaceholder": "athlete@example.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "••••••",
+      "submitButton": "Log In",
+      "submittingButton": "Logging in...",
+      "forgotPassword": "Forgot your password?",
+      "invalidCredentials": "Invalid credentials",
+      "emailInvalid": "Invalid email",
+      "passwordTooShort": "Password must be at least 6 characters",
+      "magicLink": "Or log in with a magic link",
+      "sendMagicLink": "Send Link",
+      "magicLinkSent": "Sent! Check your email to log in.",
+      "backToPassword": "Back to password"
+    },
+    "forgotPassword": {
+      "title": "Reset Password",
+      "description": "Enter your email and we'll send you a link to reset your password.",
+      "emailLabel": "Email address",
+      "emailPlaceholder": "you@example.com",
+      "submitButton": "Send link",
+      "submittingButton": "Sending...",
+      "successMessage": "Email sent! Check your inbox to continue.",
+      "errorMessage": "Error sending the reset email",
+      "backToLogin": "Back to login",
+      "emailInvalid": "Invalid email"
+    },
+    "resetPassword": {
+      "title": "New Password",
+      "description": "Enter your new password.",
+      "newPasswordLabel": "New password",
+      "passwordPlaceholder": "••••••",
+      "confirmPasswordLabel": "Confirm password",
+      "confirmPasswordPlaceholder": "••••••",
+      "submitButton": "Save password",
+      "submittingButton": "Saving...",
+      "successMessage": "Password updated successfully!",
+      "passwordMismatch": "Passwords don't match",
+      "passwordTooShort": "Password must be at least 6 characters",
+      "verifyingLink": "Verifying your recovery link...",
+      "invalidTitle": "Invalid or expired link",
+      "invalidDescription": "The link to reset your password is invalid or has expired. Please request a new reset email.",
+      "backToLogin": "Back to login",
+      "noSessionError": "No active session. Click the reset link again.",
+      "errorMessage": "Could not update the password"
+    },
+    "codeError": {
+      "title": "Authentication error",
+      "description": "An error occurred during authentication. The link may have expired or is invalid.",
+      "backToLogin": "Back to login"
+    }
+  },
+  "groups": {
+    "title": "My Groups",
+    "createGroup": "New Group",
+    "loadingGroups": "Loading groups...",
+    "loadingGroup": "Loading group...",
+    "noGroups": "No groups found",
+    "athletes": "Athletes",
+    "athletesCount": "{count} Athletes",
+    "phase": "Phase",
+    "racePrep": "Race Prep",
+    "base": "Base",
+    "targetRace": "Target Race",
+    "event": "Event",
+    "viewDetails": "View details",
+    "emptyCardTitle": "Create a new group",
+    "emptyCardDesc": "Group your athletes for shared workouts.",
+    "activeGroups": "Active Groups",
+    "finishedGroups": "Past Groups",
+    "finished": "Finished",
+    "detail": {
+      "notFound": "Group not found",
+      "membersCount": "Members ({count})",
+      "assignWorkout": "Assign Workout",
+      "addMember": "Add Member",
+      "addAthleteTitle": "Add Athlete to Group",
+      "noAvailableAthletes": "No athletes available to add.",
+      "selectAthlete": "Select Athlete",
+      "selectAthletePlaceholder": "Select an athlete...",
+      "unnamedAthlete": "Unnamed Athlete",
+      "removeConfirm": "Remove athlete?",
+      "remove": "Remove",
+      "noMembers": "No members yet.",
+      "editGroup": "Edit Group",
+      "isRaceGroup": "Is this a race preparation group?",
+      "raceName": "Race Name",
+      "raceDate": "Race Date",
+      "raceDistance": "Distance",
+      "racePriority": "Priority",
+      "priorityA": "A (Main Goal)",
+      "priorityB": "B (Secondary)",
+      "priorityC": "C (Training)",
+      "selectExistingRace": "Select existing race",
+      "createNewRace": "Create new race",
+      "pickFromLibrary": "Pick from library",
+      "raceDetails": "Race Details"
+    },
+    "createForm": {
+      "subtitle": "Set up a new training group.",
+      "groupNameLabel": "Group name",
+      "groupNamePlaceholder": "E.g. Marathon Team 2025",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Optional: group details, goals, etc.",
+      "selectRacePlaceholder": "Select a race...",
+      "emptyRaceLibrary": "No races in the library. Create a new one.",
+      "raceNamePlaceholder": "E.g. Buenos Aires Marathon",
+      "raceDistancePlaceholder": "E.g. 42k",
+      "locationLabel": "Location",
+      "locationPlaceholder": "E.g. Buenos Aires, Argentina",
+      "creating": "Creating...",
+      "createGroup": "Create group"
+    },
+    "editModal": {
+      "groupNameLabel": "Group name",
+      "descriptionLabel": "Description",
+      "optionalPlaceholder": "Optional",
+      "selectRacePlaceholder": "Select a race...",
+      "noDate": "No date",
+      "raceNamePlaceholder": "E.g. Buenos Aires Marathon",
+      "raceDistancePlaceholder": "E.g. 42k",
+      "syncWithMembers": "Sync with members",
+      "syncWithMembersDescription": "Automatically assign this race to every athlete's calendar in the group."
+    },
+    "detailPage": {
+      "editGroup": "Edit group",
+      "groupPlanning": "Group planning",
+      "scheduleTraining": "Schedule workout"
+    }
+  },
+  "coaches": {
+    "title": "Coach Management",
+    "inviteCoach": "Invite Coach",
+    "searchPlaceholder": "Search coach by name or email",
+    "deleteTitle": "Delete Coach?",
+    "deleteMessage": "This action cannot be undone. The coach will be deleted and all their athletes will be temporarily reassigned to your account (Admin).",
+    "deleteConfirm": "Yes, Delete and Reassign",
+    "deleteFailed": "Error deleting the coach",
+    "deleteButton": "Delete",
+    "table": {
+      "coach": "Coach",
+      "athletes": "Athletes",
+      "actions": "Actions",
+      "noCoaches": "No coaches found.",
+      "noName": "No name"
+    }
+  },
+  "trainings": {
+    "title": "Workout Templates",
+    "createTraining": "Create Workout",
+    "noTrainings": "No workout templates found.",
+    "blocks": "{count} blocks",
+    "assignToAthlete": "Assign to Athlete",
+    "deleteConfirm": "Are you sure you want to delete \"{title}\"? This action cannot be undone.",
+    "deleteConfirmTitle": "Delete template",
+    "deleteConfirmButton": "Delete",
+    "deleteError": "Error deleting the workout. Please try again.",
+    "loading": "Loading...",
+    "new": {
+      "title": "Create New Workout",
+      "detailsCard": "Workout Details",
+      "titleLabel": "Title",
+      "titlePlaceholder": "E.g.: 5K Speed Intervals",
+      "focusLabel": "Focus:",
+      "focusPlaceholder": "Threshold development • Cycling",
+      "sportTypeLabel": "Sport type",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Optional description...",
+      "workoutStructure": "Workout Structure",
+      "addBlockHint": "Add at least one block",
+      "errorNoTitle": "Please enter a title for the workout.",
+      "errorNoBlocks": "Please add at least one workout block.",
+      "errorCreate": "Error creating the workout. Please try again.",
+      "saving": "Saving...",
+      "save": "Save Workout",
+      "cancel": "Cancel",
+      "versionHistory": "Version history",
+      "shareWithAthlete": "Share with athlete"
+    },
+    "assign": {
+      "titleAthlete": "Assign Workout to Athlete",
+      "title": "Assign Workout",
+      "selectDate": "Select a date for the workout",
+      "expectedRpe": "Expected effort level (RPE)",
+      "rpeVeryEasy": "Very Easy",
+      "rpeEasy": "Easy",
+      "rpeModerate": "Moderate",
+      "rpeHard": "Hard",
+      "rpeMax": "Maximum Effort",
+      "workoutName": "Workout name (optional)",
+      "workoutNamePlaceholder": "E.g.: Monday Speed, Recovery Run",
+      "workoutNameHint": "Give it a custom name. If left empty, the default name will be used.",
+      "workoutNameHintTemplate": "Give it a custom name. If left empty, the template name will be used.",
+      "chooseWorkoutType": "Choose workout type",
+      "useTemplate": "Use Template",
+      "useTemplateDesc": "Select from existing templates",
+      "createNew": "Create New",
+      "createNewDesc": "Build a custom workout from scratch",
+      "selectTemplate": "Select a Template",
+      "noTemplates": "No templates available. Create one first or build a custom workout.",
+      "noDescription": "No description",
+      "workout": "Workout: {title}",
+      "viewOriginal": "View Original",
+      "editWorkout": "Edit Workout",
+      "buildWorkout": "Build Your Workout",
+      "scheduledFor": "Scheduled for: {date}",
+      "notSet": "Not set",
+      "assignToAthletes": "Assign to Athletes",
+      "assignToGroups": "Assign to Groups",
+      "scheduledDate": "Scheduled date",
+      "selectAthletes": "Select Athletes",
+      "selectGroups": "Select Groups",
+      "noAthletes": "No athletes found",
+      "noGroups": "No groups found",
+      "back": "Back",
+      "cancel": "Cancel",
+      "next": "Next",
+      "assigning": "Assigning...",
+      "assignWorkout": "Assign Workout",
+      "creatingAndAssigning": "Creating and assigning...",
+      "createAndAssign": "Create and Assign",
+      "errorNoDate": "Please select a date.",
+      "errorNoBlocks": "Please add at least one block to the workout.",
+      "errorNoWorkout": "Please select a workout.",
+      "errorNoRecipient": "Please select at least one athlete or group.",
+      "errorCreate": "Error creating and assigning the workout.",
+      "errorAssign": "Error assigning the workout.",
+      "pageTitle": "Assign workout",
+      "pageSubtitle": "Choose a template or create a session from scratch and assign it to your athletes' calendar.",
+      "navigateBack": "Back",
+      "fromLibrary": "Use template",
+      "fromLibraryDesc": "Select a previously created routine for quick assignment.",
+      "blankSlate": "Create from scratch",
+      "blankSlateDesc": "Build a new session with your own blocks.",
+      "backToPhase1": "Back to Phase 1",
+      "templateMatrix": "Template Library",
+      "templateMatrixSubtitle": "Select the template you want to schedule.",
+      "filterRoutines": "Filter routines...",
+      "intervals": "Intervals",
+      "noTemplatesInLibrary": "No templates defined in the library yet.",
+      "restart": "Restart",
+      "editorPhase": "Workout editor",
+      "constructProtocol": "Build Protocol",
+      "blocksRegistered": "Blocks loaded",
+      "proceedToScheduling": "Continue to set the date, recipients, and target effort.",
+      "continueToScheduling": "Continue to Scheduling",
+      "continueToAssignment": "Continue to Assignment",
+      "modifyBlueprint": "Modify workout",
+      "actionCalendar": "Planning",
+      "sessionPlanning": "Session Planning",
+      "executionDate": "Target Execution Date",
+      "objectiveTitle": "Session name",
+      "exampleLongRun": "E.g. Sunday Long Run",
+      "assignmentNameOverride": "Name visible to the athlete",
+      "overwritesTemplateName": "If filled in, it replaces the original template name.",
+      "targetAthletes": "Athletes",
+      "searchByNameOrEmail": "Search by name or email...",
+      "targetRunningTeams": "Groups",
+      "searchGroups": "Search groups...",
+      "globalTargetRpe": "Target RPE",
+      "endurance": "Endurance",
+      "maxOutput": "Max Output",
+      "catalogStructure": "Save as template",
+      "catalogStructureDesc": "Save this session to the library for reuse in future assignments.",
+      "enterLibraryTitle": "Enter a name for the template...",
+      "noMatches": "No matches",
+      "customProtocol": "Custom Protocol",
+      "scheduledToExecute": "Scheduled for",
+      "payloadContains": "Contains",
+      "structuralComponents": "structural components",
+      "estimatedLoad": "with an estimated active load of ~{minutes} minutes.",
+      "overruleBlockStructure": "Edit blocks",
+      "actionStatus": "Status",
+      "awaitingScheduling": "Execution date needs to be set.",
+      "awaitingRecipients": "At least one recipient needs to be selected.",
+      "readyToDistribute": "Ready to assign.",
+      "transmittingData": "Assigning...",
+      "commitAssignment": "Confirm Assignment",
+      "loadingMatrix": "Loading assignment screen...",
+      "successAssigned": "Workout successfully assigned to the calendar.",
+      "errorExecutionFailed": "Execution failed. Please check the selected items and try again.",
+      "selectAtLeastOne": "Please select at least one athlete or team",
+      "stepSource": "Source",
+      "stepBuild": "Design",
+      "stepAssign": "Assignment",
+      "blockBreakdown": "Block breakdown",
+      "blockBreakdownQuickView": "Quick view",
+      "blockBreakdownEmpty": "No blocks have been added to this session yet.",
+      "blockTypes": {
+        "warmup": "Warm-Up",
+        "interval": "Interval",
+        "recovery": "Recovery",
+        "rest": "Rest",
+        "cooldown": "Cool-Down"
+      }
+    },
+    "matches": {
+      "empty": "No pending matches to review.",
+      "confidence": "{value}% confidence",
+      "scheduled": "Planned: {date}",
+      "suggestedActivity": "Suggested activity: {title} ({distance}, {duration})",
+      "reject": "Reject",
+      "approve": "Approve"
+    }
+  },
+  "workouts": {
+    "library": "Workout Library",
+    "createWorkout": "Create Workout",
+    "noWorkouts": "No workouts found",
+    "assign": "Assign",
+    "edit": "Edit",
+    "delete": "Delete",
+    "libraryPage": {
+      "title": "Workout Library",
+      "subtitle": "Manage your workout templates",
+      "createTemplate": "Create Template",
+      "searchPlaceholder": "Search templates...",
+      "loadingTemplates": "Loading templates...",
+      "noTemplatesSearch": "No templates matching your search were found.",
+      "noTemplatesYet": "No templates yet.",
+      "createFirstTemplate": "Create Your First Template",
+      "createdBy": "Created by {name}",
+      "steps": "steps",
+      "previewSummary": "View summary",
+      "assign": "Assign",
+      "deleteConfirm": "Are you sure you want to delete this template?",
+      "deleteError": "Error deleting the template"
+    },
+    "detail": {
+      "establishingLink": "Establishing connection...",
+      "navigateBack": "Back",
+      "executed": "Executed",
+      "pendingExecution": "Pending Execution",
+      "scheduled": "Scheduled",
+      "scheduledDate": "Scheduled date",
+      "assignmentTitle": "Workout assignment",
+      "workoutName": "Workout name",
+      "targetAthlete": "Target Athlete",
+      "targetRpeConstraint": "Target RPE Constraint",
+      "enduranceLoad": "Endurance Load",
+      "maxOutput": "Max Output",
+      "readOnlyMode": "Read-Only Mode",
+      "readOnlyDesc": "This protocol has already been executed or is restricted from modification by the source architecture.",
+      "uncommittedAdjustments": "Uncommitted Adjustments",
+      "pushUpdates": "Push structural updates to the target.",
+      "synchronizing": "Synchronizing...",
+      "commitSave": "Commit Save",
+      "cancel": "Cancel",
+      "syncSuccess": "Modifications synchronized successfully.",
+      "syncFailed": "Synchronization failed.",
+      "loadingError": "Error initializing workout parameters",
+      "backToDashboard": "Back to Dashboard",
+      "applyToGroupQuestion": "This workout was assigned to a group. Do you want to apply these changes to all athletes in the group?",
+      "groupUpdate": "Group Update",
+      "applyToAll": "Yes, to the whole group",
+      "onlyThisOne": "No, only this athlete",
+      "deleteGroupQuestion": "This workout is part of a group event. Do you want to delete it for all athletes in the group?",
+      "deleteWorkout": "Delete Workout",
+      "deleteAll": "Delete for all",
+      "deleteConfirm": "Are you sure you want to delete this workout?",
+      "delete": "Delete",
+      "deleteSuccess": "Workout deleted successfully.",
+      "deleteFailed": "Could not delete the workout.",
+      "deleteAssignment": "Delete Workout",
+      "sendToGarmin": "Send to Garmin",
+      "sendingToGarmin": "Sending to Garmin...",
+      "garminPushSuccess": "Workout sent to the athlete's Garmin.",
+      "garminPushSkipped": "The athlete doesn't have Garmin connected or isn't in the pilot.",
+      "garminPushFailed": "Could not send the workout to Garmin."
+    },
+    "matchModal": {
+      "errorLink": "Could not link the activity",
+      "confirmUnlink": "Are you sure you want to unlink this activity?",
+      "errorUnlink": "Could not unlink the activity",
+      "errorLoad": "Could not load the comparison",
+      "title": "Workout Comparison",
+      "loading": "Loading comparison...",
+      "notFound": "No completed activity was found for this workout.",
+      "notFoundDesc": "Complete the workout and sync with Strava to see the comparison.",
+      "searching": "Searching...",
+      "linkManual": "Link Activity Manually",
+      "selectActivity": "Select an activity",
+      "cancel": "Cancel",
+      "noRecentActivities": "No recent activities found.",
+      "link": "Link",
+      "overallScore": "Overall Score",
+      "objective": "Objective:",
+      "objectiveDistance": "Distance",
+      "objectiveTime": "Time",
+      "unlinkActivity": "Unlink Activity",
+      "distance": "Distance",
+      "duration": "Duration",
+      "planned": "Planned:",
+      "actual": "Actual:",
+      "difference": "Difference:",
+      "viewDetails": "View full activity details",
+      "workoutBlocks": "Workout Blocks",
+      "pace": "Pace: {min} - {max} min/km"
+    },
+    "linkModal": {
+      "title": "Link to planned workout",
+      "activityLabel": "Activity",
+      "errorLoad": "Could not load suggested workouts",
+      "errorLink": "Could not link the workout",
+      "errorUnlink": "Could not unlink the workout",
+      "confirmUnlink": "Are you sure you want to unlink this workout?",
+      "loading": "Searching for nearby workouts...",
+      "noCandidates": "No planned workouts found nearby (+/- 2 days).",
+      "linked": "Linked",
+      "linkedToAnother": "Linked to another activity",
+      "unlinking": "Unlinking...",
+      "unlink": "Unlink",
+      "linking": "Linking...",
+      "link": "Link"
+    }
+  },
+  "builder": {
+    "common": {
+      "cancel": "Cancel",
+      "close": "Close"
+    },
+    "readOnlyMode": "Read-only mode",
+    "blockLibrary": "Block Library",
+    "structuralBlocks": "Structural Blocks",
+    "preparatory": "Preparatory",
+    "warmUp": "Warm-Up",
+    "performance": "Performance",
+    "intervalWork": "Interval Work",
+    "activeRest": "Active Rest",
+    "recovery": "Recovery",
+    "rest": "Rest",
+    "closing": "Closing",
+    "coolDown": "Cool-Down",
+    "sequenceBuilder": "Sequence Builder",
+    "expandAll": "Expand All",
+    "autoBalance": "Auto-Balance",
+    "sequenceDescription": "All metrics update in real time.",
+    "stage": "Stage",
+    "duration": "Duration",
+    "target": "Target",
+    "notes": "Notes",
+    "repeats": "Repeats {reps}x",
+    "coachNotes": "Coach Notes",
+    "notesPlaceholder": "Add notes for the athlete...",
+    "linkedDrills": "Linked Drills",
+    "linkedDrillsTitle": "High cadence technique",
+    "video": "Video",
+    "sessionSummary": "Session Summary",
+    "tss": "TSS (Est.)",
+    "if": "IF (Intensity Factor)",
+    "estimatedLoad": "Estimated Load",
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High",
+    "veryHigh": "Very High",
+    "projectedProfile": "Projected Training Profile",
+    "workoutVisualization": "Workout Visualization",
+    "total": "Total",
+    "estTssShort": "Est. TSS",
+    "steps": "Steps",
+    "stepDurationBlocks": "Blocks by estimated duration",
+    "zoneDistribution": "Distribution by type",
+    "stepSummaryTitle": "Step summary",
+    "workoutProfile": "Workout Profile",
+    "intensity": "Intensity",
+    "heartRate": "Heart Rate",
+    "emptyProfile": "Add steps to see the workout profile",
+    "labels": {
+      "warmup": "Warm-up",
+      "interval": "Active",
+      "recovery": "Recovery",
+      "recoveryDescription": "Active",
+      "recoveryWithHint": "Recovery",
+      "rest": "Rest",
+      "restDescription": "Passive",
+      "restWithHint": "Rest",
+      "cooldown": "Cool-down",
+      "hard": "Hard",
+      "easy": "Easy",
+      "repeat": "Repeat"
+    },
+    "stepDetails": "Step Details",
+    "removeStep": "Remove Step",
+    "stepName": "Step Name",
+    "type": "Type",
+    "meters": "Meters",
+    "kilometers": "Kilometers",
+    "minutes": "Minutes",
+    "time": "Time",
+    "paceSpeed": "Pace / Speed",
+    "vamZone": "VAM Zone",
+    "powerZone": "Power Zone",
+    "ftpPercent": "% FTP",
+    "lthr": "LTHR (%)",
+    "hrReserve": "HR Reserve (%)",
+    "hrReserveShort": "HR Res.",
+    "rpeTarget": "Target RPE",
+    "expectedPace": "Expected Pace:",
+    "estimatedPaceDefault": "Estimated Pace (Default):",
+    "basedOnVam": "Based on VAM:",
+    "assignToAthleteHint": "Assign to an athlete to see the calculated pace",
+    "stepNotes": "Step Notes",
+    "notesPlaceholderStep": "Instructions for this step...",
+    "repeat": "Repeat",
+    "times": "times",
+    "totalForBlock": "Total for this block:",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "deleteBlock": "Delete Block",
+    "skipLastRestRecovery": "Skip last step",
+    "addStepToRepeat": "Add step to repeat",
+    "stepDuration": "Step Duration",
+    "durationInputPlaceholder": "MM:SS or HH:MM:SS",
+    "invalidDurationFormat": "Invalid format. Use MM:SS, HH:MM:SS, or 1h20m.",
+    "lthrMinPlaceholder": "85",
+    "lthrMaxPlaceholder": "95",
+    "rpeMinPlaceholder": "5",
+    "rpeMaxPlaceholder": "7",
+    "rpeShort": "RPE",
+    "zone": "Zone",
+    "targetRange": "Target Range",
+    "endStepOnLap": "End step on lap button press",
+    "removeCadence": "Remove cadence",
+    "addCadence": "Add cadence range",
+    "cadenceRange": "Cadence range",
+    "intervalRpeOptional": "Interval RPE (Optional)",
+    "noRpeSet": "No RPE set",
+    "noAthleteSelectedLthr": "No athlete selected",
+    "noAthleteLthrData": "Athlete has no LTHR configured",
+    "noAthleteSelectedHrReserve": "No athlete selected",
+    "noAthleteHrReserveData": "Athlete has no resting/max HR configured",
+    "noAthleteSelectedVam": "No athlete selected",
+    "noAthleteVamData": "VAM not available for this athlete",
+    "noAthleteFtpData": "No FTP data",
+    "totalDuration": "Total Duration",
+    "estimatedTss": "Estimated TSS",
+    "distanceEst": "Est. Distance",
+    "score": "points",
+    "workoutSummary": "Workout Summary",
+    "totalDistance": "Total Distance",
+    "estimatedTime": "Estimated Time",
+    "avgIntensity": "Average Intensity",
+    "expectedRpe": "Expected RPE",
+    "workoutDescription": "Workout Description",
+    "totalSteps": "Total steps:",
+    "noStepsDefined": "No steps defined.",
+    "noStepsAdded": "No steps added yet.",
+    "clickBlocksHint": "Click the blocks to build the workout",
+    "clickPresetHint": "Click any preset to add it to your workout",
+    "repeatWizard": "Repeat Wizard",
+    "repetitions": "Repetitions",
+    "runsInterval": "Runs (Interval)",
+    "recoveries": "Recoveries",
+    "addRepeats": "Add {reps}× Repeats",
+    "howManyRepeats": "How many repeats?",
+    "addingPattern": "Adding pattern:",
+    "numberOfRepetitions": "Number of repetitions",
+    "startBuildingWorkout": "No blocks added yet. Start building your workout!",
+    "durationMin": "Duration (min)",
+    "atIntensity": " at {intensity}% intensity",
+    "editorPhase": "Editing Phase 01",
+    "coreDetails": "Core Details",
+    "loadError": "Error loading workout",
+    "workoutTitleLabel": "Workout Title (*)",
+    "workoutTitlePlaceholder": "e.g. Threshold Repeats",
+    "activityTypeLabel": "Activity Type",
+    "coachNotesLabel": "Coach Notes",
+    "coachNotesPlaceholder": "Goal: lactate threshold...",
+    "expectedRpeLabel": "Expected RPE",
+    "scheduledDateLabel": "Scheduled date",
+    "workoutDetails": "Workout Details",
+    "readyToPublish": "Ready to publish?",
+    "publishDescription": "Make sure all intervals are calibrated with your current metrics.",
+    "cancelExit": "Cancel / Exit",
+    "finalizeWorkout": "Finalize Workout",
+    "saving": "Saving...",
+    "workoutBuilder": "Builder",
+    "reviewAndPublish": "Review and Publish",
+    "backToBuilder": "Back to Builder",
+    "nextStep": "Next Step",
+    "enterTitleWarning": "Please enter a title for the workout",
+    "addBlockWarning": "Please add at least one workout block",
+    "saveSuccess": "Workout template saved successfully!",
+    "saveError": "Error saving workout template",
+    "units": {
+      "min": "min",
+      "h": "h",
+      "km": "km",
+      "m": "m",
+      "minPerKm": "min/km",
+      "bpm": "bpm",
+      "spm": "spm"
+    },
+    "stepCount": "{count, plural, =1 {1 step} other {# steps}}",
+    "powerZones": {
+      "1": "Zone 1 (Recovery)",
+      "2": "Zone 2 (Endurance)",
+      "3": "Zone 3 (Tempo)",
+      "4": "Zone 4 (Threshold)",
+      "5": "Zone 5 (VO2 Max)",
+      "6": "Zone 6 (Anaerobic)",
+      "7": "Zone 7 (Neuromuscular)"
+    },
+    "vamZoneFullNames": {
+      "1": "Z1 - Regenerative",
+      "2": "Z2 - Endurance",
+      "3": "Z3 - Tempo",
+      "4": "Z4 - Anaerobic Threshold",
+      "5": "Z5 - VO2 Max",
+      "6": "Z6 - Anaerobic Power"
+    },
+    "placeholders": {
+      "min": "Min",
+      "max": "Max"
+    },
+    "presets": {
+      "twoSteps": "Two Steps",
+      "activeRecovery": "Active and Recovery",
+      "activeFaster": "Active and Fast Active",
+      "rampUp": "Ramp Up",
+      "rampUpDesc": "Gradually increase intensity",
+      "rampDown": "Ramp Down",
+      "rampDownDesc": "Gradually decrease intensity",
+      "build": "Build {n}",
+      "medium": "Medium"
+    },
+    "trainingTypes": {
+      "RUNNING": "Running",
+      "CYCLING": "Cycling",
+      "SWIMMING": "Swimming",
+      "STRENGTH": "Strength"
+    },
+    "rpeLevels": {
+      "veryEasy": "Very Easy",
+      "easy": "Easy",
+      "moderate": "Moderate",
+      "hard": "Hard",
+      "maxEffort": "Max Effort"
+    }
+  },
+  "onboarding": {
+    "tag": "PROFILE",
+    "title": "Set up your account",
+    "subtitle": "Complete your personal information. This data will serve as the foundation for personalizing your metrics and training plans.",
+    "errorSave": "An error occurred while saving your profile. Please try again.",
+    "coach": {
+      "title": "Coach onboarding",
+      "description": "Complete your coach profile and let's create initial templates for your team.",
+      "completionTracker": "Progress",
+      "saving": "Saving...",
+      "submit": "Complete onboarding",
+      "errors": {
+        "submitFailed": "Could not complete onboarding. Please try again."
+      },
+      "fields": {
+        "bio": "Coach bio",
+        "bioPlaceholder": "Your experience as a coach",
+        "bioHelp": "Helps athletes understand your approach.",
+        "specialty": "Specialty",
+        "specialtyPlaceholder": "e.g. Marathon, Trail, 10K progression",
+        "experience": "Experience",
+        "experiencePlaceholder": "e.g. 8 years, certified"
+      }
+    },
+    "sections": {
+      "identity": {
+        "tag": "IDENTITY",
+        "title": "Basic identification",
+        "description": "Contact and personal identification data for your profile."
+      },
+      "physical": {
+        "tag": "PHYSICAL PROFILE",
+        "title": "Physiological data",
+        "description": "Required to calculate intensity zones and metabolic loads."
+      },
+      "performance": {
+        "tag": "PERFORMANCE",
+        "title": "Level and Performance",
+        "description": "This data is used to calculate Estimated Load (TSS) and set precise training paces."
+      }
+    },
+    "fields": {
+      "firstName": "FIRST NAME",
+      "firstNamePlaceholder": "e.g. John",
+      "firstNameRequired": "First name is required",
+      "lastName": "LAST NAME",
+      "lastNamePlaceholder": "e.g. Smith",
+      "lastNameRequired": "Last name is required",
+      "email": "EMAIL",
+      "phone": "PHONE",
+      "phonePlaceholder": "+1 (555) 000-0000",
+      "phoneRequired": "Phone is required",
+      "dob": "DATE OF BIRTH",
+      "dobRequired": "Date of birth is required",
+      "gender": "GENDER",
+      "genderRequired": "Gender is required",
+      "height": "HEIGHT (CM)",
+      "heightPlaceholder": "175",
+      "heightRequired": "Height is required",
+      "heightMin": "Minimum 50 cm",
+      "heightMax": "Maximum 250 cm",
+      "weight": "WEIGHT (KG)",
+      "weightPlaceholder": "70.0",
+      "weightRequired": "Weight is required",
+      "weightMin": "Minimum 20 kg",
+      "weightMax": "Maximum 300 kg",
+      "vam": "VAM (Maximum Aerobic Speed)",
+      "vamPlaceholder": "e.g. 4:30",
+      "level": "Or select your experience level:"
+    },
+    "footer": "All information can be edited later from your profile.",
+    "submit": "Complete profile",
+    "submitting": "Saving...",
+    "levels": {
+      "beginner": "Beginner (Pace 6:30 min/km)",
+      "intermediate": "Intermediate (Pace 5:30 min/km)",
+      "expert": "Expert (Pace 4:30 min/km)"
+    }
+  },
+  "profile": {
+    "successUpdate": "Profile updated successfully.",
+    "errorUpdate": "Error updating profile. Please try again.",
+    "calculator": {
+      "calculate": "Calculate",
+      "distancePlaceholder": "Km",
+      "timePlaceholder": "MM:SS",
+      "testLabel": "Test"
+    },
+    "testSpeed": {
+      "calculate": "Apply Test",
+      "distancePlaceholder": "3.0",
+      "timePlaceholder": "11:30",
+      "currentPaceLabel": "Current Pace:",
+      "unit": "min/km"
+    },
+    "changePassword": {
+      "title": "Change password",
+      "tag": "SECURITY",
+      "description": "Update your access password. You will need your current password.",
+      "currentPassword": "CURRENT PASSWORD",
+      "newPassword": "NEW PASSWORD",
+      "confirmPassword": "CONFIRM PASSWORD",
+      "submit": "Update password",
+      "success": "Password updated successfully",
+      "error": "Error changing password. Please verify your current password.",
+      "mismatch": "Passwords do not match",
+      "required": "Required",
+      "tooShort": "Minimum 6 characters",
+      "passwordPlaceholder": "••••••"
+    },
+    "sections": {
+      "identity": {
+        "tag": "IDENTITY",
+        "title": "Basic identification",
+        "description": "Contact and personal identification data for your account."
+      },
+      "performance": {
+        "tag": "PERFORMANCE",
+        "title": "Performance history",
+        "description": "VAM and AnT threshold tests. Updating will save a historical record.",
+        "vamHint": "Updating saves history.",
+        "uanHint": "Updating saves history."
+      },
+      "coach": {
+        "tag": "COACH DATA",
+        "title": "Professional profile",
+        "description": "Information your athletes will see on your coach profile."
+      }
+    },
+    "fields": {
+      "restHR": "RESTING HR (BPM)",
+      "restHRPlaceholder": "55",
+      "maxHR": "MAX HR (BPM)",
+      "maxHRPlaceholder": "190",
+      "lthr": "LACTATE THRESHOLD HR (BPM)",
+      "lthrPlaceholder": "e.g. 170",
+      "lthrHint": "HR at the anaerobic threshold (20-30 min test)",
+      "vam": "VAM TEST (mm:ss)",
+      "uan": "AnT TEST (mm:ss)",
+      "pacePlaceholder": "00:00",
+      "preset": "Preset level",
+      "injuries": "INJURIES / MEDICAL NOTES",
+      "injuriesPlaceholder": "e.g. Right patellar tendinitis (rehab completed)",
+      "bio": "BIO",
+      "bioPlaceholder": "Tell us about your experience as a coach...",
+      "specialty": "SPECIALTY",
+      "specialtyPlaceholder": "e.g. Trail Running, Marathon",
+      "experience": "EXPERIENCE",
+      "experiencePlaceholder": "e.g. 8 years"
+    },
+    "vamLevels": {
+      "amateur": "Amateur",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced",
+      "elite": "Elite"
+    },
+    "vamZones": {
+      "regenerativo": "Regenerative",
+      "endurance": "Endurance",
+      "tempo": "Tempo",
+      "umbral": "Threshold",
+      "vo2max": "VO2 Max"
+    },
+    "page": {
+      "headerTag": "MY PROFILE",
+      "integrations": {
+        "tag": "INTEGRATIONS",
+        "title": "Strava Connection",
+        "description": "Connect your Strava account to sync activities automatically."
+      },
+      "hrZones": {
+        "tag": "HR ZONES",
+        "title": "Heart rate",
+        "description": "Calculated from your max and resting HR."
+      },
+      "careerProgress": {
+        "tag": "CAREER",
+        "title": "Career Progress",
+        "description": "Year-to-date and all-time totals, from Strava."
+      },
+      "notificationSettings": {
+        "tag": "NOTIFICATIONS",
+        "title": "Notification preferences",
+        "description": "Choose which events notify you in-app and via push.",
+        "cta": "Manage notifications"
+      },
+      "saveHint": "Changes are saved to your profile immediately."
+    },
+    "hrZones": {
+      "title": "Heart rate zones",
+      "empty": "No HR zones configured.",
+      "emptyHelp": "Add your max and resting HR to generate them from Strava.",
+      "customSource": "Using custom Strava zones.",
+      "standardSource": "Using standard Strava zones.",
+      "zoneCount": "{count} zones",
+      "labels": {
+        "z1": "Z1 — Recovery",
+        "z2": "Z2 — Endurance",
+        "z3": "Z3 — Aerobic",
+        "z4": "Z4 — Threshold",
+        "z5": "Z5 — Maximum"
+      }
+    },
+    "careerProgress": {
+      "ytdDistance": "Distance (Year)",
+      "ytdElevation": "Elevation (Year)",
+      "ytdRuns": "Runs (Year)",
+      "units": {
+        "km": "km",
+        "m": "m"
+      },
+      "unavailable": "No Strava data available yet.",
+      "staleNotice": "Showing cached data; could not sync with Strava."
+    }
+  },
+  "calendar": {
+    "restDay": "Rest day",
+    "done": "✓ Done",
+    "week": "Week",
+    "month": "Month",
+    "race": "Race",
+    "moreItems": "+{count} more",
+    "customWorkout": "Custom daily workout.",
+    "strava": "Strava",
+    "page": {
+      "title": "Training calendar",
+      "rescheduleError": "Error rescheduling workout",
+      "groupRescheduleMessage": "This workout was assigned to a group. Do you want to reschedule it for all athletes?",
+      "groupRescheduleTitle": "Reschedule group",
+      "moveAll": "Move all",
+      "onlyThisOne": "Only this one"
+    },
+    "weeklySummary": {
+      "title": "Weekly summary",
+      "distance": "Distance",
+      "time": "Time",
+      "elevation": "Elevation",
+      "planned": "Plan",
+      "actual": "Actual",
+      "cumulativeTotal": "Cumulative total"
+    },
+    "sessionList": {
+      "empty": "No sessions for this day",
+      "workout": "Workout",
+      "completed": "Completed",
+      "distance": "Distance",
+      "time": "Time",
+      "pace": "Pace",
+      "avgHr": "Avg HR",
+      "effortScore": "Effort score",
+      "elevation": "Elevation",
+      "viewDetails": "View details"
+    },
+    "studentFilter": {
+      "groups": "Groups",
+      "noGroups": "No groups found.",
+      "students": "Athletes",
+      "all": "All",
+      "none": "None"
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "upcoming": "Coming soon",
+    "addWorkout": "Add workout",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "back": "Back",
+    "navigateBack": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "search": "Search",
+    "noResults": "No results",
+    "error": "An error occurred",
+    "success": "Success!",
+    "required": "This field is required",
+    "today": "Today",
+    "distance_km": "{distance} km",
+    "units": {
+      "min": "min",
+      "h": "h",
+      "km": "km",
+      "m": "m",
+      "minPerKm": "min/km",
+      "bpm": "bpm",
+      "cm": "cm",
+      "kg": "kg",
+      "spm": "spm"
+    },
+    "a11y": {
+      "toggleMenu": "Toggle menu",
+      "openMenu": "Open menu"
+    }
+  },
+  "landing": {
+    "navbar": {
+      "training": "TRAINING",
+      "metrics": "METRICS",
+      "coaching": "COACHING",
+      "pricing": "PRICING",
+      "startTraining": "START TRAINING",
+      "start": "START"
+    },
+    "hero": {
+      "somosEndurix": "WE ARE ENDURIX",
+      "title1": "TRAIN SMARTER.",
+      "title2": "PERFORM LONGER.",
+      "subtitle": "The all-in-one platform for endurance coaches and athletes. Now also ready to integrate with AI via MCP, automate summaries, and turn data into actions. All in one place. No excuses. Just data.",
+      "viewTraining": "VIEW TRAINING",
+      "discover": "EXPLORE MCP",
+      "dashboardMock": "DASHBOARD",
+      "cargaSemanal": "WEEKLY LOAD",
+      "optima": "OPTIMAL",
+      "trainingLoad": "TRAINING LOAD",
+      "resumenSemanal": "WEEKLY SUMMARY",
+      "complianceRate": "COMPLIANCE RATE",
+      "loadMonitoring": "LOAD MONITORING",
+      "weeklyVolume": "WEEKLY VOLUME",
+      "nextRace": "NEXT RACE",
+      "balanced": "Balanced",
+      "start": "START"
+    },
+    "features": {
+      "tag1": "MCP READY",
+      "title1": "Connected assistants",
+      "desc1": "Connect Endurix with assistants and automations to query metrics, summarize weeks, and trigger actions without leaving your workflow.",
+      "progreso": "PROGRESS",
+      "tag2": "MOTIVATING PROGRESS",
+      "title2": "Structured Planning",
+      "desc2": "Build micro and macro cycles with a logical interface designed for high-volume prescriptions.",
+      "zona4": "ZONE 4",
+      "bpm": "168-179 BPM",
+      "tag3": "COACHES AND ATHLETES",
+      "title3": "Seamless Connection",
+      "desc3": "Instant feedback loops. Athletes execute, coaches analyze. No friction in the communication layer.",
+      "inputCampo": "INPUT / FIELD",
+      "distancia": "Distance (KM)"
+    },
+    "productFeatures": {
+      "eyebrow": "THE COMPLETE SYSTEM",
+      "title1": "BUILT FOR COACHES.",
+      "titleHighlight": "OBSESSED WITH DATA.",
+      "feature1Title": "Auto Sync with Strava",
+      "feature1Desc": "Real-time activities via Webhooks. Your data updated to the second, no reloads or waiting.",
+      "feature2Title": "Advanced Activity Analysis",
+      "feature2Desc": "Visualize intensity distribution across zones (Z1-Z5), elevation profile, and detailed lap and split analysis.",
+      "feature3Title": "Dynamic Interval Builder",
+      "feature3Desc": "Design repeats, blocks, and intervals precisely calibrated with VAM and power zones.",
+      "feature4Title": "Template Library",
+      "feature4Desc": "Save your most effective workouts and protocols to reuse and assign at scale.",
+      "feature5Title": "Team and Race Management",
+      "feature5Desc": "Organize athletes into training groups, assign calendars, and track races with countdowns.",
+      "feature6Title": "Central Control Dashboard",
+      "feature6Desc": "Unified view of all your athletes. Compliance alerts (RPE vs Target), progress history, and private notes.",
+      "weekLabel": "WEEK 7 — HR ADJUSTMENT",
+      "formTrending": "Form Trending Up",
+      "forma": "FORM",
+      "currentLoad": "CURRENT LOAD",
+      "km": "km",
+      "formScore": "FORM SCORE"
+    },
+    "coachOps": {
+      "eyebrow": "SMART COACHING",
+      "headline1": "COACHING OPERATIONS",
+      "headline2": "IN REAL TIME.",
+      "subtitle": "Endurix doesn't just record data: it helps you decide what to do with it and, now, connects everything via MCP to act sooner, communicate better, and sustain performance.",
+      "card1Tag": "COPILOT",
+      "card1Title": "AI Assistant with MCP",
+      "card1Desc": "Summarize weeks, detect patterns, and suggest next steps for athletes and groups from a workflow built for agents and automations.",
+      "card2Tag": "CONTROL",
+      "card2Title": "Compliance and alerts",
+      "card2Desc": "Adherence, load, and activity tracking to detect deviations before they affect the plan.",
+      "card3Tag": "PROACTIVE",
+      "card3Title": "Race preparation and alerts",
+      "card3Desc": "Prioritize upcoming races and trigger athlete notifications when course corrections are needed."
+    },
+    "roadmap": {
+      "eyebrow": "ROADMAP",
+      "title1": "CONSTANT",
+      "title2": "EVOLUTION.",
+      "item1Title": "Cycling Support",
+      "item1Desc": "FTP integration, power zones, and cycling-specific metrics for planning multi-sport workouts.",
+      "item1Status": "COMING SOON",
+      "item2Title": "Summary Automation",
+      "item2Desc": "Automatic generation of insights and key signals so the coach can act faster.",
+      "item2Status": "COMING SOON",
+      "item3Title": "Push to Garmin Devices",
+      "item3Desc": "Send structured workouts directly to your athletes' watches via Garmin Connect API.",
+      "item3Status": "COMING SOON"
+    },
+    "cta": {
+      "disciplina": "DISCIPLINE",
+      "consistencia": "CONSISTENCY",
+      "progreso": "PROGRESS",
+      "manifesto": "We reject the soft aesthetic of modern lifestyle apps. Endurix is built as a professional-grade tool, ready to integrate with AI and MCP workflows for those who understand that performance is derived from structured, relentless effort.",
+      "noExcuses": "NO EXCUSES.",
+      "justData": "JUST DATA."
+    },
+    "wishlist": {
+      "eyebrow": "EARLY ACCESS",
+      "badge": "LIMITED SPOTS · 50 SEATS",
+      "title1": "JOIN THE",
+      "title2": "LIST.",
+      "subtitle": "Secure your spot before the public launch. We're opening Endurix to coaches who want to take the leap with data, without waiting for the general release.",
+      "form": {
+        "nameLabel": "FULL NAME",
+        "namePlaceholder": "E.g.: John Smith",
+        "emailLabel": "PROFESSIONAL EMAIL",
+        "emailPlaceholder": "you@email.com",
+        "roleLabel": "YOUR ROLE",
+        "rolePlaceholder": "Choose an option",
+        "teamSizeLabel": "YOUR TEAM SIZE",
+        "teamSizePlaceholder": "Choose a range",
+        "submit": "REQUEST ACCESS",
+        "submitting": "SUBMITTING…",
+        "success": "DONE! WE'VE GOT YOU ON THE LIST.",
+        "successDetail": "We'll contact you by email in the coming weeks with the next steps.",
+        "errorRequired": "Please fill in all fields.",
+        "errorInvalidEmail": "Please enter a valid email.",
+        "errorDuplicate": "This email is already registered. We'll notify you soon.",
+        "errorGeneric": "Something went wrong. Please try again in a few minutes."
+      },
+      "roles": {
+        "head_coach": "Head Coach",
+        "assistant_coach": "Assistant Coach",
+        "other": "Other"
+      },
+      "teamSizes": {
+        "1_5": "1 — 5 athletes",
+        "6_15": "6 — 15 athletes",
+        "16_30": "16 — 30 athletes",
+        "30_plus": "30+ athletes"
+      },
+      "benefitsTitle": "WHAT EARLY ACCESS INCLUDES",
+      "benefits": {
+        "pricing": "Locked launch pricing with founder discount.",
+        "support": "1:1 onboarding with the Endurix team.",
+        "roadmap": "Vote on the product roadmap.",
+        "community": "Access to the private pioneer coaches channel."
+      },
+      "trust": "No spam. No credit card. Cancel from the list anytime."
+    },
+    "footer": {
+      "privacy": "PRIVACY POLICY",
+      "terms": "TERMS OF SERVICE",
+      "copyright": "© 2026 ENDURIX PERFORMANCE SYSTEMS. NO EXCUSES. JUST DATA."
+    }
+  },
+  "races": {
+    "library": {
+      "title": "Race Library",
+      "subtitle": "Manage race templates to assign to your athletes.",
+      "createTemplate": "Create Template",
+      "searchPlaceholder": "Search races...",
+      "noRaces": "No races found.",
+      "distance": "Distance: {distance}",
+      "location": "Location: {location}",
+      "deleteConfirm": "Delete this race template?",
+      "deleteDescription": "This action cannot be undone.",
+      "edit": "Edit",
+      "delete": "Delete",
+      "assign": "Assign",
+      "locationLabel": "Location",
+      "viewDetails": "View Details",
+      "activeRaces": "Upcoming Races",
+      "finishedRaces": "Race History",
+      "createFirstTemplate": "Create your first race"
+    },
+    "dialog": {
+      "createTitle": "Create Race Template",
+      "editTitle": "Edit Race Template",
+      "nameLabel": "RACE NAME",
+      "namePlaceholder": "E.g.: Valencia Marathon",
+      "descriptionLabel": "DESCRIPTION",
+      "descriptionPlaceholder": "Details about the race...",
+      "distanceLabel": "DISTANCE",
+      "dateLabel": "DATE",
+      "locationLabel": "LOCATION",
+      "locationPlaceholder": "Valencia, Spain",
+      "distancePlaceholder": "42k, 21k, 10k...",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving..."
+    },
+    "assign": {
+      "title": "Assign Race",
+      "useExisting": "Search existing",
+      "createNew": "Create new",
+      "selectTemplate": "SELECT TEMPLATE",
+      "selectTemplatePlaceholder": "Choose a race from the library...",
+      "searchPlaceholder": "Search by name, location, or distance...",
+      "noResults": "No races found for that search",
+      "raceNameLabel": "RACE NAME",
+      "raceNamePlaceholder": "E.g.: Buenos Aires Half Marathon",
+      "dateLabel": "RACE DATE",
+      "priorityLabel": "PRIORITY",
+      "priorityA": "Priority A (Main Goal)",
+      "priorityB": "Priority B (Secondary)",
+      "priorityC": "Priority C (Preparation)",
+      "targetTimeLabel": "TARGET TIME",
+      "targetTimePlaceholder": "HH:MM:SS",
+      "invalidTargetTimeFormat": "Invalid format. Use HH:MM:SS, MM:SS, or 1h20m.",
+      "notesLabel": "NOTES / STRATEGY",
+      "notesPlaceholder": "Write the strategy or notes for the athlete here...",
+      "success": "Race assigned successfully",
+      "error": "Error assigning the race",
+      "assigning": "Assigning...",
+      "submit": "Assign to Athlete",
+      "cancel": "Cancel"
+    },
+    "athlete": {
+      "upcomingTitle": "My Races",
+      "manageSubtitle": "Manage your race calendar.",
+      "noRaces": "No scheduled races.",
+      "activeRaces": "Upcoming Races",
+      "addRace": "Add Race",
+      "priority": "Priority {priority}",
+      "priorityLabel": "PRIORITY {priority}",
+      "priorityBadge": "PRIO {priority}",
+      "target": "Target: {time}",
+      "defaultRaceName": "Race",
+      "resultTime": "Actual Time",
+      "resultTimePlaceholder": "HH:MM:SS",
+      "invalidTimeFormat": "Invalid format. Use HH:MM:SS, MM:SS, or 1h20m.",
+      "countdownLabel": "COUNTDOWN",
+      "todayLabel": "TODAY",
+      "daysLeftLabel": "Days remaining",
+      "targetLabel": "TARGET",
+      "countdown": "T - {days} days",
+      "countdownDay": "T - {days} day",
+      "countdownHoursMinutes": "T - {hours}h {minutes}m",
+      "countdownHours": "T - {hours} hours",
+      "daysLeft": "{days} DAYS",
+      "status": {
+        "PLANNED": "Planned",
+        "COMPLETED": "Completed",
+        "DNR": "Did not finish"
+      }
+    },
+    "recordResult": "Record Result"
+  },
+  "invitations": {
+    "modals": {
+      "athlete": {
+        "title": "Add Athletes",
+        "descriptionCreated": "Invitation created. Share the link with the athlete.",
+        "descriptionCreate": "Choose how you want to add your athletes.",
+        "emailPlaceholder": "athlete@example.com",
+        "create": "Create Invitation",
+        "emailsDetected": "{count} emails detected",
+        "tabs": {
+          "single": "Individual",
+          "bulk": "Bulk Upload (CSV)",
+          "teamLink": "Team Link"
+        },
+        "teamLink": {
+          "createTitle": "Create Team Link",
+          "createDescription": "A single reusable link. Any athlete who opens it will be able to join your team.",
+          "label": "Label (optional)",
+          "labelPlaceholder": "E.g.: Link for new athletes",
+          "expiry": "Expires in (days)",
+          "expiryPlaceholder": "No expiration",
+          "maxUses": "Max uses",
+          "maxUsesPlaceholder": "No limit",
+          "create": "Create Link",
+          "creating": "Creating...",
+          "listTitle": "Team links",
+          "loading": "Loading links...",
+          "empty": "No links yet. Create the first one above.",
+          "defaultLabel": "Team link",
+          "statusActive": "Active",
+          "statusInactive": "Disabled",
+          "uses": "{count} uses / {max}",
+          "expiresAt": "Expires: {date}",
+          "noExpiry": "No expiration",
+          "createdAt": "Created: {date}",
+          "copy": "Copy",
+          "copied": "Copied",
+          "copyError": "Could not copy to clipboard.",
+          "whatsapp": "WhatsApp",
+          "whatsappMessage": "Hi! Join our team on Endurix using this link:",
+          "rotate": "Rotate",
+          "revoke": "Disable",
+          "close": "Close"
+        },
+        "bulk": {
+          "description": "Upload a .csv or .txt file with a list of email addresses (one per line).",
+          "dropzone": "Click to upload or drag the file here",
+          "fileSelected": "File selected: {name}",
+          "processing": "Processing {count} emails...",
+          "success": "{success} invitations sent successfully.",
+          "partialSuccess": "{success} invitations sent, but {failed} failed.",
+          "error": "Error processing the file.",
+          "invalidFile": "Invalid file type. Use .csv or .txt",
+          "noEmails": "No valid emails found in the file.",
+          "summary": {
+            "title": "Upload Summary",
+            "total": "Total processed",
+            "success": "New invitations",
+            "pending": "Already invited",
+            "exists": "Already registered",
+            "failed": "Errors"
+          }
+        }
+      },
+      "coach": {
+        "title": "Invite Coach",
+        "descriptionCreated": "Invitation created. Share the link with the coach.",
+        "descriptionCreate": "Enter the coach's email to send an invitation.",
+        "emailPlaceholder": "coach@example.com",
+        "create": "Create Invitation"
+      },
+      "common": {
+        "email": "Email",
+        "emailRequired": "Email is required",
+        "emailInvalid": "Invalid email",
+        "cancel": "Cancel",
+        "creating": "Creating...",
+        "linkLabel": "Invitation Link",
+        "linkExpires": "This link expires in 7 days.",
+        "sendWhatsapp": "Send via WhatsApp",
+        "close": "Close",
+        "createError": "Could not create the invitation. Please try again."
+      }
+    },
+    "accept": {
+      "loading": "Validating invitation...",
+      "invalidTitle": "Invalid Invitation",
+      "invalidDescription": "This invitation link is invalid or has expired.",
+      "goToLogin": "Go to Login",
+      "successTitle": "Account Created!",
+      "successDescription": "Your account has been created successfully. Redirecting to login...",
+      "title": "Accept Invitation",
+      "subtitle": "Create your account to start training",
+      "emailLabel": "Email",
+      "fullName": "Full Name",
+      "fullNamePlaceholder": "John Doe",
+      "nameRequired": "Name is required",
+      "nameMin": "Name must be at least 2 characters",
+      "password": "Password",
+      "passwordPlaceholder": "Minimum 6 characters",
+      "passwordRequired": "Password is required",
+      "passwordMin": "Password must be at least 6 characters",
+      "confirmPassword": "Confirm Password",
+      "confirmPasswordPlaceholder": "Repeat your password",
+      "confirmPasswordRequired": "Please confirm your password",
+      "passwordMismatch": "Passwords do not match",
+      "creatingAccount": "Creating account...",
+      "createAccount": "Create Account",
+      "loadError": "Could not create the account. Please try again.",
+      "suspenseLoading": "Loading...",
+      "signInFailedAfterCreate": "The account was created, but sign-in failed. Please try logging in manually."
+    },
+    "join": {
+      "loading": "Validating team link...",
+      "title": "Join {team}",
+      "subtitle": "You are joining as {role}. Create your account to get started.",
+      "defaultTeamName": "the team",
+      "roleAthlete": "athlete",
+      "roleCoach": "coach",
+      "invalidTitle": "Invalid Link",
+      "invalidDescription": "This team link is not valid.",
+      "revokedTitle": "Link Disabled",
+      "revokedDescription": "This team link was disabled by the coach. Please ask for a new one.",
+      "expiredTitle": "Link Expired",
+      "expiredDescription": "This team link has expired. Please ask your coach for a new one.",
+      "maxUsesTitle": "Link Exhausted",
+      "maxUsesDescription": "This team link has reached its maximum number of uses. Please ask your coach for a new one.",
+      "goToLogin": "Go to Login",
+      "successTitle": "Welcome!",
+      "successDescription": "Your account was created. Taking you to the dashboard...",
+      "formLabel": "Athlete registration form",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@email.com",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Invalid email",
+      "fullName": "Full Name",
+      "fullNamePlaceholder": "John Doe",
+      "nameRequired": "Name is required",
+      "nameMin": "Name must be at least 2 characters",
+      "password": "Password",
+      "passwordPlaceholder": "Minimum 6 characters",
+      "passwordRequired": "Password is required",
+      "passwordMin": "Password must be at least 6 characters",
+      "confirmPassword": "Confirm Password",
+      "confirmPasswordPlaceholder": "Repeat your password",
+      "confirmPasswordRequired": "Please confirm your password",
+      "passwordMismatch": "Passwords do not match",
+      "creatingAccount": "Creating account...",
+      "createAccount": "Create Account",
+      "loadError": "Could not create the account. Please try again."
+    },
+    "createForm": {
+      "title": "Invite Athlete",
+      "email": "Email",
+      "emailPlaceholder": "athlete@example.com",
+      "emailRequired": "Email is required",
+      "send": "Send Invitation",
+      "success": "Invitation sent to {email}. Share this link: {link}",
+      "error": "Could not send the invitation"
+    },
+    "teamLinkCard": {
+      "eyebrow": "Settings",
+      "title": "Team Links",
+      "description": "Manage the shareable links that athletes can use to join the team. Coaches can also create their own from the invitation modal.",
+      "cardTitle": "Active links",
+      "loading": "Loading links...",
+      "empty": "No links. Create one from the 'Add Athletes' modal.",
+      "defaultLabel": "Team link",
+      "statusActive": "Active",
+      "statusInactive": "Disabled",
+      "uses": "{count} uses / {max}",
+      "expiresAt": "Expires: {date}",
+      "noExpiry": "No expiration",
+      "createdAt": "Created: {date}",
+      "copy": "Copy",
+      "copied": "Copied",
+      "copyError": "Could not copy to clipboard.",
+      "rotate": "Rotate",
+      "revoke": "Disable"
+    },
+    "teamSettings": {
+      "limits": {
+        "title": "Team Limits",
+        "maxAthletes": "Max athletes",
+        "maxAthletesPlaceholder": "No limit",
+        "maxAthletesHelp": "Leave empty for no limit. Used for plan-based pricing control.",
+        "teamFullError": "The team has reached the limit of {max} athletes. Upgrade your plan to add more.",
+        "teamFullErrorJoin": "The team has reached the limit of {max} athletes. Contact the administrator."
+      }
+    }
+  },
+  "strava": {
+    "status": {
+      "integrationTitle": "Strava Integration",
+      "connectDescription": "Connect your Strava account to sync your activities.",
+      "connected": "Connected",
+      "disconnected": "Not connected",
+      "connectedAthleteId": "Connected to athlete with ID: {id}",
+      "connectAutoSync": "Connect your account to sync activities automatically.",
+      "disconnect": "Disconnect",
+      "lastSync": "Last sync: {date}",
+      "backfillInProgress": "Importing your last 90 days of activity. This may take a few minutes.",
+      "backfillFailed": "We couldn't import your activity history. Try syncing manually."
+    },
+    "activities": {
+      "title": "Recent activities",
+      "empty": "No synced activities yet.",
+      "attribution": {
+        "garmin": "Some metrics may include data from Garmin. Garmin and its trademarks are property of Garmin.",
+        "strava": "Activity data provided by Strava."
+      },
+      "table": {
+        "date": "Date",
+        "name": "Name",
+        "type": "Type",
+        "distance": "Distance",
+        "time": "Time",
+        "elevation": "Elevation",
+        "link": "Link",
+        "viewOnStrava": "View on Strava"
+      }
+    },
+    "weeklyVolume": {
+      "title": "Weekly volume (last 4 weeks)",
+      "planned": "Planned",
+      "completed": "Completed",
+      "unitKm": "km"
+    },
+    "activityChart": {
+      "noData": "No data available"
+    },
+    "activityDetail": {
+      "title": "Activity detail",
+      "distance": "Distance",
+      "time": "Time",
+      "avgHr": "Avg HR",
+      "elevation": "Elevation",
+      "garminAttribution": "If this activity contains data from Garmin on Strava, Garmin attribution is required.",
+      "noDetailedData": "No detailed chart data available for this activity.",
+      "failedToLoad": "Failed to load activity details."
+    },
+    "connectButton": {
+      "ariaLabel": "Connect with Strava",
+      "alt": "Connect with Strava",
+      "connecting": "Connecting..."
+    }
+  },
+  "legal": {
+    "privacy": {
+      "backToHome": "Back to home",
+      "title": "Privacy Policy",
+      "lastUpdated": "Last updated: February 14, 2026",
+      "footer": "© 2026 Endurix. All rights reserved.",
+      "sections": {
+        "introduction": {
+          "title": "Introduction",
+          "p1": "Welcome to Endurix (we, our, or the platform). We are committed to protecting your personal information and your right to privacy. This policy explains how we collect, use, disclose, and protect your information when you use our platform.",
+          "p2": "By using Endurix, you agree to the collection and use of information in accordance with this policy. If you do not agree with these practices, please do not use the service."
+        },
+        "collect": {
+          "title": "Information We Collect",
+          "personal": {
+            "title": "Personal Information",
+            "subtitle": "We collect personal information that you voluntarily provide when you:",
+            "items": {
+              "account": "Register for an account (name, email, and password)",
+              "profile": "Create your athlete or coach profile (height, weight, heart rate zones, preferences)",
+              "integrations": "Connect third-party services (Strava, Garmin, etc.)",
+              "support": "Contact us for support"
+            }
+          },
+          "activity": {
+            "title": "Activity Data",
+            "subtitle": "When you connect third-party fitness services, we collect:",
+            "items": {
+              "workout": "Workout and activity data (distance, duration, pace, heart rate, elevation)",
+              "gps": "GPS location data from recorded activities",
+              "history": "Training history and performance metrics",
+              "device": "Information from connected devices and wearables"
+            }
+          },
+          "usage": {
+            "title": "Usage Information",
+            "subtitle": "We automatically collect certain information when you use the platform:",
+            "items": {
+              "logData": "Log data (IP address, browser, operating system, pages visited)",
+              "deviceInfo": "Device information (type and unique identifiers)",
+              "cookies": "Cookies and similar tracking technologies"
+            }
+          }
+        },
+        "usage": {
+          "title": "How We Use Your Information",
+          "subtitle": "We use the collected information to:",
+          "items": {
+            "services": {
+              "label": "Service delivery",
+              "text": "Create and manage your account, facilitate coach-athlete relationships, and deliver training plans"
+            },
+            "personalization": {
+              "label": "Personalization",
+              "text": "Tailor your experience and provide relevant training recommendations"
+            },
+            "analytics": {
+              "label": "Analytics",
+              "text": "Analyze your training data and provide progress and performance insights"
+            },
+            "communication": {
+              "label": "Communication",
+              "text": "Send you important updates, notifications, and messages from your coach"
+            },
+            "improvement": {
+              "label": "Improvement",
+              "text": "Understand how the platform is used to improve features"
+            },
+            "security": {
+              "label": "Security",
+              "text": "Protect against unauthorized access and keep your information secure"
+            },
+            "compliance": {
+              "label": "Legal compliance",
+              "text": "Comply with applicable laws and regulations"
+            }
+          }
+        },
+        "integrations": {
+          "title": "Third-Party Integrations",
+          "p1": "Endurix integrates with third-party platforms such as Strava, Garmin, and others. When you connect these services:",
+          "items": {
+            "auth": "You authorize us to access your activity data on those platforms",
+            "policies": "Their own privacy policies and terms of service apply",
+            "disconnect": "You can disconnect these services at any time from your account"
+          },
+          "p2": "We recommend reviewing the privacy policies of the third-party services you connect to understand how they manage your data.",
+          "strava": {
+            "title": "Strava-Specific Disclosures",
+            "intro": "If you connect Strava, the following specific terms also apply:",
+            "items": {
+              "consent": "We only access your Strava data when you give us explicit authorization, and you can revoke it at any time from Strava or from your account.",
+              "scope": "We inform you which data is requested (e.g., profile, activities, and heart rate zones) and how it is used within Endurix.",
+              "withdrawal": "If you revoke Strava access, we stop syncing and delete the Strava-derived data we hold in our systems.",
+              "deletion": "You can request deletion of Strava-linked data by emailing privacy@endurix.app.",
+              "usageData": "Strava may collect usage information related to access to its API from our integration, in accordance with its API Agreement and privacy policy.",
+              "attribution": "Where applicable, we display the \"Powered by Strava\" attribution and any additional attribution required by data providers such as Garmin."
+            }
+          },
+          "garmin": {
+            "title": "Garmin-Specific Disclosures",
+            "intro": "If you connect Garmin Connect, the following specific conditions also apply:",
+            "items": {
+              "consent": "We only access your Garmin data when you give explicit authorization through the Garmin Connect connection flow.",
+              "scope": "The data we sync includes activities, performance metrics, heart rate, and compatible device data.",
+              "withdrawal": "You can disconnect Garmin at any time from your profile in Endurix or from third-party app settings in Garmin Connect.",
+              "deletion": "When you disconnect Garmin, we stop syncing new data. You can request deletion of historical Garmin-linked data by emailing privacy@endurix.app.",
+              "priority": "If the same workout is recorded on both Strava and Garmin, Endurix prioritizes Garmin data to avoid duplicates.",
+              "attribution": "We display the appropriate Garmin attribution when displaying data from their devices and services."
+            }
+          }
+        },
+        "sharing": {
+          "title": "How We Share Your Information",
+          "subtitle": "We may share your information in the following cases:",
+          "coach": {
+            "title": "With your coach",
+            "text": "When you join a coach or group, your coach will have access to your profile, training data, and activity history to provide coaching."
+          },
+          "providers": {
+            "title": "Service providers",
+            "text": "We may share data with trusted providers who help us operate the platform (hosting, analytics, communications). These providers are contractually obligated to protect your information."
+          },
+          "legal": {
+            "title": "Legal requirements",
+            "text": "We may disclose your information if required by law, by court order or government request, or to protect our rights, property, or safety."
+          },
+          "noSell": "We do not sell your personal information to third parties."
+        },
+        "security": {
+          "title": "Data Security",
+          "p1": "We implement appropriate technical and organizational measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction. These measures include:",
+          "items": {
+            "encryption": "Encryption of data in transit and at rest",
+            "assessments": "Regular security assessments and updates",
+            "accessControls": "Access controls and authentication mechanisms",
+            "infrastructure": "Secure cloud infrastructure"
+          },
+          "p2": "However, no method of internet transmission or electronic storage is 100% secure. While we work to protect your information, we cannot guarantee absolute security."
+        },
+        "rights": {
+          "title": "Your Privacy Rights",
+          "subtitle": "Depending on your location, you may have the following rights:",
+          "items": {
+            "access": {
+              "label": "Access",
+              "text": "Request access to the personal information we hold about you"
+            },
+            "correction": {
+              "label": "Correction",
+              "text": "Request correction of inaccurate or incomplete data"
+            },
+            "deletion": {
+              "label": "Deletion",
+              "text": "Request deletion of your personal information"
+            },
+            "portability": {
+              "label": "Portability",
+              "text": "Request a copy of your data in a structured, machine-readable format"
+            },
+            "optOut": {
+              "label": "Opt-out",
+              "text": "Opt out of marketing communications"
+            },
+            "withdraw": {
+              "label": "Withdraw consent",
+              "text": "Withdraw consent for data processing where applicable"
+            }
+          },
+          "contact": "To exercise these rights, contact us at privacy@endurix.app. We will respond within 30 days."
+        },
+        "retention": {
+          "title": "Data Retention",
+          "text": "We retain your personal information as long as necessary to provide services and fulfill the purposes of this policy. If you delete your account, we will delete or anonymize your information within 90 days, unless we are legally or regulatorily required to retain it.",
+          "strava": "For data obtained from Strava, additional rules apply: the technical stream cache has a maximum retention of 7 days, and when you revoke authorization or request deletion, we delete the associated Strava data in our systems as soon as technically feasible."
+        },
+        "children": {
+          "title": "Children's Privacy",
+          "text": "Our service is not directed to children under 13 years of age. We do not knowingly collect personal information from children under 13. If you believe we have collected data from a child, please contact us immediately and we will take steps to delete it."
+        },
+        "transfers": {
+          "title": "International Data Transfers",
+          "text": "Your information may be transferred to and processed in countries other than your country of residence. These countries may have different data protection laws. By using our service, you consent to these transfers. We implement appropriate safeguards to protect your data."
+        },
+        "changes": {
+          "title": "Changes to This Policy",
+          "text": "We may update this policy periodically. We will notify you of material changes by posting the new version on this page and updating the last updated date. We encourage you to review it periodically."
+        },
+        "contact": {
+          "title": "Contact Us",
+          "subtitle": "If you have questions or concerns about this policy or our privacy practices, contact us:",
+          "emailLabel": "Email"
+        },
+        "ai": {
+          "title": "Artificial Intelligence and Automated Processing",
+          "p1": "Endurix uses artificial intelligence (AI) technologies to enhance the training experience. Below we describe how they are used and what data is involved:",
+          "analysis": {
+            "title": "Training Analysis",
+            "text": "We use AI models to analyze data from your activities and workouts, generating performance metrics, pattern detection, and personalized suggestions. This analysis is based exclusively on data you have already provided to the platform."
+          },
+          "mcp": {
+            "title": "Programmatic Access (MCP Server)",
+            "text": "Endurix exposes an MCP (Model Context Protocol) server that allows coaches to interact with their athletes' data through AI tools. This access:",
+            "items": {
+              "scope": "Is limited to data the coach is already authorized to view based on their role and team.",
+              "noExpansion": "Does not expand or modify existing permissions; it respects the same access rules (RLS) as the web interface.",
+              "noStorage": "Does not store conversations or AI responses outside the coach's active session.",
+              "noThirdParty": "Data exposed through MCP is not shared with third parties or used to train AI models."
+            }
+          },
+          "decisions": {
+            "title": "Automated Decision-Making",
+            "text": "We do not use AI to make automated decisions that significantly affect your rights. Training recommendations generated by AI are advisory and are always subject to review and judgment by the coach or athlete."
+          },
+          "providers": {
+            "title": "AI Providers",
+            "text": "We use third-party AI services (such as Anthropic) to process queries within the platform. Data sent to these providers is limited to the context needed for the specific query and is subject to their respective privacy policies and data processing agreements. We do not allow these providers to use your data to train their models."
+          },
+          "optOut": {
+            "title": "User Control",
+            "text": "You can opt out of AI-based features without affecting your access to the platform's core functionality. If you would like your data not to be processed by AI tools, contact us at privacy@endurix.app."
+          }
+        }
+      }
+    },
+    "terms": {
+      "backToHome": "Back to home",
+      "title": "Terms and Conditions",
+      "lastUpdated": "Last updated: July 7, 2026",
+      "footer": "© 2026 Endurix. All rights reserved.",
+      "sections": {
+        "acceptance": {
+          "title": "Acceptance of Terms",
+          "p1": "By accessing or using Endurix (\"the Platform\", \"the Service\"), operated by Endurix Performance Systems (\"we\", \"our\"), you agree to be bound by these Terms and Conditions. If you do not agree, do not use the Service.",
+          "p2": "These terms constitute a legally binding agreement between you and Endurix. By creating an account, accessing the platform, or using any feature, you confirm that you have read, understood, and agree to comply with these terms."
+        },
+        "description": {
+          "title": "Service Description",
+          "p1": "Endurix is a sports coaching platform focused on running that enables coaches to manage athletes, assign training plans, analyze performance data, and communicate with their athletes.",
+          "features": {
+            "title": "Key Features",
+            "items": {
+              "plans": "Creation and assignment of personalized training plans",
+              "sync": "Syncing sports activities from third-party devices and platforms (Strava, Garmin)",
+              "analytics": "Performance analysis, metrics, and athlete progress tracking",
+              "groups": "Training group and team management",
+              "notifications": "Notification system and coach-athlete communication",
+              "ai": "Artificial intelligence tools for training analysis and recommendations",
+              "mcp": "Programmatic access to coaching data through the MCP (Model Context Protocol) protocol"
+            }
+          }
+        },
+        "accounts": {
+          "title": "Accounts and Registration",
+          "registration": {
+            "title": "Registration",
+            "text": "To use Endurix you need to create an account providing accurate and complete information. You are responsible for maintaining the confidentiality of your credentials and for all activities that occur under your account."
+          },
+          "roles": {
+            "title": "User Roles",
+            "text": "Endurix operates with three main roles:",
+            "items": {
+              "coach": "Coach: Can create teams, invite athletes, assign workouts, view athlete performance data, and use AI tools for analysis.",
+              "athlete": "Athlete: Can connect devices, sync activities, view their training plans and personal metrics.",
+              "admin": "Administrator: Has full access to platform management, including user management and system configuration."
+            }
+          },
+          "accuracy": {
+            "title": "Data Accuracy",
+            "text": "You agree to provide truthful and up-to-date information. We reserve the right to suspend or delete accounts that contain false or misleading information."
+          }
+        },
+        "integrations": {
+          "title": "Third-Party Integrations",
+          "p1": "Endurix integrates with third-party platforms to enrich the training experience. By connecting these services, you agree to the following conditions:",
+          "strava": {
+            "title": "Strava",
+            "items": {
+              "auth": "Connecting with Strava requires your explicit authorization through Strava's OAuth flow.",
+              "data": "We access your activity data, profile, and heart rate zones according to the permissions you grant.",
+              "usage": "Strava data is used exclusively for coaching features within Endurix.",
+              "revoke": "You can revoke access at any time from your Endurix account or from Strava's settings.",
+              "compliance": "Our integration complies with the Strava API Agreement terms and we display the \"Powered by Strava\" attribution where applicable.",
+              "noSell": "We do not sell, license, or share your Strava data with unauthorized third parties."
+            }
+          },
+          "garmin": {
+            "title": "Garmin Connect",
+            "items": {
+              "auth": "Connecting with Garmin Connect requires your authorization through the Garmin linking process.",
+              "data": "We sync activities, performance metrics, and data from compatible Garmin devices.",
+              "priority": "In case of duplicate activities between Strava and Garmin, Garmin data is prioritized to ensure accuracy.",
+              "revoke": "You can disconnect Garmin at any time from your profile in Endurix.",
+              "compliance": "Our integration complies with the Garmin Connect API terms and we display the appropriate attribution."
+            }
+          },
+          "disclaimer": "Endurix is not responsible for the availability, accuracy, or operation of third-party services. Changes to APIs or policies of Strava, Garmin, or other providers may affect integration functionality."
+        },
+        "ai": {
+          "title": "Artificial Intelligence and Automated Processing",
+          "p1": "Endurix incorporates artificial intelligence (AI) features subject to the following conditions:",
+          "usage": {
+            "title": "AI Usage",
+            "items": {
+              "analysis": "AI is used to analyze training data, generate metrics, and provide personalized recommendations.",
+              "advisory": "AI-generated suggestions and analyses are advisory and do not replace the professional judgment of the coach or medical advice.",
+              "accuracy": "We do not guarantee the accuracy, completeness, or suitability of AI-generated results.",
+              "review": "It is the responsibility of the coach and/or athlete to evaluate and validate recommendations before applying them."
+            }
+          },
+          "mcp": {
+            "title": "MCP Server (Programmatic Access)",
+            "text": "Endurix offers an MCP (Model Context Protocol) server that allows coaches to interact with their athletes' data through AI tools compatible with the protocol.",
+            "items": {
+              "access": "Access through MCP is restricted to the same permission level the coach has in the web interface.",
+              "responsibility": "The coach is responsible for their use of data obtained through MCP, including AI-generated responses.",
+              "noExpansion": "MCP does not grant additional access to data the coach cannot normally see on the platform.",
+              "logging": "Interactions through MCP may be logged for security and auditing purposes."
+            }
+          },
+          "providers": {
+            "title": "AI Providers",
+            "text": "We use third-party AI providers (such as Anthropic) to process certain features. Data sent to these providers is subject to data processing agreements and is not used to train third-party AI models."
+          }
+        },
+        "acceptableUse": {
+          "title": "Acceptable Use",
+          "p1": "By using Endurix, you agree to:",
+          "do": {
+            "title": "Obligations",
+            "items": {
+              "lawful": "Use the platform lawfully and in accordance with these terms.",
+              "accurate": "Provide accurate information and keep your account up to date.",
+              "respectPrivacy": "Respect the privacy and data of other users.",
+              "coachEthics": "If you are a coach, act with professional responsibility in handling your athletes' data."
+            }
+          },
+          "dont": {
+            "title": "Prohibitions",
+            "items": {
+              "unauthorized": "Access or attempt to access other users' accounts or data without authorization.",
+              "scraping": "Perform scraping, reverse engineering, or mass data extraction from the platform.",
+              "interference": "Interfere with the operation of the platform or its security systems.",
+              "misrepresent": "Impersonate another user or provide false information.",
+              "resell": "Resell, sublicense, or commercialize access to the platform or its data without authorization.",
+              "abuseMcp": "Use the MCP Server to access data outside the scope of your permissions or for purposes other than coaching.",
+              "abuseAi": "Use AI tools to generate harmful, misleading content or content that violates third-party rights."
+            }
+          }
+        },
+        "ip": {
+          "title": "Intellectual Property",
+          "platform": {
+            "title": "Our Property",
+            "text": "Endurix, including its source code, design, logos, trademarks, and original content, is the property of Endurix Performance Systems. All rights reserved. No license to our intellectual property is granted except the limited right to use the platform under these terms."
+          },
+          "userData": {
+            "title": "Your Content",
+            "text": "You retain ownership of the data you upload or generate on the platform. By using the service, you grant us a limited, non-exclusive, and revocable license to process your data for the purpose of providing the service. This license ends when you delete your account or the corresponding data."
+          },
+          "thirdParty": {
+            "title": "Third-Party Content",
+            "text": "Data from integrations such as Strava and Garmin remains subject to the terms of their respective owners. We do not claim ownership of data synced from third-party services."
+          }
+        },
+        "privacy": {
+          "title": "Privacy and Data Protection",
+          "text": "The processing of your personal data is governed by our Privacy Policy, available at /privacy. By using Endurix, you accept the practices described in that policy.",
+          "coachResponsibility": "If you are a coach, you are co-responsible for the processing of your athletes' data within the platform. You must inform your athletes about how their data is used and obtain the necessary consents under applicable law."
+        },
+        "warranties": {
+          "title": "Disclaimer of Warranties",
+          "p1": "Endurix is provided \"as is\" and \"as available.\" To the fullest extent permitted by law, we disclaim all warranties, express or implied, including but not limited to:",
+          "items": {
+            "fitness": "Warranties of fitness for a particular purpose.",
+            "accuracy": "Warranties of accuracy, reliability, or completeness of data and analysis.",
+            "availability": "Warranties of uninterrupted or error-free availability.",
+            "aiAccuracy": "Warranties regarding the accuracy of AI-generated recommendations.",
+            "integrations": "Warranties regarding the continued operation of integrations with Strava, Garmin, or other services."
+          }
+        },
+        "liability": {
+          "title": "Limitation of Liability",
+          "p1": "To the fullest extent permitted by applicable law, Endurix shall not be liable for:",
+          "items": {
+            "indirect": "Indirect, incidental, special, consequential, or punitive damages.",
+            "lostData": "Loss of data, profits, or business opportunities.",
+            "thirdParty": "Acts or omissions of third-party services (Strava, Garmin, AI providers).",
+            "health": "Injuries or health issues resulting from following training recommendations, whether generated by AI or coaches.",
+            "unauthorized": "Unauthorized access to your account due to negligence in protecting your credentials."
+          },
+          "p2": "Endurix's total cumulative liability for any claim related to the service shall not exceed the amount you have paid for the service during the 12 months preceding the event giving rise to the claim, or ARS 50,000 (or its equivalent in your local currency), whichever is greater."
+        },
+        "indemnification": {
+          "title": "Indemnification",
+          "text": "You agree to indemnify and hold harmless Endurix, its officers, employees, and agents from any claims, damages, losses, liabilities, and expenses (including reasonable legal fees) arising from your use of the service, your breach of these terms, or your violation of third-party rights."
+        },
+        "termination": {
+          "title": "Termination",
+          "byUser": {
+            "title": "By the User",
+            "text": "You can delete your account at any time from your profile settings. When you do so, we will stop processing your data and delete it in accordance with our Privacy Policy."
+          },
+          "byUs": {
+            "title": "By Endurix",
+            "text": "We reserve the right to suspend or terminate your account if you violate these terms, use the platform abusively, or if required for legal or security reasons. We will notify you at least 30 days in advance except in cases of serious violations."
+          },
+          "effects": {
+            "title": "Effects of Termination",
+            "text": "Upon termination of your account, you will lose access to the platform and your stored data. You can request a copy of your data before deletion by contacting us at info@endurix.app."
+          }
+        },
+        "law": {
+          "title": "Governing Law",
+          "text": "These terms are governed by the laws of the Argentine Republic. Any dispute shall be submitted to the jurisdiction of the ordinary courts of the Autonomous City of Buenos Aires, waiving any other jurisdiction that may apply."
+        },
+        "changes": {
+          "title": "Modifications",
+          "text": "We reserve the right to modify these terms at any time. Material changes will be notified by email or through a prominent notice on the platform at least 15 days in advance. Continued use of the service after the effective date of changes constitutes your acceptance of the modified terms."
+        },
+        "severability": {
+          "title": "Severability",
+          "text": "If any provision of these terms is found to be invalid or unenforceable, the remaining provisions shall continue in full force and effect."
+        },
+        "contact": {
+          "title": "Contact",
+          "subtitle": "For inquiries about these terms, contact us:",
+          "emailLabel": "Email",
+          "general": "General inquiries",
+          "privacy": "Privacy and data"
+        }
+      }
+    }
+  },
+  "stravaAuth": {
+    "callback": {
+      "verifyingSession": "Verifying session...",
+      "connectionFailed": "Connection failed",
+      "returnToProfile": "Return to profile",
+      "connecting": "Connecting with Strava...",
+      "loading": "Loading..."
+    }
+  },
+  "garmin": {
+    "title": "Garmin",
+    "dialogTitle": "Connect Garmin",
+    "description": "Send your Endurix workouts directly to your Garmin calendar.",
+    "disclaimer": "This is an <strong>unofficial</strong> integration. We use your Garmin credentials only once to sign in and store only the encrypted session tokens (never your password). You can disconnect at any time. The account <strong>must not have 2FA enabled</strong> (not supported).",
+    "emailLabel": "Garmin Email",
+    "emailPlaceholder": "you@email.com",
+    "passwordLabel": "Garmin Password",
+    "consentText": "I understand this is an unofficial integration and I authorize Endurix to connect to my Garmin account to send and read workouts.",
+    "cancel": "Cancel",
+    "connecting": "Connecting…",
+    "connect": "Connect",
+    "connectBtn": "Connect Garmin",
+    "reconnectBtn": "Reconnect",
+    "disconnectBtn": "Disconnect",
+    "status": {
+      "connected": "Connected",
+      "needsReauth": "Reconnect",
+      "disconnected": "Disconnected"
+    },
+    "cardDescription": "<strong>Unofficial</strong> integration (pilot). Send your workouts to your Garmin calendar and sync your activities.",
+    "reauthWarning": "The Garmin session has expired. Reconnect to continue sending workouts.",
+    "lastSync": "Last sync: {date}",
+    "debugLoadError": "Could not load Garmin debug info"
+  },
+  "apiErrors": {
+    "generic": {
+      "INTERNAL_SERVER_ERROR": "Internal server error. Please try again later.",
+      "REQUEST_FAILED": "The request has failed.",
+      "RATE_LIMIT_EXCEEDED": "Too many requests. Please wait a moment.",
+      "SERVER_CONFIGURATION_ERROR": "Server configuration error."
+    },
+    "auth": {
+      "UNAUTHORIZED": "You are not signed in or your session has expired.",
+      "FORBIDDEN": "You do not have permission to perform this action.",
+      "TEAM_REQUIRED": "You must belong to a team to perform this action.",
+      "COACH_ONLY": "This action is only allowed for coaches.",
+      "ADMIN_ONLY": "This action is only allowed for administrators.",
+      "COACH_OR_ADMIN_ONLY": "This action is only allowed for coaches or administrators.",
+      "NOT_OWNER": "You do not have permission to view or modify other users' data.",
+      "INVALID_OAUTH_STATE": "Invalid authentication state. Please try again.",
+      "FAILED_TO_UPDATE_PASSWORD": "Error updating password.",
+      "FAILED_TO_UPDATE_USER": "Error updating user data.",
+      "COACH_TEAM_REQUIRED": "As a coach, you must be assigned to a team.",
+      "ADMIN_TEAM_REQUIRED": "As an administrator, you must belong to a team.",
+      "VIEW_ACTIVITY_FORBIDDEN": "You do not have permission to view this activity.",
+      "MODIFY_ACTIVITY_FORBIDDEN": "You do not have permission to modify this activity.",
+      "VIEW_ASSIGNMENT_FORBIDDEN": "You do not have permission to view this assignment.",
+      "UPDATE_ASSIGNMENT_FORBIDDEN": "You do not have permission to update this assignment.",
+      "DELETE_ASSIGNMENT_FORBIDDEN": "You do not have permission to delete this assignment."
+    },
+    "validation": {
+      "REQUIRED_FIELD": "This field is required.",
+      "INVALID_FORMAT": "The format entered is not valid.",
+      "MIN_LENGTH": "Must be at least {min} characters.",
+      "OUT_OF_RANGE": "The value is out of the allowed range.",
+      "NO_DATA": "No data to update.",
+      "ACTIVITY_ID_IS_REQUIRED": "The activity ID is required.",
+      "TITLE_IS_REQUIRED": "The title is required.",
+      "SCHEDULED_DATE_IS_REQUIRED": "The scheduled date is required.",
+      "AT_LEAST_ONE_RECIPIENT_REQUIRED": "You must select at least one athlete or group.",
+      "PASSWORD_TOO_SHORT": "Password must be at least 6 characters.",
+      "INVALID_EMAIL": "The email entered is not valid."
+    },
+    "resources": {
+      "ACTIVITY_NOT_FOUND": "Activity not found.",
+      "ATHLETE_NOT_FOUND": "Athlete not found.",
+      "COACH_NOT_FOUND": "Coach not found.",
+      "GROUP_NOT_FOUND": "Group not found.",
+      "TRAINING_NOT_FOUND": "Training not found.",
+      "ASSIGNMENT_NOT_FOUND": "Assignment not found.",
+      "RACE_NOT_FOUND": "Race not found.",
+      "USER_NOT_FOUND": "User not found."
+    },
+    "strava": {
+      "NOT_CONNECTED": "Your Strava account is not connected.",
+      "FAILED_TO_REFRESH_TOKEN": "Error refreshing the Strava connection.",
+      "FAILED_TO_FETCH_DATA": "Error fetching data from Strava.",
+      "NO_ZONES_FOUND": "No heart rate zones found in your Strava profile.",
+      "STRAVA_NOT_CONNECTED": "Strava account not linked.",
+      "FAILED_TO_REFRESH_STRAVA_TOKEN": "Error renewing Strava access.",
+      "FAILED_TO_FETCH_ACTIVITY_FROM_STRAVA": "Error fetching the activity from Strava.",
+      "NO_HEART_RATE_ZONES_FOUND_IN_STRAVA_PROFILE": "No heart rate zones found in Strava."
+    },
+    "operations": {
+      "FAILED_TO_CREATE": "Error creating the resource.",
+      "FAILED_TO_UPDATE": "Error updating the information.",
+      "FAILED_TO_DELETE": "Error deleting the resource.",
+      "FAILED_TO_FETCH": "Error fetching the information.",
+      "FAILED_TO_SYNC": "Error syncing the data.",
+      "FAILED_TO_ASSIGN": "Error assigning the training.",
+      "FAILED_TO_LINK": "Error linking the activity.",
+      "ALREADY_MEMBER": "The athlete is already a member of this group.",
+      "NO_ATHLETES_FOUND": "No athletes found to assign the training.",
+      "FAILED_TO_CREATE_TRAINING": "Error creating the new training.",
+      "FAILED_TO_UPDATE_ASSIGNMENT": "Error updating the assignment.",
+      "FAILED_TO_DELETE_ASSIGNMENT": "Error deleting the assignment.",
+      "FAILED_TO_UPDATE_GROUP": "Error updating the group.",
+      "FAILED_TO_DELETE_GROUP": "Error deleting the group.",
+      "FAILED_TO_UPDATE_PROFILE": "Error updating your profile.",
+      "FAILED_TO_UPDATE_ROLE_PROFILE": "Error updating the coach profile.",
+      "RACES_FETCH_FAILED": "Error fetching the race list.",
+      "RACE_ASSIGN_FAILED": "Error assigning the race to the athlete.",
+      "RACE_UPDATE_FAILED": "Error updating the race.",
+      "RACE_DELETE_FAILED": "Error deleting the race."
+    }
+  },
+  "notFound": {
+    "eyebrow": "Page not found",
+    "headline1": "You went",
+    "headline2": "off course.",
+    "subtitle": "The route you followed no longer exists. Head back to the start line and pick up your plan from the dashboard.",
+    "primary": "Back to dashboard",
+    "secondary": "Go to home",
+    "tip": "Tip: check the URL or use the main navigation to find what you're looking for."
+  },
+  "errorPage": {
+    "eyebrow": "Unexpected error",
+    "headline1": "Something",
+    "headline2": "broke along the way.",
+    "subtitle": "We hit a technical stumble. The team has been notified. Try reloading or start over.",
+    "primary": "Retry",
+    "secondary": "Go to home",
+    "label": "Error detail",
+    "helpText": "If the problem persists, contact support with the identifier above."
+  },
+  "globalError": {
+    "eyebrow": "Critical error",
+    "headline1": "The app needs",
+    "headline2": "a restart.",
+    "subtitle": "We detected a critical error. Reload the page or go to the home screen. The team has been notified.",
+    "primary": "Reload",
+    "secondary": "Go to home",
+    "errorId": "Error ID"
+  }
+}

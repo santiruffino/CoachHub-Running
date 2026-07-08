@@ -66,7 +66,7 @@ export function ProductFeaturesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-80px' }}
           transition={{ duration: 0.6 }}
-          className="mb-16"
+          className="mb-8 sm:mb-12 lg:mb-16"
         >
           <span
             className="inline-block text-[10px] text-endurix-black/50 dark:text-muted-foreground tracking-widest mb-4"
@@ -75,7 +75,7 @@ export function ProductFeaturesSection() {
             {t('eyebrow')}
           </span>
           <h2
-            className="font-bold text-endurix-black dark:text-foreground text-4xl lg:text-5xl xl:text-6xl leading-[1.05] tracking-tight uppercase max-w-2xl"
+            className="font-bold text-endurix-black dark:text-foreground text-2xl sm:text-4xl lg:text-5xl xl:text-6xl leading-[1.05] tracking-tight uppercase max-w-2xl"
             style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
           >
             {t('title1')}{' '}
@@ -89,7 +89,7 @@ export function ProductFeaturesSection() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: '-80px' }}
-          className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
+          className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8"
         >
           {productFeatures.map((feature, index) => (
             <motion.div
@@ -97,7 +97,7 @@ export function ProductFeaturesSection() {
               variants={featureItemVariants}
               whileHover={{ y: -6 }}
               transition={{ duration: 0.4, ease: 'easeOut', type: 'spring', stiffness: 300, damping: 20 }}
-              className="flex flex-col justify-between p-6 border border-endurix-black/12 dark:border-border bg-white dark:bg-card hover:border-endurix-orange/50 dark:hover:border-endurix-orange/50 transition-all duration-300 group cursor-default"
+              className="flex flex-col justify-between p-4 sm:p-6 border border-endurix-black/12 dark:border-border bg-white dark:bg-card hover:border-endurix-orange/50 dark:hover:border-endurix-orange/50 transition-all duration-300 group cursor-default"
             >
               <div>
                 {/* Header row: Icon & Number */}

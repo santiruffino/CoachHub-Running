@@ -6,6 +6,7 @@ import { CheckCircle2, HelpCircle, XCircle } from 'lucide-react';
 import { matchingService, PendingMatch } from '@/features/trainings/services/matching.service';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useTranslations } from 'next-intl';
 
 function formatDistance(meters: number): string {
     return `${(meters / 1000).toFixed(1)} km`;
@@ -21,6 +22,7 @@ function formatDate(value: string): string {
 }
 
 export function PendingMatchReview() {
+    const t = useTranslations('trainings.matches');
     const [matches, setMatches] = useState<PendingMatch[]>([]);
     const [loading, setLoading] = useState(true);
     const [resolvingId, setResolvingId] = useState<string | null>(null);
@@ -63,7 +65,7 @@ export function PendingMatchReview() {
         return (
             <div className="flex flex-col items-center justify-center gap-2 p-8 text-center">
                 <CheckCircle2 className="h-6 w-6 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">No hay matches pendientes de revisión.</p>
+                <p className="text-sm text-muted-foreground">{t('empty')}</p>
             </div>
         );
     }
@@ -79,14 +81,18 @@ export function PendingMatchReview() {
                                 {match.athleteName} — {match.workoutName}
                             </p>
                             <span className="rounded-full bg-endurix-black/5 dark:bg-white/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                                {match.confidence}% confianza
+                                {t('confidence', { value: match.confidence })}
                             </span>
                         </div>
                         <p className="mt-0.5 text-sm text-muted-foreground">
-                            Planificado: {formatDate(match.scheduledDate)}
+                            {t('scheduled', { date: formatDate(match.scheduledDate) })}
                             {match.candidateActivity && (
                                 <>
-                                    {' · '}Actividad sugerida: {match.candidateActivity.title} ({formatDistance(match.candidateActivity.distance)}, {formatDuration(match.candidateActivity.duration)})
+                                    {' · '}{t('suggestedActivity', {
+                                        title: match.candidateActivity.title,
+                                        distance: formatDistance(match.candidateActivity.distance),
+                                        duration: formatDuration(match.candidateActivity.duration)
+                                    })}
                                 </>
                             )}
                         </p>
@@ -101,7 +107,7 @@ export function PendingMatchReview() {
                             className="gap-1.5"
                         >
                             <XCircle className="h-3.5 w-3.5" />
-                            Rechazar
+                            {t('reject')}
                         </Button>
                         <Button
                             type="button"
@@ -112,7 +118,7 @@ export function PendingMatchReview() {
                             className="gap-1.5"
                         >
                             <CheckCircle2 className="h-3.5 w-3.5" />
-                            Aprobar
+                            {t('approve')}
                         </Button>
                     </div>
                 </div>

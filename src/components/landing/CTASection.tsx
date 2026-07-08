@@ -12,7 +12,7 @@ export function CTASection() {
   return (
     <section className="bg-endurix-dark dark:bg-background overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-36">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-20 items-center">
           {/* Left — Manifesto */}
           <motion.div
             initial={{ opacity: 0, x: -24 }}
@@ -27,7 +27,7 @@ export function CTASection() {
               {[t('disciplina'), t('consistencia'), t('progreso')].map((word, i) => (
                 <motion.span
                   key={word}
-                  className="block text-5xl lg:text-6xl xl:text-7xl overflow-hidden"
+                  className="block text-3xl sm:text-5xl lg:text-6xl xl:text-7xl overflow-hidden"
                   initial={{ opacity: 0, y: '100%' }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: '-60px' }}

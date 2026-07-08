@@ -26,7 +26,7 @@ export default async function TrainingsPage() {
 
     if (error) {
         return (
-            <div className="p-8 text-center text-muted-foreground">
+            <div className="p-4 sm:p-8 text-center text-muted-foreground">
                 Failed to load trainings. Please try again later.
             </div>
         );

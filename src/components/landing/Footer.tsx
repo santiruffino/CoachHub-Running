@@ -10,6 +10,7 @@ export function Footer() {
 
   const FOOTER_LINKS = [
     { label: t('privacy'), href: '/privacy' },
+    { label: t('terms'), href: '/terms' },
   ];
 
   return (
@@ -31,7 +32,7 @@ export function Footer() {
           </Link>
 
           {/* Links */}
-          <div className="flex items-center flex-wrap justify-center gap-6">
+          <div className="flex items-center flex-wrap justify-center gap-4 sm:gap-6">
             {FOOTER_LINKS.map((link) => (
               <Link
                 key={link.href}

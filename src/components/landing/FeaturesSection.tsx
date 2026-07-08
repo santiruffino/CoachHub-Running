@@ -32,7 +32,7 @@ export function FeaturesSection() {
   return (
     <section id="features" className="py-24 lg:py-32 bg-white dark:bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-3 gap-4 sm:gap-6">
           {features.map((feature, index) => (
             <motion.div
               key={index}
@@ -41,7 +41,7 @@ export function FeaturesSection() {
               viewport={{ once: true, margin: '-60px' }}
               transition={{ duration: 0.55, delay: index * 0.12, ease: [0.22, 1, 0.36, 1] }}
             >
-              <div className="border border-endurix-black/12 dark:border-border p-6 h-full flex flex-col bg-white dark:bg-card hover:border-endurix-black/30 dark:hover:border-white/30 transition-colors duration-300">
+              <div className="border border-endurix-black/12 dark:border-border p-4 sm:p-6 h-full flex flex-col bg-white dark:bg-card hover:border-endurix-black/30 dark:hover:border-white/30 transition-colors duration-300">
                 {/* Tag row */}
                 <div className="flex items-center gap-2.5 mb-4">
                   <feature.icon

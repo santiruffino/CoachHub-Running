@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
           );
       }
 
-      console.error('[wishlist] insert failed:', error);
+      logger.error('wishlist.insert_failed', { error });
       return NextResponse.json(
           { error: 'INTERNAL_ERROR', message: 'Could not save signup.' },
           { status: 500, headers },

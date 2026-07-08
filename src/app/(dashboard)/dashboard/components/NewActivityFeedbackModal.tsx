@@ -7,8 +7,11 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useTranslations } from 'next-intl';
 
+import { Trophy, Check } from 'lucide-react';
+
 import api from '@/lib/axios';
 import { Activity } from '@/interfaces/activity';
+import { computeExecutionSummary, type ExecutionHighlight } from '@/features/trainings/utils/executionSummary';
 import {
     Dialog,
     DialogContent,
@@ -46,14 +49,43 @@ export function NewActivityFeedbackModal({
     onSubmitted,
 }: NewActivityFeedbackModalProps) {
     const t = useTranslations('dashboard.athleteFeedbackModal');
+    const tHighlights = useTranslations('dashboard.athleteFeedbackModal.highlights');
     const [form, setForm] = useState<FeedbackFormState>(DEFAULT_VALUES);
     const [saving, setSaving] = useState(false);
+    const [highlights, setHighlights] = useState<ExecutionHighlight[]>([]);
 
     useEffect(() => {
         if (open) {
             setForm(DEFAULT_VALUES);
         }
     }, [open, activity?.id]);
+
+    // On open, pull the activity detail and surface a couple of positive
+    // highlights (PRs, negative split) as a celebration. Reduced summary: no
+    // workout match needed, so it works from laps + best efforts alone.
+    useEffect(() => {
+        if (!open || !activity) {
+            setHighlights([]);
+            return;
+        }
+
+        let cancelled = false;
+        (async () => {
+            try {
+                const response = await api.get(`/v2/activities/${activity.id}`);
+                const full = response.data;
+                const summary = computeExecutionSummary({ laps: full?.laps, bestEfforts: full?.best_efforts });
+                if (!cancelled) {
+                    // Celebration only — skip constructive tips in the quick modal.
+                    setHighlights(summary.highlights.filter(h => h.tone !== 'tip').slice(0, 2));
+                }
+            } catch {
+                if (!cancelled) setHighlights([]);
+            }
+        })();
+
+        return () => { cancelled = true; };
+    }, [open, activity]);
 
     const getScaleLabel = (value: number) => {
         if (value <= 2) return t('scale.veryLow');
@@ -86,7 +118,7 @@ export function NewActivityFeedbackModal({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogOverlay className="fixed inset-0 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
             <DialogContent className="sm:max-w-140 max-h-[90vh] overflow-y-auto border border-endurix-black/10 dark:border-border bg-white dark:bg-[#0a0f14] p-0 overflow-hidden">
-                <DialogHeader className="space-y-2 bg-endurix-paper dark:bg-[#131b23] border-b border-endurix-black/10 dark:border-white/5 px-6 pb-6 pt-7 text-left">
+                <DialogHeader className="space-y-2 bg-endurix-paper dark:bg-[#131b23] border-b border-endurix-black/10 dark:border-white/5 px-4 sm:px-6 pb-6 pt-7 text-left">
                     <DialogTitle
                         className="text-2xl font-bold uppercase tracking-tight text-foreground"
                         style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
@@ -103,7 +135,22 @@ export function NewActivityFeedbackModal({
                     )}
                 </DialogHeader>
 
-                <div className="space-y-7 bg-background px-6 pb-6 pt-6 dark:bg-[#0a0f14]">
+                <div className="space-y-7 bg-background px-4 sm:px-6 pb-6 pt-6 dark:bg-[#0a0f14]">
+                    {highlights.length > 0 && (
+                        <div className="space-y-2 border border-endurix-orange/30 bg-endurix-orange/5 px-4 py-3">
+                            {highlights.map((h, i) => {
+                                const Icon = h.tone === 'celebrate' ? Trophy : Check;
+                                const color = h.tone === 'celebrate' ? 'text-endurix-orange' : 'text-green-500';
+                                return (
+                                    <div key={`${h.key}-${i}`} className="flex items-center gap-2.5">
+                                        <Icon className={`h-4 w-4 shrink-0 ${color}`} />
+                                        <span className="text-sm font-medium text-foreground leading-snug">{tHighlights(h.key, h.params)}</span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+
                     <div className="space-y-3">
                         <Label className="text-[11px] font-bold uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-ibm-plex-mono, monospace)' }}>
                             {t('rpeLabel')}

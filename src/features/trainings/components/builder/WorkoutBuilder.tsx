@@ -234,9 +234,9 @@ export function WorkoutBuilder({
 
   return (
     <div className="h-full w-full bg-[#f8f9fa] dark:bg-[#0a0f14] flex font-inter overflow-hidden relative">
-      {/* Left Sidebar - Always Visible */}
+      {/* Left Sidebar - Hidden on mobile, visible on sm+ */}
       <div
-        className={`shrink-0 bg-white dark:bg-[#0d1117] border-r border-[#e2e8f0] dark:border-white/5 overflow-hidden z-10 flex flex-col ${compactLayout ? 'w-56' : 'w-64'}`}>
+        className={`hidden sm:flex shrink-0 bg-white dark:bg-[#0d1117] border-r border-[#e2e8f0] dark:border-white/5 overflow-hidden z-10 flex-col ${compactLayout ? 'w-56' : 'w-64'}`}>
         <div className={`flex-1 overflow-y-auto ${compactLayout ? 'p-4' : 'p-6'}`}>
           {/* Add Step Buttons */}
           <div className="mb-6">
@@ -315,8 +315,28 @@ export function WorkoutBuilder({
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col h-full overflow-hidden bg-white dark:bg-transparent">
 
+        {/* Mobile Add Block Toolbar */}
+        <div className="sm:hidden flex gap-2 px-4 py-3 overflow-x-auto border-b border-[#e2e8f0] dark:border-white/10 bg-white dark:bg-[#0d1117]">
+          {(['warmup', 'interval', 'recovery', 'rest', 'cooldown', 'repeat'] as const).map((type) => (
+            <button
+              key={type}
+              onClick={() => handleAddStep(type)}
+              className="shrink-0 px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest rounded border border-[#2b3437]/20 dark:border-white/20 bg-[#8b9bb4]/10 hover:bg-[#8b9bb4]/20 transition-colors text-[#2b3437] dark:text-[#f8f9fa]"
+            >
+              {t(`labels.${type}`)}
+            </button>
+          ))}
+        </div>
+
+        {/* Mobile Footer */}
+        {footerContent && (
+          <div className="sm:hidden border-b border-[#e2e8f0] dark:border-white/10 bg-[#f8f9fa] dark:bg-[#0a0f14] p-3">
+            {footerContent}
+          </div>
+        )}
+
         {/* Scrollable Form Content */}
-        <div className="flex-1 overflow-y-auto px-8 py-8 w-full">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6 sm:py-8 w-full">
           <div className="max-w-5xl mx-auto space-y-12 pb-24">
             {/* Projected Training Profile Chart */}
             <div className="w-full">

@@ -180,7 +180,7 @@ export function HeroSection() {
   return (
     <section className="relative overflow-hidden py-20 lg:py-32 bg-endurix-paper dark:bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           {/* Left Content */}
           <motion.div
             initial={{ opacity: 0, y: 28 }}
@@ -211,10 +211,10 @@ export function HeroSection() {
                 className="font-bold leading-[1.0] tracking-tight"
                 style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
               >
-                <span className="block text-endurix-black dark:text-foreground text-5xl lg:text-6xl xl:text-7xl uppercase">
+                <span className="block text-endurix-black dark:text-foreground text-3xl sm:text-5xl lg:text-6xl xl:text-7xl uppercase">
                   {t('title1')}
                 </span>
-                <span className="block text-endurix-orange text-5xl lg:text-6xl xl:text-7xl uppercase">
+                <span className="block text-endurix-orange text-3xl sm:text-5xl lg:text-6xl xl:text-7xl uppercase">
                   {t('title2')}
                 </span>
               </motion.h1>

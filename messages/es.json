@@ -277,7 +277,14 @@
       "noCoaches": "No hay entrenadores registrados aún."
     },
     "athlete": {
-      "defaultName": "Atleta"
+      "defaultName": "Atleta",
+      "tabs": {
+        "overview": "Resumen",
+        "fitness": "Fitness",
+        "compliance": "Cumplimiento",
+        "zones": "Zonas",
+        "chat": "Chat"
+      }
     },
     "messages": {
       "hi": "Hola, {name}"
@@ -331,6 +338,15 @@
         "medium": "Medio",
         "high": "Alto",
         "veryHigh": "Muy alto"
+      },
+      "highlights": {
+        "newPr": "¡Nuevo récord personal en {distance}!",
+        "newPrEasy": "Récord personal en {distance}, y en una sesión suave",
+        "topEffort": "Top {rank} histórico en {distance}",
+        "negativeSplit": "Negative split: cerraste {delta}s/km más rápido",
+        "consistentReps": "{count} series muy parejas, gran control del ritmo",
+        "allRepsDone": "Completaste las {planned} series planificadas",
+        "someRepsDone": "Hiciste {done} de {planned} series"
       }
     },
     "metrics": {
@@ -623,6 +639,8 @@
       "daysShort": "dias",
       "showAdvancedMetrics": "Ver metricas avanzadas",
       "hideAdvancedMetrics": "Ocultar metricas avanzadas",
+      "hrZonesTitle": "Zonas de frecuencia cardíaca",
+      "paceZonesTitle": "Zonas de ritmo",
       "noHrZones": "No hay zonas de frecuencia cardiaca cargadas.",
       "todayLoad": "Carga Hoy",
       "last7DaysAvg": "Prom. 7 dias",
@@ -720,6 +738,35 @@
           "perKm": "/km"
         }
       },
+      "executionSummary": {
+        "title": "RESUMEN DE EJECUCIÓN",
+        "tiles": {
+          "reps": "SERIES",
+          "consistency": "CONSISTENCIA",
+          "split": "SPLIT",
+          "records": "MEJORES MARCAS"
+        },
+        "consistency": {
+          "high": "Muy parejas",
+          "medium": "Parejas",
+          "low": "Con variación"
+        },
+        "split": {
+          "negative": "Negative",
+          "even": "Parejo",
+          "positive": "Positive"
+        },
+        "highlights": {
+          "newPr": "¡Nuevo récord personal en {distance}!",
+          "newPrEasy": "Récord personal en {distance}, y en una sesión suave",
+          "topEffort": "Top {rank} histórico en {distance}",
+          "negativeSplit": "Negative split: cerraste {delta}s/km más rápido",
+          "consistentReps": "{count} series muy parejas, gran control del ritmo",
+          "allRepsDone": "Completaste las {planned} series planificadas",
+          "someRepsDone": "Hiciste {done} de {planned} series",
+          "positiveSplitTip": "La próxima probá arrancar más suave para cerrar más fuerte"
+        }
+      },
       "charts": {
         "terrain": "Terreno",
         "elevationProfile": "Perfil de Elevación",
@@ -758,7 +805,9 @@
           "uphill": "Subida",
           "steepUphill": "Subida Pronunciada"
         },
-        "noSplitData": "No hay datos de splits disponibles"
+        "noSplitData": "No hay datos de splits disponibles",
+        "noHrData": "No hay datos de frecuencia cardíaca disponibles.",
+        "paceVsHr": "Ritmo vs Frecuencia Cardíaca"
       },
       "map": {
         "colorBy": "Colorear por",
@@ -806,6 +855,14 @@
         "paceTitle": "Zonas de Ritmo",
         "noHrData": "No hay datos de frecuencia cardíaca disponibles para esta actividad.",
         "noPaceData": "No hay datos de ritmo disponibles para esta actividad.",
+        "charts": {
+          "time": "Tiempo",
+          "share": "Porcentaje",
+          "range": "Rango",
+          "totalTime": "Tiempo total",
+          "bpm": "ppm",
+          "noHrSamples": "No había muestras de frecuencia cardíaca en vueltas o splits."
+        },
         "short": {
           "z1": "Z1",
           "z2": "Z2",
@@ -851,7 +908,8 @@
           "elevation": "Elevación",
           "grade": "Pendiente",
           "lapBoundaries": "Límites de Vuelta",
-          "minPerKm": "min/km"
+          "minPerKm": "min/km",
+          "elevationGain": "Desnivel"
         }
       },
       "lapFilters": {
@@ -1152,6 +1210,7 @@
       "continueToAssignment": "Continuar a Asignación",
       "modifyBlueprint": "Modificar entrenamiento",
       "actionCalendar": "Planificación",
+      "sessionPlanning": "Planificación de la sesión",
       "executionDate": "Fecha de Ejecución Objetivo",
       "objectiveTitle": "Nombre de la sesión",
       "exampleLongRun": "Ej. Carrera Larga del Domingo",
@@ -1183,7 +1242,28 @@
       "loadingMatrix": "Cargando pantalla de asignación...",
       "successAssigned": "Entrenamiento asignado correctamente al calendario.",
       "errorExecutionFailed": "Ejecución fallida. Por favor, verifica los elementos seleccionados e inténtalo de nuevo.",
-      "selectAtLeastOne": "Por favor, selecciona al menos un atleta o equipo"
+      "selectAtLeastOne": "Por favor, selecciona al menos un atleta o equipo",
+      "stepSource": "Origen",
+      "stepBuild": "Diseño",
+      "stepAssign": "Asignación",
+      "blockBreakdown": "Desglose de bloques",
+      "blockBreakdownQuickView": "Vista rápida",
+      "blockBreakdownEmpty": "Aun no hay bloques cargados en esta sesión.",
+      "blockTypes": {
+        "warmup": "Calentamiento",
+        "interval": "Intervalo",
+        "recovery": "Recuperación",
+        "rest": "Descanso",
+        "cooldown": "Vuelta a la calma"
+      }
+    },
+    "matches": {
+      "empty": "No hay matches pendientes de revisión.",
+      "confidence": "{value}% confianza",
+      "scheduled": "Planificado: {date}",
+      "suggestedActivity": "Actividad sugerida: {title} ({distance}, {duration})",
+      "reject": "Rechazar",
+      "approve": "Aprobar"
     }
   },
   "workouts": {
@@ -1475,6 +1555,15 @@
       "spm": "ppm"
     },
     "stepCount": "{count, plural, =1 {1 paso} other {# pasos}}",
+    "powerZones": {
+      "1": "Zona 1 (Recuperación)",
+      "2": "Zona 2 (Resistencia)",
+      "3": "Zona 3 (Tempo)",
+      "4": "Zona 4 (Umbral)",
+      "5": "Zona 5 (VO2 Max)",
+      "6": "Zona 6 (Anaeróbico)",
+      "7": "Zona 7 (Neuromuscular)"
+    },
     "vamZoneFullNames": {
       "1": "Z1 - Regenerativo",
       "2": "Z2 - Endurance",
@@ -1699,6 +1788,21 @@
         "cta": "Administrar notificaciones"
       },
       "saveHint": "Los cambios se guardan en tu perfil de inmediato."
+    },
+    "hrZones": {
+      "title": "Zonas de frecuencia cardíaca",
+      "empty": "No hay zonas de FC configuradas.",
+      "emptyHelp": "Añade tu FC máxima y de reposo para generarlas desde Strava.",
+      "customSource": "Usando zonas personalizadas de Strava.",
+      "standardSource": "Usando las zonas estándar de Strava.",
+      "zoneCount": "{count} zonas",
+      "labels": {
+        "z1": "Z1 — Recuperación",
+        "z2": "Z2 — Resistencia",
+        "z3": "Z3 — Aeróbico",
+        "z4": "Z4 — Umbral",
+        "z5": "Z5 — Máximo"
+      }
     },
     "careerProgress": {
       "ytdDistance": "Distancia (Año)",
@@ -2050,6 +2154,7 @@
         "descriptionCreate": "Elige cómo quieres añadir a tus atletas.",
         "emailPlaceholder": "atleta@ejemplo.com",
         "create": "Crear Invitación",
+        "emailsDetected": "{count} correos detectados",
         "tabs": {
           "single": "Individual",
           "bulk": "Carga Masiva (CSV)",
@@ -2292,7 +2397,7 @@
     "privacy": {
       "backToHome": "Volver al inicio",
       "title": "Política de privacidad",
-      "lastUpdated": "Última actualización: 14 de febrero de 2026",
+      "lastUpdated": "Última actualización: 7 de julio de 2026",
       "footer": "© 2026 Endurix. Todos los derechos reservados.",
       "sections": {
         "introduction": {
@@ -2386,6 +2491,18 @@
               "usageData": "Strava puede recopilar información de uso relacionada con el acceso a su API desde nuestra integración, de acuerdo con su API Agreement y su política de privacidad.",
               "attribution": "Cuando corresponda, mostramos la atribución \"Powered by Strava\" y cualquier atribución adicional exigida por proveedores de datos como Garmin."
             }
+          },
+          "garmin": {
+            "title": "Divulgaciones específicas de Garmin",
+            "intro": "Si conectas Garmin Connect, también aplican estas condiciones específicas:",
+            "items": {
+              "consent": "Solo accedemos a tus datos de Garmin cuando nos das autorización explícita a través del flujo de conexión de Garmin Connect.",
+              "scope": "Los datos que sincronizamos incluyen actividades, métricas de rendimiento, frecuencia cardíaca y datos de dispositivos compatibles.",
+              "withdrawal": "Puedes desconectar Garmin en cualquier momento desde tu perfil en Endurix o desde la configuración de aplicaciones de terceros en Garmin Connect.",
+              "deletion": "Al desconectar Garmin, dejamos de sincronizar nuevos datos. Puedes solicitar la eliminación de datos históricos vinculados a Garmin escribiendo a privacy@endurix.app.",
+              "priority": "En caso de que un mismo entrenamiento se registre tanto en Strava como en Garmin, Endurix prioriza los datos de Garmin para evitar duplicados.",
+              "attribution": "Mostramos la atribución correspondiente a Garmin cuando se visualizan datos provenientes de sus dispositivos y servicios."
+            }
           }
         },
         "sharing": {
@@ -2468,6 +2585,244 @@
           "title": "Contáctanos",
           "subtitle": "Si tienes preguntas o inquietudes sobre esta política o nuestras prácticas de privacidad, contáctanos:",
           "emailLabel": "Email"
+        },
+        "ai": {
+          "title": "Inteligencia artificial y procesamiento automatizado",
+          "p1": "Endurix utiliza tecnologías de inteligencia artificial (IA) para mejorar la experiencia de entrenamiento. A continuación describimos cómo se utilizan y qué datos intervienen:",
+          "analysis": {
+            "title": "Análisis de entrenamiento",
+            "text": "Utilizamos modelos de IA para analizar datos de tus actividades y entrenamientos, generando métricas de rendimiento, detección de patrones y sugerencias personalizadas. Este análisis se basa exclusivamente en datos que ya proporcionaste a la plataforma."
+          },
+          "mcp": {
+            "title": "Acceso programático (MCP Server)",
+            "text": "Endurix expone un servidor MCP (Model Context Protocol) que permite a coaches interactuar con datos de sus atletas a través de herramientas de IA. Este acceso:",
+            "items": {
+              "scope": "Está limitado a los datos que el coach ya tiene autorización para ver según su rol y equipo.",
+              "noExpansion": "No amplía ni modifica los permisos existentes; respeta las mismas reglas de acceso (RLS) que la interfaz web.",
+              "noStorage": "No almacena conversaciones ni respuestas de IA fuera de la sesión activa del coach.",
+              "noThirdParty": "Los datos expuestos a través del MCP no se comparten con terceros ni se utilizan para entrenar modelos de IA."
+            }
+          },
+          "decisions": {
+            "title": "Toma de decisiones automatizada",
+            "text": "No utilizamos IA para tomar decisiones automatizadas que afecten significativamente tus derechos. Las recomendaciones de entrenamiento generadas por IA son orientativas y siempre están sujetas a la revisión y criterio del coach o del propio atleta."
+          },
+          "providers": {
+            "title": "Proveedores de IA",
+            "text": "Utilizamos servicios de IA de terceros (como Anthropic) para procesar consultas dentro de la plataforma. Los datos enviados a estos proveedores se limitan al contexto necesario para la consulta específica y están sujetos a sus respectivas políticas de privacidad y acuerdos de procesamiento de datos. No permitimos que estos proveedores utilicen tus datos para entrenar sus modelos."
+          },
+          "optOut": {
+            "title": "Control del usuario",
+            "text": "Puedes optar por no utilizar funcionalidades basadas en IA sin que esto afecte tu acceso a las funciones principales de la plataforma. Si deseas que tus datos no sean procesados por herramientas de IA, contáctanos en privacy@endurix.app."
+          }
+        }
+      }
+    },
+    "terms": {
+      "backToHome": "Volver al inicio",
+      "title": "Términos y condiciones",
+      "lastUpdated": "Última actualización: 7 de julio de 2026",
+      "footer": "© 2026 Endurix. Todos los derechos reservados.",
+      "sections": {
+        "acceptance": {
+          "title": "Aceptación de los términos",
+          "p1": "Al acceder o usar Endurix (\"la Plataforma\", \"el Servicio\"), operado por Endurix Performance Systems (\"nosotros\", \"nuestro\"), aceptas quedar vinculado por estos Términos y Condiciones. Si no estás de acuerdo, no uses el Servicio.",
+          "p2": "Estos términos constituyen un acuerdo legalmente vinculante entre tú y Endurix. Al crear una cuenta, acceder a la plataforma o usar cualquier funcionalidad, confirmas que has leído, entendido y aceptas cumplir con estos términos."
+        },
+        "description": {
+          "title": "Descripción del servicio",
+          "p1": "Endurix es una plataforma de coaching deportivo enfocada en running que permite a entrenadores gestionar atletas, asignar planes de entrenamiento, analizar datos de rendimiento y comunicarse con sus deportistas.",
+          "features": {
+            "title": "Funcionalidades principales",
+            "items": {
+              "plans": "Creación y asignación de planes de entrenamiento personalizados",
+              "sync": "Sincronización de actividades deportivas desde dispositivos y plataformas de terceros (Strava, Garmin)",
+              "analytics": "Análisis de rendimiento, métricas y progreso del atleta",
+              "groups": "Gestión de grupos de entrenamiento y equipos",
+              "notifications": "Sistema de notificaciones y comunicación coach-atleta",
+              "ai": "Herramientas de inteligencia artificial para análisis y recomendaciones de entrenamiento",
+              "mcp": "Acceso programático a datos de coaching a través del protocolo MCP (Model Context Protocol)"
+            }
+          }
+        },
+        "accounts": {
+          "title": "Cuentas y registro",
+          "registration": {
+            "title": "Registro",
+            "text": "Para usar Endurix necesitas crear una cuenta proporcionando información precisa y completa. Eres responsable de mantener la confidencialidad de tus credenciales y de todas las actividades que se realicen bajo tu cuenta."
+          },
+          "roles": {
+            "title": "Roles de usuario",
+            "text": "Endurix opera con tres roles principales:",
+            "items": {
+              "coach": "Coach: Puede crear equipos, invitar atletas, asignar entrenamientos, ver datos de rendimiento de sus atletas y utilizar herramientas de IA para análisis.",
+              "athlete": "Atleta: Puede conectar dispositivos, sincronizar actividades, ver sus planes de entrenamiento y métricas personales.",
+              "admin": "Administrador: Tiene acceso completo a la gestión de la plataforma, incluyendo gestión de usuarios y configuración del sistema."
+            }
+          },
+          "accuracy": {
+            "title": "Veracidad de datos",
+            "text": "Te comprometes a proporcionar información veraz y actualizada. Nos reservamos el derecho de suspender o eliminar cuentas que contengan información falsa o engañosa."
+          }
+        },
+        "integrations": {
+          "title": "Integraciones de terceros",
+          "p1": "Endurix se integra con plataformas de terceros para enriquecer la experiencia de entrenamiento. Al conectar estos servicios, aceptas las siguientes condiciones:",
+          "strava": {
+            "title": "Strava",
+            "items": {
+              "auth": "La conexión con Strava requiere tu autorización explícita a través del flujo OAuth de Strava.",
+              "data": "Accedemos a tus datos de actividad, perfil y zonas de frecuencia cardíaca según los permisos que otorgues.",
+              "usage": "Los datos de Strava se utilizan exclusivamente para las funcionalidades de coaching dentro de Endurix.",
+              "revoke": "Puedes revocar el acceso en cualquier momento desde tu cuenta de Endurix o desde la configuración de Strava.",
+              "compliance": "Nuestra integración cumple con los términos del Strava API Agreement y mostramos la atribución \"Powered by Strava\" donde corresponde.",
+              "noSell": "No vendemos, licenciamos ni compartimos tus datos de Strava con terceros no autorizados."
+            }
+          },
+          "garmin": {
+            "title": "Garmin Connect",
+            "items": {
+              "auth": "La conexión con Garmin Connect requiere tu autorización a través del proceso de vinculación de Garmin.",
+              "data": "Sincronizamos actividades, métricas de rendimiento y datos de dispositivos Garmin compatibles.",
+              "priority": "En caso de actividades duplicadas entre Strava y Garmin, los datos de Garmin se priorizan para garantizar precisión.",
+              "revoke": "Puedes desconectar Garmin en cualquier momento desde tu perfil en Endurix.",
+              "compliance": "Nuestra integración cumple con los términos de la API de Garmin Connect y mostramos la atribución correspondiente."
+            }
+          },
+          "disclaimer": "Endurix no es responsable de la disponibilidad, precisión o funcionamiento de los servicios de terceros. Cambios en las APIs o políticas de Strava, Garmin u otros proveedores pueden afectar la funcionalidad de las integraciones."
+        },
+        "ai": {
+          "title": "Inteligencia artificial y procesamiento automatizado",
+          "p1": "Endurix incorpora funcionalidades de inteligencia artificial (IA) sujetas a las siguientes condiciones:",
+          "usage": {
+            "title": "Uso de IA",
+            "items": {
+              "analysis": "La IA se utiliza para analizar datos de entrenamiento, generar métricas y ofrecer recomendaciones personalizadas.",
+              "advisory": "Las sugerencias y análisis generados por IA son orientativos y no sustituyen el criterio profesional del coach ni el consejo médico.",
+              "accuracy": "No garantizamos la exactitud, completitud o adecuación de los resultados generados por IA.",
+              "review": "Es responsabilidad del coach y/o del atleta evaluar y validar las recomendaciones antes de aplicarlas."
+            }
+          },
+          "mcp": {
+            "title": "MCP Server (acceso programático)",
+            "text": "Endurix ofrece un servidor MCP (Model Context Protocol) que permite a los coaches interactuar con los datos de sus atletas mediante herramientas de IA compatibles con el protocolo.",
+            "items": {
+              "access": "El acceso a través de MCP está restringido al mismo nivel de permisos que tiene el coach en la interfaz web.",
+              "responsibility": "El coach es responsable del uso que haga de los datos obtenidos a través del MCP, incluyendo las respuestas generadas por la IA.",
+              "noExpansion": "El MCP no otorga acceso adicional a datos que el coach no pueda ver normalmente en la plataforma.",
+              "logging": "Las interacciones a través del MCP pueden ser registradas con fines de seguridad y auditoría."
+            }
+          },
+          "providers": {
+            "title": "Proveedores de IA",
+            "text": "Utilizamos proveedores de IA de terceros (como Anthropic) para procesar ciertas funcionalidades. Los datos enviados a estos proveedores están sujetos a acuerdos de procesamiento de datos y no se utilizan para entrenar modelos de IA de terceros."
+          }
+        },
+        "acceptableUse": {
+          "title": "Uso aceptable",
+          "p1": "Al usar Endurix, te comprometes a:",
+          "do": {
+            "title": "Obligaciones",
+            "items": {
+              "lawful": "Usar la plataforma de forma legal y conforme a estos términos.",
+              "accurate": "Proporcionar información precisa y mantener tu cuenta actualizada.",
+              "respectPrivacy": "Respetar la privacidad y los datos de otros usuarios.",
+              "coachEthics": "Si eres coach, actuar con responsabilidad profesional en el manejo de datos de tus atletas."
+            }
+          },
+          "dont": {
+            "title": "Prohibiciones",
+            "items": {
+              "unauthorized": "Acceder o intentar acceder a cuentas o datos de otros usuarios sin autorización.",
+              "scraping": "Realizar scraping, ingeniería inversa o extracción masiva de datos de la plataforma.",
+              "interference": "Interferir con el funcionamiento de la plataforma o sus sistemas de seguridad.",
+              "misrepresent": "Hacerte pasar por otro usuario o proporcionar información falsa.",
+              "resell": "Revender, sublicenciar o comercializar el acceso a la plataforma o sus datos sin autorización.",
+              "abuseMcp": "Usar el MCP Server para acceder a datos fuera del alcance de tus permisos o para fines distintos al coaching.",
+              "abuseAi": "Utilizar las herramientas de IA para generar contenido dañino, engañoso o que viole derechos de terceros."
+            }
+          }
+        },
+        "ip": {
+          "title": "Propiedad intelectual",
+          "platform": {
+            "title": "Nuestra propiedad",
+            "text": "Endurix, incluyendo su código fuente, diseño, logos, marcas y contenido original, es propiedad de Endurix Performance Systems. Todos los derechos están reservados. No se otorga ninguna licencia sobre nuestra propiedad intelectual salvo el derecho limitado de usar la plataforma según estos términos."
+          },
+          "userData": {
+            "title": "Tu contenido",
+            "text": "Conservas la titularidad de los datos que subas o generes en la plataforma. Al usar el servicio, nos otorgas una licencia limitada, no exclusiva y revocable para procesar tus datos con el fin de prestar el servicio. Esta licencia finaliza cuando eliminas tu cuenta o los datos correspondientes."
+          },
+          "thirdParty": {
+            "title": "Contenido de terceros",
+            "text": "Los datos provenientes de integraciones como Strava y Garmin permanecen sujetos a los términos de sus respectivos propietarios. No reclamamos propiedad sobre datos sincronizados desde servicios de terceros."
+          }
+        },
+        "privacy": {
+          "title": "Privacidad y protección de datos",
+          "text": "El tratamiento de tus datos personales se rige por nuestra Política de Privacidad, disponible en /privacy. Al usar Endurix, aceptas las prácticas descritas en dicha política.",
+          "coachResponsibility": "Si eres coach, eres co-responsable del tratamiento de los datos de tus atletas dentro de la plataforma. Debes informar a tus atletas sobre cómo se usan sus datos y obtener los consentimientos necesarios según la legislación aplicable."
+        },
+        "warranties": {
+          "title": "Exclusión de garantías",
+          "p1": "Endurix se proporciona \"tal cual\" y \"según disponibilidad\". En la máxima medida permitida por la ley, excluimos todas las garantías, expresas o implícitas, incluyendo pero no limitado a:",
+          "items": {
+            "fitness": "Garantías de idoneidad para un propósito particular.",
+            "accuracy": "Garantías de exactitud, fiabilidad o completitud de los datos y análisis.",
+            "availability": "Garantías de disponibilidad ininterrumpida o libre de errores.",
+            "aiAccuracy": "Garantías sobre la precisión de las recomendaciones generadas por IA.",
+            "integrations": "Garantías sobre el funcionamiento continuo de integraciones con Strava, Garmin u otros servicios."
+          }
+        },
+        "liability": {
+          "title": "Limitación de responsabilidad",
+          "p1": "En la máxima medida permitida por la ley aplicable, Endurix no será responsable por:",
+          "items": {
+            "indirect": "Daños indirectos, incidentales, especiales, consecuentes o punitivos.",
+            "lostData": "Pérdida de datos, beneficios o oportunidades de negocio.",
+            "thirdParty": "Actos u omisiones de servicios de terceros (Strava, Garmin, proveedores de IA).",
+            "health": "Lesiones o problemas de salud derivados de seguir recomendaciones de entrenamiento, ya sean generadas por IA o por coaches.",
+            "unauthorized": "Acceso no autorizado a tu cuenta debido a negligencia en la protección de tus credenciales."
+          },
+          "p2": "La responsabilidad total acumulada de Endurix por cualquier reclamación relacionada con el servicio no excederá el monto que hayas pagado por el servicio durante los 12 meses anteriores al evento que dio lugar a la reclamación, o ARS 50.000 (o su equivalente en tu moneda local), lo que sea mayor."
+        },
+        "indemnification": {
+          "title": "Indemnización",
+          "text": "Aceptas indemnizar y mantener indemne a Endurix, sus directivos, empleados y agentes frente a cualquier reclamación, daño, pérdida, responsabilidad y gasto (incluyendo honorarios legales razonables) que surjan de tu uso del servicio, tu incumplimiento de estos términos, o tu violación de derechos de terceros."
+        },
+        "termination": {
+          "title": "Terminación",
+          "byUser": {
+            "title": "Por el usuario",
+            "text": "Puedes eliminar tu cuenta en cualquier momento desde la configuración de tu perfil. Al hacerlo, dejaremos de procesar tus datos y los eliminaremos conforme a nuestra Política de Privacidad."
+          },
+          "byUs": {
+            "title": "Por Endurix",
+            "text": "Nos reservamos el derecho de suspender o terminar tu cuenta si violas estos términos, usas la plataforma de forma abusiva o si es necesario por razones legales o de seguridad. Te notificaremos con al menos 30 días de anticipación salvo en casos de violaciones graves."
+          },
+          "effects": {
+            "title": "Efectos de la terminación",
+            "text": "Al terminar tu cuenta, perderás acceso a la plataforma y a tus datos almacenados. Puedes solicitar una copia de tus datos antes de la eliminación contactándonos en info@endurix.app."
+          }
+        },
+        "law": {
+          "title": "Legislación aplicable",
+          "text": "Estos términos se rigen por las leyes de la República Argentina. Cualquier controversia será sometida a la jurisdicción de los tribunales ordinarios de la Ciudad Autónoma de Buenos Aires, renunciando a cualquier otro fuero que pudiera corresponder."
+        },
+        "changes": {
+          "title": "Modificaciones",
+          "text": "Nos reservamos el derecho de modificar estos términos en cualquier momento. Los cambios sustanciales se notificarán por email o mediante aviso destacado en la plataforma con al menos 15 días de anticipación. El uso continuado del servicio después de la fecha efectiva de los cambios constituye tu aceptación de los términos modificados."
+        },
+        "severability": {
+          "title": "Divisibilidad",
+          "text": "Si alguna disposición de estos términos se considera inválida o inaplicable, las demás disposiciones continuarán en pleno vigor y efecto."
+        },
+        "contact": {
+          "title": "Contacto",
+          "subtitle": "Para consultas sobre estos términos, contáctanos:",
+          "emailLabel": "Email",
+          "general": "Consultas generales",
+          "privacy": "Privacidad y datos"
         }
       }
     }
@@ -2480,6 +2835,31 @@
       "connecting": "Conectando con Strava...",
       "loading": "Cargando..."
     }
+  },
+  "garmin": {
+    "title": "Garmin",
+    "dialogTitle": "Conectar Garmin",
+    "description": "Enviá tus entrenamientos de Endurix directo al calendario de tu Garmin.",
+    "disclaimer": "Esta es una integración <strong>no oficial</strong>. Usamos tus credenciales de Garmin una sola vez para iniciar sesión y guardamos de forma cifrada únicamente los tokens de sesión (nunca tu contraseña). Podés desconectarla cuando quieras. La cuenta <strong>no debe tener 2FA activado</strong> (no está soportado).",
+    "emailLabel": "Email de Garmin",
+    "emailPlaceholder": "tu@email.com",
+    "passwordLabel": "Contraseña de Garmin",
+    "consentText": "Entiendo que es una integración no oficial y autorizo a Endurix a conectarse a mi cuenta de Garmin para enviar y leer entrenamientos.",
+    "cancel": "Cancelar",
+    "connecting": "Conectando…",
+    "connect": "Conectar",
+    "connectBtn": "Conectar Garmin",
+    "reconnectBtn": "Reconectar",
+    "disconnectBtn": "Desconectar",
+    "status": {
+      "connected": "Conectado",
+      "needsReauth": "Reconectar",
+      "disconnected": "Desconectado"
+    },
+    "cardDescription": "Integración <strong>no oficial</strong> (piloto). Enviá tus entrenamientos al calendario de tu Garmin y sincronizá tus actividades.",
+    "reauthWarning": "La sesión de Garmin expiró. Reconectá para seguir enviando entrenamientos.",
+    "lastSync": "Últ. sync: {date}",
+    "debugLoadError": "No se pudo cargar el debug de Garmin"
   },
   "apiErrors": {
     "generic": {

@@ -50,6 +50,14 @@ export interface Split {
     pace_zone?: number;
 }
 
+export interface BestEffort {
+    name: string;            // e.g. "1k", "1 mile", "5k"
+    elapsed_time: number;    // seconds
+    moving_time: number;     // seconds
+    distance: number;        // meters
+    pr_rank?: number | null; // 1 = all-time best on Strava, 2/3 = 2nd/3rd best
+}
+
 export interface Lap {
     id: number;
     name: string;
@@ -93,6 +101,7 @@ export interface ActivityDetail {
     segment_efforts?: SegmentEffort[];
     splits_metric?: Split[];
     splits_standard?: Split[];
+    best_efforts?: BestEffort[];
     laps?: Lap[];
     suffer_score?: number;
     average_watts?: number;
