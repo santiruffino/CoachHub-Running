@@ -46,8 +46,8 @@ export function StepEditor({
     const TARGET_TYPES: { value: TargetType; label: string }[] = [
         ...(trainingType === TrainingType.RUNNING ? [{ value: 'vam_zone' as const, label: t('vamZone') }] : []),
         ...(trainingType === TrainingType.CYCLING ? [
-            { value: 'power_zone' as const, label: t('powerZone') || 'Zona de Potencia' },
-            { value: 'ftp_percent' as const, label: t('ftpPercent') || '% FTP' }
+            { value: 'power_zone' as const, label: t('powerZone') },
+            { value: 'ftp_percent' as const, label: t('ftpPercent') }
         ] : []),
         { value: 'lthr', label: t('lthr') },
         { value: 'hr_reserve', label: t('hrReserve') },
@@ -167,7 +167,7 @@ export function StepEditor({
             }
             case 'power_zone': {
                 if (!athleteProfile?.ftp) {
-                    return `Zona ${min} - ${t('noAthleteFtpData') || 'Sin datos de FTP'}`;
+                    return `${t('zone')} ${min} - ${t('noAthleteFtpData')}`;
                 }
                 // Standard cycling power zones (simplified)
                 const zones = [

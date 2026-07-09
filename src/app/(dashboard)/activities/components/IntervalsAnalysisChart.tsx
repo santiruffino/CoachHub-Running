@@ -189,18 +189,18 @@ export function IntervalsAnalysisChart({
   ] as const;
 
   const tooltipLabels: IntervalsTooltipLabels = {
-    avgPace: t('metrics.avgPace') || 'Ritmo',
-    avgSpeed: t('metrics.avgSpeed') || 'Velocidad',
-    avgHr: t('table.avgHr') || 'Pulso',
-    cadence: t('table.cadence') || 'Cadencia',
+    avgPace: t('metrics.avgPace'),
+    avgSpeed: t('metrics.avgSpeed'),
+    avgHr: t('table.avgHr'),
+    cadence: t('table.cadence'),
   };
 
   const overrideLabels: Record<string, string> = {
-    warmup: t('workout.warmup') || 'Calentamiento',
-    active: t('workout.active') || 'Activo',
-    rest: t('workout.rest') || 'Descanso',
-    recovery: t('workout.recovery') || 'Recuperación',
-    cooldown: t('workout.cooldown') || 'Enfriamiento',
+    warmup: t('workout.warmup'),
+    active: t('workout.active'),
+    rest: t('workout.rest'),
+    recovery: t('workout.recovery'),
+    cooldown: t('workout.cooldown'),
   };
 
 
@@ -212,7 +212,7 @@ export function IntervalsAnalysisChart({
     const matchedLap = matchedLaps.find(m => m.lapIndex === index);
     const effectiveType = (overrideType || matchedLap?.stepType || 'other') as keyof typeof BLOCK_COLORS;
 
-    const fallbackLabel = `${t('table.lap') || 'Vuelta'} ${displayIndex}`;
+    const fallbackLabel = `${t('table.lap')} ${displayIndex}`;
     const label = overrideType ? overrideLabels[overrideType] : (matchedLap ? matchedLap.stepLabel : fallbackLabel);
 
     return {
@@ -355,7 +355,7 @@ export function IntervalsAnalysisChart({
             <Bar
               yAxisId="right"
               dataKey="pace"
-              name={t('table.avgPace') || 'Ritmo'}
+              name={t('table.avgPace')}
               barSize={34}
               radius={[6, 6, 0, 0]}
               fillOpacity={0.55}
@@ -401,7 +401,7 @@ export function IntervalsAnalysisChart({
               <Bar
                 yAxisId="cadence"
                 dataKey="cadence"
-                name={t('table.cadence') || 'Cadencia'}
+                name={t('table.cadence')}
                 barSize={10}
                 radius={[4, 4, 0, 0]}
                 fill="#22d3ee"
@@ -442,7 +442,7 @@ export function IntervalsAnalysisChart({
                 yAxisId="left"
                 type="monotone"
                 dataKey="hr"
-                name={t('table.avgHr') || 'Pulso'}
+                name={t('table.avgHr')}
                 stroke="#EF4444FF"
                 strokeWidth={4}
                 dot={{r: 5, fill: '#EF4444FF', strokeWidth: 2, stroke: '#EF4444FF'}}

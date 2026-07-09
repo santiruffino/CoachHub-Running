@@ -203,7 +203,7 @@ export function RacesList({ initialRaces, initialAthleteRaces, isCoach, userId }
           onClose={() => setDeleteId(null)}
           onConfirm={handleDelete}
           title={t('library.deleteConfirm')}
-          message={t('library.deleteDescription') || '¿Estás seguro de eliminar esta plantilla?'}
+          message={t('library.deleteDescription')}
           confirmText={t('library.delete')}
           type="warning"
           loading={isDeleting}

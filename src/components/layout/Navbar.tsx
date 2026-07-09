@@ -2,11 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Settings, LogOut, User } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import { Languages, Moon, Settings, LogOut, Sun, User } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
+import { useTransition, type MouseEvent } from 'react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/features/auth/hooks/useAuth';
-import { ThemeToggle } from '@/components/ui/ThemeToggle';
-import { LocaleSwitcher } from '@/components/ui/LocaleSwitcher';
 import { NotificationBell } from '@/features/notifications/components/NotificationBell';
 import {
     DropdownMenu,
@@ -17,8 +18,8 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { useTranslations } from 'next-intl';
 import { buildNavigation, getSettingsPathForRole } from './navigation';
+import type { Locale } from '@/i18n/config';
 
 const FONT_DISPLAY = { fontFamily: 'var(--font-exo-2, sans-serif)' } as const;
 
@@ -27,6 +28,9 @@ export function Navbar() {
     const router = useRouter();
     const { user, loading, logout } = useAuth();
     const t = useTranslations('nav');
+    const locale = useLocale();
+    const { resolvedTheme, setTheme } = useTheme();
+    const [, startLocaleTransition] = useTransition();
 
     if (loading) {
         return (
@@ -48,6 +52,32 @@ export function Navbar() {
     const handleLogout = async () => {
         await logout();
     };
+
+    const switchLocale = () => {
+        const next: Locale = locale === 'es' ? 'en' : 'es';
+        document.cookie = `NEXT_LOCALE=${next};path=/;max-age=31536000;SameSite=Lax`;
+        startLocaleTransition(() => {
+            router.refresh();
+        });
+    };
+
+    const toggleTheme = (e: MouseEvent) => {
+        const nextTheme = (resolvedTheme ?? 'light') === 'dark' ? 'light' : 'dark';
+
+        if (!document.startViewTransition) {
+            setTheme(nextTheme);
+            return;
+        }
+
+        document.documentElement.style.setProperty('--x', `${e.clientX}px`);
+        document.documentElement.style.setProperty('--y', `${e.clientY}px`);
+
+        document.startViewTransition(() => {
+            setTheme(nextTheme);
+        });
+    };
+
+    const currentTheme = resolvedTheme ?? 'light';
 
     return (
         <nav className="hidden md:flex h-16 border-b border-endurix-black/10 dark:border-border bg-endurix-paper/95 dark:bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-endurix-paper/80 dark:supports-[backdrop-filter]:bg-background/60">
@@ -91,8 +121,6 @@ export function Navbar() {
 
                     <div className="flex items-center gap-2">
                         <NotificationBell />
-                        <LocaleSwitcher />
-                        <ThemeToggle />
                         <DropdownMenu>
                             <DropdownMenuTrigger className="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
                                 <Avatar className="h-8 w-8">
@@ -117,6 +145,24 @@ export function Navbar() {
                                 <DropdownMenuItem onClick={() => router.push(settingsPath)}>
                                     <Settings className="mr-2 h-4 w-4" />
                                     {t('settings')}
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuLabel className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                                    {locale === 'es' ? 'Preferencias' : 'Preferences'}
+                                </DropdownMenuLabel>
+                                <DropdownMenuItem onClick={switchLocale}>
+                                    <Languages className="mr-2 h-4 w-4" />
+                                    {locale === 'es' ? 'English' : 'Español'}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={toggleTheme}>
+                                    {currentTheme === 'dark' ? (
+                                        <Sun className="mr-2 h-4 w-4" />
+                                    ) : (
+                                        <Moon className="mr-2 h-4 w-4" />
+                                    )}
+                                    {currentTheme === 'dark'
+                                        ? (locale === 'es' ? 'Tema claro' : 'Light theme')
+                                        : (locale === 'es' ? 'Tema oscuro' : 'Dark theme')}
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={handleLogout} className="text-destructive">

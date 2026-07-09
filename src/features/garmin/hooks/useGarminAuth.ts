@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { AxiosError } from 'axios';
+import { useTranslations } from 'next-intl';
 import { appLogger } from '@/lib/app-logger';
 import { garminService, GarminStatus } from '../services/garmin.service';
 
@@ -11,6 +12,7 @@ interface ApiErrorResponse {
 
 export function useGarminAuth(options?: { enabled?: boolean }) {
     const enabled = options?.enabled ?? true;
+    const t = useTranslations('garmin.errors');
     const [status, setStatus] = useState<GarminStatus | null>(null);
     const [loading, setLoading] = useState(false);
     const [connecting, setConnecting] = useState(false);
@@ -24,11 +26,11 @@ export function useGarminAuth(options?: { enabled?: boolean }) {
             setError(null);
         } catch (err: unknown) {
             appLogger.error(err);
-            setError('No se pudo obtener el estado de Garmin');
+            setError(t('fetchStatus'));
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [t]);
 
     useEffect(() => {
         if (enabled) fetchStatus();
@@ -45,13 +47,13 @@ export function useGarminAuth(options?: { enabled?: boolean }) {
             } catch (err: unknown) {
                 appLogger.error(err);
                 const payload = (err as AxiosError<ApiErrorResponse>)?.response?.data;
-                setError(payload?.message || payload?.error || 'No se pudo conectar con Garmin');
+                setError(payload?.message || payload?.error || t('connect'));
                 return false;
             } finally {
                 setConnecting(false);
             }
         },
-        [fetchStatus],
+        [fetchStatus, t],
     );
 
     const disconnect = useCallback(async () => {
@@ -62,11 +64,11 @@ export function useGarminAuth(options?: { enabled?: boolean }) {
             await fetchStatus();
         } catch (err: unknown) {
             appLogger.error(err);
-            setError('No se pudo desconectar Garmin');
+            setError(t('disconnect'));
         } finally {
             setLoading(false);
         }
-    }, [fetchStatus]);
+    }, [fetchStatus, t]);
 
     return { status, loading, connecting, error, connect, disconnect, refresh: fetchStatus };
 }

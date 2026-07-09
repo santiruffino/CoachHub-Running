@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { X, Share, PlusSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTranslations } from 'next-intl';
 
 interface BeforeInstallPromptEvent extends Event {
     prompt(): Promise<void>;
@@ -23,6 +24,7 @@ function isInStandaloneMode() {
 }
 
 export function InstallPrompt() {
+    const t = useTranslations('pwa');
     const [showIosPrompt, setShowIosPrompt] = useState(false);
     const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
 
@@ -31,7 +33,6 @@ export function InstallPrompt() {
         if (sessionStorage.getItem(DISMISSED_KEY)) return;
 
         if (isIos()) {
-            // Show iOS manual install instructions after a short delay
             const timer = setTimeout(() => setShowIosPrompt(true), 3000);
             return () => clearTimeout(timer);
         }
@@ -66,7 +67,7 @@ export function InstallPrompt() {
             <button
                 onClick={dismiss}
                 className="absolute top-3 right-3 text-endurix-black/40 dark:text-muted-foreground hover:text-endurix-black dark:hover:text-foreground"
-                aria-label="Cerrar"
+                aria-label={t('close')}
             >
                 <X className="h-4 w-4" />
             </button>
@@ -74,32 +75,28 @@ export function InstallPrompt() {
             {showIosPrompt ? (
                 <div className="space-y-2 pr-4">
                     <p className="text-sm font-semibold text-endurix-black dark:text-foreground">
-                        Instalá Endurix en tu iPhone
+                        {t('iosTitle')}
                     </p>
                     <p className="text-xs text-endurix-black/60 dark:text-muted-foreground leading-relaxed">
-                        Tocá{' '}
-                        <Share className="inline h-3.5 w-3.5 mx-0.5 relative -top-px" />
-                        {' '}en Safari y luego{' '}
-                        <strong className="font-medium text-endurix-black dark:text-foreground">
-                            &ldquo;Agregar a inicio&rdquo;
-                        </strong>
-                        {' '}
-                        <PlusSquare className="inline h-3.5 w-3.5 mx-0.5 relative -top-px" />
-                        para acceder desde el ícono y recibir notificaciones.
+                        {t.rich('iosInstructions', {
+                            shareIcon: () => <Share className="inline h-3.5 w-3.5 mx-0.5 relative -top-px" />,
+                            addToHome: (chunks) => <strong className="font-medium text-endurix-black dark:text-foreground">&ldquo;{chunks}&rdquo;</strong>,
+                            plusIcon: () => <PlusSquare className="inline h-3.5 w-3.5 mx-0.5 relative -top-px" />,
+                        })}
                     </p>
                 </div>
             ) : (
                 <div className="flex items-center justify-between gap-3 pr-4">
                     <div>
                         <p className="text-sm font-semibold text-endurix-black dark:text-foreground">
-                            Instalá Endurix
+                            {t('androidTitle')}
                         </p>
                         <p className="text-xs text-endurix-black/60 dark:text-muted-foreground">
-                            Acceso rápido y notificaciones push
+                            {t('androidSubtitle')}
                         </p>
                     </div>
                     <Button size="sm" onClick={handleAndroidInstall} className="shrink-0">
-                        Instalar
+                        {t('installButton')}
                     </Button>
                 </div>
             )}

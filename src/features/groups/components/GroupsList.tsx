@@ -135,7 +135,7 @@ export function GroupsList({ initialGroups }: GroupsListProps) {
                             {group.group_type === 'RACE' ? (
                                 <span className={`font-medium px-2 py-0.5 text-[10px] uppercase tracking-wider ${isArchived ? 'bg-endurix-black/10 text-muted-foreground' : 'bg-endurix-orange/10 text-endurix-orange border border-endurix-orange/30'}`}
                                     style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
-                                    {isArchived ? t('finished') || 'Finalizado' : t('racePrep')}
+                                    {isArchived ? t('finished') : t('racePrep')}
                                 </span>
                             ) : (
                                 <span className="font-medium bg-endurix-black/8 text-muted-foreground px-2 py-0.5 text-[10px] uppercase tracking-wider"
@@ -193,7 +193,7 @@ export function GroupsList({ initialGroups }: GroupsListProps) {
                         style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
                     >
                         <span className="w-2 h-2 bg-emerald-500" />
-                        {t('activeGroups') || 'Grupos Activos'}
+                        {t('activeGroups')}
                     </h2>
                     <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
                         {activeGroups.map((group) => renderGroupCard(group))}
@@ -223,7 +223,7 @@ export function GroupsList({ initialGroups }: GroupsListProps) {
                             style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
                         >
                             <span className="w-2 h-2 bg-muted-foreground/40" />
-                            {t('finishedGroups') || 'Grupos Históricos'}
+                            {t('finishedGroups')}
                         </h2>
                         <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
                             {finishedGroups.map((group) => renderGroupCard(group, true))}

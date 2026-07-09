@@ -256,9 +256,9 @@ export function AssignWorkoutView({
 
             if (workoutSource === 'new') {
                 const newTraining = await trainingsService.create({
-                    title: saveAsTemplate ? (templateTitle || 'Protocolo sin título') : (workoutName || `Entrenamiento ${format(new Date(`${scheduledDate}T00:00:00`), 'dd/MM/yyyy')}`),
+                    title: saveAsTemplate ? (templateTitle || tAssign('untitledProtocol')) : (workoutName || tAssign('defaultWorkoutTitle', { date: format(new Date(`${scheduledDate}T00:00:00`), 'dd/MM/yyyy') })),
                     type: TrainingType.RUNNING,
-                    description: 'Entrenamiento diario personalizado.',
+                    description: tAssign('defaultDescription'),
                     blocks,
                     isTemplate: saveAsTemplate,
                     expectedRpe
