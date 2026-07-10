@@ -42,6 +42,13 @@ export interface TrainingAssignment {
     source_group_id?: string | null;
     groupName?: string;
     canEdit?: boolean;
+    /** Garmin push availability for the target athlete. */
+    garmin?: {
+        /** The athlete's profile has the Garmin pilot feature flag enabled. */
+        available: boolean;
+        /** The athlete has an active Garmin connection. */
+        connected: boolean;
+    };
 }
 
 export type WorkoutAssignment = TrainingAssignment;

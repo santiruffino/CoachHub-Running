@@ -222,11 +222,23 @@ export function WorkoutBuilder({
 
   if (readOnly) {
     return (
-        <div className={`h-full bg-[#f8f9fa] dark:bg-[#0a0f14] text-[#2b3437] dark:text-[#f8f9fa] ${compactLayout ? 'p-3' : 'p-4'}`}>
-        <div className="text-sm text-[#4e6073] mb-4 font-inter">{t('readOnlyMode')}</div>
-        <EstimatedTotals blocks={blocks}/>
-        <div className="mt-8">
-          <WorkoutIntensityChart blocks={blocks}/>
+      <div className="h-full w-full overflow-y-auto bg-[#f8f9fa] dark:bg-[#0a0f14] text-[#2b3437] dark:text-[#f8f9fa] font-inter">
+        <div className={`max-w-5xl mx-auto ${compactLayout ? 'px-4 py-4' : 'px-4 sm:px-8 py-6 sm:py-8'} space-y-10 pb-16`}>
+          <div className="text-sm text-[#4e6073] dark:text-[#8b9bb4]">{t('readOnlyMode')}</div>
+          <EstimatedTotals blocks={blocks}/>
+          <WorkoutIntensityChart blocks={blocks} athleteProfile={athleteProfile}/>
+          <WorkoutSequence
+            blocks={blocks}
+            selectedBlockId={null}
+            onSelectBlock={() => {}}
+            onUpdateBlock={() => {}}
+            onRemoveBlock={() => {}}
+            athleteProfile={athleteProfile}
+            athleteId={athleteId}
+            trainingType={trainingType}
+            onAddStep={() => {}}
+            readOnly
+          />
         </div>
       </div>
     );

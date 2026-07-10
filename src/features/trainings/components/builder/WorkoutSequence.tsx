@@ -26,6 +26,8 @@ interface WorkoutSequenceProps {
     onDrop?: (e: React.DragEvent, targetBlockId: string) => void;
     onDragEnd?: () => void;
     draggedBlockId?: string | null;
+    /** When true the sequence is rendered statically: no selecting, dragging or editing. */
+    readOnly?: boolean;
 }
 
 export function WorkoutSequence({
@@ -43,7 +45,8 @@ export function WorkoutSequence({
     onDragOver,
     onDrop,
     onDragEnd,
-    draggedBlockId
+    draggedBlockId,
+    readOnly = false
 }: WorkoutSequenceProps) {
     const t = useTranslations('builder');
 
@@ -175,12 +178,12 @@ export function WorkoutSequence({
             {/* Sequence Header */}
             <div className="flex items-center justify-between mb-8 pb-4">
                 <h3 className="text-2xl font-display font-bold text-[#2b3437] dark:text-[#f8f9fa]">
-                    {t('sequenceBuilder')}
+                    {readOnly ? t('workoutStructure') : t('sequenceBuilder')}
                 </h3>
             </div>
 
             <p className="text-sm text-[#8b9bb4] font-inter mb-12">
-                {t('sequenceDescription')}
+                {readOnly ? t('workoutStructureDescription') : t('sequenceDescription')}
             </p>
 
             {/* Blocks List */}
@@ -258,7 +261,7 @@ export function WorkoutSequence({
                                             }
 
                                             const isDragging = draggedBlockId === block.id;
-                                             const dragHandlers = {
+                                             const dragHandlers = readOnly ? {} : {
                                                draggable: true,
                                                onDragStart: (e: React.DragEvent) => onDragStart?.(e, block.id),
                                                onDragOver: (e: React.DragEvent) => onDragOver?.(e),
@@ -270,9 +273,10 @@ export function WorkoutSequence({
                                                 <button
                                                     key={block.id}
                                                     type="button"
-                                                    onClick={() => onSelectBlock(block.id)}
+                                                    onClick={readOnly ? undefined : () => onSelectBlock(block.id)}
                                                     className={cn(
-                                                        "w-full flex items-center py-4 bg-white dark:bg-[#1a232c] shadow-[0_2px_8px_rgba(43,52,55,0.02)] hover:shadow-[0_8px_24px_rgba(43,52,55,0.06)] rounded-lg transition-all group relative overflow-hidden",
+                                                        "w-full flex items-center py-4 bg-white dark:bg-[#1a232c] shadow-[0_2px_8px_rgba(43,52,55,0.02)] rounded-lg transition-all group relative overflow-hidden",
+                                                        readOnly ? "cursor-default" : "hover:shadow-[0_8px_24px_rgba(43,52,55,0.06)]",
                                                         isDragging && 'opacity-50'
                                                     )}
                                                     {...dragHandlers}
@@ -280,7 +284,7 @@ export function WorkoutSequence({
                                                     <div className="absolute left-0 top-0 bottom-0 w-1" style={{ backgroundColor: getBlockColorClass(block.type) }} />
                                                     <div className="flex items-center w-full px-4 text-left">
                                                         <div className="w-8 shrink-0 flex items-center justify-center">
-                                                            <GripVertical className="text-muted-foreground w-4 h-4 cursor-grab" />
+                                                            {!readOnly && <GripVertical className="text-muted-foreground w-4 h-4 cursor-grab" />}
                                                         </div>
                                                         <div className="grid grid-cols-2 sm:grid-cols-4 w-full items-start gap-2 sm:gap-4">
                                                             <div className="flex flex-col">
@@ -339,7 +343,7 @@ export function WorkoutSequence({
                     }
 
                     const isDragging = draggedBlockId === block.id;
-                            const dragHandlers = {
+                            const dragHandlers = readOnly ? {} : {
                               draggable: true,
                               onDragStart: (e: React.DragEvent) => onDragStart?.(e, block.id),
                               onDragOver: (e: React.DragEvent) => onDragOver?.(e),
@@ -355,9 +359,10 @@ export function WorkoutSequence({
 
                             <button
                                 type="button"
-                                onClick={() => onSelectBlock(block.id)}
+                                onClick={readOnly ? undefined : () => onSelectBlock(block.id)}
                                 className={cn(
-                                    "w-full flex items-center py-4 bg-white dark:bg-[#1a232c] shadow-[0_2px_8px_rgba(43,52,55,0.02)] hover:shadow-[0_8px_24px_rgba(43,52,55,0.06)] rounded-lg transition-all relative overflow-hidden border border-[#f1f4f6] dark:border-white/5",
+                                    "w-full flex items-center py-4 bg-white dark:bg-[#1a232c] shadow-[0_2px_8px_rgba(43,52,55,0.02)] rounded-lg transition-all relative overflow-hidden border border-[#f1f4f6] dark:border-white/5",
+                                    readOnly ? "cursor-default" : "hover:shadow-[0_8px_24px_rgba(43,52,55,0.06)]",
                                     isDragging && 'opacity-50'
                                 )}
                                 {...dragHandlers}
@@ -365,7 +370,7 @@ export function WorkoutSequence({
                                 <div className="absolute left-0 top-0 bottom-0 w-1" style={{ backgroundColor: getBlockColorClass(block.type) }} />
                                 <div className="flex items-center w-full px-4 text-left">
                                     <div className="w-8 shrink-0 flex items-center justify-center">
-                                        <GripVertical className="text-muted-foreground w-4 h-4 cursor-grab" />
+                                        {!readOnly && <GripVertical className="text-muted-foreground w-4 h-4 cursor-grab" />}
                                     </div>
                                     <div className="grid grid-cols-2 sm:grid-cols-4 w-full items-start gap-2 sm:gap-4">
                                         <div className="flex flex-col">
@@ -394,8 +399,8 @@ export function WorkoutSequence({
                 {/* Empty State */}
                 {blocks.length === 0 && (
                     <div className="text-center py-16">
-                        <p className="text-sm text-[#8b9bb4] font-inter mb-2">{t('startBuildingWorkout')}</p>
-                        <p className="text-xs text-[#8b9bb4]/60">{t('clickBlocksHint')}</p>
+                        <p className="text-sm text-[#8b9bb4] font-inter mb-2">{readOnly ? t('emptyWorkout') : t('startBuildingWorkout')}</p>
+                        {!readOnly && <p className="text-xs text-[#8b9bb4]/60">{t('clickBlocksHint')}</p>}
                     </div>
                 )}
             </div>

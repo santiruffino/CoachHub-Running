@@ -3,6 +3,7 @@ import { appLogger } from '@/lib/app-logger';
 
 
 import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -15,6 +16,7 @@ import { BackButton } from '@/components/ui/BackButton';
 import api from '@/lib/axios';
 import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
 import { Slider } from '@/components/ui/slider';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useTranslations } from 'next-intl';
 
 import { WorkoutAssignment } from '@/interfaces/training';
@@ -254,6 +256,52 @@ export default function WorkoutDetailsPage() {
 
     const readOnly = !assignment.canEdit || assignment.completed;
     const displayTitle = assignment.workoutName || assignment.training.title;
+    const garminAvailable = Boolean(assignment.garmin?.available);
+    const garminConnected = Boolean(assignment.garmin?.connected);
+
+    const renderGarminButton = (
+        selfView: boolean,
+        variant: 'orange' | 'ghost',
+        className: string
+    ) => {
+        const button = (
+            <Button
+                variant={variant}
+                onClick={handlePushToGarmin}
+                disabled={pushingGarmin || !garminConnected}
+                className={className}
+                style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
+            >
+                <Watch className="w-4 h-4 mr-2" />
+                {pushingGarmin ? t('sendingToGarmin') : t('sendToGarmin')}
+            </Button>
+        );
+
+        // A connected athlete gets a live button; otherwise wrap the disabled
+        // button in a hoverable span so the tooltip explaining why still shows.
+        if (garminConnected) return button;
+
+        return (
+            <TooltipProvider delayDuration={150}>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <span tabIndex={0} className="inline-flex">{button}</span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        {selfView ? t('garminNotConnectedSelf') : t('garminNotConnectedAthlete')}
+                        {selfView && (
+                            <Link
+                                href="/profile#garmin"
+                                className="mt-1 block font-bold text-endurix-orange underline underline-offset-2"
+                            >
+                                {t('connectGarminCta')}
+                            </Link>
+                        )}
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+        );
+    };
 
     const leftSidebarContent = (
         <div className="p-4 lg:p-5">
@@ -364,16 +412,11 @@ export default function WorkoutDetailsPage() {
                         </div>
 
                         <div className="flex items-center gap-2 flex-wrap md:justify-end">
-                            <Button
-                                variant="ghost"
-                                onClick={handlePushToGarmin}
-                                disabled={pushingGarmin}
-                                className="h-10 px-4 bg-white/10 text-endurix-black/70 hover:text-endurix-black dark:text-muted-foreground dark:hover:text-foreground hover:bg-endurix-black/5 dark:hover:bg-white/10 uppercase tracking-widest text-xs font-bold"
-                                style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}
-                            >
-                                <Watch className="w-4 h-4 mr-2" />
-                                {pushingGarmin ? t('sendingToGarmin') : t('sendToGarmin')}
-                            </Button>
+                            {garminAvailable && renderGarminButton(
+                                false,
+                                'ghost',
+                                'h-10 px-4 bg-white/10 text-endurix-black/70 hover:text-endurix-black dark:text-muted-foreground dark:hover:text-foreground hover:bg-endurix-black/5 dark:hover:bg-white/10 uppercase tracking-widest text-xs font-bold'
+                            )}
 
                             <Button
                                 variant="ghost"
@@ -398,6 +441,21 @@ export default function WorkoutDetailsPage() {
                                 </Button>
                             )}
                         </div>
+                    </div>
+                )}
+
+                {readOnly && !assignment.completed && garminAvailable && (
+                    <div className="min-w-full rounded-2xl border border-endurix-orange/20 bg-endurix-orange/5 p-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
+                                {t('sendToGarmin')}
+                            </div>
+                            <div className="text-xs text-endurix-black/70 dark:text-muted-foreground" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>
+                                {t('sendToGarminSelfHint')}
+                            </div>
+                        </div>
+
+                        {renderGarminButton(true, 'orange', 'h-10 px-5 uppercase tracking-widest text-xs font-bold')}
                     </div>
                 )}
             </div>

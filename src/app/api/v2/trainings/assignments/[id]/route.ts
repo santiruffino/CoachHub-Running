@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/supabase/api-helpers';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 import { createRequestLogger } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
 import { appendAdminActionLog } from '@/lib/audit/admin-action-log';
@@ -110,6 +111,24 @@ export async function GET(
         const groupRelation = (assignment as unknown as { group?: AssignmentGroup | AssignmentGroup[] | null }).group;
         const groupName = Array.isArray(groupRelation) ? groupRelation[0]?.name : groupRelation?.name;
 
+        // Garmin push availability for the target athlete. The caller is already
+        // authorized to see this assignment (self or team coach), so we read the
+        // athlete's pilot flag + connection with the service role to avoid the
+        // per-user RLS on garmin_connections hiding a coach's view.
+        let garminAvailable = false;
+        let garminConnected = false;
+        // Env gate for the Garmin integration (mirrors isGarminConfigured());
+        // inlined to keep the heavy garmin-connect client out of this route.
+        if (Boolean(process.env.GARMIN_TOKEN_ENC_KEY)) {
+            const service = createServiceRoleClient();
+            const [{ data: athleteProfile }, { data: garminConnection }] = await Promise.all([
+                service.from('profiles').select('garmin_pilot_enabled').eq('id', assignedUser.id).maybeSingle(),
+                service.from('garmin_connections').select('user_id').eq('user_id', assignedUser.id).eq('status', 'active').maybeSingle(),
+            ]);
+            garminAvailable = Boolean(athleteProfile?.garmin_pilot_enabled);
+            garminConnected = Boolean(garminConnection);
+        }
+
         return NextResponse.json({
             id: assignment.id,
             scheduledDate: assignment.scheduled_date,
@@ -131,6 +150,10 @@ export async function GET(
                 email: assignedUser.email,
             },
             canEdit,
+            garmin: {
+                available: garminAvailable,
+                connected: garminConnected,
+            },
         });
     } catch (error: unknown) {
         reportApiError(error, { route: '/api/v2/trainings/assignments/[id]', method: 'GET', requestId, logger });

@@ -144,7 +144,9 @@ export function ProfileView({ initialProfile, user }: ProfileViewProps) {
                                     onRefresh={refreshStrava}
                                 />
                                 {/* Renders only for pilot athletes (gated by status.available). */}
-                                <GarminStatusCard enabled={user?.role === 'ATHLETE' && garminPilotEnabled} />
+                                <div id="garmin" className="w-full scroll-mt-24">
+                                    <GarminStatusCard enabled={user?.role === 'ATHLETE' && garminPilotEnabled} />
+                                </div>
                             </FieldGroup>
                         </SectionLayout>
                     )}

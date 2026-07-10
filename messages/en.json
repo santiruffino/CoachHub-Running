@@ -1337,7 +1337,11 @@
       "sendingToGarmin": "Sending to Garmin...",
       "garminPushSuccess": "Workout sent to the athlete's Garmin.",
       "garminPushSkipped": "The athlete doesn't have Garmin connected or isn't in the pilot.",
-      "garminPushFailed": "Could not send the workout to Garmin."
+      "garminPushFailed": "Could not send the workout to Garmin.",
+      "garminNotConnectedSelf": "You don't have your Garmin account connected",
+      "garminNotConnectedAthlete": "The athlete doesn't have their Garmin account connected",
+      "sendToGarminSelfHint": "Send this workout to your Garmin watch.",
+      "connectGarminCta": "Connect now →"
     },
     "matchModal": {
       "errorLink": "Could not link the activity",
@@ -1607,7 +1611,10 @@
       "moderate": "Moderate",
       "hard": "Hard",
       "maxEffort": "Max Effort"
-    }
+    },
+    "workoutStructure": "Workout structure",
+    "workoutStructureDescription": "Breakdown of every block in your session.",
+    "emptyWorkout": "This workout has no blocks."
   },
   "onboarding": {
     "tag": "PROFILE",
