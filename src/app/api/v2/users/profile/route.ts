@@ -1,10 +1,11 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { createRequestLogger } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
 import { normalizeOptionalNumber } from '@/features/profiles/utils/normalizeOptionalNumber';
 import { updateProfileSchema, validateBody } from '@/lib/validation/schemas';
 import { reportApiError } from '@/lib/api/report-error';
+import { recordTestMetricHistory } from '@/lib/athlete/metric-history';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -62,6 +63,20 @@ export async function GET(request: Request) {
     void unusedCoachProfileSnake;
     void unusedAthleteProfileSnake;
 
+    // Fetch the athlete's VAM/UAN test history. `athlete_metrics` has RLS enabled with
+    // no policies, so it must be read with the service-role client.
+    let metricsHistory: unknown[] = [];
+    const athleteProfileId = athleteProfileRecord?.id;
+    if (typeof athleteProfileId === 'string') {
+      const { data: metricsData } = await createServiceRoleClient()
+        .from('athlete_metrics')
+        .select('id, type, value, date, created_at')
+        .eq('athlete_profile_id', athleteProfileId)
+        .order('date', { ascending: false })
+        .limit(20);
+      metricsHistory = metricsData ?? [];
+    }
+
     const transformProfile = (p: Record<string, unknown>, cp: unknown, ap: Record<string, unknown> | null) => ({
       ...p,
       firstName: p.first_name,
@@ -76,6 +91,7 @@ export async function GET(request: Request) {
         lthr: ap.lthr,
         hrZones: ap.hr_zones,
         ftp: ap.ftp,
+        metricsHistory,
       } : null,
     });
 
@@ -146,6 +162,10 @@ export async function GET(request: Request) {
       // Filter fields based on role
       const filteredData: Record<string, unknown> = {};
 
+      // VAM/UAN test values before this update, used to append history rows on change.
+      let previousVam: string | null = null;
+      let previousUan: string | null = null;
+
       if (isCoach) {
         // Only allow coach-specific fields
         const { bio, specialty, experience } = profileData;
@@ -172,9 +192,20 @@ export async function GET(request: Request) {
         if (ftp !== undefined) filteredData.ftp = ftp;
         if (dob !== undefined) filteredData.dob = dob;
         if (hrZones !== undefined) filteredData.hr_zones = hrZones;
+
+        // Snapshot the current test values before upserting so we can detect changes.
+        if (vam !== undefined || uan !== undefined) {
+          const { data: prevMetrics } = await supabase
+            .from('athlete_profiles')
+            .select('vam, uan')
+            .eq('user_id', user.id)
+            .maybeSingle();
+          previousVam = prevMetrics?.vam ?? null;
+          previousUan = prevMetrics?.uan ?? null;
+        }
       }
 
-      const { error: roleProfileError } = await supabase
+      const { data: roleProfile, error: roleProfileError } = await supabase
         .from(profileTable)
         .upsert({
           user_id: user.id,
@@ -182,13 +213,31 @@ export async function GET(request: Request) {
           updated_at: new Date().toISOString(),
         }, {
           onConflict: 'user_id'
-        });
+        })
+        .select('id')
+        .single();
 
-      if (roleProfileError) {
+      if (roleProfileError || !roleProfile) {
         logger.error('Supabase error updating profile', { error: roleProfileError });
         return NextResponse.json(apiError('FAILED_TO_UPDATE_ROLE_PROFILE'),
           { status: 500 }
         );
+      }
+
+      // Append a test-history record for each VAM/UAN value that actually changed.
+      // Best-effort: history failures are logged but never fail the profile update.
+      if (!isCoach && (filteredData.vam !== undefined || filteredData.uan !== undefined)) {
+        const { error: historyError } = await recordTestMetricHistory(
+          createServiceRoleClient(),
+          roleProfile.id,
+          [
+            { type: 'VAM', previous: previousVam, next: filteredData.vam as string | undefined },
+            { type: 'UAN', previous: previousUan, next: filteredData.uan as string | undefined },
+          ],
+        );
+        if (historyError) {
+          logger.error('Failed to record test metric history', { error: historyError });
+        }
       }
     }
 

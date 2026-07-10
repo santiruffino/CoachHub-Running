@@ -13,10 +13,11 @@ export function Navbar() {
   const t = useTranslations('landing.navbar');
 
   const NAV_LINKS = [
-    { label: t('training'), href: '#features' },
-    { label: t('metrics'), href: '#product-features' },
-    { label: t('coaching'), href: '#roadmap' },
-    { label: t('pricing'), href: '#wishlist' },
+    { label: t('training'), href: '/#how-it-works' },
+    { label: t('metrics'), href: '/#product-features' },
+    { label: t('faq'), href: '/#faq' },
+    { label: t('compare'), href: '/comparativas' },
+    { label: t('pricing'), href: '/#wishlist' },
   ];
 
   return (

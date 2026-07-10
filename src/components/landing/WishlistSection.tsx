@@ -43,6 +43,11 @@ export function WishlistSection() {
     });
     const [status, setStatus] = useState<Status>('idle');
     const [errorCode, setErrorCode] = useState<string | null>(null);
+    // Honeypot: real users never fill this hidden field; bots usually do.
+    const [botField, setBotField] = useState('');
+
+    const isValidEmail = (email: string) =>
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
     const update = <K extends keyof FormState>(key: K) => (value: FormState[K]) =>
         setValues((prev) => ({ ...prev, [key]: value }));
@@ -51,9 +56,21 @@ export function WishlistSection() {
         event.preventDefault();
         setErrorCode(null);
 
+        // Honeypot tripped → silently pretend success without hitting the API.
+        if (botField) {
+            setStatus('success');
+            return;
+        }
+
         if (!values.name || !values.email || !values.role || !values.teamSize) {
             setStatus('error');
             setErrorCode('required');
+            return;
+        }
+
+        if (!isValidEmail(values.email)) {
+            setStatus('error');
+            setErrorCode('invalidEmail');
             return;
         }
 
@@ -89,6 +106,7 @@ export function WishlistSection() {
     const errorMessage = (() => {
         if (status !== 'error') return null;
         if (errorCode === 'required') return t('form.errorRequired');
+        if (errorCode === 'invalidEmail') return t('form.errorInvalidEmail');
         if (errorCode === 'ALREADY_REGISTERED') return t('form.errorDuplicate');
         return t('form.errorGeneric');
     })();
@@ -220,6 +238,23 @@ export function WishlistSection() {
                                     noValidate
                                     className="space-y-6"
                                 >
+                                    {/* Honeypot — visually hidden, off the tab order. */}
+                                    <div
+                                        aria-hidden
+                                        className="absolute -left-[9999px] top-0 h-0 w-0 overflow-hidden"
+                                    >
+                                        <label htmlFor="company-website">No completar</label>
+                                        <input
+                                            id="company-website"
+                                            type="text"
+                                            name="company-website"
+                                            tabIndex={-1}
+                                            autoComplete="off"
+                                            value={botField}
+                                            onChange={(e) => setBotField(e.target.value)}
+                                        />
+                                    </div>
+
                                     {/* Name */}
                                     <div>
                                         <label

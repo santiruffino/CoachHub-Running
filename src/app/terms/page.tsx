@@ -1,5 +1,20 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
+
+export const metadata: Metadata = {
+    title: 'Términos y condiciones',
+    description:
+        'Términos y condiciones de uso de Endurix, la plataforma de coaching para deportes de resistencia.',
+    alternates: { canonical: '/terms' },
+    openGraph: {
+        title: 'Términos y condiciones | Endurix',
+        description:
+            'Términos y condiciones de uso de la plataforma de coaching Endurix.',
+        url: '/terms',
+        type: 'article',
+    },
+};
 
 export default async function TermsPage() {
     const t = await getTranslations('legal.terms');

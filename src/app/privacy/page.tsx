@@ -1,5 +1,20 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
+
+export const metadata: Metadata = {
+    title: 'Política de privacidad',
+    description:
+        'Política de privacidad de Endurix: cómo recopilamos, usamos y protegemos tus datos personales y de entrenamiento.',
+    alternates: { canonical: '/privacy' },
+    openGraph: {
+        title: 'Política de privacidad | Endurix',
+        description:
+            'Cómo Endurix recopila, usa y protege tus datos personales y de entrenamiento.',
+        url: '/privacy',
+        type: 'article',
+    },
+};
 
 export default async function PrivacyPage() {
     const t = await getTranslations('legal.privacy');

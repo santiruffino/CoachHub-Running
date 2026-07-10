@@ -1,7 +1,7 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { ProfileView } from '@/features/profiles/components/ProfileView';
-import { ProfileDetails } from '@/interfaces/athlete';
+import { AthleteMetric, ProfileDetails } from '@/interfaces/athlete';
 import { User } from '@/interfaces/auth';
 
 export const dynamic = 'force-dynamic';
@@ -33,6 +33,20 @@ export default async function ProfilePage() {
         redirect('/dashboard');
     }
 
+    // Fetch the athlete's VAM/UAN test history. `athlete_metrics` has RLS enabled with
+    // no policies, so it must be read with the service-role client.
+    const athleteProfileId = (profile.athleteProfile as { id?: string } | null)?.id;
+    let metricsHistory: AthleteMetric[] = [];
+    if (athleteProfileId) {
+        const { data: metricsData } = await createServiceRoleClient()
+            .from('athlete_metrics')
+            .select('id, type, value, date, created_at')
+            .eq('athlete_profile_id', athleteProfileId)
+            .order('date', { ascending: false })
+            .limit(20);
+        metricsHistory = (metricsData ?? []) as AthleteMetric[];
+    }
+
     // Transform to frontend structure
     const mappedProfile: ProfileDetails = {
         ...profile,
@@ -46,6 +60,7 @@ export default async function ProfilePage() {
             restHR: profile.athleteProfile.rest_hr,
             maxHR: profile.athleteProfile.max_hr,
             hrZones: profile.athleteProfile.hr_zones,
+            metricsHistory,
         } : null,
     } as unknown as ProfileDetails;
 

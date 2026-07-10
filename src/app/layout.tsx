@@ -7,6 +7,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import { getServerUser } from "@/features/auth/services/auth.server";
+import { getSiteUrl, siteConfig } from "@/lib/seo";
 
 const manrope = Manrope({
   variable: "--font-manrope",
@@ -30,11 +31,52 @@ const ibmPlexMono = IBM_Plex_Mono({
   weight: ["400", "500"],
 });
 
+const siteUrl = getSiteUrl();
+
 export const metadata: Metadata = {
-  title: "Endurix",
-  description: "Plataforma para entrenadores de running",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: siteConfig.title,
+    template: "%s | Endurix",
+  },
+  description: siteConfig.description,
+  keywords: [...siteConfig.keywords],
+  applicationName: "Endurix",
+  authors: [{ name: "Endurix" }],
+  creator: "Endurix",
+  publisher: "Endurix",
+  category: "sports",
   // favicon.ico, apple-icon.png, icon0.svg, icon1.png and manifest.json
   // are all co-located in src/app/ and auto-discovered by Next.js App Router.
+  // opengraph-image.tsx and twitter-image are likewise auto-discovered and
+  // injected as absolute URLs thanks to metadataBase above.
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: siteConfig.locale,
+    url: siteUrl,
+    siteName: "Endurix",
+    title: siteConfig.title,
+    description: siteConfig.description,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteConfig.title,
+    description: siteConfig.description,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
   appleWebApp: {
     title: "Endurix",
     capable: true,

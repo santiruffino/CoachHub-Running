@@ -4,6 +4,7 @@ import { createServiceRoleClient } from '@/lib/supabase/server';
 import { createRequestLogger } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
 import { reportApiError } from '@/lib/api/report-error';
+import { recordTestMetricHistory } from '@/lib/athlete/metric-history';
 
 type AssignmentWithTraining = {
     id: string;
@@ -310,6 +311,13 @@ export async function PATCH(
         if (updates.height !== undefined) dbUpdates.height = updates.height;
         if (updates.coachNotes !== undefined) dbUpdates.coach_notes = updates.coachNotes;
 
+        // Snapshot current test values before updating so we can detect VAM/UAN changes.
+        const { data: athleteProfileRow } = await serviceSupabase
+            .from('athlete_profiles')
+            .select('id, vam, uan')
+            .eq('user_id', athleteId)
+            .maybeSingle();
+
         // Update athlete_profiles — use service role client to bypass RLS (coach updating athlete's row)
         const { error: updateError } = await serviceSupabase
             .from('athlete_profiles')
@@ -321,6 +329,22 @@ export async function PATCH(
             return NextResponse.json(apiError('FAILED_TO_UPDATE_ATHLETE_PROFILE'),
                 { status: 500 }
             );
+        }
+
+        // Append a test-history record for each VAM/UAN value the coach actually changed.
+        // Best-effort: history failures are logged but never fail the profile update.
+        if (athleteProfileRow?.id && (updates.vam !== undefined || updates.uan !== undefined)) {
+            const { error: historyError } = await recordTestMetricHistory(
+                serviceSupabase,
+                athleteProfileRow.id,
+                [
+                    { type: 'VAM', previous: athleteProfileRow.vam, next: dbUpdates.vam as string | undefined },
+                    { type: 'UAN', previous: athleteProfileRow.uan, next: dbUpdates.uan as string | undefined },
+                ],
+            );
+            if (historyError) {
+                logger.error('Failed to record test metric history', { error: historyError });
+            }
         }
 
         return NextResponse.json({ success: true });

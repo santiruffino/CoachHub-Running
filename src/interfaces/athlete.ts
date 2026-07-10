@@ -5,6 +5,16 @@ export interface HeartRateZones {
     custom_zones?: boolean;
 }
 
+export type MetricType = 'VAM' | 'UAN';
+
+export interface AthleteMetric {
+    id: string;
+    type: MetricType;
+    value: string;      // Test pace stored as "mm:ss"
+    date: string;
+    created_at: string;
+}
+
 export interface AthleteProfile {
     height?: number;
     weight?: number;
@@ -18,6 +28,7 @@ export interface AthleteProfile {
     dob?: string;
     coachNotes?: string;
     hrZones?: HeartRateZones;
+    metricsHistory?: AthleteMetric[];   // VAM/UAN test history, newest first
 }
 
 export interface Athlete {

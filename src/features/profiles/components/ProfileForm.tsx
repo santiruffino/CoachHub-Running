@@ -30,6 +30,7 @@ import {
 import { useTranslations } from 'next-intl';
 import { useApiError } from '@/hooks/useApiError';
 import { normalizeOptionalNumber } from '@/features/profiles/utils/normalizeOptionalNumber';
+import type { AthleteMetric } from '@/interfaces/athlete';
 
 type LegacyAthleteProfile = NonNullable<ProfileDetails['athleteProfile']> & {
     rest_hr?: number;
@@ -41,7 +42,19 @@ type TestSpeedInputProps = {
     register: UseFormRegister<UpdateProfileDto>;
     setValue: UseFormSetValue<UpdateProfileDto>;
     watch: UseFormWatch<UpdateProfileDto>;
+    history: AthleteMetric[];
 };
+
+const testDateFormatter = new Intl.DateTimeFormat('es', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+});
+
+function formatTestDate(iso: string): string {
+    const d = new Date(iso);
+    return Number.isNaN(d.getTime()) ? '' : testDateFormatter.format(d);
+}
 
 type ChangePasswordFormData = {
     currentPassword: string;
@@ -50,7 +63,7 @@ type ChangePasswordFormData = {
 };
 
 // ── Test Speed Input Component ───────────────────────────────────────────────
-function TestSpeedInput({ formKey, register, setValue, watch }: TestSpeedInputProps) {
+function TestSpeedInput({ formKey, register, setValue, watch, history }: TestSpeedInputProps) {
     const t = useTranslations('profile');
     const [dist, setDist] = useState('');
     const [timeStr, setTimeStr] = useState('');
@@ -108,6 +121,25 @@ function TestSpeedInput({ formKey, register, setValue, watch }: TestSpeedInputPr
                     {currentPace ? `${currentPace} ${t('testSpeed.unit')}` : '-:--'}
                 </span>
             </div>
+
+            {/* Test History (read-only, newest first) */}
+            {history.length > 0 && (
+                <div className="flex flex-col gap-1.5 px-1 pt-2 border-t border-border/40">
+                    <span className="text-[10px] font-semibold tracking-wider uppercase text-foreground/40">
+                        {t('testSpeed.historyLabel')}
+                    </span>
+                    <ul className="flex flex-col gap-1">
+                        {history.slice(0, 5).map((m) => (
+                            <li key={m.id} className="flex items-center justify-between text-xs text-foreground/60">
+                                <span className="font-semibold text-foreground/80">
+                                    {m.value} {t('testSpeed.unit')}
+                                </span>
+                                <span className="tabular-nums text-foreground/45">{formatTestDate(m.date)}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
 
             {/* Hidden internal state bound to form builder */}
             <input type="hidden" {...register(formKey)} />
@@ -244,6 +276,10 @@ export function ProfileForm({ profile }: { profile: ProfileDetails }) {
 
     const isCoach = user?.role === 'COACH';
     const isAthlete = user?.role === 'ATHLETE';
+
+    const metricsHistory = athleteProfile?.metricsHistory ?? [];
+    const vamHistory = metricsHistory.filter((m) => m.type === 'VAM');
+    const uanHistory = metricsHistory.filter((m) => m.type === 'UAN');
 
     return (
         <>
@@ -391,19 +427,21 @@ export function ProfileForm({ profile }: { profile: ProfileDetails }) {
                         <FieldGroup>
                             <FieldRow>
                                 <Field label={t('fields.vam')} hint={t('sections.performance.vamHint')}>
-                                    <TestSpeedInput 
-                                        formKey="vam" 
-                                        register={register} 
-                                        setValue={setValue} 
-                                        watch={watch} 
+                                    <TestSpeedInput
+                                        formKey="vam"
+                                        register={register}
+                                        setValue={setValue}
+                                        watch={watch}
+                                        history={vamHistory}
                                     />
                                 </Field>
                                 <Field label={t('fields.uan')} hint={t('sections.performance.uanHint')}>
-                                    <TestSpeedInput 
-                                        formKey="uan" 
-                                        register={register} 
-                                        setValue={setValue} 
-                                        watch={watch} 
+                                    <TestSpeedInput
+                                        formKey="uan"
+                                        register={register}
+                                        setValue={setValue}
+                                        watch={watch}
+                                        history={uanHistory}
                                     />
                                 </Field>
                             </FieldRow>

@@ -44,7 +44,11 @@ export const config = {
      * - auth related paths
      * - forgot-password (public password reset request page)
      * - reset-password (public password reset form page)
+     * - robots.txt / sitemap.xml / opengraph-image (public SEO metadata routes
+     *   fetched by unauthenticated crawlers and social scrapers)
+     * - google*.html (Google Search Console site-verification files, fetched
+     *   unauthenticated by Google)
      */
-    '/((?!_next/static|_next/image|favicon.ico|manifest.json|manifest.webmanifest|sw.js|reset-password|forgot-password|auth|api/auth|api/v2/strava/webhook|accept-invitation|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|manifest.json|manifest.webmanifest|sw.js|robots.txt|sitemap.xml|opengraph-image|google[a-z0-9]+\\.html|reset-password|forgot-password|auth|api/auth|api/v2/strava/webhook|accept-invitation|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

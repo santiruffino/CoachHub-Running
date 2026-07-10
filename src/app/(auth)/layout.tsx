@@ -1,4 +1,16 @@
+import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+
+// Auth pages (login, password flows) carry no SEO value and must never be
+// indexed. robots.txt already disallows /login; this is the stronger per-page
+// signal that also covers the other auth routes.
+export const metadata: Metadata = {
+    title: 'Acceso',
+    robots: {
+        index: false,
+        follow: false,
+    },
+};
 
 export default async function AuthLayout({
     children,

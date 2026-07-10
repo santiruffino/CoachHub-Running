@@ -35,8 +35,13 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Allow access to landing page without authentication
-  if (request.nextUrl.pathname === '/') {
+  // Allow access to the public landing page and public legal pages without
+  // authentication (these are linked from the footer and listed in the sitemap).
+  const publicPaths = ['/privacy', '/terms', '/comparativas'];
+  if (
+    request.nextUrl.pathname === '/' ||
+    publicPaths.some((path) => request.nextUrl.pathname.startsWith(path))
+  ) {
     return supabaseResponse;
   }
 
