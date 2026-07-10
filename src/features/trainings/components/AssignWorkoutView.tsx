@@ -10,7 +10,7 @@ import { Athlete } from '@/interfaces/athlete';
 import { Group } from '@/interfaces/group';
 import { Button } from '@/components/ui/button';
 import { trainingsService } from '@/features/trainings/services/trainings.service';
-import { ArrowRight, Search, Check, Sparkles, LayoutTemplate, X } from 'lucide-react';
+import { ArrowRight, Search, Check, Sparkles, LayoutTemplate, X, Dumbbell } from 'lucide-react';
 import { BackButton } from '@/components/ui/BackButton';
 import { format } from 'date-fns';
 import { AlertDialog, useAlertDialog } from '@/components/ui/AlertDialog';
@@ -215,7 +215,7 @@ export function AssignWorkoutView({
     const [step, setStep] = useState<'select-source' | 'select-template' | 'build' | 'assign-details'>(
         initialTemplate ? 'assign-details' : 'select-source'
     );
-    const [workoutSource, setWorkoutSource] = useState<'template' | 'new' | null>(initialTemplate ? 'template' : null);
+    const [workoutSource, setWorkoutSource] = useState<'template' | 'new' | 'strength' | null>(initialTemplate ? 'template' : null);
     const [selectedTemplate, setSelectedTemplate] = useState<Training | null>(initialTemplate);
     const [templates] = useState<Training[]>(initialTemplates);
     const [blocks, setBlocks] = useState<WorkoutBlock[]>(initialTemplate?.blocks || []);
@@ -245,7 +245,7 @@ export function AssignWorkoutView({
             return;
         }
 
-        if (blocks.length === 0 && !selectedTemplate) {
+        if (blocks.length === 0 && !selectedTemplate && workoutSource !== 'strength') {
             showAlert('warning', tAssign('errorNoBlocks'));
             return;
         }
@@ -254,13 +254,14 @@ export function AssignWorkoutView({
             setLoading(true);
             let trainingIdToAssign: string;
 
-            if (workoutSource === 'new') {
+            if (workoutSource === 'new' || workoutSource === 'strength') {
+                const isStrengthWorkout = workoutSource === 'strength';
                 const newTraining = await trainingsService.create({
-                    title: saveAsTemplate ? (templateTitle || tAssign('untitledProtocol')) : (workoutName || tAssign('defaultWorkoutTitle', { date: format(new Date(`${scheduledDate}T00:00:00`), 'dd/MM/yyyy') })),
-                    type: TrainingType.RUNNING,
-                    description: tAssign('defaultDescription'),
-                    blocks,
-                    isTemplate: saveAsTemplate,
+                    title: saveAsTemplate ? (templateTitle || tAssign('untitledProtocol')) : (workoutName || tAssign(isStrengthWorkout ? 'defaultStrengthTitle' : 'defaultWorkoutTitle', { date: format(new Date(`${scheduledDate}T00:00:00`), 'dd/MM/yyyy') })),
+                    type: isStrengthWorkout ? TrainingType.STRENGTH : TrainingType.RUNNING,
+                    description: isStrengthWorkout ? tAssign('strengthPlaceholderDescription') : tAssign('defaultDescription'),
+                    blocks: isStrengthWorkout ? [] : blocks,
+                    isTemplate: isStrengthWorkout ? false : saveAsTemplate,
                     expectedRpe
                 });
                 trainingIdToAssign = newTraining.data.id;
@@ -334,7 +335,9 @@ export function AssignWorkoutView({
         if (step === 'select-template') { setStep('select-source'); return; }
         if (step === 'build') { setStep('select-source'); return; }
         if (step === 'assign-details') {
-            if (isNew) { setStep('build'); } else { setStep('select-template'); }
+            if (isNew) { setStep('build'); }
+            else if (workoutSource === 'strength') { setStep('select-source'); }
+            else { setStep('select-template'); }
             return;
         }
     };
@@ -357,7 +360,7 @@ export function AssignWorkoutView({
                     </p>
                 </div>
 
-                <div className="flex-1 flex flex-col sm:flex-row px-4 sm:px-8 lg:px-12 pb-8 lg:pb-12 gap-4 sm:gap-6 mt-4 sm:mt-8">
+                <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 px-4 sm:px-8 lg:px-12 pb-8 lg:pb-12 gap-4 sm:gap-6 mt-4 sm:mt-8">
                     <button
                         type="button"
                         onClick={() => {
@@ -395,6 +398,29 @@ export function AssignWorkoutView({
                                 <h2 className="text-xl sm:text-3xl font-bold text-endurix-black dark:text-foreground tracking-tight mb-2 uppercase" style={EXO}>{tAssign('blankSlate')}</h2>
                                 <p className="text-muted-foreground font-medium leading-relaxed">
                                     {tAssign('blankSlateDesc')}
+                                </p>
+                            </div>
+                        </div>
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setWorkoutSource('strength');
+                            setSelectedTemplate(null);
+                            setBlocks([]);
+                            setStep('assign-details');
+                        }}
+                        className={`flex-1 ${CARD_CLS} hover:border-endurix-orange p-6 sm:p-8 lg:p-12 text-left group transition-all relative overflow-hidden`}
+                    >
+                        <div className="relative z-10 flex flex-col h-full justify-between">
+                            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-endurix-orange/10 flex items-center justify-center mb-4 sm:mb-8 group-hover:scale-110 transition-transform">
+                                <Dumbbell className="w-6 h-6 sm:w-8 sm:h-8 text-endurix-orange" />
+                            </div>
+                            <div>
+                                <h2 className="text-xl sm:text-3xl font-bold text-endurix-black dark:text-foreground tracking-tight mb-2 uppercase" style={EXO}>{tAssign('strengthWorkout')}</h2>
+                                <p className="text-muted-foreground font-medium leading-relaxed">
+                                    {tAssign('strengthWorkoutDesc')}
                                 </p>
                             </div>
                         </div>
@@ -521,7 +547,7 @@ export function AssignWorkoutView({
                                     />
                                 </div>
 
-                                {isNew && (
+                                {(isNew || workoutSource === 'strength') && (
                                     <div>
                                         <label className={`${LABEL_CLS} font-bold block mb-4`} style={PLEX}>
                                             {tAssign('objectiveTitle')}
@@ -530,13 +556,13 @@ export function AssignWorkoutView({
                                             type="text"
                                             value={workoutName}
                                             onChange={(e) => setWorkoutName(e.target.value)}
-                                            placeholder={tAssign('exampleLongRun')}
+                                            placeholder={tAssign(workoutSource === 'strength' ? 'exampleStrength' : 'exampleLongRun')}
                                             className="w-full bg-transparent border-0 border-b border-endurix-black/20 dark:border-white/20 px-0 py-2 text-lg font-medium text-endurix-black dark:text-foreground focus:ring-0 focus:border-endurix-orange placeholder-endurix-black/30 dark:placeholder:text-muted-foreground/50 transition-colors"
                                         />
                                     </div>
                                 )}
 
-                                {!isNew && (
+                                {!isNew && workoutSource !== 'strength' && (
                                     <div>
                                         <label className={`${LABEL_CLS} font-bold block mb-4`} style={PLEX}>
                                             {tAssign('assignmentNameOverride')}
@@ -650,7 +676,7 @@ export function AssignWorkoutView({
                                     <span className={`${LABEL_CLS}`} style={PLEX}>{tAssign('blockBreakdownQuickView')}</span>
                                 </div>
                                 {blocks.length === 0 ? (
-                                    <p className="text-sm text-muted-foreground">{tAssign('blockBreakdownEmpty')}</p>
+                                    <p className="text-sm text-muted-foreground">{tAssign(workoutSource === 'strength' ? 'strengthPlaceholderSummary' : 'blockBreakdownEmpty')}</p>
                                 ) : (
                                     <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
                                         {blocks.map((block, index) => (

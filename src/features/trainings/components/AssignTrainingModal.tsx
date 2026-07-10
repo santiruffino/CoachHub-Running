@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { trainingsService } from '@/features/trainings/services/trainings.service';
 import api from '@/lib/axios';
-import { Training } from '@/interfaces/training';
+import { Training, TrainingType } from '@/interfaces/training';
 import { format } from 'date-fns';
 import { WorkoutBlock } from './builder/types';
 import { Slider } from '@/components/ui/slider';
@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { useTranslations } from 'next-intl';
 import { appLogger } from '@/lib/app-logger';
 import { WorkoutBuilder } from './builder/WorkoutBuilder';
+import { Dumbbell } from 'lucide-react';
 
 interface AssignTrainingModalProps {
     athleteId?: string;
@@ -62,7 +63,7 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
     const [editedBlocks, setEditedBlocks] = useState<WorkoutBlock[]>([]);
 
     // Athlete-specific flow state
-    const [workoutSource, setWorkoutSource] = useState<'template' | 'new' | null>(null);
+    const [workoutSource, setWorkoutSource] = useState<'template' | 'new' | 'strength' | null>(null);
     const [currentStep, setCurrentStep] = useState<'date' | 'source' | 'workout'>('date');
     const [availableTemplates, setAvailableTemplates] = useState<Training[]>([]);
 
@@ -146,8 +147,10 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
         }
 
         // For athlete-specific flow with builder (creating new workout from scratch)
-        if (athleteId && workoutSource === 'new') {
-            if (editedBlocks.length === 0) {
+        if (athleteId && (workoutSource === 'new' || workoutSource === 'strength')) {
+            const isStrengthWorkout = workoutSource === 'strength';
+
+            if (!isStrengthWorkout && editedBlocks.length === 0) {
                 setError(t('errorNoBlocks'));
                 return;
             }
@@ -157,10 +160,10 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                 setError('');
 
                 const newTrainingPayload: CreatableTraining = {
-                    title: workoutName || `Workout for ${format(new Date(`${scheduledDate}T00:00:00`), 'MMM d, yyyy')}`,
-                    type: FALLBACK_TRAINING_TYPE,
-                    description: 'Custom workout',
-                    blocks: editedBlocks,
+                    title: workoutName || t(isStrengthWorkout ? 'defaultStrengthTitle' : 'defaultWorkoutTitle', { date: format(new Date(`${scheduledDate}T00:00:00`), 'MMM d, yyyy') }),
+                    type: isStrengthWorkout ? TrainingType.STRENGTH : FALLBACK_TRAINING_TYPE,
+                    description: isStrengthWorkout ? t('strengthPlaceholderDescription') : 'Custom workout',
+                    blocks: isStrengthWorkout ? [] : editedBlocks,
                     isTemplate: false
                 };
 
@@ -331,7 +334,7 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                             <Label className={FIELD_LABEL_CLS} style={FIELD_LABEL_STYLE}>
                                 {t('chooseWorkoutType')}
                             </Label>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <button
                                     onClick={() => {
                                         setWorkoutSource('template');
@@ -355,6 +358,22 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                                     <div className="text-2xl mb-2">✨</div>
                                     <div className="font-bold uppercase tracking-widest text-sm text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{t('createNew')}</div>
                                     <div className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground mt-1" style={FIELD_LABEL_STYLE}>{t('createNewDesc')}</div>
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setWorkoutSource('strength');
+                                        setEditedBlocks([]);
+                                        setSelectedTrainingId('');
+                                        setSelectedTraining(null);
+                                        setCurrentStep('workout');
+                                    }}
+                                    className="p-6 border-2 border-endurix-black/15 dark:border-white/15 hover:border-endurix-orange hover:bg-endurix-orange/5 transition-all text-center"
+                                >
+                                    <div className="flex justify-center mb-2">
+                                        <Dumbbell className="w-7 h-7 text-endurix-orange" />
+                                    </div>
+                                    <div className="font-bold uppercase tracking-widest text-sm text-endurix-black dark:text-foreground" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{t('strengthWorkout')}</div>
+                                    <div className="text-[10px] uppercase tracking-widest text-endurix-black/50 dark:text-muted-foreground mt-1" style={FIELD_LABEL_STYLE}>{t('strengthWorkoutDesc')}</div>
                                 </button>
                             </div>
                         </div>
@@ -451,6 +470,36 @@ export function AssignTrainingModal({ athleteId, groupId, trainingId, isOpen, on
                             </div>
                             <div className="border border-endurix-black/15 dark:border-white/15 flex-1 min-h-[400px] overflow-hidden bg-endurix-paper dark:bg-card">
                                 <WorkoutBuilder initialBlocks={editedBlocks} onChange={setEditedBlocks} athleteId={athleteId} />
+                            </div>
+                            {error && <p className="text-sm text-destructive font-medium">{error}</p>}
+                        </div>
+                        <DialogFooter className="mt-4 border-t border-endurix-black/10 dark:border-border pt-4">
+                            <Button variant="outline-brand" onClick={() => setCurrentStep('source')} className="uppercase tracking-widest text-[10px]">{t('back')}</Button>
+                            <Button variant="outline-brand" onClick={onClose} className="uppercase tracking-widest text-[10px]">{t('cancel')}</Button>
+                            <Button
+                                variant="orange"
+                                onClick={handleAssign}
+                                disabled={loading}
+                                className="uppercase tracking-widest text-[10px]"
+                            >
+                                {loading ? t('creatingAndAssigning') : t('createAndAssign')}
+                            </Button>
+                        </DialogFooter>
+                    </>
+                );
+            }
+
+            if (workoutSource === 'strength') {
+                return (
+                    <>
+                        <div className="space-y-4 flex-1">
+                            <div className="space-y-2">
+                                <Label className={FIELD_LABEL_CLS} style={FIELD_LABEL_STYLE}>
+                                    {t('strengthWorkout')}
+                                </Label>
+                                <p className="text-sm text-muted-foreground">
+                                    {t('strengthPlaceholderSummary')}
+                                </p>
                             </div>
                             {error && <p className="text-sm text-destructive font-medium">{error}</p>}
                         </div>

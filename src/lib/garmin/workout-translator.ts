@@ -82,12 +82,15 @@ function buildExecutableStep(block: WorkoutBlock, profile: GarminAthleteProfile 
             targetValueTwo = resolved.highBpm;
             break;
         case 'pace':
-            // Garmin's canonical pace.zone stores the FASTER bound (higher m/s)
-            // in targetValueOne and the slower bound in targetValueTwo
-            // (e.g. Easy Run 10K → one=3.448, two=3.226).
+            // Garmin's pace.zone expects the LOWER bound (slower, lower m/s) in
+            // targetValueOne and the higher bound (faster, higher m/s) in
+            // targetValueTwo — the same low→high ordering as heart.rate.zone and
+            // power.zone. This mirrors @flow-js/garmin-connect's PaceTarget
+            // (the client that actually POSTs the workout); sending them reversed
+            // makes Garmin drop the pace target entirely.
             targetType = GARMIN_TARGET_TYPES['pace.zone'];
-            targetValueOne = resolved.highSpeedMs;
-            targetValueTwo = resolved.lowSpeedMs;
+            targetValueOne = resolved.lowSpeedMs;
+            targetValueTwo = resolved.highSpeedMs;
             break;
         case 'power':
             targetType = GARMIN_TARGET_TYPES['power.zone'];

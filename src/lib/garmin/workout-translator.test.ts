@@ -107,12 +107,13 @@ describe('translateWorkout — target resolution', () => {
         expect(s.targetValueTwo).toBe(Math.round(50 + 0.8 * reserve));
     });
 
-    it('vam_zone → pace.zone with faster bound (higher m/s) in targetValueOne', () => {
-        // Matches Garmin's canonical ordering: one = faster, two = slower.
+    it('vam_zone → pace.zone with slower bound (lower m/s) in targetValueOne', () => {
+        // Garmin ordering: one = slower (lower m/s), two = faster (higher m/s) —
+        // same low→high ordering as HR and power targets.
         const s = targetKey({ target: { type: 'vam_zone', min: 2, max: 2 } });
         expect(s.targetType.workoutTargetTypeKey).toBe('pace.zone');
-        expect(s.targetValueTwo).toBeGreaterThan(0);
-        expect(s.targetValueOne).toBeGreaterThan(s.targetValueTwo!);
+        expect(s.targetValueOne).toBeGreaterThan(0);
+        expect(s.targetValueTwo).toBeGreaterThan(s.targetValueOne!);
     });
 
     it('power_zone → power.zone in watts', () => {
@@ -151,7 +152,7 @@ describe('translateWorkout — target resolution', () => {
 
 describe('translateWorkout — matches Garmin real payload shape (Easy Run 10K)', () => {
     // Mirrors a real Garmin workout: single running interval, 10 km by distance,
-    // pace.zone target with one=faster, two=slower.
+    // pace.zone target with one=slower (lower m/s), two=faster (higher m/s).
     const workout = translateWorkout({
         name: 'Easy Run 10K',
         type: TrainingType.RUNNING,
@@ -177,10 +178,10 @@ describe('translateWorkout — matches Garmin real payload shape (Easy Run 10K)'
         expect(step.endConditionValue).toBe(10000);
     });
 
-    it('emits a pace.zone target with one (faster) > two (slower), like Garmin', () => {
+    it('emits a pace.zone target with one (slower) < two (faster), like Garmin', () => {
         expect(step.targetType).toEqual({ workoutTargetTypeId: 6, workoutTargetTypeKey: 'pace.zone', displayOrder: 6 });
-        expect(step.targetValueOne).toBeGreaterThan(step.targetValueTwo!);
-        expect(step.targetValueTwo).toBeGreaterThan(0);
+        expect(step.targetValueTwo).toBeGreaterThan(step.targetValueOne!);
+        expect(step.targetValueOne).toBeGreaterThan(0);
     });
 });
 
