@@ -1,48 +1,24 @@
 'use client';
 
-import { WorkoutBlock, WorkoutTotals } from './types';
+import { AthleteProfile, WorkoutBlock } from './types';
+import { TrainingType } from '@/interfaces/training';
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
+import { calculateTotals } from './SessionSummary';
 
 interface EstimatedTotalsProps {
     blocks: WorkoutBlock[];
+    athleteProfile?: AthleteProfile | null;
+    trainingType?: TrainingType;
 }
 
-function calculateTotals(blocks: WorkoutBlock[]): WorkoutTotals {
-    let totalDistance = 0;
-    let totalDuration = 0;
-    let totalTSS = 0;
-
-    blocks.forEach(block => {
-        const multiplier = block.group?.reps || 1;
-
-        // Distance
-        if (block.duration.type === 'distance') {
-            totalDistance += (block.duration.value / 1000) * multiplier;
-        }
-
-        // Duration
-        // Note: For estimated duration if distance is provided, we should ideally use pacing.
-        // But for simplicity, we mimic the original logic. If they provide time, we add time.
-        if (block.duration.type === 'time') {
-            totalDuration += block.duration.value * multiplier;
-        }
-
-        // TSS calculation (simplified)
-        const durationHours = (block.duration.value / 3600) * multiplier;
-        const intensityFactor = (block.intensity || 50) / 100;
-        totalTSS += durationHours * Math.pow(intensityFactor, 2) * 100;
-    });
-
-    return {
-        distance: totalDistance,
-        duration: totalDuration,
-        tss: Math.round(totalTSS)
-    };
-}
-
-export function EstimatedTotals({ blocks }: EstimatedTotalsProps) {
-    const totals = useMemo(() => calculateTotals(blocks), [blocks]);
+export function EstimatedTotals({ blocks, athleteProfile, trainingType = TrainingType.RUNNING }: EstimatedTotalsProps) {
+    // Shared estimator: infers duration from distance blocks using the athlete's
+    // VAM/pace, so distance-only workouts no longer show 0 min.
+    const totals = useMemo(
+        () => calculateTotals(blocks, athleteProfile, trainingType),
+        [blocks, athleteProfile, trainingType]
+    );
     const t = useTranslations('builder');
 
     const formatDurationParts = (seconds: number) => {
@@ -63,7 +39,7 @@ export function EstimatedTotals({ blocks }: EstimatedTotalsProps) {
                 >
                     {t('totalDuration')}
                 </div>
-                <div className="flex items-baseline gap-1 mt-auto">
+                <div className="flex items-baseline gap-1 mt-auto mb-7">
                     {hours > 0 ? (
                         <>
                             <span className="text-5xl font-extrabold text-endurix-black dark:text-foreground tracking-tight" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{hours}</span>
@@ -102,7 +78,7 @@ export function EstimatedTotals({ blocks }: EstimatedTotalsProps) {
                 >
                     {t('estimatedTss')}
                 </div>
-                <div className="flex items-baseline gap-2 mt-auto">
+                <div className="flex items-baseline gap-2 mt-auto mb-7">
                     <span className="text-5xl font-extrabold text-endurix-black dark:text-foreground tracking-tight" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{totals.tss}</span>
                     <span
                         className="text-sm font-bold text-endurix-black/50 dark:text-muted-foreground"
@@ -124,7 +100,7 @@ export function EstimatedTotals({ blocks }: EstimatedTotalsProps) {
                 >
                     {t('distanceEst')}
                 </div>
-                <div className="flex items-baseline gap-2 mt-auto">
+                <div className="flex items-baseline gap-2 mt-auto mb-7">
                     <span className="text-5xl font-extrabold text-endurix-black dark:text-foreground tracking-tight" style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}>{(totals.distance > 0 ? totals.distance : 0).toFixed(1)}</span>
                     <span
                         className="text-sm font-bold text-endurix-black/50 dark:text-muted-foreground"

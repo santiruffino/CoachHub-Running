@@ -225,7 +225,7 @@ export function WorkoutBuilder({
       <div className="h-full w-full overflow-y-auto bg-[#f8f9fa] dark:bg-[#0a0f14] text-[#2b3437] dark:text-[#f8f9fa] font-inter">
         <div className={`max-w-5xl mx-auto ${compactLayout ? 'px-4 py-4' : 'px-4 sm:px-8 py-6 sm:py-8'} space-y-10 pb-16`}>
           <div className="text-sm text-[#4e6073] dark:text-[#8b9bb4]">{t('readOnlyMode')}</div>
-          <EstimatedTotals blocks={blocks}/>
+          <EstimatedTotals blocks={blocks} athleteProfile={athleteProfile} trainingType={trainingType}/>
           <WorkoutIntensityChart blocks={blocks} athleteProfile={athleteProfile}/>
           <WorkoutSequence
             blocks={blocks}
