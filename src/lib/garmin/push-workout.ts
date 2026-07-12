@@ -139,18 +139,31 @@ export async function pushAssignmentToGarmin(
         return { assignmentId, status: 'skipped', error: 'empty_workout' };
     }
 
-    const { data: ap } = await service
+    // NOTE: athlete_profiles has no `ftp` column (FTP is cycling-only and not
+    // modelled for athletes yet). Selecting it makes PostgREST fail the whole
+    // query, so `ap` comes back null and every intensity target — including VAM
+    // pace — silently degrades to "no athlete data". Keep this select to the
+    // columns that actually exist.
+    const { data: ap, error: apError } = await service
         .from('athlete_profiles')
-        .select('lthr, rest_hr, max_hr, vam, ftp')
+        .select('lthr, rest_hr, max_hr, vam')
         .eq('user_id', assignment.user_id)
         .maybeSingle();
+
+    if (apError) {
+        logger.warn('garmin.push.athlete_profile_read_failed', {
+            assignmentId,
+            userId: assignment.user_id,
+            error: apError.message,
+        });
+    }
 
     const profile: GarminAthleteProfile = {
         lthr: ap?.lthr ?? null,
         restHR: ap?.rest_hr ?? null,
         maxHR: ap?.max_hr ?? null,
         vam: ap?.vam ?? null,
-        ftp: ap?.ftp ?? null,
+        ftp: null,
     };
 
     const workout = translateWorkout({
