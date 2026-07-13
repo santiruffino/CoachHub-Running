@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { GroupDetailsView } from '@/features/groups/components/GroupDetailsView';
+import type { TrainingPlan } from '@/features/plans/types';
 import { startOfWeek, addDays } from 'date-fns';
 
 export const dynamic = 'force-dynamic';
@@ -21,7 +22,7 @@ export default async function GroupDetailsPage({ params }: { params: Promise<{ i
     }
 
     // Fetch initial data in parallel
-    const [groupRes, athletesRes, calendarRes] = await Promise.all([
+    const [groupRes, athletesRes, calendarRes, plansRes] = await Promise.all([
         supabase
             .from('groups')
             .select(`
@@ -52,7 +53,12 @@ export default async function GroupDetailsPage({ params }: { params: Promise<{ i
             `)
             .eq('group_id', id)
             .gte('scheduled_date', startOfWeek(new Date(), { weekStartsOn: 1 }).toISOString())
-            .lte('scheduled_date', addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 28).toISOString())
+            .lte('scheduled_date', addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 28).toISOString()),
+        supabase
+            .from('training_plans')
+            .select('*, training_plan_items(count)')
+            .eq('is_archived', false)
+            .order('updated_at', { ascending: false }),
     ]);
 
     if (groupRes.error || !groupRes.data) {
@@ -79,11 +85,12 @@ export default async function GroupDetailsPage({ params }: { params: Promise<{ i
 
     return (
         <div className="p-4 sm:p-6 lg:p-8">
-            <GroupDetailsView 
+            <GroupDetailsView
                 id={id}
                 initialGroup={group as any}
                 initialAthletes={initialAthletes as any}
                 initialAssignments={calendarRes.data as any || []}
+                initialPlans={(plansRes.data ?? []) as unknown as TrainingPlan[]}
             />
         </div>
     );

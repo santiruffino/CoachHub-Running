@@ -200,6 +200,24 @@ export async function GET(request: NextRequest) {
             .select('id, name, athlete_groups(count)')
             .eq('team_id', profile.team_id);
 
+        // Batch-fetch all group memberships in a single query to avoid an N+1
+        // (one query per group) further down when computing missing workouts and
+        // group compliance.
+        const groupIds = ((groups || []) as DashboardGroup[]).map((g) => g.id);
+        const { data: groupMembers } = groupIds.length > 0
+            ? await supabase
+                .from('athlete_groups')
+                .select('group_id, athlete_id')
+                .in('group_id', groupIds)
+            : { data: [] as { group_id: string; athlete_id: string }[] };
+
+        const memberIdsByGroupId = new Map<string, string[]>();
+        for (const row of (groupMembers || [])) {
+            const bucket = memberIdsByGroupId.get(row.group_id) || [];
+            bucket.push(row.athlete_id);
+            memberIdsByGroupId.set(row.group_id, bucket);
+        }
+
         const trainingsQuery = supabase
             .from('trainings')
             .select('id', { count: 'exact', head: true })
@@ -387,13 +405,8 @@ export async function GET(request: NextRequest) {
         );
 
         const athletesWithNextWeek = new Set(nextWeekAssignments.map((a) => a.user_id));
-        const groupMissingPromises = ((groups || []) as DashboardGroup[]).map(async (group) => {
-            const { data: members } = await supabase
-                .from('athlete_groups')
-                .select('athlete_id')
-                .eq('group_id', group.id);
-
-            const memberIds = (members || []).map((m) => m.athlete_id).filter((id) => scopedAthleteIds.has(id));
+        const groupMissingResults = ((groups || []) as DashboardGroup[]).map((group) => {
+            const memberIds = (memberIdsByGroupId.get(group.id) || []).filter((id) => scopedAthleteIds.has(id));
             if (memberIds.length === 0) {
                 return null;
             }
@@ -408,7 +421,6 @@ export async function GET(request: NextRequest) {
             return hasAssignment ? null : { id: group.id, name: group.name, type: 'group' as const, memberCount };
         });
 
-        const groupMissingResults = await Promise.all(groupMissingPromises);
         const missingWorkouts = [
             ...(athletes || [])
                 .filter((a) => !athletesWithNextWeek.has(a.id))
@@ -697,35 +709,28 @@ export async function GET(request: NextRequest) {
             };
         });
 
-        const groupComplianceResults = await Promise.all(
-            ((groups || []) as DashboardGroup[]).map(async (group) => {
-                const { data: members } = await supabase
-                    .from('athlete_groups')
-                    .select('athlete_id')
-                    .eq('group_id', group.id);
+        const groupComplianceResults = ((groups || []) as DashboardGroup[]).map((group) => {
+            const memberIds = (memberIdsByGroupId.get(group.id) || []).filter((id) => scopedAthleteIds.has(id));
+            if (memberIds.length === 0) {
+                return null;
+            }
 
-                const memberIds = (members || []).map((m) => m.athlete_id).filter((id) => scopedAthleteIds.has(id));
-                if (memberIds.length === 0) {
-                    return null;
-                }
+            const groupAssignments = pastAssignments.filter((a) => memberIds.includes(a.user_id));
+            const groupCompleted = groupAssignments.filter((a) => isAssignmentCompleted(a, activities)).length;
+            const groupTotal = groupAssignments.length;
+            const countArr = group.athlete_groups;
+            const athleteCount =
+                Array.isArray(countArr) && countArr[0]?.count != null
+                    ? Number(countArr[0].count)
+                    : memberIds.length;
 
-                const groupAssignments = pastAssignments.filter((a) => memberIds.includes(a.user_id));
-                const groupCompleted = groupAssignments.filter((a) => isAssignmentCompleted(a, activities)).length;
-                const groupTotal = groupAssignments.length;
-                const countArr = group.athlete_groups;
-                const athleteCount =
-                    Array.isArray(countArr) && countArr[0]?.count != null
-                        ? Number(countArr[0].count)
-                        : memberIds.length;
-
-                return {
-                    groupId: group.id,
-                    groupName: group.name,
-                    athleteCount,
-                    completionRate: groupTotal > 0 ? Math.round((groupCompleted / groupTotal) * 100) : 100,
-                };
-            })
-        );
+            return {
+                groupId: group.id,
+                groupName: group.name,
+                athleteCount,
+                completionRate: groupTotal > 0 ? Math.round((groupCompleted / groupTotal) * 100) : 100,
+            };
+        });
 
         const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const activityByDay = new Map<string, number>();

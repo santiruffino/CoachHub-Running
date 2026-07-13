@@ -243,7 +243,7 @@ export function WishlistSection() {
                                         aria-hidden
                                         className="absolute -left-[9999px] top-0 h-0 w-0 overflow-hidden"
                                     >
-                                        <label htmlFor="company-website">No completar</label>
+                                        <label htmlFor="company-website">{t('honeypotLabel')}</label>
                                         <input
                                             id="company-website"
                                             type="text"

@@ -55,7 +55,7 @@ export function AiAssistantSection() {
                         </div>
 
                         <Link
-                            href="#features"
+                            href="#wishlist"
                             className="mt-9 inline-flex items-center gap-2 bg-endurix-orange text-white text-xs font-bold tracking-widest px-7 py-3.5 transition-all hover:bg-endurix-orange/90"
                             style={FONT_DISPLAY}
                         >
@@ -77,7 +77,7 @@ export function AiAssistantSection() {
                             <div className="flex items-center gap-2 px-4 py-2.5 border-b border-white/10">
                                 <Terminal className="w-3.5 h-3.5 text-endurix-orange" />
                                 <span className="text-[9px] tracking-widest text-white/40" style={FONT_MONO}>
-                                    ENDURIX · MCP
+                                    {t('convHeader')}
                                 </span>
                             </div>
 
@@ -99,13 +99,9 @@ export function AiAssistantSection() {
                                 <div className="flex justify-start">
                                     <div className="max-w-[90%] border border-white/12 bg-white/[0.03] px-3.5 py-3 space-y-2.5">
                                         <p className="text-[13px] text-white/85 leading-snug">
-                                            Listo. Creé un bloque de base de 4 semanas para Martina:
+                                            {t('convReply')}
                                         </p>
-                                        {[
-                                            'Sem 1–2 · 5 sesiones · rodajes Z2 + 1 serie',
-                                            'Sem 3 · carga +12% · fartlek progresivo',
-                                            'Sem 4 · descarga −25% · test 5 km',
-                                        ].map((line) => (
+                                        {[t('convLine1'), t('convLine2'), t('convLine3')].map((line) => (
                                             <div key={line} className="flex items-center gap-2">
                                                 <span className="w-1 h-1 rounded-full bg-endurix-orange shrink-0" />
                                                 <span className="text-[11px] text-white/60" style={FONT_MONO}>
@@ -115,10 +111,10 @@ export function AiAssistantSection() {
                                         ))}
                                         <div className="flex items-center gap-2 pt-1">
                                             <span className="text-[8px] font-bold tracking-wider border border-green-500/30 text-green-500 px-1.5 py-px" style={FONT_MONO}>
-                                                ASIGNADO
+                                                {t('convAssigned')}
                                             </span>
                                             <span className="text-[9px] text-white/30" style={FONT_MONO}>
-                                                vía MCP · 1.2s
+                                                {t('convBadge')}
                                             </span>
                                         </div>
                                     </div>

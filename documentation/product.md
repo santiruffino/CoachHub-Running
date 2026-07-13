@@ -23,6 +23,9 @@ Endurix is the all-in-one platform for endurance coaches and athletes who reject
 3. **Set team athlete limit** (admin-only pricing tier cap via `max_athletes` in team settings)
 4. Create / manage groups and trainings
 5. Assign trainings to athletes and groups
+5b. **Build reusable multi-week plans (mesocycles)** on a week×day grid and **apply**
+    them to athletes/groups from a start date (assign whole weeks at once), plus
+    **duplicate plans** and **copy/paste calendar weeks** between athletes
 6. Review dashboards, compliance signals, and activity analysis
 7. Manage athlete feedback and assignment linkage
 8. Configure coach / team settings (thresholds, branding, default models, **athlete limit**)
@@ -54,6 +57,10 @@ Endurix is the all-in-one platform for endurance coaches and athletes who reject
 - Training load (Banister model) computed from `load_score` / `suffer_score` and surfaced on both coach and athlete views
 - **Notifications**: unified in-app inbox + Web Push with per-category preferences and daily/weekly digests ([notifications.md](./notifications.md))
 - **Coach↔athlete chat**: two-way messaging thread, distinct from private coach notes
+- **Periodization**: reusable multi-week plan templates (`training_plans` /
+  `training_plan_items`) whose slots reference existing workout templates; applying a
+  plan or copy/pasting a calendar week materializes `training_assignments` through the
+  shared assignment pipeline (snapshot + notifications + Garmin push)
 - **Scheduled jobs**: cron-driven digests, race reminders, and Strava backfill ([observability.md](./observability.md))
 - **AI access**: authenticated MCP server (`/api/mcp`) exposing coach tools ([mcp-server.md](./mcp-server.md))
 

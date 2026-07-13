@@ -15,6 +15,7 @@ export interface UpdateProfileDto {
     restHR?: number | string | null;
     maxHR?: number | string | null;
     lthr?: number | string | null;
+    ftp?: number | string | null;
     vam?: string;
     uan?: string;
     dob?: string;

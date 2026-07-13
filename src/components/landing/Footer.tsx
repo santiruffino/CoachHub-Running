@@ -8,7 +8,7 @@ import { comparisons } from '@/app/comparativas/comparisons';
 // GEO / "answer engine optimization" play: deep-links that open an LLM with a
 // prefilled question about Endurix. Providers without reliable query params
 // (Gemini) just open the app.
-const GEO_PROMPT = '¿Qué es Endurix? Es una plataforma de coaching para entrenadores y atletas de resistencia (running) con integración de IA vía MCP.';
+const GEO_PROMPT = '¿Qué es Endurix? Es una plataforma de coaching para entrenadores y atletas de resistencia (running) con un asistente de IA integrado.';
 const AI_LINKS = [
     { label: 'ChatGPT', href: `https://chatgpt.com/?q=${encodeURIComponent(GEO_PROMPT)}` },
     { label: 'Claude', href: `https://claude.ai/new?q=${encodeURIComponent(GEO_PROMPT)}` },

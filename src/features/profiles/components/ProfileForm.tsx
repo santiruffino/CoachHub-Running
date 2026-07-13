@@ -244,6 +244,7 @@ export function ProfileForm({ profile }: { profile: ProfileDetails }) {
             restHR: athleteProfile?.restHR ?? athleteProfile?.rest_hr,
             maxHR: athleteProfile?.maxHR ?? athleteProfile?.max_hr,
             lthr: athleteProfile?.lthr,
+            ftp: athleteProfile?.ftp,
             vam: athleteProfile?.vam,
             uan: athleteProfile?.uan,
             dob: athleteProfile?.dob,
@@ -264,6 +265,7 @@ export function ProfileForm({ profile }: { profile: ProfileDetails }) {
             data.restHR = normalizeOptionalNumber(data.restHR);
             data.maxHR = normalizeOptionalNumber(data.maxHR);
             data.lthr = normalizeOptionalNumber(data.lthr);
+            data.ftp = normalizeOptionalNumber(data.ftp);
 
             await profileService.updateProfile(data);
             setMessage('success');
@@ -442,6 +444,17 @@ export function ProfileForm({ profile }: { profile: ProfileDetails }) {
                                         setValue={setValue}
                                         watch={watch}
                                         history={uanHistory}
+                                    />
+                                </Field>
+                            </FieldRow>
+
+                            <FieldRow>
+                                <Field label={t('fields.ftp')} hint={t('fields.ftpHint')}>
+                                    <Input
+                                        type="number"
+                                        placeholder={t('fields.ftpPlaceholder')}
+                                        className={underlineInput}
+                                        {...register('ftp')}
                                     />
                                 </Field>
                             </FieldRow>

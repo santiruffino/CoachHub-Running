@@ -7,6 +7,7 @@
     "coaches": "Coaches",
     "groups": "Grupos",
     "trainings": "Entrenamientos",
+    "plans": "Planes",
     "races": "Carreras",
     "progress": "Progreso",
     "profile": "Perfil",
@@ -582,6 +583,7 @@
       "restHR": "FC Reposo",
       "maxHR": "FC Máxima",
       "lthr": "FC Umbral Lactato",
+      "ftp": "FTP",
       "testVAM": "Test VAM",
       "assignLevel": "Asignar nivel",
       "testUAN": "Test UAN",
@@ -1057,7 +1059,10 @@
       "selectExistingRace": "Seleccionar carrera existente",
       "createNewRace": "Crear nueva carrera",
       "pickFromLibrary": "Elegir de la biblioteca",
-      "raceDetails": "Detalles de la Carrera"
+      "raceDetails": "Detalles de la Carrera",
+      "applyToGroup": "Aplicar al grupo",
+      "plansHint": "Elegí un mesociclo y aplicalo a todo el grupo desde una fecha de inicio.",
+      "plansEmptyDescription": "Creá un plan multi-semana con tus plantillas y aplicalo al grupo completo de una sola vez."
     },
     "createForm": {
       "subtitle": "Configura un nuevo equipo de entrenamiento.",
@@ -1088,7 +1093,8 @@
     "detailPage": {
       "editGroup": "Editar grupo",
       "groupPlanning": "Planificación del grupo",
-      "scheduleTraining": "Programar entrenamiento"
+      "scheduleTraining": "Programar entrenamiento",
+      "applyPlanTitle": "Planes del equipo"
     }
   },
   "coaches": {
@@ -1119,6 +1125,13 @@
     "deleteConfirmButton": "Eliminar",
     "deleteError": "Error al eliminar el entrenamiento. Por favor, inténtalo de nuevo.",
     "loading": "Cargando...",
+    "trainingTypes": {
+      "RUNNING": "Running",
+      "CYCLING": "Ciclismo",
+      "SWIMMING": "Natación",
+      "STRENGTH": "Fuerza",
+      "OTHER": "Otro"
+    },
     "new": {
       "title": "Crear Nuevo Entrenamiento",
       "detailsCard": "Detalles del Entrenamiento",
@@ -1754,6 +1767,9 @@
       "lthr": "FC UMBRAL DE LACTATO (BPM)",
       "lthrPlaceholder": "ej. 170",
       "lthrHint": "FC en el umbral anaeróbico (test de 20-30 min)",
+      "ftp": "FTP (VATIOS)",
+      "ftpPlaceholder": "ej. 250",
+      "ftpHint": "Potencia Umbral Funcional para ciclismo (test de 20 min)",
       "vam": "TEST VAM (mm:ss)",
       "uan": "TEST UAN (mm:ss)",
       "pacePlaceholder": "00:00",
@@ -1876,7 +1892,14 @@
       "students": "Atletas",
       "all": "Todos",
       "none": "Ninguno"
-    }
+    },
+    "copyWeek": "Copiar semana",
+    "pasteWeek": "Pegar semana",
+    "pasteWeekHere": "Pegar aquí",
+    "weekCopied": "Semana copiada",
+    "clearClipboard": "Descartar",
+    "pasteConfirm": "¿Pegar la semana copiada en esta semana?",
+    "weekPasted": "Semana pegada"
   },
   "common": {
     "loading": "Cargando...",
@@ -1908,7 +1931,8 @@
       "bpm": "ppm",
       "cm": "cm",
       "kg": "kg",
-      "spm": "ppm"
+      "spm": "ppm",
+      "watts": "W"
     },
     "a11y": {
       "toggleMenu": "Alternar menú",
@@ -1930,9 +1954,9 @@
       "somosEndurix": "SOMOS ENDURIX",
       "title1": "ENTRENA MÁS INTELIGENTE.",
       "title2": "RINDE POR MÁS TIEMPO.",
-      "subtitle": "La plataforma todo en uno para entrenadores y atletas de resistencia. Ahora también lista para integrarse con IA vía MCP, automatizar resúmenes y transformar datos en acciones. Todo en un solo lugar. Sin excusas. Solo datos.",
+      "subtitle": "La plataforma todo en uno para entrenadores y atletas de resistencia. Ahora también con un asistente de IA que resume semanas, automatiza lo repetitivo y transforma datos en acciones. Todo en un solo lugar. Sin excusas. Solo datos.",
       "viewTraining": "VER ENTRENAMIENTO",
-      "discover": "EXPLORAR MCP",
+      "discover": "VER ASISTENTE",
       "dashboardMock": "DASHBOARD",
       "cargaSemanal": "CARGA SEMANAL",
       "optima": "ÓPTIMA",
@@ -1943,10 +1967,11 @@
       "weeklyVolume": "VOLUMEN SEMANAL",
       "nextRace": "PRÓXIMA CARRERA",
       "balanced": "Balanceado",
-      "start": "COMENZAR"
+      "start": "COMENZAR",
+      "days": "días"
     },
     "features": {
-      "tag1": "LISTO PARA MCP",
+      "tag1": "ASISTENTE DE IA",
       "title1": "Asistentes conectados",
       "desc1": "Conecta Endurix con asistentes y automatizaciones para consultar métricas, resumir semanas y activar acciones sin salir de tu flujo.",
       "progreso": "PROGRESO",
@@ -1965,16 +1990,19 @@
       "eyebrow": "COACHING INTELIGENTE",
       "headline1": "OPERACIÓN DE COACHING",
       "headline2": "EN TIEMPO REAL.",
-      "subtitle": "Endurix no solo registra datos: ayuda a decidir qué hacer con ellos y, ahora, a conectarlo todo vía MCP para actuar antes, comunicar mejor y sostener el rendimiento.",
+      "subtitle": "Endurix no solo registra datos: ayuda a decidir qué hacer con ellos y, ahora, a conectarlo todo para actuar antes, comunicar mejor y sostener el rendimiento.",
       "card1Tag": "COPILOTO",
-      "card1Title": "Asistente IA con MCP",
+      "card1Title": "Asistente de IA",
       "card1Desc": "Resume semanas, detecta patrones y sugiere próximos pasos sobre atletas y grupos desde un flujo preparado para agentes y automatizaciones.",
       "card2Tag": "CONTROL",
       "card2Title": "Cumplimiento y alertas",
       "card2Desc": "Seguimiento de adherencia, carga y actividad para detectar desvíos antes de que afecten el plan.",
       "card3Tag": "PROACTIVO",
       "card3Title": "Preparación de carrera y avisos",
-      "card3Desc": "Prioriza próximas carreras y dispara notificaciones al atleta cuando hace falta corregir el rumbo."
+      "card3Desc": "Prioriza próximas carreras y dispara notificaciones al atleta cuando hace falta corregir el rumbo.",
+      "card4Tag": "PLANIFICACIÓN",
+      "card4Title": "Periodización",
+      "card4Desc": "Construí un plan multi-semana una vez y asignalo completo: mesociclos reutilizables, semanas enteras y copiar/pegar entre atletas."
     },
     "roadmap": {
       "eyebrow": "HOJA DE RUTA",
@@ -1994,7 +2022,7 @@
       "disciplina": "DISCIPLINA",
       "consistencia": "CONSISTENCIA",
       "progreso": "PROGRESO",
-      "manifesto": "Rechazamos la estética suave de las apps modernas de estilo de vida. Endurix está construida como una herramienta de grado profesional, lista para integrarse con IA y flujos MCP para quienes entienden que el rendimiento se deriva de un esfuerzo estructurado e implacable.",
+      "manifesto": "Rechazamos la estética suave de las apps modernas de estilo de vida. Endurix está construida como una herramienta de grado profesional, con IA y automatizaciones para quienes entienden que el rendimiento se deriva de un esfuerzo estructurado e implacable.",
       "noExcuses": "SIN EXCUSAS.",
       "justData": "SOLO DATOS."
     },
@@ -2040,7 +2068,8 @@
         "roadmap": "Voto en la hoja de ruta del producto.",
         "community": "Acceso al canal privado de coaches pioneros."
       },
-      "trust": "Sin spam. Sin tarjeta. Cancelás la lista cuando quieras."
+      "trust": "Sin spam. Sin tarjeta. Cancelás la lista cuando quieras.",
+      "honeypotLabel": "No completar"
     },
     "howItWorks": {
       "eyebrow": "CÓMO FUNCIONA",
@@ -2058,7 +2087,17 @@
       "step3Desc": "Crealo con IA, a mano o reutilizá una plantilla. Editás días y series cuando quieras.",
       "step4Tag": "04 · MONITOREÁ",
       "step4Title": "Monitoreá la carga",
-      "step4Desc": "Alertas, cumplimiento y carga en un solo lugar. El plan se ajusta con los datos."
+      "step4Desc": "Alertas, cumplimiento y carga en un solo lugar. El plan se ajusta con los datos.",
+      "mockInvite": "INVITAR ATLETA",
+      "mockAdded": "AGREGADO",
+      "mockSources": "FUENTES SINCRONIZADAS",
+      "mockLastActivity": "Última actividad · hace 2 min",
+      "mockPlanReady": "PLAN LISTO",
+      "mockPlanMeta": "6 SEM · 5 D",
+      "mockWorkout1": "Base aeróbica — rodaje Z2",
+      "mockWorkout2": "Series — 6×1000 @ umbral",
+      "mockLoadAlerts": "CARGA / ALERTAS",
+      "mockLoadAlert": "Carga alta esta semana · revisar a 2 atletas"
     },
     "bento": {
       "eyebrow": "TODO EN UNA PLATAFORMA",
@@ -2069,14 +2108,14 @@
       "metricsTitle": "Visibilidad de todo tu equipo",
       "metricsDesc": "Carga, forma y adherencia de cada atleta, en tiempo real y en un solo tablero.",
       "planningLabel": "PLANIFICACIÓN",
-      "planningTitle": "Micro y macrociclos estructurados",
-      "planningDesc": "Construí bloques con precisión de zonas, ritmos y potencia.",
+      "planningTitle": "Planes multi-semana",
+      "planningDesc": "Armá mesociclos reutilizables, asigná semanas completas y copiá o pegá entre atletas.",
       "syncLabel": "INTEGRACIONES",
       "syncTitle": "Strava y Garmin sincronizados",
       "syncDesc": "Actividades al segundo por webhook, sin recargas ni exportaciones.",
       "assistantLabel": "ASISTENTE IA",
       "assistantTitle": "Horas de trabajo, ahora en segundos",
-      "assistantDesc": "Pedile por texto que resuma semanas o arme un plan, vía MCP.",
+      "assistantDesc": "Pedile por texto que resuma semanas o arme un plan, y listo.",
       "alertsLabel": "ALERTAS",
       "alertsTitle": "Siempre un paso adelante",
       "alertsDesc": "Detectá desvíos de carga o abandono antes de que afecten el plan.",
@@ -2085,13 +2124,17 @@
       "appDesc": "Ven el día, registran la sesión y todo queda sincronizado.",
       "racesLabel": "CARRERAS",
       "racesTitle": "Preparación con cuenta regresiva",
-      "racesDesc": "Objetivos, tapering y avisos para llegar a punto el día de la carrera."
+      "racesDesc": "Objetivos, tapering y avisos para llegar a punto el día de la carrera.",
+      "vizAssistant": "Resumí la semana de Ana",
+      "vizAlert": "Carga alta · revisar 2 atletas",
+      "vizNextRace": "PRÓXIMA CARRERA",
+      "vizToday": "HOY"
     },
     "aiAssistant": {
-      "eyebrow": "ASISTENTE IA · MCP",
+      "eyebrow": "ASISTENTE DE IA",
       "title1": "EL ASISTENTE DE ENDURIX,",
       "titleHighlight": "SIEMPRE CON VOS.",
-      "subtitle": "La única plataforma de coaching de resistencia con un asistente conectado vía MCP: hace lo que harías en la plataforma, con solo pedírselo por texto.",
+      "subtitle": "Un asistente de IA que hace lo que harías en la plataforma, con solo pedírselo por texto. Conectado vía MCP, para llevarlo también a tus herramientas de IA favoritas.",
       "chip1": "Armar planes",
       "chip2": "Resumir la semana",
       "chip3": "Atletas en riesgo",
@@ -2099,7 +2142,14 @@
       "chip5": "Consultar métricas",
       "promptLabel": "PEDILE AL ASISTENTE",
       "promptExample": "Armale un bloque de base de 4 semanas a Martina, 5 días por semana",
-      "cta": "EXPLORAR MCP"
+      "cta": "SUMATE A LA LISTA",
+      "convHeader": "ENDURIX · ASISTENTE",
+      "convReply": "Listo. Creé un bloque de base de 4 semanas para Martina:",
+      "convLine1": "Sem 1–2 · 5 sesiones · rodajes Z2 + 1 serie",
+      "convLine2": "Sem 3 · carga +12% · fartlek progresivo",
+      "convLine3": "Sem 4 · descarga −25% · test 5 km",
+      "convAssigned": "ASIGNADO",
+      "convBadge": "IA · 1.2s"
     },
     "faq": {
       "eyebrow": "PREGUNTAS FRECUENTES",
@@ -2126,7 +2176,7 @@
       "privacy": "POLÍTICA DE PRIVACIDAD",
       "terms": "TÉRMINOS DE SERVICIO",
       "copyright": "© 2026 ENDURIX PERFORMANCE SYSTEMS. SIN EXCUSAS. SOLO DATOS.",
-      "tagline": "La plataforma todo-en-uno para entrenadores y atletas de resistencia, con un asistente de IA integrado vía MCP.",
+      "tagline": "La plataforma todo-en-uno para entrenadores y atletas de resistencia, con un asistente de IA integrado.",
       "colProduct": "PRODUCTO",
       "linkHowItWorks": "Cómo funciona",
       "linkAssistant": "Asistente IA",
@@ -3054,5 +3104,80 @@
     "primary": "Recargar",
     "secondary": "Ir al inicio",
     "errorId": "ID de error"
+  },
+  "plans": {
+    "eyebrow": "Periodización",
+    "title": "Planes",
+    "subtitle": "Armá mesociclos reutilizables y asignalos completos en segundos.",
+    "newPlan": "Nuevo plan",
+    "weeksCount": "{count, plural, one {# semana} other {# semanas}}",
+    "sessionsCount": "{count, plural, one {# sesión} other {# sesiones}}",
+    "empty": {
+      "title": "Todavía no tenés planes",
+      "description": "Creá un plan multi-semana con tus plantillas de entrenamiento y asignalo a un atleta o grupo de una sola vez."
+    },
+    "actions": {
+      "apply": "Aplicar",
+      "edit": "Editar",
+      "duplicate": "Duplicar",
+      "archive": "Archivar"
+    },
+    "days": {
+      "mon": "Lun",
+      "tue": "Mar",
+      "wed": "Mié",
+      "thu": "Jue",
+      "fri": "Vie",
+      "sat": "Sáb",
+      "sun": "Dom"
+    },
+    "builder": {
+      "back": "Volver a planes",
+      "createPlan": "Crear plan",
+      "saveChanges": "Guardar cambios",
+      "saving": "Guardando...",
+      "name": "Nombre del plan",
+      "namePlaceholder": "Ej: Base 4 semanas — Media maratón",
+      "nameRequired": "El nombre del plan es obligatorio",
+      "type": "Tipo",
+      "focus": "Foco",
+      "focusPlaceholder": "Ej: Base / Build / Peak / Taper",
+      "description": "Descripción",
+      "descriptionPlaceholder": "Notas del plan (opcional)",
+      "weekN": "Semana {n}",
+      "duplicateWeek": "Duplicar semana",
+      "add": "Agregar",
+      "addWeek": "Agregar semana",
+      "removeWeek": "Quitar última semana",
+      "removeItem": "Quitar",
+      "pickTemplate": "Elegí una plantilla",
+      "searchTemplates": "Buscar plantilla...",
+      "noTemplates": "No hay plantillas que coincidan.",
+      "editSlot": "Editar sesión",
+      "edited": "Editada",
+      "basedOn": "basada en {name}",
+      "workoutNamePlaceholder": "Nombre de la sesión (opcional)",
+      "done": "Listo",
+      "resetToTemplate": "Volver a la plantilla"
+    },
+    "apply": {
+      "title": "Aplicar \"{name}\"",
+      "startDate": "Fecha de inicio",
+      "startDateHint": "El plan arranca el lunes de la semana elegida.",
+      "athletes": "Atletas",
+      "groups": "Grupos",
+      "searchAthletes": "Buscar por nombre o email",
+      "searchGroups": "Buscar grupos",
+      "noMatches": "Sin coincidencias",
+      "allWeeks": "Aplicar todas las semanas",
+      "weekN": "Semana {n}",
+      "selectAtLeastOne": "Elegí al menos un atleta o grupo",
+      "selectAtLeastOneWeek": "Elegí al menos una semana",
+      "cancel": "Cancelar",
+      "confirm": "Aplicar plan",
+      "applying": "Aplicando...",
+      "success": "Plan aplicado: {assignments} sesiones en {athletes} atleta(s).",
+      "target": "Aplicar a"
+    }
   }
 }

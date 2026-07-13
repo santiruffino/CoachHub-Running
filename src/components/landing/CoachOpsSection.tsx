@@ -2,11 +2,17 @@
 
 import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
-import { BellRing, Bot, ShieldCheck } from 'lucide-react';
+import { BellRing, Bot, CalendarRange, ShieldCheck } from 'lucide-react';
 
 type TranslateFn = (key: string) => string;
 
 const getItems = (t: TranslateFn) => [
+  {
+    icon: CalendarRange,
+    tag: t('card4Tag'),
+    title: t('card4Title'),
+    description: t('card4Desc'),
+  },
   {
     icon: Bot,
     tag: t('card1Tag'),
@@ -60,7 +66,7 @@ export function CoachOpsSection() {
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {items.map((item, index) => (
             <motion.div
               key={index}

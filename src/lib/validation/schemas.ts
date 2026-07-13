@@ -54,6 +54,60 @@ export const assignTrainingSchema = z.object({
   { message: 'At least one athleteId or groupId is required', path: ['athleteIds'] }
 );
 
+const planItemSchema = z.object({
+  trainingId: z.string().uuid('Invalid training ID'),
+  weekIndex: z.number().int().min(0).max(51),
+  dayOfWeek: z.number().int().min(0).max(6), // 0 = Monday ... 6 = Sunday
+  workoutName: z.string().max(255).nullable().optional(),
+  expectedRpe: z.number().int().min(1).max(10).nullable().optional(),
+  sortOrder: z.number().int().min(0).optional(),
+  // Optional per-slot structure override. Block internals are validated at the
+  // builder layer (same as trainings), so accept an array of objects here.
+  blocks: z.array(z.record(z.string(), z.unknown())).max(200).nullable().optional(),
+});
+
+const planTypeEnum = z.enum(['RUNNING', 'STRENGTH', 'CYCLING', 'SWIMMING', 'OTHER']);
+
+export const createPlanSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(255),
+  description: z.string().max(5000).nullable().optional(),
+  type: planTypeEnum.optional(),
+  durationWeeks: z.number().int().min(1).max(52),
+  focus: z.string().max(255).nullable().optional(),
+  items: z.array(planItemSchema).max(500).optional(),
+});
+
+export const updatePlanSchema = z.object({
+  name: z.string().min(1).max(255).optional(),
+  description: z.string().max(5000).nullable().optional(),
+  type: planTypeEnum.optional(),
+  durationWeeks: z.number().int().min(1).max(52).optional(),
+  focus: z.string().max(255).nullable().optional(),
+  // When provided, fully replaces the plan's items.
+  items: z.array(planItemSchema).max(500).optional(),
+});
+
+export const applyPlanSchema = z.object({
+  startDate: z.string().min(1, 'Start date is required'),
+  athleteIds: z.array(z.string().uuid('Invalid athlete ID')).optional(),
+  groupIds: z.array(z.string().uuid('Invalid group ID')).optional(),
+  weekIndexes: z.array(z.number().int().min(0).max(51)).optional(),
+}).refine(
+  (data) => (data.athleteIds && data.athleteIds.length > 0) || (data.groupIds && data.groupIds.length > 0),
+  { message: 'At least one athleteId or groupId is required', path: ['athleteIds'] }
+);
+
+export const copyWeekSchema = z.object({
+  sourceUserId: z.string().uuid('Invalid source athlete ID'),
+  sourceWeekStart: z.string().min(1, 'Source week start is required'),
+  targetWeekStart: z.string().min(1, 'Target week start is required'),
+  targetAthleteIds: z.array(z.string().uuid('Invalid athlete ID')).optional(),
+  targetGroupIds: z.array(z.string().uuid('Invalid group ID')).optional(),
+}).refine(
+  (data) => (data.targetAthleteIds && data.targetAthleteIds.length > 0) || (data.targetGroupIds && data.targetGroupIds.length > 0),
+  { message: 'At least one target athleteId or groupId is required', path: ['targetAthleteIds'] }
+);
+
 export const updateProfileSchema = z.object({
   name: z.string().min(1).max(255).optional(),
   firstName: z.string().min(1).max(255).optional(),

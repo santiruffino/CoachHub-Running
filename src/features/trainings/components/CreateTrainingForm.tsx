@@ -52,7 +52,7 @@ export function CreateTrainingForm({ onSuccess }: { onSuccess?: () => void }) {
                             className="flex h-10 w-full border border-endurix-black/10 dark:border-border bg-white dark:bg-card px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-endurix-orange appearance-none cursor-pointer"
                         >
                             {Object.values(TrainingType).map((type) => (
-                                <option key={type} value={type}>{type}</option>
+                                <option key={type} value={type}>{t(`trainingTypes.${type}`)}</option>
                             ))}
                         </select>
                     </div>

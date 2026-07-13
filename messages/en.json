@@ -7,6 +7,7 @@
     "coaches": "Coaches",
     "groups": "Groups",
     "trainings": "Workouts",
+    "plans": "Plans",
     "races": "Races",
     "progress": "Progress",
     "profile": "Profile",
@@ -1057,7 +1058,10 @@
       "selectExistingRace": "Select existing race",
       "createNewRace": "Create new race",
       "pickFromLibrary": "Pick from library",
-      "raceDetails": "Race Details"
+      "raceDetails": "Race Details",
+      "applyToGroup": "Apply to group",
+      "plansHint": "Pick a mesocycle and roll it out to the whole group from a start date.",
+      "plansEmptyDescription": "Create a multi-week plan from your templates and apply it to the whole group at once."
     },
     "createForm": {
       "subtitle": "Set up a new training group.",
@@ -1088,7 +1092,8 @@
     "detailPage": {
       "editGroup": "Edit group",
       "groupPlanning": "Group planning",
-      "scheduleTraining": "Schedule workout"
+      "scheduleTraining": "Schedule workout",
+      "applyPlanTitle": "Team plans"
     }
   },
   "coaches": {
@@ -1875,7 +1880,14 @@
       "students": "Athletes",
       "all": "All",
       "none": "None"
-    }
+    },
+    "copyWeek": "Copy week",
+    "pasteWeek": "Paste week",
+    "pasteWeekHere": "Paste here",
+    "weekCopied": "Week copied",
+    "clearClipboard": "Discard",
+    "pasteConfirm": "Paste the copied week into this week?",
+    "weekPasted": "Week pasted"
   },
   "common": {
     "loading": "Loading...",
@@ -1921,7 +1933,9 @@
       "coaching": "COACHING",
       "pricing": "PRICING",
       "startTraining": "START TRAINING",
-      "start": "START"
+      "start": "START",
+      "compare": "COMPARE",
+      "faq": "FAQ"
     },
     "hero": {
       "somosEndurix": "WE ARE ENDURIX",
@@ -1940,7 +1954,8 @@
       "weeklyVolume": "WEEKLY VOLUME",
       "nextRace": "NEXT RACE",
       "balanced": "Balanced",
-      "start": "START"
+      "start": "START",
+      "days": "days"
     },
     "features": {
       "tag1": "MCP READY",
@@ -1958,28 +1973,85 @@
       "inputCampo": "INPUT / FIELD",
       "distancia": "Distance (KM)"
     },
-    "productFeatures": {
-      "eyebrow": "THE COMPLETE SYSTEM",
-      "title1": "BUILT FOR COACHES.",
-      "titleHighlight": "OBSESSED WITH DATA.",
-      "feature1Title": "Auto Sync with Strava",
-      "feature1Desc": "Real-time activities via Webhooks. Your data updated to the second, no reloads or waiting.",
-      "feature2Title": "Advanced Activity Analysis",
-      "feature2Desc": "Visualize intensity distribution across zones (Z1-Z5), elevation profile, and detailed lap and split analysis.",
-      "feature3Title": "Dynamic Interval Builder",
-      "feature3Desc": "Design repeats, blocks, and intervals precisely calibrated with VAM and power zones.",
-      "feature4Title": "Template Library",
-      "feature4Desc": "Save your most effective workouts and protocols to reuse and assign at scale.",
-      "feature5Title": "Team and Race Management",
-      "feature5Desc": "Organize athletes into training groups, assign calendars, and track races with countdowns.",
-      "feature6Title": "Central Control Dashboard",
-      "feature6Desc": "Unified view of all your athletes. Compliance alerts (RPE vs Target), progress history, and private notes.",
-      "weekLabel": "WEEK 7 — HR ADJUSTMENT",
-      "formTrending": "Form Trending Up",
-      "forma": "FORM",
-      "currentLoad": "CURRENT LOAD",
-      "km": "km",
-      "formScore": "FORM SCORE"
+    "howItWorks": {
+      "eyebrow": "HOW IT WORKS",
+      "title1": "ADD AN ATHLETE AND",
+      "titleHighlight": "LET ENDURIX DO THE REST.",
+      "subtitle": "From connecting the watch to the coaching decision, in a single flow.",
+      "step1Tag": "01 · INVITE",
+      "step1Title": "Add your athletes",
+      "step1Desc": "Invite them by link or email. They confirm and land in your dashboard instantly.",
+      "step2Tag": "02 · CONNECT",
+      "step2Title": "Connect Strava and Garmin",
+      "step2Desc": "Activities come in on their own via webhook, synced to the second.",
+      "step3Tag": "03 · ASSIGN",
+      "step3Title": "Assign the plan",
+      "step3Desc": "Build it with AI, by hand, or reuse a template. Edit days and sets whenever you want.",
+      "step4Tag": "04 · MONITOR",
+      "step4Title": "Monitor the load",
+      "step4Desc": "Alerts, compliance and load in one place. The plan adjusts with the data.",
+      "mockInvite": "INVITE ATHLETE",
+      "mockAdded": "ADDED",
+      "mockSources": "SYNCED SOURCES",
+      "mockLastActivity": "Last activity · 2 min ago",
+      "mockPlanReady": "PLAN READY",
+      "mockPlanMeta": "6 WK · 5 D",
+      "mockWorkout1": "Aerobic base — Z2 easy run",
+      "mockWorkout2": "Intervals — 6×1000 @ threshold",
+      "mockLoadAlerts": "LOAD / ALERTS",
+      "mockLoadAlert": "High load this week · review 2 athletes"
+    },
+    "bento": {
+      "eyebrow": "EVERYTHING IN ONE PLATFORM",
+      "title1": "YOUR COACHING OPERATION,",
+      "titleHighlight": "IN ONE PLACE.",
+      "subtitle": "Stop jumping between spreadsheets, WhatsApp and scattered apps. Endurix brings your operation together and automates the repetitive.",
+      "metricsLabel": "METRICS",
+      "metricsTitle": "Visibility across your whole team",
+      "metricsDesc": "Load, form and adherence for every athlete, in real time and on a single dashboard.",
+      "planningLabel": "PLANNING",
+      "planningTitle": "Multi-week plans",
+      "planningDesc": "Build reusable mesocycles, assign whole weeks and copy or paste them between athletes.",
+      "syncLabel": "INTEGRATIONS",
+      "syncTitle": "Strava and Garmin in sync",
+      "syncDesc": "Activities to the second via webhook, with no reloads or exports.",
+      "assistantLabel": "AI ASSISTANT",
+      "assistantTitle": "Hours of work, now in seconds",
+      "assistantDesc": "Ask it in plain text to summarize weeks or build a plan, and you are done.",
+      "alertsLabel": "ALERTS",
+      "alertsTitle": "Always one step ahead",
+      "alertsDesc": "Catch load spikes or drop-off before they affect the plan.",
+      "appLabel": "ATHLETE APP",
+      "appTitle": "The experience they deserve",
+      "appDesc": "They see the day, log the session, and everything stays in sync.",
+      "racesLabel": "RACES",
+      "racesTitle": "Countdown-driven prep",
+      "racesDesc": "Goals, tapering and reminders to peak on race day.",
+      "vizAssistant": "Summarize Ana's week",
+      "vizAlert": "High load · review 2 athletes",
+      "vizNextRace": "NEXT RACE",
+      "vizToday": "TODAY"
+    },
+    "aiAssistant": {
+      "eyebrow": "AI ASSISTANT",
+      "title1": "THE ENDURIX ASSISTANT,",
+      "titleHighlight": "ALWAYS WITH YOU.",
+      "subtitle": "An AI assistant that does what you would do in the platform, just by asking in plain text. Connected via MCP, so you can take it to your favorite AI tools too.",
+      "chip1": "Build plans",
+      "chip2": "Summarize the week",
+      "chip3": "Athletes at risk",
+      "chip4": "Adjust on the fly",
+      "chip5": "Query metrics",
+      "promptLabel": "ASK THE ASSISTANT",
+      "promptExample": "Build Martina a 4-week base block, 5 days a week",
+      "cta": "JOIN THE LIST",
+      "convHeader": "ENDURIX · ASSISTANT",
+      "convReply": "Done. I built a 4-week base block for Martina:",
+      "convLine1": "Wk 1–2 · 5 sessions · Z2 easy + 1 interval",
+      "convLine2": "Wk 3 · load +12% · progressive fartlek",
+      "convLine3": "Wk 4 · deload −25% · 5 km test",
+      "convAssigned": "ASSIGNED",
+      "convBadge": "AI · 1.2s"
     },
     "coachOps": {
       "eyebrow": "SMART COACHING",
@@ -1994,7 +2066,10 @@
       "card2Desc": "Adherence, load, and activity tracking to detect deviations before they affect the plan.",
       "card3Tag": "PROACTIVE",
       "card3Title": "Race preparation and alerts",
-      "card3Desc": "Prioritize upcoming races and trigger athlete notifications when course corrections are needed."
+      "card3Desc": "Prioritize upcoming races and trigger athlete notifications when course corrections are needed.",
+      "card4Tag": "PLANNING",
+      "card4Title": "Periodization",
+      "card4Desc": "Build a multi-week plan once and assign it whole: reusable mesocycles, full weeks and copy/paste between athletes."
     },
     "roadmap": {
       "eyebrow": "ROADMAP",
@@ -2009,6 +2084,27 @@
       "item3Title": "Push to Garmin Devices",
       "item3Desc": "Send structured workouts directly to your athletes' watches via Garmin Connect API.",
       "item3Status": "COMING SOON"
+    },
+    "faq": {
+      "eyebrow": "FREQUENTLY ASKED QUESTIONS",
+      "title1": "EVERYTHING YOU",
+      "titleHighlight": "NEED TO KNOW.",
+      "q1": "What is Endurix?",
+      "a1": "Endurix is an all-in-one platform for endurance coaches and athletes: plan workouts, monitor load, sync Strava and Garmin, and turn data into decisions.",
+      "q2": "Which devices does it integrate with?",
+      "a2": "It integrates with Strava and Garmin. Activities come in automatically via webhook, synced to the second, with no reloads or manual exports.",
+      "q3": "What is the MCP assistant?",
+      "a3": "Endurix is ready to connect with AI assistants via MCP (Model Context Protocol). You can ask it in plain text to summarize weeks, detect at-risk athletes or prepare a plan, without leaving your flow.",
+      "q4": "Does it work if I train solo, without a coach?",
+      "a4": "Yes. You can use Endurix to plan and follow your own training, with the same load metrics and analysis coaches use.",
+      "q5": "How much does it cost?",
+      "a5": "We are in early access. Those who join the list now get the launch price with a founder discount. Join the list to secure your spot.",
+      "q6": "How do I get started?",
+      "a6": "Join the early-access list with your email. We will reach out with next steps and the team 1:1 onboarding.",
+      "q7": "Is my data safe?",
+      "a7": "Yes. Each team sees only its own data, with database-level isolation. We do not share your information or your athletes.",
+      "ctaText": "Have another question?",
+      "ctaLink": "Get in touch"
     },
     "cta": {
       "disciplina": "DISCIPLINE",
@@ -2060,12 +2156,22 @@
         "roadmap": "Vote on the product roadmap.",
         "community": "Access to the private pioneer coaches channel."
       },
-      "trust": "No spam. No credit card. Cancel from the list anytime."
+      "trust": "No spam. No credit card. Cancel from the list anytime.",
+      "honeypotLabel": "Do not fill"
     },
     "footer": {
       "privacy": "PRIVACY POLICY",
       "terms": "TERMS OF SERVICE",
-      "copyright": "© 2026 ENDURIX PERFORMANCE SYSTEMS. NO EXCUSES. JUST DATA."
+      "copyright": "© 2026 ENDURIX PERFORMANCE SYSTEMS. NO EXCUSES. JUST DATA.",
+      "colCompare": "COMPARE",
+      "colLegal": "LEGAL",
+      "colProduct": "PRODUCT",
+      "geoTitle": "ASK AN AI ABOUT ENDURIX",
+      "linkAssistant": "AI Assistant",
+      "linkFaq": "FAQ",
+      "linkHowItWorks": "How it works",
+      "linkPricing": "Early access",
+      "tagline": "The all-in-one platform for endurance coaches and athletes, with a built-in AI assistant."
     }
   },
   "races": {
@@ -2985,5 +3091,80 @@
     "primary": "Reload",
     "secondary": "Go to home",
     "errorId": "Error ID"
+  },
+  "plans": {
+    "eyebrow": "Periodization",
+    "title": "Plans",
+    "subtitle": "Build reusable mesocycles and assign whole blocks in seconds.",
+    "newPlan": "New plan",
+    "weeksCount": "{count, plural, one {# week} other {# weeks}}",
+    "sessionsCount": "{count, plural, one {# session} other {# sessions}}",
+    "empty": {
+      "title": "No plans yet",
+      "description": "Create a multi-week plan from your workout templates and assign it to an athlete or group all at once."
+    },
+    "actions": {
+      "apply": "Apply",
+      "edit": "Edit",
+      "duplicate": "Duplicate",
+      "archive": "Archive"
+    },
+    "days": {
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun"
+    },
+    "builder": {
+      "back": "Back to plans",
+      "createPlan": "Create plan",
+      "saveChanges": "Save changes",
+      "saving": "Saving...",
+      "name": "Plan name",
+      "namePlaceholder": "e.g. Base 4 weeks — Half marathon",
+      "nameRequired": "Plan name is required",
+      "type": "Type",
+      "focus": "Focus",
+      "focusPlaceholder": "e.g. Base / Build / Peak / Taper",
+      "description": "Description",
+      "descriptionPlaceholder": "Plan notes (optional)",
+      "weekN": "Week {n}",
+      "duplicateWeek": "Duplicate week",
+      "add": "Add",
+      "addWeek": "Add week",
+      "removeWeek": "Remove last week",
+      "removeItem": "Remove",
+      "pickTemplate": "Pick a template",
+      "searchTemplates": "Search template...",
+      "noTemplates": "No matching templates.",
+      "editSlot": "Edit session",
+      "edited": "Edited",
+      "basedOn": "based on {name}",
+      "workoutNamePlaceholder": "Session name (optional)",
+      "done": "Done",
+      "resetToTemplate": "Reset to template"
+    },
+    "apply": {
+      "title": "Apply \"{name}\"",
+      "startDate": "Start date",
+      "startDateHint": "The plan starts on the Monday of the chosen week.",
+      "athletes": "Athletes",
+      "groups": "Groups",
+      "searchAthletes": "Search by name or email",
+      "searchGroups": "Search groups",
+      "noMatches": "No matches",
+      "allWeeks": "Apply all weeks",
+      "weekN": "Week {n}",
+      "selectAtLeastOne": "Select at least one athlete or group",
+      "selectAtLeastOneWeek": "Select at least one week",
+      "cancel": "Cancel",
+      "confirm": "Apply plan",
+      "applying": "Applying...",
+      "success": "Plan applied: {assignments} sessions across {athletes} athlete(s).",
+      "target": "Apply to"
+    }
   }
 }

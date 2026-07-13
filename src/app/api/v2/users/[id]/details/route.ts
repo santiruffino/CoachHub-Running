@@ -201,6 +201,7 @@ export async function GET(
                 lthr: athleteProfileData.lthr,
                 vam: athleteProfileData.vam,
                 uan: athleteProfileData.uan,
+                ftp: athleteProfileData.ftp,
                 hrZones: athleteProfileData.hr_zones,
                 coachNotes: athleteProfileData.coach_notes,
                 created_at: athleteProfileData.created_at,
@@ -258,6 +259,7 @@ export async function PATCH(
             restHR?: number;
             maxHR?: number;
             lthr?: number;
+            ftp?: number;
             weight?: number;
             height?: number;
             coachNotes?: string;
@@ -307,6 +309,7 @@ export async function PATCH(
         if (updates.restHR !== undefined) dbUpdates.rest_hr = updates.restHR;
         if (updates.maxHR !== undefined) dbUpdates.max_hr = updates.maxHR;
         if (updates.lthr !== undefined) dbUpdates.lthr = updates.lthr;
+        if (updates.ftp !== undefined) dbUpdates.ftp = updates.ftp;
         if (updates.weight !== undefined) dbUpdates.weight = updates.weight;
         if (updates.height !== undefined) dbUpdates.height = updates.height;
         if (updates.coachNotes !== undefined) dbUpdates.coach_notes = updates.coachNotes;

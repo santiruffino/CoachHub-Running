@@ -1,6 +1,6 @@
 # MVP Status (Running)
 
-Last updated: 2026-07-02
+Last updated: 2026-07-13
 
 This file reflects current implementation status in code (not original target spec language).
 
@@ -34,6 +34,7 @@ This file reflects current implementation status in code (not original target sp
 - **Team athlete limit (pricing-tier cap)**: `max_athletes` in `team_settings`; enforced on both per-email and team-link sign-ups; admin-only UI in `/settings/team`
 - **Notifications**: unified in-app inbox + Web Push, per-category preferences, daily/weekly digest cron (`documentation/notifications.md`)
 - **Coach↔athlete chat**: two-way messaging thread (`coach_athlete_messages`), separate from private coach notes
+- **Periodization / multi-week plans**: reusable plan templates (mesocycles) built on a week×day grid referencing existing workout templates (`training_plans` / `training_plan_items`). Coaches build a plan once and **apply** it to athletes/groups from a start Monday (materializes `training_assignments` via the shared assign pipeline — snapshot, notifications, alert resolution, Garmin push), plus **duplicate plan** and calendar **copy/paste week** between athletes (`/api/v2/plans/**`, `/api/v2/trainings/calendar/copy-week`)
 - **Scheduled jobs**: Vercel Cron for digests, race reminders, and Strava backfill (`documentation/observability.md`)
 - **MCP server**: authenticated `/api/mcp` exposing coach tools to AI clients (`documentation/mcp-server.md`)
 - **DB-backed rate limiting** and a June 2026 RLS/security hardening batch (incl. a profile-update authorization fix)

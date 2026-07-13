@@ -431,6 +431,7 @@ export function AthleteDetailsView({
                                 { label: t("athletes.detail.restHR"), value: athlete.athleteProfile?.restHR, unit: tUnits('bpm') },
                                 { label: t("athletes.detail.maxHR"), value: athlete.athleteProfile?.maxHR, unit: tUnits('bpm') },
                                 { label: t("athletes.detail.lthr"), value: athlete.athleteProfile?.lthr, unit: tUnits('bpm') },
+                                { label: t("athletes.detail.ftp"), value: athlete.athleteProfile?.ftp, unit: tUnits('watts') },
                             ].map((m, i) => (
                                 <div key={i} className="p-5 flex flex-col gap-2">
                                     <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">{m.label}</span>
@@ -509,7 +510,7 @@ export function AthleteDetailsView({
                         <Button variant="ghost" onClick={() => setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }))} className="px-3 h-8 text-[11px] font-bold tracking-wider uppercase text-endurix-orange">{t("common.today")}</Button>
                     </div>
 
-                    <AthleteWeeklyCalendar weekStart={currentWeekStart} athleteId={id} assignments={assignments} activities={activities} />
+                    <AthleteWeeklyCalendar weekStart={currentWeekStart} athleteId={id} assignments={assignments} activities={activities} canManage />
                 </div>
             )}
 

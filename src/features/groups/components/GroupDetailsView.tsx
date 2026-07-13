@@ -48,7 +48,9 @@ import {
   TabsTrigger,
 } from '@/components/ui/tabs';
 import { GroupWeeklyCalendar } from '@/features/groups/components/GroupWeeklyCalendar';
+import { GroupPlansTab } from '@/features/groups/components/GroupPlansTab';
 import { TrainingAssignment } from '@/interfaces/training';
+import type { TrainingPlan } from '@/features/plans/types';
 import { startOfWeek, addDays } from 'date-fns';
 import { useLocale } from 'next-intl';
 
@@ -59,6 +61,7 @@ interface GroupDetailsProps {
     initialGroup: GroupDetails;
     initialAthletes: GroupAthleteData[];
     initialAssignments: TrainingAssignment[];
+    initialPlans: TrainingPlan[];
 }
 
 const AVATAR_COLORS = [
@@ -70,7 +73,7 @@ const AVATAR_COLORS = [
   'bg-teal-600',
 ];
 
-export function GroupDetailsView({ id, initialGroup, initialAthletes, initialAssignments }: GroupDetailsProps) {
+export function GroupDetailsView({ id, initialGroup, initialAthletes, initialAssignments, initialPlans }: GroupDetailsProps) {
   const t = useTranslations();
   const tAthletes = useTranslations('athletes');
   const tGroupDetail = useTranslations('groups.detailPage');
@@ -192,6 +195,12 @@ export function GroupDetailsView({ id, initialGroup, initialAthletes, initialAss
             className="px-8 font-bold uppercase tracking-widest text-[10px] data-[state=active]:bg-white data-[state=active]:text-endurix-black data-[state=active]:dark:bg-card data-[state=active]:dark:text-foreground"
           >
             {t('nav.trainings')}
+          </TabsTrigger>
+          <TabsTrigger
+            value="plans"
+            className="px-8 font-bold uppercase tracking-widest text-[10px] data-[state=active]:bg-white data-[state=active]:text-endurix-black data-[state=active]:dark:bg-card data-[state=active]:dark:text-foreground"
+          >
+            {t('nav.plans')}
           </TabsTrigger>
         </TabsList>
 
@@ -390,6 +399,26 @@ export function GroupDetailsView({ id, initialGroup, initialAthletes, initialAss
             </CardHeader>
             <CardContent>
               <GroupWeeklyCalendar groupId={group.id} assignments={groupAssignments} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="plans" className="space-y-6">
+          <Card>
+            <CardHeader className="border-b border-endurix-black/10 dark:border-border">
+              <SectionHeader
+                eyebrow={t('nav.plans')}
+                title={tGroupDetail('applyPlanTitle')}
+                className="mb-0"
+              />
+            </CardHeader>
+            <CardContent>
+              <GroupPlansTab
+                groupId={group.id}
+                groupName={group.name}
+                plans={initialPlans}
+                onApplied={fetchGroupData}
+              />
             </CardContent>
           </Card>
         </TabsContent>

@@ -1,4 +1,4 @@
-import { Calendar, LayoutDashboard, Shield, Trophy, Users, UsersRound } from 'lucide-react';
+import { Calendar, CalendarRange, LayoutDashboard, Shield, Trophy, Users, UsersRound } from 'lucide-react';
 
 type Translator = (key: string) => string;
 
@@ -15,6 +15,7 @@ export const buildNavigation = (t: Translator): NavigationItem[] => [
     { name: t('groups'), href: '/groups', icon: UsersRound, roles: ['COACH', 'ADMIN'] },
     { name: t('coaches'), href: '/coaches', icon: Users, roles: ['ADMIN'] },
     { name: t('trainings'), href: '/trainings', icon: Calendar, roles: ['COACH', 'ADMIN'] },
+    { name: t('plans'), href: '/plans', icon: CalendarRange, roles: ['COACH', 'ADMIN'] },
     { name: t('races'), href: '/races', icon: Trophy, roles: ['COACH', 'ATHLETE', 'ADMIN'] },
     { name: t('auditLogs'), href: '/settings/audit-logs', icon: Shield, roles: ['ADMIN'] },
 ];

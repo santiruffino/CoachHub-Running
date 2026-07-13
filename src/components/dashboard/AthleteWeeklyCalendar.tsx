@@ -14,7 +14,9 @@ import { normalizeActivityType } from '@/utils/activity-utils';
 import { MonospaceLabel } from '@/components/dashboard';
 import { CalendarDayColumn } from '@/components/calendar/CalendarDayColumn';
 import { CalendarRestDayPlaceholder } from '@/components/calendar/CalendarRestDayPlaceholder';
-import { useCalendarView, type CalendarView } from '@/components/calendar/useCalendarView';
+import { useCalendarView, CALENDAR_WEEK_START, type CalendarView } from '@/components/calendar/useCalendarView';
+import { WeekClipboardControls } from '@/features/plans/components/WeekClipboardControls';
+import { startOfWeek } from 'date-fns';
 import type { ReactNode } from 'react';
 
 const FONT_MONO = { fontFamily: 'var(--font-ibm-plex-mono, monospace)' } as const;
@@ -25,6 +27,8 @@ interface AthleteWeeklyCalendarProps {
     assignments: TrainingAssignment[];
     activities: Activity[];
     races?: AthleteRace[];
+    /** Coach-facing: enables the copy/paste-week controls. */
+    canManage?: boolean;
 }
 
 const formatDuration = (seconds: number) => {
@@ -79,12 +83,13 @@ function CompactMonthCard({
     ) : content;
 }
 
-export function AthleteWeeklyCalendar({ weekStart, athleteId, assignments, activities, races = [] }: AthleteWeeklyCalendarProps) {
+export function AthleteWeeklyCalendar({ weekStart, athleteId, assignments, activities, races = [], canManage = false }: AthleteWeeklyCalendarProps) {
     const t = useTranslations();
     const { view, anchorDate, visibleDays, monthLabel, weekLabel, updateCalendar, navigate, goToday } = useCalendarView({
         fallbackDate: weekStart,
     });
     const targetAthleteId = athleteId || assignments[0]?.athlete?.id || assignments[0]?.user?.id || null;
+    const visibleWeekMonday = format(startOfWeek(anchorDate, CALENDAR_WEEK_START), 'yyyy-MM-dd');
     const addWorkoutHref = (date: string) => (
         targetAthleteId
             ? `/workouts/assign?athleteId=${encodeURIComponent(targetAthleteId)}&date=${date}`
@@ -130,6 +135,13 @@ export function AthleteWeeklyCalendar({ weekStart, athleteId, assignments, activ
                     <button type="button" onClick={goToday} className="h-8 px-3 border border-endurix-black/10 dark:border-border text-[10px] font-bold uppercase tracking-widest hover:border-endurix-orange/40 transition-colors" style={FONT_MONO}>
                         {t('common.today')}
                     </button>
+                    {canManage && view === 'week' && targetAthleteId && (
+                        <WeekClipboardControls
+                            sourceUserId={targetAthleteId}
+                            weekStartStr={visibleWeekMonday}
+                            athleteLabel={assignments[0]?.athlete?.name || assignments[0]?.user?.name || undefined}
+                        />
+                    )}
                 </div>
             </div>
 

@@ -72,7 +72,7 @@ function MiniStatCard({
   );
 }
 
-function DashboardMock({ mounted, t }: { mounted: boolean, t: any }) {
+function DashboardMock({ mounted, t }: { mounted: boolean; t: (key: string) => string }) {
   return (
     <div className="relative">
       {/* Decorative orange offset block */}
@@ -122,7 +122,7 @@ function DashboardMock({ mounted, t }: { mounted: boolean, t: any }) {
             label={t('nextRace')}
             value={
               <>
-                14 <span className="text-[10px] text-muted-foreground font-sans">dias</span>
+                14 <span className="text-[10px] text-muted-foreground font-sans">{t('days')}</span>
               </>
             }
           />
@@ -247,7 +247,7 @@ export function HeroSection() {
               </motion.div>
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Link
-                  href="#features"
+                  href="#assistant"
                   className="inline-flex items-center justify-center gap-2 border border-endurix-black dark:border-white text-endurix-black dark:text-white text-xs font-bold tracking-widest px-8 py-4 transition-all hover:bg-endurix-black dark:hover:bg-white hover:text-white dark:hover:text-endurix-black w-full sm:w-auto"
                   style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
                 >

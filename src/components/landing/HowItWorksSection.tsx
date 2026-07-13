@@ -9,16 +9,16 @@ const FONT_DISPLAY = { fontFamily: 'var(--font-exo-2, sans-serif)' } as const;
 
 // Small stylized UI mock rendered on the right of each step. Kept as plain divs
 // (no charts) so it stays light and on-brand with the terminal aesthetic.
-function StepMock({ n }: { n: number }) {
+function StepMock({ n, t }: { n: number; t: (key: string) => string }) {
     if (n === 1) {
         return (
             <div className="w-full border border-endurix-black/12 dark:border-border bg-white dark:bg-card p-4">
                 <div className="flex items-center justify-between mb-3">
                     <span className="text-[8px] tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={FONT_MONO}>
-                        INVITAR ATLETA
+                        {t('mockInvite')}
                     </span>
                     <span className="text-[7px] font-bold tracking-wider border border-green-500/30 text-green-600 dark:text-green-500 px-1.5 py-px" style={FONT_MONO}>
-                        AGREGADO
+                        {t('mockAdded')}
                     </span>
                 </div>
                 <div className="flex items-center gap-3">
@@ -41,7 +41,7 @@ function StepMock({ n }: { n: number }) {
         return (
             <div className="w-full border border-endurix-black/12 dark:border-border bg-white dark:bg-card p-4">
                 <span className="block text-[8px] tracking-widest text-endurix-black/50 dark:text-muted-foreground mb-3" style={FONT_MONO}>
-                    FUENTES SINCRONIZADAS
+                    {t('mockSources')}
                 </span>
                 <div className="grid grid-cols-2 gap-2">
                     {['STRAVA', 'GARMIN'].map((s) => (
@@ -54,7 +54,7 @@ function StepMock({ n }: { n: number }) {
                     ))}
                 </div>
                 <p className="mt-3 text-[9px] text-endurix-black/45 dark:text-muted-foreground" style={FONT_MONO}>
-                    Última actividad · hace 2 min
+                    {t('mockLastActivity')}
                 </p>
             </div>
         );
@@ -64,15 +64,15 @@ function StepMock({ n }: { n: number }) {
             <div className="w-full border border-endurix-black/12 dark:border-border bg-white dark:bg-card p-4">
                 <div className="flex items-center justify-between mb-3">
                     <span className="text-[8px] tracking-widest text-endurix-black/50 dark:text-muted-foreground" style={FONT_MONO}>
-                        PLAN LISTO
+                        {t('mockPlanReady')}
                     </span>
                     <span className="text-[8px] tracking-wider text-endurix-orange font-bold" style={FONT_MONO}>
-                        6 SEM · 5 D
+                        {t('mockPlanMeta')}
                     </span>
                 </div>
                 {[
-                    { n: '01', t: 'Base aeróbica — rodaje Z2' },
-                    { n: '02', t: 'Series — 6×1000 @ umbral' },
+                    { n: '01', t: t('mockWorkout1') },
+                    { n: '02', t: t('mockWorkout2') },
                 ].map((row) => (
                     <div key={row.n} className="flex items-center gap-3 py-1.5 border-t border-endurix-black/8 dark:border-border/60 first:border-t-0">
                         <span className="text-[9px] text-endurix-black/35 dark:text-muted-foreground" style={FONT_MONO}>
@@ -89,7 +89,7 @@ function StepMock({ n }: { n: number }) {
     return (
         <div className="w-full border border-endurix-black/12 dark:border-border bg-white dark:bg-card p-4">
             <span className="block text-[8px] tracking-widest text-endurix-black/50 dark:text-muted-foreground mb-3" style={FONT_MONO}>
-                CARGA / ALERTAS
+                {t('mockLoadAlerts')}
             </span>
             <div className="flex items-end gap-1.5 h-14">
                 {[40, 62, 48, 90, 70, 55].map((h, i) => (
@@ -102,7 +102,7 @@ function StepMock({ n }: { n: number }) {
             </div>
             <div className="mt-3 flex items-center gap-2 border-l-2 border-endurix-orange bg-endurix-orange/5 dark:bg-endurix-orange/10 px-2 py-1.5">
                 <span className="text-[9px] text-endurix-black/70 dark:text-foreground/80">
-                    Carga alta esta semana · revisar a 2 atletas
+                    {t('mockLoadAlert')}
                 </span>
             </div>
         </div>
@@ -185,7 +185,7 @@ export function HowItWorksSection() {
 
                                 {/* Mock */}
                                 <div className="md:pl-6">
-                                    <StepMock n={step.n} />
+                                    <StepMock n={step.n} t={t} />
                                 </div>
                             </motion.div>
                         );

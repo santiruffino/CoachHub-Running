@@ -33,6 +33,107 @@ const TILES: Tile[] = [
     { key: 'races', icon: Flag, span: 'lg:col-span-2' },
 ];
 
+// Compact per-tile illustrations so no card is left with an empty body. Kept as
+// plain divs (no charts/images) to stay light and on-brand.
+function TileVisual({ tileKey, t }: { tileKey: string; t: (key: string) => string }) {
+    if (tileKey === 'metrics') {
+        return (
+            <div className="flex items-end gap-1.5 h-full w-full min-h-[72px]">
+                {[45, 68, 52, 88, 74, 60, 82].map((h, i) => (
+                    <div
+                        key={i}
+                        className={i === 3 ? 'flex-1 bg-endurix-orange' : 'flex-1 bg-endurix-black/15 dark:bg-white/15 group-hover:bg-endurix-black/25 dark:group-hover:bg-white/25 transition-colors'}
+                        style={{ height: `${h}%` }}
+                    />
+                ))}
+            </div>
+        );
+    }
+    if (tileKey === 'planning') {
+        // A multi-week plan (mesocycle) — each row is a week, filled squares are
+        // session days. Conveys periodization: build once, assign whole weeks.
+        const weeks = [
+            [1, 0, 1, 1, 0, 1, 0],
+            [1, 0, 1, 0, 1, 1, 0],
+            [1, 1, 0, 1, 0, 1, 0],
+            [0, 1, 0, 1, 0, 1, 1],
+        ];
+        return (
+            <div className="space-y-1 w-full">
+                {weeks.map((week, w) => (
+                    <div key={w} className="flex gap-1">
+                        {week.map((d, i) => (
+                            <div
+                                key={i}
+                                className={`flex-1 aspect-square ${d ? 'bg-endurix-orange' : 'bg-endurix-black/10 dark:bg-white/10'}`}
+                            />
+                        ))}
+                    </div>
+                ))}
+            </div>
+        );
+    }
+    if (tileKey === 'sync') {
+        return (
+            <div className="space-y-1.5 w-full">
+                {['STRAVA', 'GARMIN'].map((s) => (
+                    <div key={s} className="flex items-center gap-2 border border-endurix-black/10 dark:border-border px-2 py-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0" />
+                        <span className="text-[9px] font-bold tracking-wider text-endurix-black/65 dark:text-foreground/75" style={FONT_MONO}>
+                            {s}
+                        </span>
+                    </div>
+                ))}
+            </div>
+        );
+    }
+    if (tileKey === 'assistant') {
+        return (
+            <div className="w-full border border-endurix-black/10 dark:border-border bg-endurix-paper/60 dark:bg-white/[0.03] px-3 py-2.5 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-endurix-orange shrink-0" />
+                <span className="text-[11px] text-endurix-black/70 dark:text-foreground/80 truncate">
+                    {t('vizAssistant')}
+                </span>
+                <span className="ml-auto w-1 h-4 bg-endurix-orange/70 shrink-0" />
+            </div>
+        );
+    }
+    if (tileKey === 'alerts') {
+        return (
+            <div className="w-full border-l-2 border-endurix-orange bg-endurix-orange/5 dark:bg-endurix-orange/10 px-3 py-2">
+                <span className="text-[11px] text-endurix-black/70 dark:text-foreground/80 leading-snug">
+                    {t('vizAlert')}
+                </span>
+            </div>
+        );
+    }
+    if (tileKey === 'app') {
+        return (
+            <div className="w-full border border-endurix-black/10 dark:border-border bg-endurix-paper/60 dark:bg-white/[0.03] p-2.5">
+                <div className="flex items-center justify-between mb-2">
+                    <span className="text-[8px] tracking-widest text-endurix-black/45 dark:text-muted-foreground" style={FONT_MONO}>{t('vizToday')}</span>
+                    <span className="w-6 h-1.5 bg-endurix-orange/70" />
+                </div>
+                <div className="space-y-1">
+                    <div className="h-1.5 w-full bg-endurix-black/10 dark:bg-white/10" />
+                    <div className="h-1.5 w-2/3 bg-endurix-black/10 dark:bg-white/10" />
+                </div>
+            </div>
+        );
+    }
+    // races — countdown
+    return (
+        <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-bold text-endurix-orange leading-none" style={FONT_DISPLAY}>
+                D-14
+            </span>
+            <span className="text-[9px] tracking-widest text-endurix-black/45 dark:text-muted-foreground" style={FONT_MONO}>
+                {t('vizNextRace')}
+            </span>
+        </div>
+    );
+}
+
 export function BentoSection() {
     const t = useTranslations('landing.bento');
 
@@ -73,7 +174,7 @@ export function BentoSection() {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true, margin: '-60px' }}
                                 transition={{ duration: 0.45, delay: index * 0.06 }}
-                                className={`${tile.span} group relative flex flex-col justify-between border border-endurix-black/12 dark:border-border bg-white dark:bg-card p-5 sm:p-6 hover:border-endurix-orange/50 transition-colors duration-300 overflow-hidden`}
+                                className={`${tile.span} group relative flex flex-col border border-endurix-black/12 dark:border-border bg-white dark:bg-card p-5 sm:p-6 hover:border-endurix-orange/50 transition-colors duration-300 overflow-hidden`}
                             >
                                 <div className="flex items-center justify-between">
                                     <div className="w-9 h-9 border border-endurix-black/15 dark:border-border flex items-center justify-center group-hover:border-endurix-orange group-hover:bg-endurix-orange/5 transition-all duration-300">
@@ -87,20 +188,12 @@ export function BentoSection() {
                                     </span>
                                 </div>
 
-                                {/* Featured tile mini chart */}
-                                {tile.featured && (
-                                    <div className="flex items-end gap-1.5 h-20 my-4">
-                                        {[45, 68, 52, 88, 74, 60, 82].map((h, i) => (
-                                            <div
-                                                key={i}
-                                                className={i === 3 ? 'flex-1 bg-endurix-orange' : 'flex-1 bg-endurix-black/15 dark:bg-white/15 group-hover:bg-endurix-black/25 dark:group-hover:bg-white/25 transition-colors'}
-                                                style={{ height: `${h}%` }}
-                                            />
-                                        ))}
-                                    </div>
-                                )}
+                                {/* Illustration — fills the card body */}
+                                <div className="flex-1 flex items-end py-5">
+                                    <TileVisual tileKey={tile.key} t={t} />
+                                </div>
 
-                                <div className={tile.featured ? '' : 'mt-4'}>
+                                <div>
                                     <h3
                                         className={`font-bold text-endurix-black dark:text-foreground leading-tight mb-1.5 ${tile.featured ? 'text-lg sm:text-xl' : 'text-base'}`}
                                         style={FONT_DISPLAY}

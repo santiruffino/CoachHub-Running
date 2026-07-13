@@ -94,6 +94,20 @@ The calendar helps coaches track planned work.
 - Assignments can be linked to athletes
 - Completed workouts can be matched to Strava activities
 
+## 10b. Periodization and Multi-Week Plans
+
+Endurix lets coaches plan beyond a single session.
+
+- Coaches build reusable **plans (mesocycles)** on a week-by-week grid, where each
+  slot references an existing workout template
+- A plan can be **applied** to an athlete or group from a start date, materializing a
+  whole block of assignments at once (a one-week plan covers "assign a full week")
+- Plans can be **duplicated** to spin up variations quickly
+- Coaches can also **copy and paste a calendar week** from one athlete to another
+- Applying a plan or pasting a week reuses the normal assignment pipeline, so
+  snapshots, notifications, compliance, and Garmin push all behave the same as a
+  single assignment
+
 ## 11. Races
 
 Race planning is built into the athlete workflow.
