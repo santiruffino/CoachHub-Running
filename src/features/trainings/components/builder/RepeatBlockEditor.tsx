@@ -19,6 +19,7 @@ interface RepeatBlockEditorProps {
     athleteProfile?: AthleteProfile | null;
     athleteId?: string | null;
     onAddStep: () => void;
+    readOnly?: boolean;
 }
 
 export function RepeatBlockEditor({
@@ -29,7 +30,8 @@ export function RepeatBlockEditor({
     onRemove,
     athleteProfile,
     athleteId,
-    onAddStep
+    onAddStep,
+    readOnly = false,
 }: RepeatBlockEditorProps) {
     const t = useTranslations('builder');
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -92,6 +94,7 @@ export function RepeatBlockEditor({
                             min="1"
                             value={reps}
                             onChange={(e) => updateReps(parseInt(e.target.value) || 1)}
+                            disabled={readOnly}
                             className="w-16 h-8 bg-white dark:bg-slate-800 border-input dark:border-slate-600 text-foreground dark:text-white text-center font-bold"
                         />
                         <span className="text-foreground dark:text-white font-semibold">{t('times')}</span>
@@ -107,6 +110,7 @@ export function RepeatBlockEditor({
                         <Switch
                             checked={skipLastRest}
                             onCheckedChange={updateSkipLastRest}
+                            disabled={readOnly}
                             id={`skip-last-rest-${groupId}`}
                             style={{
                                 backgroundColor: skipLastRest ? 'var(--color-endurix-orange)' : 'hsl(var(--input))'
@@ -140,18 +144,20 @@ export function RepeatBlockEditor({
                             </>
                         )}
                     </Button>
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                            // Remove all blocks in this group
-                            blocks.forEach(block => onRemove(block.id));
-                        }}
-                        className="text-foreground dark:text-muted-foreground hover:text-destructive hover:bg-muted dark:hover:bg-slate-600"
-                    >
-                        {t('deleteBlock')}
-                    </Button>
+                    {!readOnly && (
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                                // Remove all blocks in this group
+                                blocks.forEach(block => onRemove(block.id));
+                            }}
+                            className="text-foreground dark:text-muted-foreground hover:text-destructive hover:bg-muted dark:hover:bg-slate-600"
+                        >
+                            {t('deleteBlock')}
+                        </Button>
+                    )}
                 </div>
             </div>
 
@@ -168,18 +174,21 @@ export function RepeatBlockEditor({
                             isInRepeat={true}
                             athleteProfile={athleteProfile}
                             athleteId={athleteId}
+                            readOnly={readOnly}
                         />
                     ))}
 
-                    <Button
-                        type="button"
-                        variant="outline"
-                        className="w-full border-dashed border-input dark:border-slate-600 text-[#FFCC00] hover:text-[#FFD633] hover:bg-muted dark:hover:bg-slate-700 hover:border-[#FFCC00]"
-                        onClick={onAddStep}
-                    >
-                        <Plus className="w-4 h-4 mr-2" />
-                        {t('addStepToRepeat')}
-                    </Button>
+                    {!readOnly && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full border-dashed border-input dark:border-slate-600 text-[#FFCC00] hover:text-[#FFD633] hover:bg-muted dark:hover:bg-slate-700 hover:border-[#FFCC00]"
+                            onClick={onAddStep}
+                        >
+                            <Plus className="w-4 h-4 mr-2" />
+                            {t('addStepToRepeat')}
+                        </Button>
+                    )}
                 </div>
             )}
         </div>

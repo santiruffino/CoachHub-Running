@@ -229,8 +229,8 @@ export function WorkoutBuilder({
           <WorkoutIntensityChart blocks={blocks} athleteProfile={athleteProfile}/>
           <WorkoutSequence
             blocks={blocks}
-            selectedBlockId={null}
-            onSelectBlock={() => {}}
+            selectedBlockId={selectedBlockId}
+            onSelectBlock={selectBlock}
             onUpdateBlock={() => {}}
             onRemoveBlock={() => {}}
             athleteProfile={athleteProfile}

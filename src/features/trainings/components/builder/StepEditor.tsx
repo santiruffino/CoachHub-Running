@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { X, Plus } from 'lucide-react';
 import { useState } from 'react';
@@ -24,6 +23,7 @@ interface StepEditorProps {
     athleteProfile?: AthleteProfile | null;
     athleteId?: string | null;
     trainingType?: TrainingType;
+    readOnly?: boolean;
 }
 
 export function StepEditor({
@@ -34,7 +34,8 @@ export function StepEditor({
     isInRepeat = false,
     athleteProfile = null,
     athleteId = null,
-    trainingType = TrainingType.RUNNING
+    trainingType = TrainingType.RUNNING,
+    readOnly = false,
 }: StepEditorProps) {
     void isInRepeat;
     const t = useTranslations('builder');
@@ -220,12 +221,14 @@ export function StepEditor({
                         value={step.stepName || ''}
                         onChange={(e) => onUpdate({ stepName: e.target.value })}
                         placeholder={t('stepName')}
+                        readOnly={readOnly}
                         className="bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-2 py-1 text-[#2b3437] dark:text-[#f8f9fa] font-semibold text-lg sm:text-xl w-full sm:w-64 rounded-t-md focus:ring-0 focus:border-[#4e6073] transition-colors"
                     />
                 </div>
                 <div className="flex items-center gap-3">
                     <Select
                         value={step.type}
+                        disabled={readOnly}
                         onValueChange={(value) => onUpdate({ type: value as WorkoutBlock['type'] })}
                     >
                         <SelectTrigger className="w-35 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-2 rounded-t-md focus:ring-0 text-[#2b3437] dark:text-[#f8f9fa] text-sm font-semibold transition-colors">
@@ -241,6 +244,7 @@ export function StepEditor({
                     </Select>
                     <Select
                         value={step.duration.type}
+                        disabled={readOnly}
                         onValueChange={(value: DurationType) => {
                             setTimeInput('');
                             setTimeInputError(false);
@@ -278,6 +282,7 @@ export function StepEditor({
                                 step="0.1"
                                 value={getDurationValue().toFixed(2)}
                                 onChange={(e) => handleDurationChange(parseFloat(e.target.value))}
+                                readOnly={readOnly}
                                 className="flex-1 min-w-0 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-2 py-1 text-[#2b3437] dark:text-[#f8f9fa] text-3xl font-extrabold font-display rounded-t-md focus:ring-0 focus:border-[#4e6073] transition-colors outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
                         ) : (
@@ -314,6 +319,7 @@ export function StepEditor({
                                     setTimeInput(formatSecondsToClock(parsed));
                                     setTimeInputError(false);
                                 }}
+                                readOnly={readOnly}
                                 className="flex-1 min-w-0 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-2 py-1 text-[#2b3437] dark:text-[#f8f9fa] text-3xl font-extrabold font-display font-mono rounded-t-md focus:ring-0 focus:border-[#4e6073] transition-colors outline-none"
                             />
                         )}
@@ -350,6 +356,7 @@ export function StepEditor({
                                             target: { ...step.target, min: isNaN(val) ? 0 : val }
                                         });
                                     }}
+                                    readOnly={readOnly}
                                     className="w-16 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-1 py-1 rounded-t-md text-[#2b3437] dark:text-[#f8f9fa] text-2xl font-extrabold font-display text-center focus:ring-0 focus:border-[#4e6073] transition-colors outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 />
                                 <span className="text-[#8b9bb4] font-semibold">—</span>
@@ -365,6 +372,7 @@ export function StepEditor({
                                             target: { ...step.target, max: isNaN(val) ? 0 : val }
                                         });
                                     }}
+                                    readOnly={readOnly}
                                     className="w-16 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-1 py-1 rounded-t-md text-[#2b3437] dark:text-[#f8f9fa] text-2xl font-extrabold font-display text-center focus:ring-0 focus:border-[#4e6073] transition-colors outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 />
                                 <span className="text-[#8b9bb4] text-sm font-semibold">%</span>
@@ -388,6 +396,7 @@ export function StepEditor({
                                             target: { ...step.target, min: isNaN(val) ? 0 : val }
                                         });
                                     }}
+                                    readOnly={readOnly}
                                     className="w-16 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-1 py-1 rounded-t-md text-[#2b3437] dark:text-[#f8f9fa] text-2xl font-extrabold font-display text-center focus:ring-0 focus:border-[#4e6073] transition-colors outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 />
                                 <span className="text-[#8b9bb4] font-semibold">—</span>
@@ -405,6 +414,7 @@ export function StepEditor({
                                             target: { ...step.target, max: isNaN(val) ? 0 : val }
                                         });
                                     }}
+                                    readOnly={readOnly}
                                     className="w-16 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-1 py-1 rounded-t-md text-[#2b3437] dark:text-[#f8f9fa] text-2xl font-extrabold font-display text-center focus:ring-0 focus:border-[#4e6073] transition-colors outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 />
                                 <span className="text-[#8b9bb4] text-sm font-semibold">%</span>
@@ -428,6 +438,7 @@ export function StepEditor({
                                             target: { ...step.target, min: isNaN(val) ? 1 : val }
                                         });
                                     }}
+                                    readOnly={readOnly}
                                     className="w-16 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-1 py-1 rounded-t-md text-[#2b3437] dark:text-[#f8f9fa] text-2xl font-extrabold font-display text-center focus:ring-0 focus:border-[#4e6073] transition-colors outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 />
                                 <span className="text-[#8b9bb4] font-semibold">—</span>
@@ -445,6 +456,7 @@ export function StepEditor({
                                             target: { ...step.target, max: isNaN(val) ? 1 : val }
                                         });
                                     }}
+                                    readOnly={readOnly}
                                     className="w-16 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-1 py-1 rounded-t-md text-[#2b3437] dark:text-[#f8f9fa] text-2xl font-extrabold font-display text-center focus:ring-0 focus:border-[#4e6073] transition-colors outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 />
                             </>
@@ -454,6 +466,7 @@ export function StepEditor({
                         {step.target.type === 'vam_zone' && (
                             <Select
                                 value={String(step.target.min || '2')}
+                                disabled={readOnly}
                                 onValueChange={(value) => onUpdate({
                                     target: { ...step.target, min: value, max: value }
                                 })}
@@ -475,6 +488,7 @@ export function StepEditor({
                         {step.target.type === 'power_zone' && (
                             <Select
                                 value={String(step.target.min || '2')}
+                                disabled={readOnly}
                                 onValueChange={(value) => onUpdate({
                                     target: { ...step.target, min: value, max: value }
                                 })}
@@ -505,6 +519,7 @@ export function StepEditor({
                                             target: { ...step.target, min: isNaN(val) ? 0 : val }
                                         });
                                     }}
+                                    readOnly={readOnly}
                                     className="w-16 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-1 py-1 rounded-t-md text-[#2b3437] dark:text-[#f8f9fa] text-2xl font-extrabold font-display text-center focus:ring-0 focus:border-[#4e6073] transition-colors outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 />
                                 <span className="text-[#8b9bb4] font-semibold">—</span>
@@ -520,6 +535,7 @@ export function StepEditor({
                                             target: { ...step.target, max: isNaN(val) ? 0 : val }
                                         });
                                     }}
+                                    readOnly={readOnly}
                                     className="w-16 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-1 py-1 rounded-t-md text-[#2b3437] dark:text-[#f8f9fa] text-2xl font-extrabold font-display text-center focus:ring-0 focus:border-[#4e6073] transition-colors outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 />
                                 <span className="text-[#8b9bb4] text-sm font-semibold">%</span>
@@ -529,6 +545,7 @@ export function StepEditor({
                         {/* Target Type Selector */}
                         <Select
                             value={step.target.type || 'vam_zone'}
+                            disabled={readOnly}
                             onValueChange={(value: TargetType) => {
                                 const defaults = getDefaultAndMax(value);
                                 onUpdate({ target: { type: value, min: defaults.min, max: defaults.max } });
@@ -555,30 +572,32 @@ export function StepEditor({
             </div>
 
             {/* Options */}
-            <div className="flex items-center justify-between mt-6 pt-6 border-t border-[#e1e5e8] dark:border-white/5">
-                <div className="flex items-center gap-6">
+            {!readOnly && (
+                <div className="flex items-center justify-between mt-6 pt-6 border-t border-[#e1e5e8] dark:border-white/5">
+                    <div className="flex items-center gap-6">
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={toggleCadence}
+                            className="text-xs font-semibold text-[#4e6073] hover:text-[#2b3437] dark:hover:text-white hover:bg-transparent uppercase tracking-wider p-0"
+                        >
+                            <Plus className="w-3 h-3 mr-1" />
+                            {showCadence ? t('removeCadence') : t('addCadence')}
+                        </Button>
+                    </div>
                     <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        onClick={toggleCadence}
-                        className="text-xs font-semibold text-[#4e6073] hover:text-[#2b3437] dark:hover:text-white hover:bg-transparent uppercase tracking-wider p-0"
+                        onClick={onRemove}
+                        className="text-xs font-semibold text-[#8b9bb4] hover:text-destructive hover:bg-transparent uppercase tracking-wider p-0"
                     >
-                        <Plus className="w-3 h-3 mr-1" />
-                        {showCadence ? t('removeCadence') : t('addCadence')}
+                        <X className="w-3 h-3 mr-1" />
+                        {t('removeStep')}
                     </Button>
                 </div>
-                <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={onRemove}
-                    className="text-xs font-semibold text-[#8b9bb4] hover:text-destructive hover:bg-transparent uppercase tracking-wider p-0"
-                >
-                    <X className="w-3 h-3 mr-1" />
-                    {t('removeStep')}
-                </Button>
-            </div>
+            )}
 
             {/* Cadence Range */}
             {showCadence && step.cadenceRange && (
@@ -587,23 +606,25 @@ export function StepEditor({
                         {t('cadenceRange')} - {t('units.spm')}
                     </Label>
                     <div className="flex items-baseline gap-3">
-                        <input
-                            type="number"
-                            value={step.cadenceRange.min}
-                            onChange={(e) => onUpdate({
-                                cadenceRange: { ...step.cadenceRange!, min: parseInt(e.target.value) }
-                            })}
-                            className="w-20 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-1 py-1 rounded-t-md text-[#2b3437] dark:text-[#f8f9fa] text-2xl font-extrabold font-display text-center focus:ring-0 focus:border-[#4e6073] transition-colors outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                        />
+                            <input
+                                type="number"
+                                value={step.cadenceRange.min}
+                                onChange={(e) => onUpdate({
+                                    cadenceRange: { ...step.cadenceRange!, min: parseInt(e.target.value) }
+                                })}
+                                readOnly={readOnly}
+                                className="w-20 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-1 py-1 rounded-t-md text-[#2b3437] dark:text-[#f8f9fa] text-2xl font-extrabold font-display text-center focus:ring-0 focus:border-[#4e6073] transition-colors outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            />
                         <span className="text-[#8b9bb4] font-semibold">—</span>
-                        <input
-                            type="number"
-                            value={step.cadenceRange.max}
-                            onChange={(e) => onUpdate({
-                                cadenceRange: { ...step.cadenceRange!, max: parseInt(e.target.value) }
-                            })}
-                            className="w-20 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-1 py-1 rounded-t-md text-[#2b3437] dark:text-[#f8f9fa] text-2xl font-extrabold font-display text-center focus:ring-0 focus:border-[#4e6073] transition-colors outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                        />
+                            <input
+                                type="number"
+                                value={step.cadenceRange.max}
+                                onChange={(e) => onUpdate({
+                                    cadenceRange: { ...step.cadenceRange!, max: parseInt(e.target.value) }
+                                })}
+                                readOnly={readOnly}
+                                className="w-20 bg-[#f1f4f6] dark:bg-white/5 border-0 border-b border-[#abb3b7]/30 hover:border-[#abb3b7]/50 px-1 py-1 rounded-t-md text-[#2b3437] dark:text-[#f8f9fa] text-2xl font-extrabold font-display text-center focus:ring-0 focus:border-[#4e6073] transition-colors outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            />
                     </div>
                 </div>
             )}
@@ -620,6 +641,7 @@ export function StepEditor({
                         min={0}
                         max={10}
                         step={1}
+                        disabled={readOnly}
                         onValueChange={(value) => onUpdate({ rpe: value[0] > 0 ? value[0] : undefined })}
                         className="flex-1"
                     />

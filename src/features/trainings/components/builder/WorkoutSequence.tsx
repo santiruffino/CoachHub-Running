@@ -209,18 +209,19 @@ export function WorkoutSequence({
                                         {currentStartTimeStr}
                                     </div>
                                     <div className="flex-1">
-                                        <RepeatBlockEditor
-                                            groupId={item.groupId!}
-                                            blocks={item.blocks}
-                                            onUpdate={onUpdateBlock}
-                                            onUpdateReps={onUpdateGroupReps}
-                                            onRemove={onRemoveBlock}
-                                            athleteProfile={athleteProfile}
-                                            athleteId={athleteId}
-                                            onAddStep={() => {
-                                                // Handle inline add to repeat block
-                                            }}
-                                        />
+                                            <RepeatBlockEditor
+                                                groupId={item.groupId!}
+                                                blocks={item.blocks}
+                                                onUpdate={onUpdateBlock}
+                                                onUpdateReps={onUpdateGroupReps}
+                                                onRemove={onRemoveBlock}
+                                                athleteProfile={athleteProfile}
+                                                athleteId={athleteId}
+                                                onAddStep={() => {
+                                                    // Handle inline add to repeat block
+                                                }}
+                                                readOnly={readOnly}
+                                            />
                                     </div>
                                 </div>
                             );
@@ -277,10 +278,10 @@ export function WorkoutSequence({
                                                 <button
                                                     key={block.id}
                                                     type="button"
-                                                    onClick={readOnly ? undefined : () => onSelectBlock(block.id)}
+                                                    onClick={() => onSelectBlock(block.id)}
                                                     className={cn(
                                                         "w-full flex items-center py-4 bg-white dark:bg-[#1a232c] shadow-[0_2px_8px_rgba(43,52,55,0.02)] rounded-lg transition-all group relative overflow-hidden",
-                                                        readOnly ? "cursor-default" : "hover:shadow-[0_8px_24px_rgba(43,52,55,0.06)]",
+                                                        readOnly ? "cursor-pointer" : "hover:shadow-[0_8px_24px_rgba(43,52,55,0.06)]",
                                                         isDragging && 'opacity-50'
                                                     )}
                                                     {...dragHandlers}
@@ -340,6 +341,7 @@ export function WorkoutSequence({
                                         athleteProfile={athleteProfile}
                                         athleteId={athleteId}
                                         trainingType={trainingType}
+                                        readOnly={readOnly}
                                     />
                                 </div>
                             </div>
@@ -363,10 +365,10 @@ export function WorkoutSequence({
 
                             <button
                                 type="button"
-                                onClick={readOnly ? undefined : () => onSelectBlock(block.id)}
+                                onClick={() => onSelectBlock(block.id)}
                                 className={cn(
                                     "w-full flex items-center py-4 bg-white dark:bg-[#1a232c] shadow-[0_2px_8px_rgba(43,52,55,0.02)] rounded-lg transition-all relative overflow-hidden border border-[#f1f4f6] dark:border-white/5",
-                                    readOnly ? "cursor-default" : "hover:shadow-[0_8px_24px_rgba(43,52,55,0.06)]",
+                                    readOnly ? "cursor-pointer" : "hover:shadow-[0_8px_24px_rgba(43,52,55,0.06)]",
                                     isDragging && 'opacity-50'
                                 )}
                                 {...dragHandlers}
