@@ -94,6 +94,14 @@ interface CenterLabelProps {
   t: ReturnType<typeof useTranslations>;
 }
 
+function hasPolarCenter(viewBox: unknown): viewBox is { cx: number; cy: number } {
+  if (!viewBox || typeof viewBox !== 'object') {
+    return false;
+  }
+
+  return 'cx' in viewBox && typeof viewBox.cx === 'number' && 'cy' in viewBox && typeof viewBox.cy === 'number';
+}
+
 function CenterLabel({ viewBox, totalTime, formatTime, t }: CenterLabelProps) {
   const { cx, cy } = viewBox;
   return (
@@ -320,7 +328,7 @@ export function HrZonesPieChart({ laps, splits, zones, zoneNames, averageHr, tot
                 ))}
                 <Label content={(props) => {
                   const viewBox = props.viewBox;
-                  if (!viewBox || typeof viewBox.cx !== 'number' || typeof viewBox.cy !== 'number') {
+                  if (!hasPolarCenter(viewBox)) {
                     return null;
                   }
 
