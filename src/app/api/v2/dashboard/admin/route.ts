@@ -57,36 +57,46 @@ export async function GET(request: Request) {
 
     if (coachesDetailsError) throw coachesDetailsError;
 
-    // Fetch last activity for each coach (e.g. from activities table or sync_logs)
-    // For MVP, we check the sync_logs or activities to see when they were last active,
-    // or we can check the 'updated_at' of their profile / when they last assigned a training.
-    // For simplicity, we just look at the latest training assigned by them.
-    const coachesWithActivity = await Promise.all((coachesData || []).map(async (coach) => {
-      const { data: latestTraining } = await supabase
-        .from('trainings')
-        .select('created_at')
-        .eq('created_by', coach.id)
-        .eq('team_id', adminProfile.team_id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-        
-      return {
-        ...coach,
-        lastActivity: latestTraining?.created_at || null,
-        totalAthletes: 0 // Could query athlete_groups for this coach, omitted for brevity but can be added
-      };
-    }));
+    const coachIds = (coachesData || []).map((coach) => coach.id);
 
-    // Could aggregate total athletes per coach
-    for (const coach of coachesWithActivity) {
-      const { count } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true })
-        .eq('team_id', adminProfile.team_id)
-        .eq('coach_id', coach.id);
-      coach.totalAthletes = count || 0;
+    // Latest training per coach — fetch all of this team's trainings created by
+    // these coaches in a single query (ordered newest-first) and keep the first
+    // row seen per coach, instead of one query per coach.
+    const { data: coachTrainings } = coachIds.length > 0
+      ? await supabase
+          .from('trainings')
+          .select('created_by, created_at')
+          .in('created_by', coachIds)
+          .eq('team_id', adminProfile.team_id)
+          .order('created_at', { ascending: false })
+      : { data: [] as { created_by: string; created_at: string }[] };
+
+    const lastActivityByCoachId = new Map<string, string>();
+    for (const training of (coachTrainings || [])) {
+      if (!lastActivityByCoachId.has(training.created_by)) {
+        lastActivityByCoachId.set(training.created_by, training.created_at);
+      }
     }
+
+    // Total athletes per coach — fetch all of the team's athletes in one query
+    // and tally by coach_id, instead of a COUNT query per coach.
+    const { data: teamAthletes } = await supabase
+      .from('profiles')
+      .select('coach_id')
+      .eq('role', 'ATHLETE')
+      .eq('team_id', adminProfile.team_id);
+
+    const athleteCountByCoachId = new Map<string, number>();
+    for (const athlete of (teamAthletes || [])) {
+      if (!athlete.coach_id) continue;
+      athleteCountByCoachId.set(athlete.coach_id, (athleteCountByCoachId.get(athlete.coach_id) || 0) + 1);
+    }
+
+    const coachesWithActivity = (coachesData || []).map((coach) => ({
+      ...coach,
+      lastActivity: lastActivityByCoachId.get(coach.id) || null,
+      totalAthletes: athleteCountByCoachId.get(coach.id) || 0,
+    }));
 
     return NextResponse.json({
       metrics: {
