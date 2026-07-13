@@ -2,7 +2,7 @@
 import { appLogger } from '@/lib/app-logger';
 
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { format, startOfWeek, endOfWeek, subWeeks, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import api from '@/lib/axios';
@@ -28,6 +28,7 @@ import { stravaService } from '@/features/strava/services/strava.service';
 import { racesService } from '@/features/races/services/races.service';
 import { AssignRaceModal } from '@/features/races/components/AssignRaceModal';
 import { athletesService, LoadMetricsRange, LoadMetricsResponse, WeeklyLoadResponse } from '@/features/users/services/athletes.service';
+import { subscribeToTableChanges } from '@/lib/supabase/realtime';
 import { normalizeActivityType } from '@/utils/activity-utils';
 import { NextRaces } from './NextRaces';
 import { NewActivityFeedbackModal } from './NewActivityFeedbackModal';
@@ -95,6 +96,7 @@ interface AthleteDashboardProps {
 export default function AthleteDashboard({ user, initialData = null }: AthleteDashboardProps) {
     const t = useTranslations();
     const userDisplayName = user.firstName || user.name?.split(' ')[0] || user.email.split('@')[0];
+    const realtimeRefreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const [loading, setLoading] = useState(!initialData);
     const [activities, setActivities] = useState<Activity[]>(initialData?.activities || []);
     const [assignments, setAssignments] = useState<TrainingAssignment[]>(initialData?.assignments || []);
@@ -201,6 +203,37 @@ export default function AthleteDashboard({ user, initialData = null }: AthleteDa
             void fetchData();
         }
     }, [fetchData, initialData]);
+
+    useEffect(() => {
+        if (!user?.id) return;
+
+        const scheduleRefresh = () => {
+            if (realtimeRefreshTimeoutRef.current) {
+                clearTimeout(realtimeRefreshTimeoutRef.current);
+            }
+
+            // Plan assignments can insert several rows in quick succession; collapse
+            // them into a single dashboard refresh.
+            realtimeRefreshTimeoutRef.current = setTimeout(() => {
+                realtimeRefreshTimeoutRef.current = null;
+                void fetchData();
+            }, 300);
+        };
+
+        const unsubscribe = subscribeToTableChanges(
+            `athlete-dashboard-assignments-${user.id}`,
+            { event: '*', schema: 'public', table: 'training_assignments', filter: `user_id=eq.${user.id}` },
+            scheduleRefresh,
+        );
+
+        return () => {
+            unsubscribe();
+            if (realtimeRefreshTimeoutRef.current) {
+                clearTimeout(realtimeRefreshTimeoutRef.current);
+                realtimeRefreshTimeoutRef.current = null;
+            }
+        };
+    }, [fetchData, user?.id]);
 
     const fetchLoadMetrics = useCallback(async () => {
         if (!user) return;

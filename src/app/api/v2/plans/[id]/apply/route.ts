@@ -112,6 +112,19 @@ export async function POST(
 
         const planName = (plan.name as string) || 'Plan';
         const sessionsPerAthlete = items.length;
+        const firstAssignmentLinkByAthlete = new Map<string, string>();
+
+        for (const assignment of result.assignments) {
+            const athleteId = typeof assignment.user_id === 'string' ? assignment.user_id : null;
+            const assignmentId = typeof assignment.id === 'string' ? assignment.id : null;
+
+            if (!athleteId || !assignmentId || firstAssignmentLinkByAthlete.has(athleteId)) {
+                continue;
+            }
+
+            firstAssignmentLinkByAthlete.set(athleteId, `/workouts/${assignmentId}`);
+        }
+
         await Promise.all(
             result.affectedAthleteIds.map((athleteId) =>
                 createNotification({
@@ -119,7 +132,7 @@ export async function POST(
                     category: 'workout_assigned',
                     title: `Plan "${planName}" asignado`,
                     body: `${sessionsPerAthlete} ${sessionsPerAthlete === 1 ? 'sesión programada' : 'sesiones programadas'}`,
-                    link: '/dashboard',
+                    link: firstAssignmentLinkByAthlete.get(athleteId) || '/dashboard',
                 }),
             ),
         );

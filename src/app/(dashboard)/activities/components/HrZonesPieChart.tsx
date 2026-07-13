@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Label } from 'recharts';
 import { useTranslations } from 'next-intl';
 
 interface Lap {
@@ -318,9 +318,23 @@ export function HrZonesPieChart({ laps, splits, zones, zoneNames, averageHr, tot
                     fillOpacity={0.85}
                   />
                 ))}
+                <Label content={(props) => {
+                  const viewBox = props.viewBox;
+                  if (!viewBox || typeof viewBox.cx !== 'number' || typeof viewBox.cy !== 'number') {
+                    return null;
+                  }
+
+                  return (
+                    <CenterLabel
+                      viewBox={{ cx: viewBox.cx, cy: viewBox.cy }}
+                      totalTime={totalTime}
+                      formatTime={formatTime}
+                      t={t}
+                    />
+                  );
+                }} />
               </Pie>
               <Tooltip content={<ZoneTooltip t={t} />} />
-              <CenterLabel viewBox={{ cx: 140, cy: 140 }} totalTime={totalTime} formatTime={formatTime} t={t} />
             </PieChart>
           </ResponsiveContainer>
         </div>

@@ -40,7 +40,6 @@ export function WorkoutSequence({
     athleteProfile,
     athleteId,
     trainingType = TrainingType.RUNNING,
-    onAddStep,
     onDragStart,
     onDragOver,
     onDrop,
@@ -233,13 +232,18 @@ export function WorkoutSequence({
                                     {currentStartTimeStr}
                                 </div>
 
-                                <div className="flex-1 pl-4 pb-4">
-                                    <div className="flex items-center rotate-180" style={{ writingMode: 'vertical-rl', position: 'absolute', left: '-20px', top: '10px', bottom: '10px' }}>
+                                <div className="flex-1 pb-4 sm:pl-4">
+                                    <div className="mb-3 sm:hidden">
+                                        <div className="inline-flex items-center rounded-md bg-[#4e6073] px-3 py-2 text-[10px] font-bold tracking-widest uppercase text-white">
+                                            {t('repeats', { reps })}
+                                        </div>
+                                    </div>
+                                    <div className="hidden sm:flex items-center rotate-180" style={{ writingMode: 'vertical-rl', position: 'absolute', left: '-20px', top: '10px', bottom: '10px' }}>
                                         <div className="bg-[#4e6073] text-white text-[10px] font-bold tracking-widest uppercase py-4 px-2 rounded-l w-[32px] flex items-center justify-center">
                                             {t('repeats', { reps })}
                                         </div>
                                     </div>
-                                    <div className="space-y-3 bg-endurix-paper dark:bg-muted/50 border border-endurix-black/10 dark:border-white/10 p-4 ml-4">
+                                    <div className="space-y-3 bg-endurix-paper dark:bg-muted/50 border border-endurix-black/10 dark:border-white/10 p-4 sm:ml-4">
                                         {item.blocks.map((block, idx) => {
                                             const isSelected = selectedBlockId === block.id;
 
