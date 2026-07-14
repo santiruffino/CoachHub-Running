@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { AthletesList } from '@/features/users/components/AthletesList';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { deriveBillingStatus, getBillingActiveAthleteIds } from '@/lib/billing/athlete-status';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,6 +14,9 @@ interface AthleteProfileResult {
   role: string;
   created_at: string;
   coach_id: string | null;
+  is_paused_manual: boolean | null;
+  paused_at: string | null;
+  pause_reason: string | null;
   coach: { id: string; name: string | null } | null;
   athlete_groups: Array<{ id: string; group: { id: string; name: string } | null }>;
 }
@@ -28,6 +32,9 @@ async function getAthletes(supabase: SupabaseClient, user: { id: string }, profi
       role,
       created_at,
       coach_id,
+      is_paused_manual,
+      paused_at,
+      pause_reason,
       coach:profiles!coach_id(
         id,
         name
@@ -62,6 +69,9 @@ async function getAthletes(supabase: SupabaseClient, user: { id: string }, profi
     .select('user_id, completed, scheduled_date')
     .in('user_id', athleteIds);
 
+  // SAN-161: billing status for the roster badges.
+  const billingActiveIds = await getBillingActiveAthleteIds(supabase, athleteIds);
+
   const now = new Date();
   const todayUTC = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}-${String(now.getUTCDate()).padStart(2, '0')}`;
 
@@ -92,6 +102,10 @@ async function getAthletes(supabase: SupabaseClient, user: { id: string }, profi
 
     return {
       ...athlete,
+      isPausedManual: Boolean(athlete.is_paused_manual),
+      pausedAt: athlete.paused_at ?? null,
+      pauseReason: athlete.pause_reason ?? null,
+      billingStatus: deriveBillingStatus(athlete.is_paused_manual, billingActiveIds.has(athlete.id)),
       groups: (athlete.athlete_groups || [])
         .map((membership) => (Array.isArray(membership.group) ? membership.group[0] : membership.group))
         .filter(Boolean),

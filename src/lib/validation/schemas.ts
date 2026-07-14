@@ -27,6 +27,10 @@ export const acceptInviteSchema = z.object({
 export const updateUserSchema = z.object({
   name: z.string().min(1, 'Name is required').max(255).optional(),
   coach_id: z.string().uuid('Invalid coach ID').nullable().optional(),
+  // SAN-161: admin-only manual pause toggle. When pausing, an optional reason
+  // can be captured for traceability.
+  is_paused_manual: z.boolean().optional(),
+  pause_reason: z.string().max(500).nullable().optional(),
 });
 
 export const createTrainingSchema = z.object({

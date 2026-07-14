@@ -19,6 +19,9 @@ interface AdminData {
         totalAthletes: number;
         totalCoaches: number;
         totalGroups: number;
+        billableAthletes?: number;
+        manualPausedAthletes?: number;
+        autoPausedAthletes?: number;
     };
     coaches: Coach[];
 }
@@ -86,10 +89,19 @@ export default function AdminDashboard({ user, initialData = null }: AdminDashbo
                     </p>
                 </div>
 
-                <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                     <StatCard
                         label={t('dashboard.admin.metrics.totalAthletes')}
                         value={data.metrics.totalAthletes}
+                    />
+                    <StatCard
+                        label={t('dashboard.admin.metrics.billableAthletes')}
+                        value={data.metrics.billableAthletes ?? data.metrics.totalAthletes}
+                        tooltip={t('dashboard.admin.metrics.billableAthletesTooltip')}
+                        footerLabel={t('dashboard.admin.metrics.pausedBreakdown', {
+                            manual: data.metrics.manualPausedAthletes ?? 0,
+                            auto: data.metrics.autoPausedAthletes ?? 0,
+                        })}
                     />
                     <StatCard
                         label={t('dashboard.admin.metrics.totalGroups')}

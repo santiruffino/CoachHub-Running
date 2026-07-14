@@ -3,6 +3,7 @@ import { requireRole } from '@/lib/supabase/api-helpers';
 import { apiError } from '@/lib/api/error-response';
 import { reportApiError } from '@/lib/api/report-error';
 import { createRequestLogger } from '@/lib/logger';
+import { deriveBillingStatus, getBillingActiveAthleteIds } from '@/lib/billing/athlete-status';
 
 export async function GET(request: Request) {
   const { requestId, logger } = createRequestLogger('/api/v2/dashboard/admin', request);
@@ -82,7 +83,7 @@ export async function GET(request: Request) {
     // and tally by coach_id, instead of a COUNT query per coach.
     const { data: teamAthletes } = await supabase
       .from('profiles')
-      .select('coach_id')
+      .select('id, coach_id, is_paused_manual')
       .eq('role', 'ATHLETE')
       .eq('team_id', adminProfile.team_id);
 
@@ -90,6 +91,20 @@ export async function GET(request: Request) {
     for (const athlete of (teamAthletes || [])) {
       if (!athlete.coach_id) continue;
       athleteCountByCoachId.set(athlete.coach_id, (athleteCountByCoachId.get(athlete.coach_id) || 0) + 1);
+    }
+
+    // SAN-161: billing breakdown. Manual pause takes precedence; the rest are
+    // classified as billable (active) or auto-paused from real activity signals.
+    const allAthleteIds = (teamAthletes || []).map((a) => a.id);
+    const billingActiveIds = await getBillingActiveAthleteIds(supabase, allAthleteIds);
+    let billableAthletes = 0;
+    let manualPausedAthletes = 0;
+    let autoPausedAthletes = 0;
+    for (const athlete of (teamAthletes || [])) {
+      const status = deriveBillingStatus(athlete.is_paused_manual, billingActiveIds.has(athlete.id));
+      if (status === 'active') billableAthletes++;
+      else if (status === 'paused_manual') manualPausedAthletes++;
+      else autoPausedAthletes++;
     }
 
     const coachesWithActivity = (coachesData || []).map((coach) => ({
@@ -103,6 +118,9 @@ export async function GET(request: Request) {
         totalAthletes: athletesCount || 0,
         totalCoaches: coachesCount || 0,
         totalGroups: groupsCount || 0,
+        billableAthletes,
+        manualPausedAthletes,
+        autoPausedAthletes,
       },
       coaches: coachesWithActivity
     });

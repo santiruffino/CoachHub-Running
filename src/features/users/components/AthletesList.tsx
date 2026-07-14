@@ -18,7 +18,7 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, UserPlus, AlertTriangle, Mail, MoreHorizontal, Edit, Trash2 } from 'lucide-react';
+import { Search, UserPlus, AlertTriangle, Mail, MoreHorizontal, Edit, Trash2, PauseCircle, PlayCircle } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,7 +38,7 @@ import api from '@/lib/axios';
 import { InviteAthleteModal } from '@/features/invitations/components/InviteAthleteModal';
 import { useTranslations } from 'next-intl';
 import { EditAthleteModal } from '@/app/(dashboard)/athletes/components/EditAthleteModal';
-import { AthleteData } from '@/interfaces/athlete';
+import { AthleteData, AthleteBillingStatus } from '@/interfaces/athlete';
 
 interface AthleteApiItem {
   id: string;
@@ -49,6 +49,10 @@ interface AthleteApiItem {
     name: string;
   } | null;
   groups?: Array<{ id: string; name: string }>;
+  isPausedManual?: boolean;
+  billingStatus?: AthleteBillingStatus;
+  pauseReason?: string | null;
+  pausedAt?: string | null;
   stats?: {
     totalAssignments?: number;
     plannedAssignments?: number;
@@ -78,6 +82,40 @@ function determineLevelFromCount(completedTrainings: number, t: ReturnType<typeo
   return t('levels.beginner');
 }
 
+function StatusBadge({
+  status,
+  reason,
+  t,
+}: {
+  status: AthleteBillingStatus;
+  reason?: string | null;
+  t: ReturnType<typeof useTranslations>;
+}) {
+  if (status === 'active') return null;
+
+  if (status === 'paused_manual') {
+    return (
+      <Badge
+        variant="secondary"
+        title={reason || undefined}
+        className="bg-endurix-orange/15 text-endurix-orange border-endurix-orange/30 shrink-0"
+      >
+        {t('status.pausedManual')}
+      </Badge>
+    );
+  }
+
+  return (
+    <Badge
+      variant="outline"
+      title={t('status.pausedAutoHint')}
+      className="text-muted-foreground shrink-0"
+    >
+      {t('status.pausedAuto')}
+    </Badge>
+  );
+}
+
 interface AthletesListProps {
   initialAthletes: AthleteApiItem[];
   initialCoaches: CoachApiItem[];
@@ -102,6 +140,10 @@ export function AthletesList({ initialAthletes, initialCoaches, isAdmin }: Athle
       plannedTrainings: athlete.stats?.plannedAssignments || 0,
       completedTrainings: athlete.stats?.completedAssignments || 0,
       completionPercentage: athlete.stats?.completionPercentage || 0,
+      isPausedManual: Boolean(athlete.isPausedManual),
+      billingStatus: athlete.billingStatus || 'active',
+      pauseReason: athlete.pauseReason ?? null,
+      pausedAt: athlete.pausedAt ?? null,
     }));
   }, [t]);
 
@@ -120,10 +162,15 @@ export function AthletesList({ initialAthletes, initialCoaches, isAdmin }: Athle
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Pause / reactivate (admin-only)
+  const [pauseTarget, setPauseTarget] = useState<AthleteData | null>(null);
+  const [isPausing, setIsPausing] = useState(false);
+
   // Filter States
   const [filterLevel, setFilterLevel] = useState<string>('all');
   const [filterGroup, setFilterGroup] = useState<string>('all');
   const [filterCoach, setFilterCoach] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
 
   const fetchAthletes = useCallback(async (currentScope?: 'mine' | 'team') => {
     try {
@@ -159,17 +206,46 @@ export function AthletesList({ initialAthletes, initialCoaches, isAdmin }: Athle
     }
   };
 
+  const applyPause = async (athlete: AthleteData, paused: boolean) => {
+    setIsPausing(true);
+    try {
+      await api.patch(`/v2/users/${athlete.id}`, { is_paused_manual: paused });
+      // Optimistic update; refetch reconciles the derived billing status
+      // (e.g. an unpaused athlete may still be paused_auto).
+      setAthletes(prev => prev.map(a => a.id === athlete.id
+        ? { ...a, isPausedManual: paused, billingStatus: paused ? 'paused_manual' : 'active' }
+        : a));
+      setPauseTarget(null);
+      await fetchAthletes();
+    } catch (error) {
+      appLogger.error('Failed to update athlete pause state', error);
+      alert(t('pause.failed'));
+    } finally {
+      setIsPausing(false);
+    }
+  };
+
+  const handlePauseAction = (athlete: AthleteData) => {
+    if (athlete.isPausedManual) {
+      // Reactivation is non-destructive — apply directly.
+      void applyPause(athlete, false);
+    } else {
+      setPauseTarget(athlete);
+    }
+  };
+
   const availableGroups = Array.from(new Set(athletes.flatMap(a => a.groups.map(g => g.name))));
   const availableLevels = Array.from(new Set(athletes.map(a => a.level)));
 
   const filteredAthletes = athletes.filter((athlete) => {
-    const matchesSearch = athlete.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    const matchesSearch = athlete.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           athlete.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesLevel = filterLevel === 'all' || athlete.level === filterLevel;
     const matchesGroup = filterGroup === 'all' || athlete.groups.some(g => g.name === filterGroup);
     const matchesCoach = !isAdmin || filterCoach === 'all' || athlete.coach?.id === filterCoach;
+    const matchesStatus = filterStatus === 'all' || athlete.billingStatus === filterStatus;
 
-    return matchesSearch && matchesLevel && matchesGroup && matchesCoach;
+    return matchesSearch && matchesLevel && matchesGroup && matchesCoach && matchesStatus;
   });
 
   return (
@@ -201,6 +277,17 @@ export function AthletesList({ initialAthletes, initialCoaches, isAdmin }: Athle
         message={t('deleteMessage')}
         confirmText={t('deleteConfirm')}
         loading={isDeleting}
+      />
+
+      <AlertDialog
+        open={!!pauseTarget}
+        onClose={() => { if (!isPausing) setPauseTarget(null); }}
+        onConfirm={() => { if (pauseTarget) void applyPause(pauseTarget, true); }}
+        type="warning"
+        title={t('pause.title')}
+        message={t('pause.message')}
+        confirmText={t('pause.confirm')}
+        loading={isPausing}
       />
 
       <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center">
@@ -248,6 +335,18 @@ export function AthletesList({ initialAthletes, initialCoaches, isAdmin }: Athle
             {availableGroups.map(grp => (
                <SelectItem key={grp} value={grp}>{grp}</SelectItem>
             ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={filterStatus} onValueChange={setFilterStatus}>
+          <SelectTrigger className="w-full sm:w-[220px]">
+             <SelectValue placeholder={t('filters.status')} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t('filters.allStatuses')}</SelectItem>
+            <SelectItem value="active">{t('status.active')}</SelectItem>
+            <SelectItem value="paused_manual">{t('status.pausedManual')}</SelectItem>
+            <SelectItem value="paused_auto">{t('status.pausedAuto')}</SelectItem>
           </SelectContent>
         </Select>
 
@@ -301,7 +400,10 @@ export function AthletesList({ initialAthletes, initialCoaches, isAdmin }: Athle
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold truncate">{athlete.name}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold truncate">{athlete.name}</p>
+                        <StatusBadge status={athlete.billingStatus} reason={athlete.pauseReason} t={t} />
+                      </div>
                       {isAdmin && athlete.coach && (
                         <p className="text-xs text-endurix-orange font-medium">{t('filters.coach')}: {athlete.coach.name}</p>
                       )}
@@ -321,6 +423,13 @@ export function AthletesList({ initialAthletes, initialCoaches, isAdmin }: Athle
                       <DropdownMenuItem onClick={() => { setEditAthlete(athlete); setEditModalOpen(true); }}>
                         <Edit className="mr-2 h-4 w-4" /> {t('edit')}
                       </DropdownMenuItem>
+                      {isAdmin && (
+                        <DropdownMenuItem onClick={() => handlePauseAction(athlete)}>
+                          {athlete.isPausedManual
+                            ? <><PlayCircle className="mr-2 h-4 w-4" /> {t('pause.reactivate')}</>
+                            : <><PauseCircle className="mr-2 h-4 w-4" /> {t('pause.pause')}</>}
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setDeleteId(athlete.id)}>
                         <Trash2 className="mr-2 h-4 w-4" /> {t('delete')}
@@ -394,7 +503,10 @@ export function AthletesList({ initialAthletes, initialCoaches, isAdmin }: Athle
                           </AvatarFallback>
                         </Avatar>
                         <div className="min-w-0">
-                          <p className="font-medium truncate">{athlete.name}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium truncate">{athlete.name}</p>
+                            <StatusBadge status={athlete.billingStatus} reason={athlete.pauseReason} t={t} />
+                          </div>
                           <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
                             <Mail className="h-3 w-3 flex-shrink-0" />
                             <span className="truncate">{athlete.email}</span>
@@ -457,6 +569,11 @@ export function AthletesList({ initialAthletes, initialCoaches, isAdmin }: Athle
                             <DropdownMenuItem onClick={() => { setEditAthlete(athlete); setEditModalOpen(true); }}>
                               {t('edit')}
                             </DropdownMenuItem>
+                            {isAdmin && (
+                              <DropdownMenuItem onClick={() => handlePauseAction(athlete)}>
+                                {athlete.isPausedManual ? t('pause.reactivate') : t('pause.pause')}
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuSeparator />
                             <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setDeleteId(athlete.id)}>
                               {t('delete')}

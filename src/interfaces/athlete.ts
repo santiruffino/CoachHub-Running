@@ -55,6 +55,8 @@ export interface AthleteDetails extends User {
     }>;
 }
 
+export type AthleteBillingStatus = 'active' | 'paused_manual' | 'paused_auto';
+
 export interface AthleteData {
   id: string;
   name: string;
@@ -67,6 +69,11 @@ export interface AthleteData {
   plannedTrainings: number;
   completedTrainings: number;
   completionPercentage: number;
+  // SAN-161: pause / billing state
+  isPausedManual: boolean;
+  billingStatus: AthleteBillingStatus;
+  pauseReason?: string | null;
+  pausedAt?: string | null;
 }
 
 export interface GroupAthleteData {

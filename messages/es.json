@@ -265,6 +265,9 @@
       "welcome": "Bienvenido, Super Coach. Resumen global de la plataforma.",
       "metrics": {
         "totalAthletes": "Total Atletas",
+        "billableAthletes": "Atletas Facturables",
+        "billableAthletesTooltip": "Atletas activos comercialmente. Excluye pausados manualmente y pausados automáticamente por falta de actividad reciente.",
+        "pausedBreakdown": "{manual} pausados · {auto} inactivos",
         "totalGroups": "Equipos / Grupos",
         "activeCoaches": "Coaches Activos"
       },
@@ -548,13 +551,29 @@
     "deleteFailed": "Error al eliminar el atleta",
     "edit": "Editar",
     "delete": "Eliminar",
+    "status": {
+      "active": "Activo",
+      "pausedManual": "Pausado",
+      "pausedAuto": "Sin actividad",
+      "pausedAutoHint": "Sin actividad registrada en los últimos 30 días. No cuenta para facturación."
+    },
+    "pause": {
+      "pause": "Pausar atleta",
+      "reactivate": "Reactivar atleta",
+      "title": "¿Pausar atleta?",
+      "message": "El atleta seguirá con acceso y visible en el roster, pero dejará de contarse para facturación hasta que lo reactives.",
+      "confirm": "Sí, pausar",
+      "failed": "No se pudo actualizar el estado del atleta"
+    },
     "filters": {
       "level": "Nivel",
       "group": "Grupo",
       "coach": "Entrenador",
+      "status": "Estado",
       "allLevels": "Todos los Niveles",
       "allGroups": "Todos los Grupos",
-      "allCoaches": "Todos los Entrenadores"
+      "allCoaches": "Todos los Entrenadores",
+      "allStatuses": "Todos los Estados"
     },
     "table": {
       "athlete": "Atleta",

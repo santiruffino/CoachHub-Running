@@ -17,10 +17,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   try {
     const { data: targetUser } = await supabase
       .from('profiles')
-      .select('team_id, coach_id')
+      .select('team_id, coach_id, is_paused_manual')
       .eq('id', userId)
       .single();
-        
+
     if (!targetUser) {
       return NextResponse.json(apiError('USER_NOT_FOUND'), { status: 404 });
     }
@@ -54,11 +54,39 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return NextResponse.json(apiError('INVALID_JSON', 'Invalid JSON body'), { status: 400 });
     }
 
-    const updateData: Partial<{ name: string; coach_id: string | null }> = {};
+    const updateData: Partial<{
+      name: string;
+      coach_id: string | null;
+      is_paused_manual: boolean;
+      paused_at: string | null;
+      paused_by: string | null;
+      pause_reason: string | null;
+    }> = {};
     if (body.name !== undefined) updateData.name = body.name;
     // Only admins can change coach_id assignment
     if (body.coach_id !== undefined && profile!.role === 'ADMIN') {
         updateData.coach_id = body.coach_id === 'none' ? null : body.coach_id;
+    }
+
+    // SAN-161: pause/reactivate is an admin-only action. Toggling it also
+    // stamps traceability fields (or clears them on reactivation).
+    let pauseTransition: 'paused' | 'reactivated' | null = null;
+    if (body.is_paused_manual !== undefined && profile!.role === 'ADMIN') {
+      const nextPaused = body.is_paused_manual;
+      const wasPaused = Boolean(targetUser.is_paused_manual);
+      if (nextPaused !== wasPaused) {
+        pauseTransition = nextPaused ? 'paused' : 'reactivated';
+      }
+      updateData.is_paused_manual = nextPaused;
+      if (nextPaused) {
+        updateData.paused_at = new Date().toISOString();
+        updateData.paused_by = user!.id;
+        updateData.pause_reason = body.pause_reason ?? null;
+      } else {
+        updateData.paused_at = null;
+        updateData.paused_by = null;
+        updateData.pause_reason = null;
+      }
     }
 
     if (Object.keys(updateData).length === 0) {
@@ -77,11 +105,18 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         actorId: user!.id,
         actorRole: 'ADMIN',
         teamId: profile!.team_id!,
-        action: 'user.updated',
+        action: pauseTransition === 'paused'
+          ? 'athlete.paused'
+          : pauseTransition === 'reactivated'
+            ? 'athlete.reactivated'
+            : 'user.updated',
         targetType: 'profile',
         targetId: userId,
         metadata: {
           fields: Object.keys(updateData),
+          ...(pauseTransition === 'paused' && updateData.pause_reason
+            ? { reason: updateData.pause_reason }
+            : {}),
         },
       });
     }

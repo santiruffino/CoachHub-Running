@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import * as Sentry from '@sentry/nextjs';
 import { createRequestLogger } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
+import { deriveBillingStatus, getBillingActiveAthleteIds } from '@/lib/billing/athlete-status';
 
 interface AthleteGroup {
   id: string;
@@ -55,6 +56,9 @@ export async function GET(request: Request) {
         role,
         created_at,
         coach_id,
+        is_paused_manual,
+        paused_at,
+        pause_reason,
         coach:profiles!coach_id(
           id,
           name
@@ -106,6 +110,10 @@ export async function GET(request: Request) {
         { status: 500 }
       );
     }
+
+    // SAN-161: compute which athletes are commercially active (billable) from
+    // real activity/assignment signals. Manual pause takes precedence.
+    const billingActiveIds = await getBillingActiveAthleteIds(supabase, athleteIds);
 
     // Aggregate stats per athlete
     // Get today's date in UTC to match database dates (stored in UTC)
@@ -159,6 +167,10 @@ export async function GET(request: Request) {
         name: athlete.name,
         role: athlete.role,
         created_at: athlete.created_at,
+        isPausedManual: Boolean(athlete.is_paused_manual),
+        pausedAt: athlete.paused_at ?? null,
+        pauseReason: athlete.pause_reason ?? null,
+        billingStatus: deriveBillingStatus(athlete.is_paused_manual, billingActiveIds.has(athlete.id)),
         groups: ((athlete.athlete_groups || []) as AthleteGroupMembership[])
           .map((membership) => (Array.isArray(membership.group) ? membership.group[0] : membership.group))
           .filter((group): group is AthleteGroup => Boolean(group)),
