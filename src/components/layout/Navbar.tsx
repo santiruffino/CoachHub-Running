@@ -20,10 +20,11 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { buildNavigation, getSettingsPathForRole } from './navigation';
 import type { Locale } from '@/i18n/config';
+import type { TeamBranding } from '@/features/settings/services/team-branding.server';
 
 const FONT_DISPLAY = { fontFamily: 'var(--font-exo-2, sans-serif)' } as const;
 
-export function Navbar() {
+export function Navbar({ branding }: { branding?: TeamBranding }) {
     const pathname = usePathname();
     const router = useRouter();
     const { user, loading, logout } = useAuth();
@@ -85,12 +86,24 @@ export function Navbar() {
                 <div className="flex h-16 items-center justify-between">
                     <div className="flex items-center gap-8">
                         <Link href="/dashboard" className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-endurix-orange" />
+                            {branding?.logoUrl ? (
+                                // eslint-disable-next-line @next/next/no-img-element -- team-supplied external URL, not a bundled asset
+                                <img
+                                    src={branding.logoUrl}
+                                    alt={branding.teamName || t('brand')}
+                                    className="h-7 w-auto max-w-[140px] object-contain"
+                                />
+                            ) : (
+                                <div
+                                    className="w-2 h-2 bg-endurix-orange"
+                                    style={branding?.primaryColor ? { backgroundColor: branding.primaryColor } : undefined}
+                                />
+                            )}
                             <span
                                 className="font-bold text-base uppercase tracking-widest text-endurix-black dark:text-foreground"
                                 style={FONT_DISPLAY}
                             >
-                                {t('brand')}
+                                {branding?.teamName || t('brand')}
                             </span>
                         </Link>
 

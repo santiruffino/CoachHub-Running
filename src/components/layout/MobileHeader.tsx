@@ -19,10 +19,11 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { getSettingsPathForRole } from './navigation';
 import type { Locale } from '@/i18n/config';
+import type { TeamBranding } from '@/features/settings/services/team-branding.server';
 
 const FONT_DISPLAY = { fontFamily: 'var(--font-exo-2, sans-serif)' } as const;
 
-export function MobileHeader() {
+export function MobileHeader({ branding }: { branding?: TeamBranding }) {
     const router = useRouter();
     const { user, logout } = useAuth();
     const t = useTranslations('nav');
@@ -70,12 +71,24 @@ export function MobileHeader() {
             style={{ paddingTop: 'env(safe-area-inset-top, 0px)', height: 'calc(3.5rem + env(safe-area-inset-top, 0px))' }}
         >
             <Link href="/dashboard" className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-endurix-orange" />
+                {branding?.logoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element -- team-supplied external URL, not a bundled asset
+                    <img
+                        src={branding.logoUrl}
+                        alt={branding.teamName || 'Endurix'}
+                        className="h-6 w-auto max-w-[120px] object-contain"
+                    />
+                ) : (
+                    <div
+                        className="w-2 h-2 bg-endurix-orange"
+                        style={branding?.primaryColor ? { backgroundColor: branding.primaryColor } : undefined}
+                    />
+                )}
                 <span
                     className="font-bold text-sm uppercase tracking-widest text-endurix-black dark:text-foreground"
                     style={FONT_DISPLAY}
                 >
-                    Endurix
+                    {branding?.teamName || 'Endurix'}
                 </span>
             </Link>
 
