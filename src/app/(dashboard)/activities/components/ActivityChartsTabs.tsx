@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { IntervalsAnalysisChart } from '@/app/(dashboard)/activities/components/IntervalsAnalysisChart';
 import { SplitElevationChart } from '@/app/(dashboard)/activities/components/SplitElevationChart';
 import { PaceHrScatterChart } from '@/app/(dashboard)/activities/components/PaceHrScatterChart';
@@ -67,6 +68,9 @@ interface ActivityChartsTabsProps {
 
 type TabType = 'streams' | 'map' | 'intervals' | 'analysis';
 
+const ACTIVITY_TAB_TRIGGER_CLASS =
+  'text-[10px] font-bold uppercase tracking-widest py-2 px-3 text-center text-endurix-black/60 dark:text-muted-foreground transition-colors hover:text-endurix-black dark:hover:text-foreground data-[state=active]:bg-endurix-orange data-[state=active]:text-white data-[state=active]:shadow-sm';
+
 export function ActivityChartsTabs({
   activity,
   internalId,
@@ -124,23 +128,20 @@ export function ActivityChartsTabs({
         </span>
       </div>
       <div className="p-6">
-        {/* Tab Switcher */}
-        <div className="flex items-center gap-2 border border-endurix-black/15 dark:border-border bg-white dark:bg-card p-1 mb-6 w-fit">
-          {visibleTabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setSelectedTab(tab.key)}
-              className={`px-4 py-2 text-xs font-bold tracking-widest transition-all ${
-                activeTab === tab.key
-                  ? 'bg-endurix-black dark:bg-white text-white dark:text-endurix-black'
-                  : 'text-endurix-black/60 dark:text-muted-foreground hover:text-endurix-black dark:hover:text-foreground'
-              }`}
-              style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+        <Tabs value={activeTab} onValueChange={(value) => setSelectedTab(value as TabType)} className="mb-6">
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-1 bg-endurix-black/8 p-1 dark:bg-white/8 md:grid-cols-4">
+            {visibleTabs.map((tab) => (
+              <TabsTrigger
+                key={tab.key}
+                value={tab.key}
+                className={ACTIVITY_TAB_TRIGGER_CLASS}
+                style={{ fontFamily: 'var(--font-exo-2, sans-serif)' }}
+              >
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
 
         {/* Tab: Streams */}
         {activeTab === 'streams' && !isWeight && (

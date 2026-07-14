@@ -398,7 +398,7 @@ export function AthleteDetailsView({
                     </div>
 
                     <Tabs value={activeSection} onValueChange={(value) => setActiveSection(value as AthleteSection)}>
-                        <TabsList className="w-full h-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-1 bg-endurix-black/8 dark:bg-white/8 p-1 border border-endurix-black/10 dark:border-border">
+                        <TabsList className="w-full h-auto grid grid-cols-3 md:grid-cols-6 gap-1 bg-endurix-black/8 dark:bg-white/8 p-1 border border-endurix-black/10 dark:border-border">
                             {ATHLETE_TABS.map((tab) => (
                                 <TabsTrigger
                                     key={tab.value}

@@ -181,6 +181,17 @@ export async function syncGarminActivitiesForUser(
         });
     }
 
+    const externalIds = rows.map((row) => row.external_id);
+    const { data: existingRows } = externalIds.length
+        ? await service
+            .from('activities')
+            .select('external_id')
+            .eq('user_id', userId)
+            .in('external_id', externalIds)
+        : { data: [] as Array<{ external_id: string }> };
+    const existingExternalIds = new Set((existingRows || []).map((row) => row.external_id));
+    const insertedExternalIds = externalIds.filter((externalId) => !existingExternalIds.has(externalId));
+
     let inserted = 0;
     let upsertedRows: { id: string; external_id: string }[] = [];
     if (rows.length) {
@@ -192,7 +203,7 @@ export async function syncGarminActivitiesForUser(
             logger.error('garmin.sync.upsert_failed', { userId, error });
             return { userId, fetched: activities.length, inserted: 0, replacedDuplicates, status: 'error', error: error.message };
         }
-        inserted = rows.length;
+        inserted = insertedExternalIds.length;
         upsertedRows = (data ?? []) as { id: string; external_id: string }[];
     }
 
@@ -248,7 +259,12 @@ export async function syncGarminActivitiesForUser(
         }
     }
 
-    await notifyActivitySync(userId, inserted);
+    const activityIdByExternalId = new Map(upsertedRows.map((row) => [row.external_id, row.id]));
+    const firstInsertedActivityId = insertedExternalIds.length > 0
+        ? (activityIdByExternalId.get(insertedExternalIds[0]) || null)
+        : null;
+
+    await notifyActivitySync(userId, inserted, firstInsertedActivityId);
 
     await touchLastSynced(service, userId, gc);
     logger.info('garmin.sync.done', { userId, fetched: activities.length, inserted, replacedDuplicates });

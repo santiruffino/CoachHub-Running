@@ -183,11 +183,11 @@ export function EditGroupModal({ group, isOpen, onClose, onUpdated }: EditGroupM
 
           {group_type === 'RACE' && (
             <div className="space-y-6 pt-6 mt-6 border-t border-endurix-black/10 dark:border-border animate-in fade-in slide-in-from-top-2">
-              <div className="flex p-1 bg-endurix-black/8 dark:bg-white/8">
+              <div className="flex gap-1 p-1 bg-endurix-black/8 dark:bg-white/8 border border-endurix-black/10 dark:border-border">
                 <Button
                   type="button"
                   variant={raceSelectionMode === 'EXISTING' ? 'orange' : 'ghost'}
-                  className="flex-1 text-[10px] font-bold uppercase tracking-wider h-9"
+                  className="flex-1 h-9 text-[10px] font-bold uppercase tracking-wider text-endurix-black/60 dark:text-muted-foreground"
                   onClick={() => setRaceSelectionMode('EXISTING')}
                 >
                   {tGroups('detail.selectExistingRace')}
@@ -195,7 +195,7 @@ export function EditGroupModal({ group, isOpen, onClose, onUpdated }: EditGroupM
                 <Button
                   type="button"
                   variant={raceSelectionMode === 'NEW' ? 'orange' : 'ghost'}
-                  className="flex-1 text-[10px] font-bold uppercase tracking-wider h-9"
+                  className="flex-1 h-9 text-[10px] font-bold uppercase tracking-wider text-endurix-black/60 dark:text-muted-foreground"
                   onClick={() => setRaceSelectionMode('NEW')}
                 >
                   {tGroups('detail.createNewRace')}

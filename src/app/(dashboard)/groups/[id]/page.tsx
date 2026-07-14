@@ -21,19 +21,38 @@ export default async function GroupDetailsPage({ params }: { params: Promise<{ i
         redirect('/login');
     }
 
-    // Fetch initial data in parallel
-    const [groupRes, athletesRes, calendarRes, plansRes] = await Promise.all([
-        supabase
-            .from('groups')
-            .select(`
-                *,
-                race:races(*),
-                members:athlete_groups(
-                    athlete:profiles(id, name, email)
-                )
-            `)
-            .eq('id', id)
-            .single(),
+    // The group must be loaded first so we can scope the calendar to its members
+    // (the calendar endpoint filters assignments by member user_id, not by a
+    // group column — training_assignments has `source_group_id`, never `group_id`).
+    const groupRes = await supabase
+        .from('groups')
+        .select(`
+            *,
+            race:races(*),
+            members:athlete_groups(
+                athlete:profiles(id, name, email)
+            )
+        `)
+        .eq('id', id)
+        .single();
+
+    if (groupRes.error || !groupRes.data) {
+        redirect('/groups');
+    }
+
+    const group = groupRes.data as Record<string, any>;
+
+    // Map group members for initial view
+    const groupMemberIds = new Set<string>(
+        (group.members || [])
+            .map((m: Record<string, any>) => m.athlete?.id)
+            .filter((v: unknown): v is string => typeof v === 'string'),
+    );
+    const memberIds = Array.from(groupMemberIds);
+
+    const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+
+    const [athletesRes, calendarRes, plansRes] = await Promise.all([
         supabase
             .from('profiles')
             .select(`
@@ -45,30 +64,24 @@ export default async function GroupDetailsPage({ params }: { params: Promise<{ i
                 athlete_groups(group_id)
             `)
             .eq('role', 'ATHLETE'),
-        supabase
-            .from('training_assignments')
-            .select(`
-                *,
-                training:trainings(*)
-            `)
-            .eq('group_id', id)
-            .gte('scheduled_date', startOfWeek(new Date(), { weekStartsOn: 1 }).toISOString())
-            .lte('scheduled_date', addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 28).toISOString()),
+        memberIds.length > 0
+            ? supabase
+                  .from('training_assignments')
+                  .select(`
+                    *,
+                    training:trainings(*)
+                `)
+                  .in('user_id', memberIds)
+                  .gte('scheduled_date', weekStart.toISOString())
+                  .lte('scheduled_date', addDays(weekStart, 28).toISOString())
+                  .order('scheduled_date', { ascending: true })
+            : Promise.resolve({ data: [] as unknown[] }),
         supabase
             .from('training_plans')
             .select('*, training_plan_items(count)')
             .eq('is_archived', false)
             .order('updated_at', { ascending: false }),
     ]);
-
-    if (groupRes.error || !groupRes.data) {
-        redirect('/groups');
-    }
-
-    const group = groupRes.data as Record<string, any>;
-
-    // Map group members for initial view
-    const groupMemberIds = new Set((group.members || []).map((m: Record<string, any>) => m.athlete?.id));
     const initialAthletes = (athletesRes.data || [])
         .filter((a) => groupMemberIds.has(a.id))
         .map((a) => ({

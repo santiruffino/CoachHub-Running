@@ -183,22 +183,22 @@ export function GroupDetailsView({ id, initialGroup, initialAthletes, initialAss
       )}
 
       <Tabs defaultValue="members" className="w-full">
-        <TabsList className="bg-endurix-black/8 dark:bg-white/8 p-1 mb-6 border border-endurix-black/10 dark:border-border">
+        <TabsList className="mb-6 grid h-auto w-full grid-cols-2 gap-1 border border-endurix-black/10 bg-endurix-black/8 p-1 dark:border-border dark:bg-white/8 sm:grid-cols-3">
           <TabsTrigger
             value="members"
-            className="px-8 font-bold uppercase tracking-widest text-[10px] data-[state=active]:bg-white data-[state=active]:text-endurix-black data-[state=active]:dark:bg-card data-[state=active]:dark:text-foreground"
+            className="px-3 py-2 font-bold uppercase tracking-widest text-[10px] text-endurix-black/60 dark:text-muted-foreground data-[state=active]:bg-endurix-orange data-[state=active]:text-white data-[state=active]:shadow-sm"
           >
             {t('groups.athletes')}
           </TabsTrigger>
           <TabsTrigger
             value="calendar"
-            className="px-8 font-bold uppercase tracking-widest text-[10px] data-[state=active]:bg-white data-[state=active]:text-endurix-black data-[state=active]:dark:bg-card data-[state=active]:dark:text-foreground"
+            className="px-3 py-2 font-bold uppercase tracking-widest text-[10px] text-endurix-black/60 dark:text-muted-foreground data-[state=active]:bg-endurix-orange data-[state=active]:text-white data-[state=active]:shadow-sm"
           >
             {t('nav.trainings')}
           </TabsTrigger>
           <TabsTrigger
             value="plans"
-            className="px-8 font-bold uppercase tracking-widest text-[10px] data-[state=active]:bg-white data-[state=active]:text-endurix-black data-[state=active]:dark:bg-card data-[state=active]:dark:text-foreground"
+            className="px-3 py-2 font-bold uppercase tracking-widest text-[10px] text-endurix-black/60 dark:text-muted-foreground data-[state=active]:bg-endurix-orange data-[state=active]:text-white data-[state=active]:shadow-sm"
           >
             {t('nav.plans')}
           </TabsTrigger>

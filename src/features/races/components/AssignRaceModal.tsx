@@ -122,11 +122,11 @@ export function AssignRaceModal({ open, onOpenChange, athleteId, onSuccess }: As
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6 py-4">
-          <div className="grid grid-cols-2 gap-2 bg-endurix-black/8 dark:bg-white/8 p-1 border border-endurix-black/10 dark:border-border">
+          <div className="grid grid-cols-2 gap-1 bg-endurix-black/8 dark:bg-white/8 p-1 border border-endurix-black/10 dark:border-border">
             <Button
               type="button"
               variant={mode === 'template' ? 'orange' : 'ghost'}
-              className="h-9 uppercase tracking-widest text-[10px] font-bold"
+              className="h-9 uppercase tracking-widest text-[10px] font-bold text-endurix-black/60 dark:text-muted-foreground data-[state=active]:shadow-sm"
               onClick={() => setMode('template')}
             >
               {t('useExisting')}
@@ -134,7 +134,7 @@ export function AssignRaceModal({ open, onOpenChange, athleteId, onSuccess }: As
             <Button
               type="button"
               variant={mode === 'custom' ? 'orange' : 'ghost'}
-              className="h-9 uppercase tracking-widest text-[10px] font-bold"
+              className="h-9 uppercase tracking-widest text-[10px] font-bold text-endurix-black/60 dark:text-muted-foreground data-[state=active]:shadow-sm"
               onClick={() => setMode('custom')}
             >
               {t('createNew')}

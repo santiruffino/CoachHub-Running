@@ -52,8 +52,10 @@ export async function POST(request: NextRequest) {
       await createNotification({
         userId: athleteUserId,
         category: 'system',
-        title: 'Actividad sincronizada',
-        body: body.activityTitle || null,
+        title: 'Completa tu feedback',
+        body: body.activityTitle
+          ? `Tu actividad "${body.activityTitle}" ya esta sincronizada. Toca para dejar feedback.`
+          : 'Tu actividad ya esta sincronizada. Toca para dejar feedback.',
         link: `/activities/${body.activityId}`,
       });
     }

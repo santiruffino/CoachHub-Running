@@ -180,9 +180,9 @@ async function upsertActivities(
     supabase: SupabaseClient,
     userId: string,
     activities: StravaActivity[]
-): Promise<{ inserted: number; updated: number }> {
+): Promise<{ inserted: number; updated: number; firstInsertedActivityId: string | null }> {
     if (activities.length === 0) {
-        return { inserted: 0, updated: 0 };
+        return { inserted: 0, updated: 0, firstInsertedActivityId: null };
     }
 
     const startDates = activities
@@ -215,7 +215,7 @@ async function upsertActivities(
     });
 
     if (prioritizedActivities.length === 0) {
-        return { inserted: 0, updated: 0 };
+        return { inserted: 0, updated: 0, firstInsertedActivityId: null };
     }
 
     const externalIds = prioritizedActivities.map((a) => a.id.toString());
@@ -228,6 +228,10 @@ async function upsertActivities(
         .in('external_id', externalIds);
 
     const existingExternalIds = new Set((existingRows || []).map((row) => row.external_id));
+    const insertedExternalIds = prioritizedActivities
+        .map((activity) => activity.id.toString())
+        .filter((externalId) => !existingExternalIds.has(externalId));
+    const activityIdByExternalId = new Map<string, string>();
 
     const { data: athleteProfile } = await supabase
         .from('athlete_profiles')
@@ -277,19 +281,29 @@ async function upsertActivities(
 
     // Upsert in batches of 100
     for (const batch of chunkArray(upsertRows, 100)) {
-        const { error: upsertError } = await supabase
+        const { data: upsertedRows, error: upsertError } = await supabase
             .from('activities')
-            .upsert(batch, { onConflict: 'user_id,external_id' });
+            .upsert(batch, { onConflict: 'user_id,external_id' })
+            .select('id, external_id');
 
         if (upsertError) {
             throw new Error(`Database upsert failed: ${upsertError.message}`);
         }
+
+        (upsertedRows || []).forEach((row) => {
+            if (typeof row.external_id === 'string' && row.id != null) {
+                activityIdByExternalId.set(row.external_id, String(row.id));
+            }
+        });
     }
 
-    const inserted = prioritizedActivities.filter((a) => !existingExternalIds.has(a.id.toString())).length;
+    const inserted = insertedExternalIds.length;
     const updated = prioritizedActivities.length - inserted;
+    const firstInsertedActivityId = insertedExternalIds.length > 0
+        ? (activityIdByExternalId.get(insertedExternalIds[0]) || null)
+        : null;
 
-    return { inserted, updated };
+    return { inserted, updated, firstInsertedActivityId };
 }
 
 /**
@@ -321,9 +335,9 @@ export async function syncStravaActivities(
     });
 
     // Upsert into database
-    const { inserted, updated } = await upsertActivities(supabase, userId, activities);
+    const { inserted, updated, firstInsertedActivityId } = await upsertActivities(supabase, userId, activities);
 
-    await notifyActivitySync(userId, inserted);
+    await notifyActivitySync(userId, inserted, firstInsertedActivityId);
 
     // Calculate pages used (approximate)
     const pages = Math.ceil(activities.length / 200) || 1;

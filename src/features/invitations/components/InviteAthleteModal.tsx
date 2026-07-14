@@ -160,10 +160,10 @@ export function InviteAthleteModal({ open, onClose }: InviteAthleteModalProps) {
 
                 {!invitationLink && !bulkSummary && (
                     <Tabs defaultValue="single" className="w-full mt-4">
-                        <TabsList className="grid w-full grid-cols-3 bg-endurix-black/8 dark:bg-white/8">
-                            <TabsTrigger value="single" className="uppercase tracking-widest text-[10px] data-[state=active]:bg-endurix-orange data-[state=active]:text-white" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{tAthlete('tabs.single')}</TabsTrigger>
-                            <TabsTrigger value="bulk" className="uppercase tracking-widest text-[10px] data-[state=active]:bg-endurix-orange data-[state=active]:text-white" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{tAthlete('tabs.bulk')}</TabsTrigger>
-                            <TabsTrigger value="teamLink" className="uppercase tracking-widest text-[10px] data-[state=active]:bg-endurix-orange data-[state=active]:text-white" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{tAthlete('tabs.teamLink')}</TabsTrigger>
+                        <TabsList className="grid h-auto w-full grid-cols-3 gap-1 border border-endurix-black/10 bg-endurix-black/8 p-1 dark:border-border dark:bg-white/8">
+                            <TabsTrigger value="single" className="py-2 uppercase tracking-widest text-[10px] text-endurix-black/60 dark:text-muted-foreground data-[state=active]:bg-endurix-orange data-[state=active]:text-white data-[state=active]:shadow-sm" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{tAthlete('tabs.single')}</TabsTrigger>
+                            <TabsTrigger value="bulk" className="py-2 uppercase tracking-widest text-[10px] text-endurix-black/60 dark:text-muted-foreground data-[state=active]:bg-endurix-orange data-[state=active]:text-white data-[state=active]:shadow-sm" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{tAthlete('tabs.bulk')}</TabsTrigger>
+                            <TabsTrigger value="teamLink" className="py-2 uppercase tracking-widest text-[10px] text-endurix-black/60 dark:text-muted-foreground data-[state=active]:bg-endurix-orange data-[state=active]:text-white data-[state=active]:shadow-sm" style={{ fontFamily: 'var(--font-plex-mono, monospace)' }}>{tAthlete('tabs.teamLink')}</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="single" className="pt-4 space-y-4">
@@ -335,4 +335,3 @@ export function InviteAthleteModal({ open, onClose }: InviteAthleteModalProps) {
         </Dialog>
     );
 }
-

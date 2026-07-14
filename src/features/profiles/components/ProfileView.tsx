@@ -214,6 +214,7 @@ export function ProfileView({ initialProfile, user }: ProfileViewProps) {
                         </SectionLayout>
                     )}
 
+                    <FieldGroup>
                     <SectionLayout
                         tag={t('notificationSettings.tag')}
                         title={t('notificationSettings.title')}
@@ -223,6 +224,7 @@ export function ProfileView({ initialProfile, user }: ProfileViewProps) {
                             <Link href="/settings/notifications">{t('notificationSettings.cta')}</Link>
                         </Button>
                     </SectionLayout>
+                    </FieldGroup>
 
                 </div>
             </div>
