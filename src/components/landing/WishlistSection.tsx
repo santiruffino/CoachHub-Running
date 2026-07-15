@@ -19,7 +19,7 @@ type Status = 'idle' | 'submitting' | 'success' | 'error';
 interface FormState {
     name: string;
     email: string;
-    role: string;
+    teamName: string;
     teamSize: string;
 }
 
@@ -32,13 +32,13 @@ export function WishlistSection() {
     const locale = useLocale();
     const nameId = useId();
     const emailId = useId();
-    const roleId = useId();
+    const teamNameId = useId();
     const teamSizeId = useId();
 
     const [values, setValues] = useState<FormState>({
         name: '',
         email: '',
-        role: '',
+        teamName: '',
         teamSize: '',
     });
     const [status, setStatus] = useState<Status>('idle');
@@ -62,7 +62,7 @@ export function WishlistSection() {
             return;
         }
 
-        if (!values.name || !values.email || !values.role || !values.teamSize) {
+        if (!values.name || !values.email || !values.teamName || !values.teamSize) {
             setStatus('error');
             setErrorCode('required');
             return;
@@ -83,7 +83,7 @@ export function WishlistSection() {
                 body: JSON.stringify({
                     name: values.name,
                     email: values.email,
-                    role: values.role,
+                    teamName: values.teamName,
                     teamSize: values.teamSize,
                     locale,
                 }),
@@ -308,52 +308,30 @@ export function WishlistSection() {
                                     </div>
 
                                     <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
-                                        {/* Role */}
+                                        {/* Team name */}
                                         <div>
                                             <label
-                                                htmlFor={roleId}
+                                                htmlFor={teamNameId}
                                                 className="block text-[10px] font-bold text-endurix-black/70 dark:text-foreground/70 tracking-widest uppercase mb-2"
                                                 style={{
                                                     fontFamily:
                                                         'var(--font-ibm-plex-mono, monospace)',
                                                 }}
                                             >
-                                                {t('form.roleLabel')}
+                                                {t('form.teamNameLabel')}
                                             </label>
-                                            <Select
-                                                value={values.role}
-                                                onValueChange={(v) => update('role')(v)}
+                                            <Input
+                                                id={teamNameId}
+                                                type="text"
+                                                name="teamName"
+                                                autoComplete="organization"
+                                                value={values.teamName}
+                                                onChange={(e) => update('teamName')(e.target.value)}
+                                                placeholder={t('form.teamNamePlaceholder')}
                                                 disabled={status === 'submitting'}
-                                            >
-                                                <SelectTrigger
-                                                    id={roleId}
-                                                    className="w-full h-10 rounded-none border-0 border-b bg-transparent border-endurix-black/20 dark:border-white/15 dark:bg-white/[0.02] pl-3 pr-0 py-2 text-sm text-endurix-black dark:text-foreground focus:outline-none focus-visible:border-endurix-orange focus-visible:shadow-[0_4px_12px_rgba(255,104,0,0.08)] data-[placeholder]:text-endurix-black/30 dark:data-[placeholder]:text-white/30 [&>span]:line-clamp-1"
-                                                >
-                                                    <SelectValue
-                                                        placeholder={t('form.rolePlaceholder')}
-                                                    />
-                                                </SelectTrigger>
-                                                <SelectContent className="bg-white dark:bg-card border-endurix-black/15 dark:border-white/10">
-                                                    <SelectItem
-                                                        value="head_coach"
-                                                        className="text-endurix-black dark:text-foreground focus:bg-endurix-black/5 dark:focus:bg-white/5 focus:text-endurix-black dark:focus:text-foreground"
-                                                    >
-                                                        {t('roles.head_coach')}
-                                                    </SelectItem>
-                                                    <SelectItem
-                                                        value="assistant_coach"
-                                                        className="text-endurix-black dark:text-foreground focus:bg-endurix-black/5 dark:focus:bg-white/5 focus:text-endurix-black dark:focus:text-foreground"
-                                                    >
-                                                        {t('roles.assistant_coach')}
-                                                    </SelectItem>
-                                                    <SelectItem
-                                                        value="other"
-                                                        className="text-endurix-black dark:text-foreground focus:bg-endurix-black/5 dark:focus:bg-white/5 focus:text-endurix-black dark:focus:text-foreground"
-                                                    >
-                                                        {t('roles.other')}
-                                                    </SelectItem>
-                                                </SelectContent>
-                                            </Select>
+                                                required
+                                                className="border-endurix-black/20 dark:border-white/15 dark:bg-white/[0.02] dark:focus-visible:bg-white/[0.04] pl-3"
+                                            />
                                         </div>
 
                                         {/* Team size */}

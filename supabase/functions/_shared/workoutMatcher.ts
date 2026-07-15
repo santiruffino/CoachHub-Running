@@ -46,12 +46,45 @@ interface RawBlock {
         type: 'distance' | 'time';
         value: number;
     };
+    target?: {
+        type: string;
+        min: number | string;
+        max: number | string;
+    };
     rpe?: number;
+    /** Visual bar height (0-100) for the workout graph. NOT an RPE value. */
     intensity?: number;
     group?: {
         id: string;
         reps: number;
     };
+}
+
+/**
+ * Derive the RPE (1-10) to display for a step.
+ *
+ * Precedence: explicit `block.rpe`, then an `rpe_target` objective (stored in
+ * target.min/max). We never fall back to `block.intensity` — that's the graph
+ * bar height (0-100), not an effort level.
+ *
+ * Keep in sync with frontend/src/features/trainings/utils/workoutMatcher.ts.
+ */
+function deriveStepRpe(block: RawBlock): number | undefined {
+    if (typeof block.rpe === 'number' && block.rpe > 0) {
+        return block.rpe;
+    }
+
+    if (block.target?.type === 'rpe_target') {
+        const min = typeof block.target.min === 'string' ? parseFloat(block.target.min) : block.target.min;
+        const max = typeof block.target.max === 'string' ? parseFloat(block.target.max) : block.target.max;
+        const values = [min, max].filter((v): v is number => typeof v === 'number' && !Number.isNaN(v));
+        if (values.length > 0) {
+            const avg = values.reduce((a, b) => a + b, 0) / values.length;
+            return Math.max(1, Math.min(10, Math.round(avg)));
+        }
+    }
+
+    return undefined;
 }
 
 interface RawLap {
@@ -105,7 +138,7 @@ export function flattenWorkout(blocks: RawBlock[]): FlatStep[] {
                         name: stepName,
                         target_type: groupBlock.duration.type === 'distance' ? 'distance' : 'duration',
                         target_value: groupBlock.duration.value,
-                        intensity: groupBlock.rpe || groupBlock.intensity,
+                        intensity: deriveStepRpe(groupBlock),
                         stepType: flatStepType,
                         repeatIndex: r + 1,
                         totalRepeats: reps,
@@ -128,7 +161,7 @@ export function flattenWorkout(blocks: RawBlock[]): FlatStep[] {
                 name: stepName,
                 target_type: block.duration.type === 'distance' ? 'distance' : 'duration',
                 target_value: block.duration.value,
-                intensity: block.rpe || block.intensity,
+                intensity: deriveStepRpe(block),
                 stepType: flatStepType,
             });
             i++;

@@ -1,13 +1,6 @@
 import { escapeHtml, loadEmailTemplate, renderEmailTemplate } from './template-utils';
 
-export type WishlistRole = 'head_coach' | 'assistant_coach' | 'other';
 export type WishlistTeamSize = '1_5' | '6_15' | '16_30' | '30_plus';
-
-const ROLE_LABELS: Record<WishlistRole, string> = {
-    head_coach: 'Head Coach',
-    assistant_coach: 'Coach Asistente',
-    other: 'Otro',
-};
 
 const TEAM_SIZE_LABELS: Record<WishlistTeamSize, string> = {
     '1_5': '1 — 5 atletas',
@@ -21,7 +14,7 @@ const WISHLIST_TEMPLATE = loadEmailTemplate('wishlist-notification.html');
 export interface WishlistNotificationParams {
     name: string;
     email: string;
-    role: WishlistRole;
+    teamName: string;
     teamSize: WishlistTeamSize;
     locale: string | null;
     userAgent: string | null;
@@ -32,7 +25,7 @@ export interface WishlistNotificationParams {
 export function wishlistNotificationEmailTemplate({
     name,
     email,
-    role,
+    teamName,
     teamSize,
     locale,
     userAgent,
@@ -41,9 +34,9 @@ export function wishlistNotificationEmailTemplate({
 }: WishlistNotificationParams): string {
     const safeName = escapeHtml(name);
     const safeEmail = escapeHtml(email);
+    const safeTeamName = escapeHtml(teamName);
     const safeLocale = escapeHtml(locale ?? '—');
     const safeUa = escapeHtml(userAgent ?? '—');
-    const roleLabel = ROLE_LABELS[role];
     const teamSizeLabel = TEAM_SIZE_LABELS[teamSize];
     const timestamp = createdAt.toLocaleString('es-AR', {
         dateStyle: 'long',
@@ -54,7 +47,7 @@ export function wishlistNotificationEmailTemplate({
     return renderEmailTemplate(WISHLIST_TEMPLATE, {
         name: safeName,
         email: safeEmail,
-        roleLabel: escapeHtml(roleLabel),
+        teamName: safeTeamName,
         teamSizeLabel: escapeHtml(teamSizeLabel),
         locale: safeLocale,
         userAgent: safeUa,

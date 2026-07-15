@@ -13,7 +13,7 @@ export const changePasswordSchema = z.object({
 export const wishlistSchema = z.object({
   name: z.string().min(1, 'Name is required').max(120, 'Name too long'),
   email: z.string().email('Invalid email address'),
-  role: z.enum(['head_coach', 'assistant_coach', 'other'], { message: 'Invalid role' }),
+  teamName: z.string().min(1, 'Team name is required').max(120, 'Team name too long'),
   teamSize: z.enum(['1_5', '6_15', '16_30', '30_plus'], { message: 'Invalid team size' }),
   locale: z.string().max(8).optional().nullable(),
 });

@@ -2056,8 +2056,8 @@
         "namePlaceholder": "Ej: Santiago Ruffino",
         "emailLabel": "EMAIL PROFESIONAL",
         "emailPlaceholder": "tu@email.com",
-        "roleLabel": "TU ROL",
-        "rolePlaceholder": "Elegí una opción",
+        "teamNameLabel": "NOMBRE DEL EQUIPO",
+        "teamNamePlaceholder": "Ej: Runners Club",
         "teamSizeLabel": "TAMAÑO DE TU EQUIPO",
         "teamSizePlaceholder": "Elegí un rango",
         "submit": "SOLICITAR ACCESO",
@@ -2068,11 +2068,6 @@
         "errorInvalidEmail": "Ingresá un email válido.",
         "errorDuplicate": "Este email ya está registrado. Te avisaremos pronto.",
         "errorGeneric": "Algo salió mal. Intentá de nuevo en unos minutos."
-      },
-      "roles": {
-        "head_coach": "Head Coach",
-        "assistant_coach": "Coach Asistente",
-        "other": "Otro"
       },
       "teamSizes": {
         "1_5": "1 — 5 atletas",

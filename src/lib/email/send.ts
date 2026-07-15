@@ -2,7 +2,6 @@ import { resend } from './resend';
 import { invitationEmailTemplate } from './templates/invitation';
 import {
   wishlistNotificationEmailTemplate,
-  WishlistRole,
   WishlistTeamSize,
 } from './templates/wishlist-notification';
 import { AppRole } from '@/lib/supabase/api-helpers';
@@ -62,7 +61,7 @@ export async function sendInvitationEmail({
 interface SendWishlistNotificationEmailParams {
   name: string;
   email: string;
-  role: WishlistRole;
+  teamName: string;
   teamSize: WishlistTeamSize;
   locale: string | null;
   userAgent: string | null;
@@ -74,7 +73,7 @@ interface SendWishlistNotificationEmailParams {
 export async function sendWishlistNotificationEmail({
   name,
   email,
-  role,
+  teamName,
   teamSize,
   locale,
   userAgent,
@@ -96,7 +95,7 @@ export async function sendWishlistNotificationEmail({
   const html = wishlistNotificationEmailTemplate({
     name,
     email,
-    role,
+    teamName,
     teamSize,
     locale,
     userAgent,

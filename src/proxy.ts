@@ -48,7 +48,9 @@ export const config = {
      *   fetched by unauthenticated crawlers and social scrapers)
      * - google*.html (Google Search Console site-verification files, fetched
      *   unauthenticated by Google)
+     * - api/wishlist (public landing-page signup endpoint, called by anonymous
+     *   visitors; has its own rate limiting inside the route handler)
      */
-    '/((?!_next/static|_next/image|favicon.ico|manifest.json|manifest.webmanifest|sw.js|robots.txt|sitemap.xml|opengraph-image|google[a-z0-9]+\\.html|reset-password|forgot-password|auth|api/auth|api/v2/strava/webhook|accept-invitation|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|manifest.json|manifest.webmanifest|sw.js|robots.txt|sitemap.xml|opengraph-image|google[a-z0-9]+\\.html|reset-password|forgot-password|auth|api/auth|api/wishlist|api/v2/strava/webhook|accept-invitation|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };
