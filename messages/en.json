@@ -2013,7 +2013,7 @@
       "planningTitle": "Multi-week plans",
       "planningDesc": "Build reusable mesocycles, assign whole weeks and copy or paste them between athletes.",
       "syncLabel": "INTEGRATIONS",
-      "syncTitle": "Strava and Garmin in sync",
+      "syncTitle": "Strava in sync",
       "syncDesc": "Activities to the second via webhook, with no reloads or exports.",
       "assistantLabel": "AI ASSISTANT",
       "assistantTitle": "Hours of work, now in seconds",

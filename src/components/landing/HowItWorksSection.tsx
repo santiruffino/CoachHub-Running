@@ -29,9 +29,6 @@ function StepMock({ n, t }: { n: number; t: (key: string) => string }) {
                         <p className="text-xs font-bold text-endurix-black dark:text-foreground leading-tight" style={FONT_DISPLAY}>
                             Martina Ruiz
                         </p>
-                        <p className="text-[9px] text-endurix-black/45 dark:text-muted-foreground" style={FONT_MONO}>
-                            endurix.app/u/martina
-                        </p>
                     </div>
                 </div>
             </div>
@@ -44,7 +41,7 @@ function StepMock({ n, t }: { n: number; t: (key: string) => string }) {
                     {t('mockSources')}
                 </span>
                 <div className="grid grid-cols-2 gap-2">
-                    {['STRAVA', 'GARMIN'].map((s) => (
+                    {['STRAVA'].map((s) => (
                         <div key={s} className="flex items-center gap-2 border border-endurix-black/10 dark:border-border px-2 py-2">
                             <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
                             <span className="text-[9px] font-bold tracking-wider text-endurix-black/70 dark:text-foreground/80" style={FONT_MONO}>

@@ -1,11 +1,10 @@
 import { redirect } from 'next/navigation';
 import { Navbar } from '@/components/landing/Navbar';
 import { HeroSection } from '@/components/landing/HeroSection';
-import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
 import { BentoSection } from '@/components/landing/BentoSection';
+import { CoachValueSection } from '@/components/landing/CoachValueSection';
 import { AiAssistantSection } from '@/components/landing/AiAssistantSection';
-import { CoachOpsSection } from '@/components/landing/CoachOpsSection';
 import { RoadmapSection } from '@/components/landing/RoadmapSection';
 import { FAQSection } from '@/components/landing/FAQSection';
 import { CTASection } from '@/components/landing/CTASection';
@@ -27,11 +26,10 @@ export default async function LandingPage() {
       <Navbar />
       <main>
         <HeroSection />
-        <FeaturesSection />
         <HowItWorksSection />
         <BentoSection />
+        <CoachValueSection />
         <AiAssistantSection />
-        <CoachOpsSection />
         <RoadmapSection />
         <FAQSection />
         <CTASection />
