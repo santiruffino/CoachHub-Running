@@ -4,11 +4,11 @@ export async function notifyActivitySync(userId: string, insertedCount: number, 
   if (insertedCount <= 0) return;
 
   const isSingular = insertedCount === 1;
-  const activityLink = firstActivityId ? `/activities/${firstActivityId}` : '/dashboard';
+  const activityLink = firstActivityId ? `/activities/${firstActivityId}?feedback=1` : '/dashboard';
 
   await createNotification({
     userId,
-    category: 'system',
+    category: 'activity_feedback',
     title: isSingular ? 'Nueva actividad sincronizada' : `${insertedCount} actividades sincronizadas`,
     body: isSingular
       ? 'Toca para completar el feedback de tu actividad.'

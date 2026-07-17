@@ -4,7 +4,7 @@ import { appLogger } from '@/lib/app-logger';
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Bell, CheckCheck, MessageSquareText, Dumbbell, Flag, Megaphone, Settings } from 'lucide-react';
+import { Bell, CheckCheck, MessageSquareText, Dumbbell, Flag, Megaphone, MessageSquarePlus, Settings } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { isToday, isThisWeek } from 'date-fns';
@@ -46,6 +46,7 @@ const CATEGORY_ICONS: Record<string, LucideIcon> = {
     chat_message: MessageSquareText,
     workout_assigned: Dumbbell,
     race_reminder: Flag,
+    activity_feedback: MessageSquarePlus,
     system: Megaphone,
 };
 

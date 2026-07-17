@@ -23,6 +23,7 @@ export type NotificationCategory =
     | 'chat_message'
     | 'workout_assigned'
     | 'race_reminder'
+    | 'activity_feedback'
     | 'system'
     | 'rpe_mismatch'
     | 'low_compliance'

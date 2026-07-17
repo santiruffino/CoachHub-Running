@@ -39,7 +39,44 @@
         "auditLogs": {
           "title": "Auditoría",
           "description": "Historial de acciones administrativas."
+        },
+        "mcp": {
+          "title": "Conexión MCP",
+          "description": "Conectá tu asistente de IA (Claude y compatibles) para gestionar Endurix por lenguaje natural."
         }
+      }
+    },
+    "mcp": {
+      "eyebrow": "Ajustes",
+      "title": "Conexión MCP",
+      "description": "Endurix expone un servidor MCP para que un asistente de IA (como Claude) pueda consultar y gestionar tu equipo por lenguaje natural.",
+      "endpoint": {
+        "label": "Endpoint del servidor",
+        "hint": "Requiere una sesión activa de Endurix con rol Entrenador o Admin.",
+        "copy": "Copiar",
+        "copied": "Copiado"
+      },
+      "setup": {
+        "title": "Cómo conectarlo",
+        "intro": "En un cliente MCP que soporte servidores remotos por HTTP (por ejemplo Claude Desktop), agregá esta configuración y reiniciá el cliente. Se abrirá el navegador para que inicies sesión en Endurix.",
+        "configLabel": "Configuración del cliente",
+        "step1": "Abrí el archivo de configuración de tu cliente MCP.",
+        "step2": "Pegá el bloque de configuración de arriba dentro de \"mcpServers\".",
+        "step3": "Reiniciá el cliente e iniciá sesión en Endurix cuando se abra el navegador."
+      },
+      "auth": {
+        "title": "Autenticación y límites",
+        "session": "La conexión usa tu sesión de Endurix: solo verás y modificarás datos de tu equipo, con los mismos permisos que en la app.",
+        "rate": "Límite de uso: 30 solicitudes por minuto."
+      },
+      "tools": {
+        "title": "Qué puede hacer",
+        "consult": "Consultar atletas, grupos, cumplimiento y próximas carreras.",
+        "templates": "Crear, editar y eliminar plantillas de entrenamiento.",
+        "plans": "Crear, duplicar y aplicar mesociclos (planes multi-semana).",
+        "assign": "Asignar entrenamientos a atletas o grupos en una fecha.",
+        "groupsRaces": "Crear grupos y carreras, y sumar atletas a un grupo.",
+        "notify": "Enviar notificaciones a tus atletas."
       }
     },
     "notifications": {
@@ -245,6 +282,7 @@
         "chat_message": "Mensajes de chat",
         "workout_assigned": "Entrenamientos asignados",
         "race_reminder": "Recordatorios de carrera",
+        "activity_feedback": "Feedback de actividades",
         "system": "Notificaciones del sistema",
         "rpe_mismatch": "Alertas de RPE inesperado",
         "low_compliance": "Alertas de bajo cumplimiento",

@@ -5,7 +5,7 @@ import * as Sentry from '@sentry/nextjs';
 import { createRequestLogger, withRequestId } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
 
-const CATEGORIES = ['chat_message', 'workout_assigned', 'race_reminder', 'system', 'rpe_mismatch', 'low_compliance', 'training_load'] as const;
+const CATEGORIES = ['chat_message', 'workout_assigned', 'race_reminder', 'activity_feedback', 'system', 'rpe_mismatch', 'low_compliance', 'training_load'] as const;
 const COACH_ONLY_CATEGORIES = new Set(['rpe_mismatch', 'low_compliance', 'training_load']);
 type Category = (typeof CATEGORIES)[number];
 type Frequency = 'immediate' | 'daily' | 'weekly';

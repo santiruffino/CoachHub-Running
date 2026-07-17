@@ -1,7 +1,7 @@
 'use client';
 import { appLogger } from '@/lib/app-logger';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations, useFormatter } from 'next-intl';
 import api from '@/lib/axios';
 import { Slider } from '@/components/ui/slider';
@@ -78,6 +78,9 @@ export function ActivityDetailView({
     const [feedback, setFeedback] = useState(initialFeedback ? { ...initialFeedback, comments: initialFeedback.comments || '' } : { rpe: 5, comments: '' });
     const [feedbackSaving, setFeedbackSaving] = useState(false);
 
+    const feedbackSectionRef = useRef<HTMLElement | null>(null);
+    const [highlightFeedback, setHighlightFeedback] = useState(false);
+
     const [matchedLaps, setMatchedLaps] = useState<MatchedLap[]>([]);
     const [flatSteps, setFlatSteps] = useState<FlatStep[]>([]);
     const [workoutAssignment, setWorkoutAssignment] = useState<WorkoutAssignment | null>(null);
@@ -86,6 +89,32 @@ export function ActivityDetailView({
 
     const internalId = activity._internalId || id;
     const isAthlete = activity._viewerIsOwner || false;
+
+    // When arriving from the "leave feedback" push notification
+    // (link carries ?feedback=1), scroll the feedback section into view and
+    // pulse a highlight so the athlete knows where to act. Only relevant for
+    // the owning athlete, who is the only one that sees the editable form.
+    useEffect(() => {
+        if (!isAthlete) return;
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('feedback') !== '1') return;
+
+        const scrollTimer = window.setTimeout(() => {
+            feedbackSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setHighlightFeedback(true);
+        }, 400);
+        const highlightTimer = window.setTimeout(() => setHighlightFeedback(false), 3200);
+
+        // Drop the param so a manual refresh doesn't re-trigger the pulse.
+        params.delete('feedback');
+        const query = params.toString();
+        window.history.replaceState(null, '', `${window.location.pathname}${query ? `?${query}` : ''}`);
+
+        return () => {
+            window.clearTimeout(scrollTimer);
+            window.clearTimeout(highlightTimer);
+        };
+    }, [isAthlete]);
 
     // Fetch full activity from Strava when laps or best efforts are missing.
     // best_efforts powers the athlete PR celebration; it's Strava-only (Garmin
@@ -486,7 +515,14 @@ export function ActivityDetailView({
                 )}
 
                 {/* Feedback */}
-                <article className="border border-endurix-black/12 dark:border-border bg-white dark:bg-card">
+                <article
+                    ref={feedbackSectionRef}
+                    className={`scroll-mt-24 border bg-white dark:bg-card transition-all duration-500 ${
+                        highlightFeedback
+                            ? 'border-endurix-orange ring-2 ring-endurix-orange/40 shadow-[0_8px_28px_rgba(255,104,0,0.18)]'
+                            : 'border-endurix-black/12 dark:border-border'
+                    }`}
+                >
                     <div className="px-4 py-2.5 bg-endurix-paper dark:bg-muted border-b border-endurix-black/8 dark:border-border">
                         <span
                             className="text-[9px] text-endurix-black/60 dark:text-muted-foreground tracking-widest"

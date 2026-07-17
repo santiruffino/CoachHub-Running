@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { Bell, Shield, Users, UserCog } from 'lucide-react';
+import { Bell, Plug, Shield, Users, UserCog } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -49,6 +49,14 @@ export default async function SettingsHubPage() {
                 icon: UserCog,
                 title: t('tiles.coach.title'),
                 description: t('tiles.coach.description'),
+            }]
+            : []),
+        ...(role === 'COACH' || role === 'ADMIN'
+            ? [{
+                href: '/settings/mcp',
+                icon: Plug,
+                title: t('tiles.mcp.title'),
+                description: t('tiles.mcp.description'),
             }]
             : []),
         ...(role === 'ADMIN'

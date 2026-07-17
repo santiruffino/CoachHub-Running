@@ -251,7 +251,6 @@ export function AthletesList({ initialAthletes, initialCoaches, isAdmin }: Athle
   return (
     <div className="space-y-6">
       <PageHeader
-        className="mb-0"
         title={`${t('title')}${isAdmin ? ` (${tDashboard('admin.globalScope')})` : ''}`}
       />
 
@@ -291,7 +290,7 @@ export function AthletesList({ initialAthletes, initialCoaches, isAdmin }: Athle
       />
 
       <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center">
-        <div className="relative max-w-md w-full sm:w-auto flex-1">
+        <div className="relative w-full sm:w-[260px] lg:w-[280px]">
           <Search className="absolute left-0 top-1/2 ml-2 -translate-y-1/2 h-4 w-4 text-endurix-black/40 dark:text-muted-foreground" />
           <Input
             variant="boxed"
