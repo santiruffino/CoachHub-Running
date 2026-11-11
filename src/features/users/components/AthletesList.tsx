@@ -150,7 +150,9 @@ export function AthletesList({ initialAthletes, initialCoaches, isAdmin }: Athle
   const [athletes, setAthletes] = useState<AthleteData[]>(mapAthletes(initialAthletes));
   const [coaches] = useState<{id: string, name: string}[]>(initialCoaches);
   const [loading, setLoading] = useState(false);
-  const [scope, setScope] = useState<'mine' | 'team'>('mine');
+  // Must mirror the server-rendered `initialAthletes`, which scopes admins to
+  // the whole team and coaches to their own athletes.
+  const [scope, setScope] = useState<'mine' | 'team'>(isAdmin ? 'team' : 'mine');
   
   // Modals & Action States
   const [searchTerm, setSearchTerm] = useState('');
@@ -301,17 +303,15 @@ export function AthletesList({ initialAthletes, initialCoaches, isAdmin }: Athle
           />
         </div>
 
-        {!isAdmin && (
-          <Select value={scope} onValueChange={(value) => handleScopeChange(value as 'mine' | 'team')}>
-            <SelectTrigger className="w-full sm:w-[220px]">
-              <SelectValue placeholder={tDashboard('alerts.myAthletes')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="mine">{tDashboard('alerts.myAthletes')}</SelectItem>
-              <SelectItem value="team">{tDashboard('alerts.teamView')}</SelectItem>
-            </SelectContent>
-          </Select>
-        )}
+        <Select value={scope} onValueChange={(value) => handleScopeChange(value as 'mine' | 'team')}>
+          <SelectTrigger className="w-full sm:w-[220px]">
+            <SelectValue placeholder={tDashboard('alerts.myAthletes')} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="mine">{tDashboard('alerts.myAthletes')}</SelectItem>
+            <SelectItem value="team">{tDashboard('alerts.teamView')}</SelectItem>
+          </SelectContent>
+        </Select>
 
         <Select value={filterLevel} onValueChange={setFilterLevel}>
           <SelectTrigger className="w-full sm:w-[220px]">

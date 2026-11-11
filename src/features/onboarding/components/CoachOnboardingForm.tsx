@@ -25,6 +25,8 @@ export default function CoachOnboardingForm() {
   const [specialty, setSpecialty] = useState('');
   const [experience, setExperience] = useState('');
   const hasTrackedStartRef = useRef(false);
+  // Admins coach too, so they go through the same onboarding.
+  const isCoachLike = user?.role === 'COACH' || user?.role === 'ADMIN';
 
   const completionPercent = useMemo(() => {
     const completed = [bio, specialty, experience].filter((v) => v.trim().length > 0).length;
@@ -32,10 +34,10 @@ export default function CoachOnboardingForm() {
   }, [bio, specialty, experience]);
 
   useEffect(() => {
-    if (!authLoading && (!user || user.role !== 'COACH')) {
+    if (!authLoading && (!user || !isCoachLike)) {
       router.replace('/dashboard');
     }
-  }, [authLoading, user, router]);
+  }, [authLoading, user, isCoachLike, router]);
 
   useEffect(() => {
     const loadStatus = async () => {
@@ -52,19 +54,19 @@ export default function CoachOnboardingForm() {
       }
     };
 
-    if (user?.role === 'COACH') {
+    if (isCoachLike) {
       void loadStatus();
     }
-  }, [user?.role, router]);
+  }, [isCoachLike, router]);
 
   useEffect(() => {
-    if (!hasTrackedStartRef.current && !loading && user?.role === 'COACH') {
+    if (!hasTrackedStartRef.current && !loading && isCoachLike) {
       trackOnboardingStarted({ role: 'COACH', flow: 'coach_dedicated' });
       hasTrackedStartRef.current = true;
     }
-  }, [loading, user?.role]);
+  }, [loading, isCoachLike]);
 
-  if (authLoading || loading || user?.role !== 'COACH') {
+  if (authLoading || loading || !isCoachLike) {
     return null;
   }
 

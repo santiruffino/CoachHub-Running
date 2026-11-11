@@ -1,5 +1,6 @@
 import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { isCoachLike } from '@/lib/supabase/api-helpers';
 import { createRequestLogger } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
 import { normalizeOptionalNumber } from '@/features/profiles/utils/normalizeOptionalNumber';
@@ -156,7 +157,7 @@ export async function GET(request: Request) {
 
     // Update role-specific profile
     if (profileData && Object.keys(profileData).length > 0) {
-      const isCoach = profileUpdate.role === 'COACH';
+      const isCoach = isCoachLike(profileUpdate.role);
       const profileTable = isCoach ? 'coach_profiles' : 'athlete_profiles';
 
       // Filter fields based on role

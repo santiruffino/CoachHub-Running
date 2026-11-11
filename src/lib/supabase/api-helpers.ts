@@ -10,6 +10,16 @@ export interface RequesterProfile {
   team_id: string | null;
 }
 
+/**
+ * ADMIN is a super-role that also coaches: it can be assigned athletes via
+ * `coach_id`, owns `coach_settings`/`coach_profiles`, and chats with athletes.
+ * Use this for "acts as a coach" checks; keep comparing to 'ADMIN' directly for
+ * the admin-only extras (inviting coaches, team settings, audit logs).
+ */
+export function isCoachLike(role: AppRole | null | undefined): boolean {
+  return role === 'COACH' || role === 'ADMIN';
+}
+
 export async function getAuthenticatedUser() {
   const supabase = await createClient();
   const {

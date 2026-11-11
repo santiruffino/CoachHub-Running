@@ -132,9 +132,9 @@ export async function POST(request: NextRequest) {
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + 7);
 
-        // Determine if we should hard-assign a coach. If SUPER COACH (ADMIN), we assign to team but no specific coach by default.
-        // If the invited user is a COACH, they don't get a coach.
-        const coachIdToAssign = (profile.role === 'ADMIN' || role === 'COACH') ? null : user!.id;
+        // Athletes are assigned to whoever invited them — an ADMIN coaches too, so
+        // it gets the same treatment as a COACH here. An invited COACH has no coach.
+        const coachIdToAssign = role === 'COACH' ? null : user!.id;
 
         // Create a single-use, email-targeted team invite link (SAN-59: this
         // is the same table generic "join team" links use, just scoped to one

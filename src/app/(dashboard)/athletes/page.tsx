@@ -120,10 +120,11 @@ async function getAthletes(supabase: SupabaseClient, user: { id: string }, profi
 async function getCoaches(supabase: SupabaseClient, profile: { role: string; team_id: string }) {
   if (profile.role !== 'ADMIN') return [];
 
+  // Admins coach too, so they are assignable alongside coaches.
   const { data: coaches } = await supabase
     .from('profiles')
     .select('id, name, email, created_at')
-    .eq('role', 'COACH')
+    .in('role', ['COACH', 'ADMIN'])
     .eq('team_id', profile.team_id);
 
   return coaches || [];

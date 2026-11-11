@@ -43,7 +43,7 @@ export default async function SettingsHubPage() {
             title: t('tiles.notifications.title'),
             description: t('tiles.notifications.description'),
         },
-        ...(role === 'COACH'
+        ...(role === 'COACH' || role === 'ADMIN'
             ? [{
                 href: '/settings/coach',
                 icon: UserCog,

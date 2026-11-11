@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireRole } from '@/lib/supabase/api-helpers';
+import { isCoachLike, requireRole } from '@/lib/supabase/api-helpers';
 import * as Sentry from '@sentry/nextjs';
 import { createRequestLogger, withRequestId } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
         }
 
         let scopedAthleteIds: string[] | null = null;
-        if (scope === 'mine' && profile.role === 'COACH') {
+        if (scope === 'mine' && isCoachLike(profile.role)) {
             const { data: mineAthletes, error: athletesError } = await supabase
                 .from('profiles')
                 .select('id')

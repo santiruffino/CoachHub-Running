@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { isCoachLike } from '@/lib/supabase/api-helpers';
 import * as Sentry from '@sentry/nextjs';
 import { createRequestLogger } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
@@ -40,7 +41,7 @@ export async function GET(request: Request) {
       .eq('id', user.id)
       .single();
 
-    if (profile?.role !== 'COACH' && profile?.role !== 'ADMIN') {
+    if (!profile || !isCoachLike(profile.role)) {
       return NextResponse.json(apiError('AUTH_COACH_OR_ADMIN_ONLY'),
         { status: 403 }
       );
@@ -78,8 +79,10 @@ export async function GET(request: Request) {
       query = query.eq('team_id', profile.team_id);
     }
 
-    // For COACHes with scope='mine', further narrow to only their directly assigned athletes
-    if (profile.role === 'COACH' && scope === 'mine') {
+    // With scope='mine', narrow to only the caller's directly assigned athletes.
+    // Admins coach too, so 'mine' is meaningful for them as well; they reach the
+    // whole roster through scope='team'.
+    if (scope === 'mine') {
       query = query.eq('coach_id', user.id);
     }
 

@@ -101,7 +101,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const coachIdToAssign = (profile.role === 'ADMIN' || role === 'COACH') ? null : user!.id;
+    // Athletes are assigned to whoever invited them — an ADMIN coaches too, so
+    // it gets the same treatment as a COACH here. An invited COACH has no coach.
+    const coachIdToAssign = role === 'COACH' ? null : user!.id;
     const results: InviteResult[] = [];
 
     // Fetch team name and inviter profile for emails

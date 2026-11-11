@@ -87,9 +87,10 @@ export function AuthProvider({
         }
     }, [user, loading, router]);
 
-    // Effect to enforce onboarding completion for coaches
+    // Effect to enforce onboarding completion for coaches (admins coach too)
     useEffect(() => {
-        if (!loading && user?.role === 'COACH' && user?.isOnboardingCompleted === false && window.location.pathname !== '/onboarding/coach') {
+        const coaches = user?.role === 'COACH' || user?.role === 'ADMIN';
+        if (!loading && coaches && user?.isOnboardingCompleted === false && window.location.pathname !== '/onboarding/coach') {
             router.push('/onboarding/coach');
         }
     }, [user, loading, router]);

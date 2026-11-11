@@ -276,7 +276,8 @@ export function ProfileForm({ profile }: { profile: ProfileDetails }) {
         }
     };
 
-    const isCoach = user?.role === 'COACH';
+    // Admins coach too, so they edit the same coach profile fields.
+    const isCoach = user?.role === 'COACH' || user?.role === 'ADMIN';
     const isAthlete = user?.role === 'ATHLETE';
 
     const metricsHistory = athleteProfile?.metricsHistory ?? [];

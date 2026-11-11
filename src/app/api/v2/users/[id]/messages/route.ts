@@ -78,12 +78,21 @@ async function resolveThreadContext(serviceSupabase: ReturnType<typeof createSer
         return { error: apiError('CHAT_THREAD_ACCESS_DENIED', 'You can only access your own chat thread'), status: 403 as const };
     }
 
+    // This route reads through the service role, so the team boundary RLS would
+    // normally enforce has to be checked by hand for coach-like callers.
+    if (
+        currentUserProfile.role !== 'ATHLETE' &&
+        (!currentUserProfile.team_id || currentUserProfile.team_id !== athleteProfile.team_id)
+    ) {
+        return { error: apiError('CHAT_THREAD_ACCESS_DENIED', 'This athlete is not in your team'), status: 403 as const };
+    }
+
     const coachProfileId = athleteProfile.coach_id;
     const { data: coachProfile, error: coachError } = await serviceSupabase
         .from('profiles')
         .select(profileSelect)
         .eq('id', coachProfileId)
-        .eq('role', 'COACH')
+        .in('role', ['COACH', 'ADMIN'])
         .single();
 
     if (coachError || !coachProfile) {

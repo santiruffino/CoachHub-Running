@@ -125,20 +125,16 @@ export async function GET(request: NextRequest) {
             return respond(apiError('TEAM_REQUIRED'), { status: 403 });
         }
 
-        let settingsResult = profile.role === 'COACH'
-            ? await supabase
-                .from('coach_settings')
-                .select('thresholds, default_models')
-                .eq('coach_id', user.id)
-                .eq('team_id', profile.team_id)
-                .maybeSingle()
-            : await supabase
-                .from('team_settings')
-                .select('thresholds, default_models')
-                .eq('team_id', profile.team_id)
-                .maybeSingle();
+        // Admins coach too, so they get their own coach_settings like any coach,
+        // falling back to the team defaults when they haven't set any.
+        let settingsResult = await supabase
+            .from('coach_settings')
+            .select('thresholds, default_models')
+            .eq('coach_id', user.id)
+            .eq('team_id', profile.team_id)
+            .maybeSingle();
 
-        if (!settingsResult.data && profile.role === 'COACH') {
+        if (!settingsResult.data) {
             settingsResult = await supabase
                 .from('team_settings')
                 .select('thresholds, default_models')

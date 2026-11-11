@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import { isCoachLike } from '@/lib/supabase/api-helpers';
 import { CoachSettingsForm } from '@/features/settings/components/CoachSettingsForm';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { CoachSettings } from '@/features/settings/types';
@@ -19,14 +20,14 @@ export default async function CoachSettingsPage() {
         redirect('/login');
     }
 
-    // Check if user is coach
+    // Check if user is coach (ADMIN coaches too)
     const { data: profile } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', user.id)
         .single();
 
-    if (!profile || profile.role !== 'COACH') {
+    if (!isCoachLike(profile?.role)) {
         redirect('/dashboard');
     }
 

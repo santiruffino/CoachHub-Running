@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { isCoachLike } from '@/lib/supabase/api-helpers';
 import { createRequestLogger } from '@/lib/logger';
 import { apiError } from '@/lib/api/error-response';
 import { reportApiError } from '@/lib/api/report-error';
@@ -20,14 +21,14 @@ export async function GET(request: Request) {
             );
         }
 
-        // Check if user is a coach
+        // Check if user is a coach (ADMIN coaches too)
         const { data: profile } = await supabase
             .from('profiles')
             .select('role, team_id')
             .eq('id', user.id)
             .single();
 
-        if (profile?.role !== 'COACH') {
+        if (!isCoachLike(profile?.role)) {
             return NextResponse.json(apiError('AUTH_FORBIDDEN'),
                 { status: 403 }
             );
